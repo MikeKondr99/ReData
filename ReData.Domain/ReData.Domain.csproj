@@ -5,6 +5,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <RootNamespace>ReData.Domain</RootNamespace>
     </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ReData.Database\ReData.Database.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="FastEndpoints.Messaging.Core" Version="5.27.0" />
+      <PackageReference Include="FluentResults" Version="3.16.0" />
+    </ItemGroup>
 
 </Project>
