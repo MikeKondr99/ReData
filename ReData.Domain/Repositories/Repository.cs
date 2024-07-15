@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -9,7 +10,7 @@ using ReData.Database.Entities;
 namespace ReData.Domain;
 
 public abstract class Repository<T, TEntity> : IRepository<T>
-    where TEntity : class
+    where TEntity : class, IEntity
     where T : IEntity
 {
     public required IDatabase Database { protected get; init; }
@@ -18,28 +19,33 @@ public abstract class Repository<T, TEntity> : IRepository<T>
 
     protected abstract IQueryable<TEntity> Query(IQueryable<TEntity> query);
 
-    protected virtual string EntityName { get; } = typeof(T).Name;
+    private static string EntityName { get; } = typeof(T).Name;
 
-    public async Task<Result<IEnumerable<T>>> GetAsync(CancellationToken ct)
+    public async Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool> filter, CancellationToken ct = default)
     {
-        var entities = await Query(Database.Set<TEntity>().AsQueryable()).AsNoTracking().ToArrayAsync(ct);
-        var result = Mapper.Map<IEnumerable<T>>(entities);
+        var entities = await Query(Database.Set<TEntity>()).AsNoTracking().ToListAsync(ct);
+        var result = Mapper.Map<IEnumerable<T>>(entities).Where(filter);
+        
         return Result.Ok(result);
     }
 
-    public async Task<Result<T>> GetAsync(Guid id, CancellationToken ct)
+    public async Task<Result<T>> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await Query(Database.Set<TEntity>().AsQueryable()).AsNoTracking().FirstOrDefaultAsync(ct);
+        return (await GetEntityByIdAsync(id, ct)).Map(x => Mapper.Map<T>(x));
+    }
+    
+    private async Task<Result<TEntity>> GetEntityByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var entity = await Query(Database.Set<TEntity>().AsQueryable()).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id,ct);
         if (entity is null)
         {
             return Result.Fail($"Cannot get {EntityName}")
                 .WithError($"{EntityName} with id:'{id}' not found");
         }
-
-        return Result.Ok(Mapper.Map<T>(entity));
+        return Result.Ok(entity);
     }
 
-    public async Task<Result<T>> CreateAsync(T entity, CancellationToken ct)
+    public async Task<Result<T>> CreateAsync(T entity, CancellationToken ct = default)
     {
         var obj = Mapper.Map<TEntity>(entity);
         await Database.Set<TEntity>().AddAsync(obj, ct);
@@ -50,33 +56,25 @@ public abstract class Repository<T, TEntity> : IRepository<T>
         return Result.Ok(entity).WithReasons(save.Reasons);
     }
 
-    public async Task<Result<T>> UpdateAsync(T entity, CancellationToken ct)
+    public async Task<Result<T>> UpdateAsync(T entity, CancellationToken ct = default)
     {
-        var obj = await Query(Database.Set<TEntity>().AsQueryable()).FirstOrDefaultAsync(ct);
-        if (obj is null)
-        {
-            return Result
-                .Fail(OperationFail<T>.Update)
-                .WithError(EntityNotFound<T>.WithId(entity.Id));
-        }
+        var obj = await GetEntityByIdAsync(entity.Id, ct);
+        if (obj.IsFailed) return obj.ToResult();
 
         Mapper.Map(entity, obj);
+        
         var save = await SaveChangesAsync(ct);
         if (save.IsFailed)
             return Result.Fail(OperationFail<T>.Update).WithReasons(save.Reasons);
         return Result.Ok(entity).WithReasons(save.Reasons);
     }
 
-    public async Task<Result<T>> DeleteAsync(T entity, CancellationToken ct)
+    public async Task<Result<T>> DeleteAsync(T entity, CancellationToken ct = default)
     {
-        var oldEntity = await Database.Set<TEntity>().FindAsync(entity.Id, ct);
-        if (oldEntity is null)
-        {
-            return Result
-                .Fail(OperationFail<T>.Delete)
-                .WithError(EntityNotFound<T>.WithId(entity.Id));
-        }
-        Database.Set<TEntity>().Remove(oldEntity);
+        var obj = await GetEntityByIdAsync(entity.Id, ct);
+        if (obj.IsFailed) return obj.ToResult();
+        
+        Database.Set<TEntity>().Remove(obj.Value);
         var save = await SaveChangesAsync(ct);
         if (save.IsFailed)
             return Result.Fail(OperationFail<T>.Delete).WithReasons(save.Reasons);

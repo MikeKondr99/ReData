@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
+using FluentValidation;
 using ReData.Application;
 using ReData.Database;
 using ReData.Domain;
 using ReData.Domain.Repositories;
+using ReData.Domain.Validators;
 using SimpleInjector;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,9 +35,12 @@ services.AddSimpleInjector(container, options =>
 services.AddAutoMapper(typeof(Program), typeof(IRepository<>));
 services.AddDbContext<ApplicationDatabaseContext>();
 
+container.Register<IValidator<ReData.Domain.DataSource>,DataSourceValidator>(Lifestyle.Scoped);
 
 container.Register<IDatabase, ApplicationDatabaseContext>(Lifestyle.Scoped);
 container.Register<IRepository<DataSource>,DataSourceRepository>(Lifestyle.Scoped);
+
+container.RegisterDecorator<IRepository<DataSource>,ValidatedRepository<ReData.Domain.DataSource>>(Lifestyle.Scoped);
 
 var app = builder.Build();
 

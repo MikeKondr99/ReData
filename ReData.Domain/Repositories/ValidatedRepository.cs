@@ -1,0 +1,56 @@
+﻿using FluentResults;
+using FluentValidation;
+using ReData.Database.Entities;
+
+namespace ReData.Domain.Repositories;
+
+public class ValidatedRepository<T> : IRepository<T> 
+where T : IEntity
+{
+    private static string ValidationError = $"Validation of {typeof(T).Name} failed";
+    public ValidatedRepository(IRepository<T> inner)
+    {
+        InnerRepository = inner;
+    }
+    public required IValidator<T> Validator { private get; init; }
+    
+    private IRepository<T> InnerRepository { get; init; }
+
+    private async Task<Result<T>> ValidateAnd(T entity, CancellationToken ct, Func<T,CancellationToken,Task<Result<T>>> func)
+    {
+        var validationResult = await Validator.ValidateAsync(entity, ct);
+        if (!validationResult.IsValid)
+            return Result.Fail(new Error(ValidationError).WithMetadata(
+                validationResult.Errors
+                    .ToLookup(x => x.PropertyName)
+                    .ToDictionary(kv => kv.Key,
+                        kv => (object)kv.Select(x => x.ErrorMessage).ToArray())));
+        return await func(entity, ct);
+    }
+    
+    
+    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool> filter, CancellationToken ct)
+    {
+        return InnerRepository.GetAsync(filter, ct);
+    }
+
+    public Task<Result<T>> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return InnerRepository.GetByIdAsync(id, ct);
+    }
+
+    public async Task<Result<T>> CreateAsync(T entity, CancellationToken ct)
+    {
+        return await ValidateAnd(entity, ct, InnerRepository.CreateAsync);
+    }
+
+    public async Task<Result<T>> UpdateAsync(T entity, CancellationToken ct)
+    {
+        return await ValidateAnd(entity, ct, InnerRepository.UpdateAsync);
+    }
+
+    public async Task<Result<T>> DeleteAsync(T entity, CancellationToken ct)
+    {
+        return await ValidateAnd(entity, ct, InnerRepository.DeleteAsync);
+    }
+}

@@ -1,4 +1,5 @@
 ﻿
+using ReData.Core;
 using ReData.Database.Entities;
 
 namespace ReData.Domain;
@@ -13,5 +14,5 @@ public sealed record DataSource : IEntity
     
     public string? Description { get; set; }
     
-    public required Dictionary<string, string> Parameters { get; set; }
+    public required Dictionary<StringKey, string> Parameters { get; set; }
 }

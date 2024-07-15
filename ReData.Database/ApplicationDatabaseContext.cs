@@ -5,9 +5,11 @@ using ReData.Database.EntityConfiguration;
 
 namespace ReData.Database;
 
-public sealed class ApplicationDatabaseContext : DbContext, IDatabase
+public class ApplicationDatabaseContext : DbContext, IDatabase
 {
-    public DbSet<DataSource> DataSources => Set<DataSource>();
+    public virtual DbSet<DataSource> DataSources => Set<DataSource>();
+
+    public virtual DbSet<DataSourceParameter> DataSourceParameters => Set<DataSourceParameter>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

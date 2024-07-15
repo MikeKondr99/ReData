@@ -53,7 +53,7 @@ public class DataSourceController : Controller
     [HttpGet]
     public async Task<ActionResult<IEnumerable<DataSourceResponse>>> GetAllDataSources(CancellationToken ct)
     {
-        Result<IEnumerable<DataSource>> result = await Repository.GetAsync(ct);
+        Result<IEnumerable<DataSource>> result = await Repository.GetAsync((x) => true, ct);
         if (result.IsFailed)
         {
             BadRequest(result.Errors);
@@ -64,7 +64,7 @@ public class DataSourceController : Controller
     [HttpGet("{id}")]
     public async Task<ActionResult<DataSourceResponse>> GetDataSourceById(Guid id, CancellationToken ct)
     {
-        Result<DataSource> result = await Repository.GetAsync(id,ct);
+        Result<DataSource> result = await Repository.GetByIdAsync(id, ct);
         if (result.IsFailed)
         {
             BadRequest(result.Errors);
@@ -75,7 +75,7 @@ public class DataSourceController : Controller
     [HttpPut("{id}")]
     public async Task<ActionResult<DataSourceResponse>> UpdateDataSource([FromRoute] Guid id, [FromBody] UpdateDataSource body, CancellationToken ct)
     {
-        Result<DataSource> get = await Repository.GetAsync(id, ct);
+        Result<DataSource> get = await Repository.GetByIdAsync(id, ct);
         if (get.IsFailed) return get.ToErrorResponse();
 
         Mapper.Map(body, get.Value);
@@ -100,7 +100,7 @@ public class DataSourceController : Controller
     [HttpDelete("{id}")]
     public async Task<ActionResult<DataSourceResponse>> DeleteDataSource([FromRoute] Guid id, CancellationToken ct)
     {
-        Result<DataSource> get = await Repository.GetAsync(id, ct);
+        Result<DataSource> get = await Repository.GetByIdAsync(id, ct);
         if (get.IsFailed) BadRequest(get.Errors);
         
         var result = await Repository.DeleteAsync(get.Value, ct);
