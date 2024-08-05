@@ -1,4 +1,5 @@
-import { Box, Text } from '@mantine/core';
+import { Alert } from '@mantine/core';
+import { IconExclamationCircle } from '@tabler/icons-react';
 
 interface ErrorAlertProps {
   message: string;
@@ -6,17 +7,12 @@ interface ErrorAlertProps {
 
 const ErrorAlert: React.FC<ErrorAlertProps> = (props) => {
   const { message } = props;
+  const icon = <IconExclamationCircle />;
 
   return (
-    <Box
-      bg="rgba(255, 92, 92, 1)"
-      p="1em"
-      style={{
-        borderRadius: '0.5em',
-      }}
-    >
-      <Text c="white" fw="bold">{message}</Text>
-    </Box>
+    <Alert variant="light" color="red" title="Error" icon={icon}>
+      {message}
+    </Alert>
   );
 };
 

@@ -54,3 +54,22 @@ export const createResource = async (resourceObj: ResourceRequest) => {
     throw err;
   }
 };
+
+export const deleteResource = async (id: string) => {
+  try {
+    const response = await fetch(`/api/datasource/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Network response was not ok');
+    }
+    return true;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
