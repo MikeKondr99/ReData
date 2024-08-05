@@ -1,26 +1,22 @@
-import { Button, Container, Divider, Flex, Space, Title } from '@mantine/core';
+import { Divider, Flex, Stack, Title } from '@mantine/core';
+import { useDocumentTitle } from '@mantine/hooks';
 import { Link } from 'react-router-dom';
-import AddedResourceList from '../components/AddedResourceList';
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
+  useDocumentTitle('ReData');
+
   return (
-    <Container>
-      <Space h="md" />
-
-      <Flex align="center" justify="space-between">
-        <Title order={2}>Resources</Title>
-
-        <Link to="/new">
-          <Button size="compact-md">Add resource</Button>
-        </Link>
+    <>
+      <Flex align="center" justify="space-between" mt="lg" mb="lg">
+        <Title order={2}>Home</Title>
       </Flex>
 
-      <Space h="md" />
-      <Divider />
-      <Space h="md" />
+      <Divider mb="sm" />
 
-      <AddedResourceList />
-    </Container>
+      <Stack>
+        <Link to="/resources">Resources</Link>
+      </Stack>
+    </>
   );
 };
 
