@@ -12,7 +12,7 @@ where T : IEntity
 public interface IRepository<T,TKey>
 where T : IEntity<TKey>
 {
-    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool> filter, CancellationToken ct = default);
+    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter = null, CancellationToken ct = default);
 
     public Task<Result<T>> GetByIdAsync(TKey id, CancellationToken ct = default);
 

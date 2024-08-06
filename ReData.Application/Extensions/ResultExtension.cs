@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
+using ReData.Domain;
 
 namespace ReData.Application;
 
@@ -17,13 +18,34 @@ public static class ResultExtension
         return ToErrorResponse(result);
     }
     
-    public static ActionResult ToErrorResponse(this IResultBase result) 
+    public static ActionResult ToErrorResponse(this IResultBase result)
     {
+        var error = result.Errors.FirstOrDefault();
+        var obj = new ErrorObject() { Errors = result.Errors.Select(e => new Error(e)) };
         
-        return new BadRequestObjectResult(new ErrorObject()
+        if (error is IServiceUnavailableError)
         {
-            Errors = result.Errors.Select(e => new Error(e))
-        });
+            return new ObjectResult(obj)
+            {
+                StatusCode = StatusCodes.Status503ServiceUnavailable
+            };
+        }
+        
+        if (error is INotFoundError)
+        {
+            return new NotFoundObjectResult(obj);
+        }
+
+        if (error is IUserError)
+        {
+            return new BadRequestObjectResult(obj);
+        }
+        
+        return new ObjectResult(obj)
+        {
+            StatusCode = StatusCodes.Status500InternalServerError
+        };
+        
     }
     
 }

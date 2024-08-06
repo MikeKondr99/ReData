@@ -7,7 +7,6 @@ namespace ReData.Domain.Repositories;
 public class ValidatedRepository<T> : IRepository<T> 
 where T : IEntity
 {
-    private static string ValidationError = $"Validation of {typeof(T).Name} failed";
     public ValidatedRepository(IRepository<T> inner)
     {
         InnerRepository = inner;
@@ -20,16 +19,12 @@ where T : IEntity
     {
         var validationResult = await Validator.ValidateAsync(entity, ct);
         if (!validationResult.IsValid)
-            return Result.Fail(new Error(ValidationError).WithMetadata(
-                validationResult.Errors
-                    .ToLookup(x => x.PropertyName)
-                    .ToDictionary(kv => kv.Key,
-                        kv => (object)kv.Select(x => x.ErrorMessage).ToArray())));
+            return Result.Fail(new EntityNotValid<T>(validationResult));
         return await func(entity, ct);
     }
     
     
-    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool> filter, CancellationToken ct)
+    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter, CancellationToken ct)
     {
         return InnerRepository.GetAsync(filter, ct);
     }
@@ -49,8 +44,8 @@ where T : IEntity
         return await ValidateAnd(entity, ct, InnerRepository.UpdateAsync);
     }
 
-    public async Task<Result<T>> DeleteAsync(T entity, CancellationToken ct)
+    public Task<Result<T>> DeleteAsync(T entity, CancellationToken ct)
     {
-        return await ValidateAnd(entity, ct, InnerRepository.DeleteAsync);
+        return InnerRepository.DeleteAsync(entity, ct);
     }
 }

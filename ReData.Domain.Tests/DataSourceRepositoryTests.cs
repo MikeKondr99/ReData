@@ -23,7 +23,7 @@ public class DataSourceRepositoryTests
     {
         var mappingConfig = new MapperConfiguration(mc =>
         {
-            mc.AddProfile(new DataSourceMapping());
+            mc.AddProfile(new DataSourceProfile());
         });
         IMapper mapper = mappingConfig.CreateMapper();
         var appContextMock = new Mock<ApplicationDatabaseContext>();

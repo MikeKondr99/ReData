@@ -7,10 +7,6 @@ namespace ReData.Database;
 
 public class ApplicationDatabaseContext : DbContext, IDatabase
 {
-    public virtual DbSet<DataSource> DataSources => Set<DataSource>();
-
-    public virtual DbSet<DataSourceParameter> DataSourceParameters => Set<DataSourceParameter>();
-
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseNpgsql("User ID=postgres;Password=postgres;Host=localhost;Port=5433;Database=ReData");
@@ -20,6 +16,7 @@ public class ApplicationDatabaseContext : DbContext, IDatabase
     {
         modelBuilder.ApplyConfiguration(new DataSourceConfig());
         modelBuilder.ApplyConfiguration(new DataSourceParameterConfig());
+        modelBuilder.ApplyConfiguration(new DataSetConfig());
     }
 }
 
