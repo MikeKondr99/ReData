@@ -14,10 +14,7 @@ var services = builder.Services;
 
 services.AddControllers()
     .AddControllersAsServices()
-    .AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
+    .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); });
 services.AddLocalization(options => options.ResourcesPath = "Resources");
 services.AddLogging();
 
@@ -35,19 +32,26 @@ services.AddSimpleInjector(container, options =>
 services.AddAutoMapper(typeof(Program), typeof(IRepository<>));
 services.AddDbContext<ApplicationDatabaseContext>();
 
-container.Register<IValidator<ReData.Domain.DataSource>,DataSourceValidator>(Lifestyle.Scoped);
+container.Register<IValidator<ReData.Domain.DataSource>, DataSourceValidator>(Lifestyle.Scoped);
 
 container.Register<IDatabase, ApplicationDatabaseContext>(Lifestyle.Scoped);
-container.Register<IRepository<DataSource>,DataSourceRepository>(Lifestyle.Scoped);
+container.Register<IRepository<DataSource>, DataSourceRepository>(Lifestyle.Scoped);
 
-container.RegisterDecorator<IRepository<DataSource>,ValidatedRepository<ReData.Domain.DataSource>>(Lifestyle.Scoped);
+container.RegisterDecorator<IRepository<DataSource>, ValidatedRepository<ReData.Domain.DataSource>>(Lifestyle.Scoped);
 
 var app = builder.Build();
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+app.UseHttpsRedirection();
 
 app.Services.UseSimpleInjector(container);
 
 app.Migrate<ApplicationDatabaseContext>();
 
 app.MapControllers();
+
+app.MapFallbackToFile("/index.html");
 
 app.Run();
