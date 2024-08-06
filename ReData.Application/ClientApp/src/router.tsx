@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import Layout from './layouts/Layout';
 import AddResourcePage from './pages/AddResourcePage';
+import EditResourcePage from './pages/EditResourcePage';
 import HomePage from './pages/HomePage';
 import ResourcesPage from './pages/ResourcesPage';
 
@@ -21,6 +22,10 @@ export const router = createBrowserRouter([
       {
         path: 'resources/new',
         element: <AddResourcePage />,
+      },
+      {
+        path: 'resources/:resourceId',
+        element: <EditResourcePage />,
       },
     ],
   },

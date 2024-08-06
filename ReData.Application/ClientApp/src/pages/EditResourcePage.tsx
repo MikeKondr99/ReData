@@ -1,17 +1,29 @@
-import { ActionIcon, Button, Divider, Flex, Group, Title } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Divider,
+  Flex,
+  Group,
+  Loader,
+  Text,
+  Title,
+} from '@mantine/core';
 import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
 import { IconChevronLeft } from '@tabler/icons-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import ErrorAlert from '../components/ErrorAlert';
 import ResourceForm from '../components/ResourceForm';
-import { createResource, ResourceRequest } from '../services/api';
+import { getResource, ResourceRequest, updateResource } from '../services/api';
 
-const AddResourcePage: React.FC = () => {
-  useDocumentTitle('New resource - ReData');
+const EditResourcePage: React.FC = () => {
+  useDocumentTitle('Edit resource - ReData');
+  const { resourceId } = useParams();
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm({
@@ -45,14 +57,34 @@ const AddResourcePage: React.FC = () => {
     },
   });
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const result = await getResource(resourceId);
+        form.setValues(result);
+
+        setLoading(false);
+      } catch (err) {
+        setError('Error fetching data');
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [resourceId]);
+
   const handleSubmit = async (values: typeof form.values) => {
     try {
       setError(null); // Clear previous errors
       const resourceObj: ResourceRequest = {
         ...values,
-        type: parseInt(values.type, 10),
+        // TODO: Find a solution
+        // Kludge because it is created with a number, and returns a string
+        type: values.type === 'PostgreSql' ? 1 : parseInt(values.type, 10),
       };
-      const result = await createResource(resourceObj);
+      const result = await updateResource(resourceId, resourceObj);
       if (result) {
         console.log('Resource created successfully:', result);
         navigate('/resources');
@@ -66,6 +98,14 @@ const AddResourcePage: React.FC = () => {
       console.error('Error creating resource:', err);
     }
   };
+
+  if (loading)
+    return (
+      <Box>
+        <Loader />
+        <Text>Loading...</Text>
+      </Box>
+    );
 
   return (
     <>
@@ -82,12 +122,12 @@ const AddResourcePage: React.FC = () => {
               stroke={2}
             />
           </ActionIcon>
-          <Title order={2}>Configure new resource</Title>
+          <Title order={2}>Update resource</Title>
         </Group>
 
         <Group align="center">
           <Button type="submit" size="compact-sm" form="resource-form">
-            Create resource
+            Update resource
           </Button>
         </Group>
       </Flex>
@@ -96,9 +136,9 @@ const AddResourcePage: React.FC = () => {
 
       {error && <ErrorAlert message={error} />}
 
-      <ResourceForm form={form} onSubmit={handleSubmit} />
+      <ResourceForm isEditing form={form} onSubmit={handleSubmit} />
     </>
   );
 };
 
-export default AddResourcePage;
+export default EditResourcePage;

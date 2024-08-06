@@ -11,6 +11,20 @@ export interface ResourceRequest {
   };
 }
 
+export const getResource = async (id: string) => {
+  try {
+    const response = await fetch(`/api/datasource/${id}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 export const getAllResources = async () => {
   try {
     const response = await fetch('/api/datasource');
@@ -46,6 +60,30 @@ export const createResource = async (resourceObj: ResourceRequest) => {
         `${errorName} ${errorMessage}. You already have a resource named "${resourceObj.name}"` ||
           'Network response was not ok',
       );
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const updateResource = async (
+  id: string,
+  updatedResource: ResourceRequest,
+) => {
+  try {
+    const response = await fetch(`/api/datasource/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedResource),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Network response was not ok');
     }
     const data = await response.json();
     return data;
