@@ -1,11 +1,9 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-using ReData.Core;
+﻿using ReData.Core;
 using ReData.Database.Entities;
 
-namespace ReData.Domain;
+namespace ReData.Application.Controllers.DataSource;
 
-public sealed record DataSource : IEntity
+public record DataSourceWithParametersResponse
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     
@@ -15,5 +13,5 @@ public sealed record DataSource : IEntity
     
     public string? Description { get; set; }
     
-    public required Dictionary<StringKey, string> Parameters { get; set; }
+    public required Dictionary<string, string> Parameters { get; set; }
 }
