@@ -37,7 +37,7 @@ public abstract class Repository<T, TEntity> : IRepository<T>
     
     private async Task<Result<TEntity>> GetEntityByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await Query(Database.Set<TEntity>().AsQueryable()).AsNoTracking().FirstOrDefaultAsync(x => x.Id == id,ct);
+        var entity = await Query(Database.Set<TEntity>().AsQueryable()).FirstOrDefaultAsync(x => x.Id == id,ct);
         if (entity is null)
         {
             return Result.Fail($"Cannot get {EntityName}")
