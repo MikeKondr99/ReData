@@ -12,11 +12,11 @@ import {
 const data: ComboboxData = [
   {
     label: 'PostgreSQL',
-    value: '1',
+    value: 'PostgreSql',
   },
   {
     label: 'CSV',
-    value: '2',
+    value: 'Csv',
   },
 ];
 

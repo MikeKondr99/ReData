@@ -1,12 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
+import Layout from '../components/Layout';
+import AddResourcePage from '../pages/AddResourcePage';
+import EditResourcePage from '../pages/EditResourcePage';
+import HomePage from '../pages/HomePage';
+import ResourcesPage from '../pages/ResourcesPage';
 
-import Layout from './layouts/Layout';
-import AddResourcePage from './pages/AddResourcePage';
-import EditResourcePage from './pages/EditResourcePage';
-import HomePage from './pages/HomePage';
-import ResourcesPage from './pages/ResourcesPage';
-
-export const router = createBrowserRouter([
+const routes = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
@@ -30,3 +29,5 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+export default routes;

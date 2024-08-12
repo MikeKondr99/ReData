@@ -1,30 +1,17 @@
 import { Box, Button, Card, Flex, Grid, Image, Text } from '@mantine/core';
-import { useNavigate } from 'react-router-dom';
-import { getIcon } from '../utils/iconUtils';
 import { modals } from '@mantine/modals';
-
-export interface ResourceItem {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  parameters: {
-    user: string;
-    port: string;
-    database: string;
-    host: string;
-    password: string;
-  };
-}
+import { useNavigate } from 'react-router-dom';
+import { IDataSource } from '../app/types';
+import { getIcon } from '../utils/iconUtils';
 
 interface ResourceListItemProps {
-  resource: ResourceItem;
-  onDelete: (id: string) => void;
+  resource: IDataSource;
+  remove: (id: string) => void;
 }
 
 const ResourceListItem: React.FC<ResourceListItemProps> = ({
   resource,
-  onDelete,
+  remove,
 }) => {
   const navigate = useNavigate();
 
@@ -40,7 +27,7 @@ const ResourceListItem: React.FC<ResourceListItemProps> = ({
       ),
       labels: { confirm: 'Delete', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
-      onConfirm: () => onDelete(resource.id),
+      onConfirm: () => remove(resource.id),
     });
 
   return (

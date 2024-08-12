@@ -12,19 +12,20 @@ import {
 import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
 import { IconChevronLeft } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import ErrorAlert from '../components/ErrorAlert';
+import { useEffect } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { dataSourceApi } from '../app/services/dataSourceApi';
 import ResourceForm from '../components/ResourceForm';
-import { getResource, ResourceRequest, updateResource } from '../services/api';
 
 const EditResourcePage: React.FC = () => {
   useDocumentTitle('Edit resource - ReData');
   const { resourceId } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, isLoading, isFetching } =
+    dataSourceApi.useGetDataSourceByIdQuery(resourceId);
+  const [updateDataSource, { isLoading: isLoadingUpdate }] =
+    dataSourceApi.useUpdateDataSourceMutation();
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -58,53 +59,41 @@ const EditResourcePage: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        const result = await getResource(resourceId);
-        form.setValues(result);
-
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching data');
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [resourceId]);
+    if (data) {
+      form.setValues({
+        name: data.name || '',
+        description: data.description || '',
+        type: data.type || '',
+        parameters: {
+          host: data.parameters?.host || '',
+          port: data.parameters?.port || '5432',
+          database: data.parameters?.database || '',
+          username: data.parameters?.username || '',
+          password: data.parameters?.password || '',
+        },
+      });
+    }
+  }, [data]);
 
   const handleSubmit = async (values: typeof form.values) => {
     try {
-      setError(null); // Clear previous errors
-      const resourceObj: ResourceRequest = {
-        ...values,
-        // TODO: Find a solution
-        // Kludge because it is created with a number, and returns a string
-        type: values.type === 'PostgreSql' ? 1 : parseInt(values.type, 10),
-      };
-      const result = await updateResource(resourceId, resourceObj);
-      if (result) {
-        console.log('Resource created successfully:', result);
-        navigate('/resources');
-      } else {
-        console.error('Failed to create resource');
+      if (!resourceId) {
+        throw new Error('Resource ID is required');
       }
-      // TODO: Do something about error types
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred');
-      console.error('Error creating resource:', err);
+
+      await updateDataSource({ id: resourceId, rest: values }).unwrap();
+
+      navigate('/resources');
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
-  if (loading)
+  if (error && error.status === 404)
     return (
-      <Box>
-        <Loader />
-        <Text>Loading...</Text>
-      </Box>
+      <Text>
+        Not found. <Link to="/resources">Back to Data Source list</Link>
+      </Text>
     );
 
   return (
@@ -126,6 +115,8 @@ const EditResourcePage: React.FC = () => {
         </Group>
 
         <Group align="center">
+          {isLoadingUpdate && <Text>sending</Text>}
+
           <Button type="submit" size="compact-sm" form="resource-form">
             Update resource
           </Button>
@@ -134,9 +125,14 @@ const EditResourcePage: React.FC = () => {
 
       <Divider mb="sm" />
 
-      {error && <ErrorAlert message={error} />}
-
-      <ResourceForm isEditing form={form} onSubmit={handleSubmit} />
+      {isLoading && isFetching ? (
+        <Box>
+          <Loader />
+          <Text>Loading...</Text>
+        </Box>
+      ) : (
+        <ResourceForm isEditing form={form} onSubmit={handleSubmit} />
+      )}
     </>
   );
 };

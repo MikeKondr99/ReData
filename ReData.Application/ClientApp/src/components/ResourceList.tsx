@@ -1,71 +1,35 @@
-import { Grid, Loader, Stack, Text } from '@mantine/core';
-import React, { useEffect, useState } from 'react';
+import { Grid, Loader, Text } from '@mantine/core';
 import { useDocumentTitle } from '@mantine/hooks';
-import { getAllResources, deleteResource } from '../services/api';
-import ResourceListItem, { ResourceItem } from './ResourceListItem';
+import React from 'react';
+import { dataSourceApi } from '../app/services/dataSourceApi';
+import { IDataSource } from '../app/types';
+import ErrorAlert from './ErrorAlert';
+import ResourceListItem from './ResourceListItem';
 
 const ResourceList: React.FC = () => {
   useDocumentTitle('Resources - ReData');
+  const {
+    data: resources = [],
+    isLoading,
+    isFetching,
+    error,
+  } = dataSourceApi.useGetAllDataSourcesQuery('');
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<boolean>(false);
-  const [resources, setResources] = useState<ResourceItem[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const result = await getAllResources();
-        if (result) {
-          setResources(result);
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        setError(true);
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleDeleteResource = async (id: string) => {
-    try {
-      await deleteResource(id);
-      setResources((prevResources) =>
-        prevResources.filter((resource) => resource.id !== id),
-      );
-    } catch (err) {
-      console.error('Error deleting resource:', err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Stack>
-        <Text>Loading...</Text>
-        <Loader />
-      </Stack>
-    );
-  }
-
-  if (error) {
-    return <Text>Error :(</Text>;
-  }
+  const [removeDataSource] = dataSourceApi.useDeleteDataSourceMutation();
 
   return (
     <Grid>
-      {resources.length === 0 ? (
+      {isLoading && isFetching && <Loader />}
+      {error && <ErrorAlert message="error" />}
+
+      {resources === undefined ? (
         <Text>No resources found</Text>
       ) : (
-        resources.map((resource) => (
+        resources.map((resource: IDataSource) => (
           <ResourceListItem
             key={resource.id}
             resource={resource}
-            onDelete={handleDeleteResource}
+            remove={removeDataSource}
           />
         ))
       )}
