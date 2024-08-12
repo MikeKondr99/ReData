@@ -1,5 +1,16 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { IDataSource, INewDataSource } from '../types';
+import {
+  createApi,
+  fetchBaseQuery,
+  FetchBaseQueryError
+} from '@reduxjs/toolkit/query/react';
+import { extractErrorMessages } from '../../utils/serverErrorUtils';
+import {
+  ClientErrorResponse,
+  ClientUnhandledErrorResponse,
+  IDataSource,
+  INewDataSource,
+  ServerError,
+} from '../types';
 
 interface UpdateDataSourceParams {
   id: string;
@@ -25,25 +36,7 @@ export const dataSourceApi = createApi({
         method: 'POST',
         body: payload,
       }),
-      transformErrorResponse: (response) => {
-        const status = response.status;
-
-        if (status === 500) {
-          return {
-            status,
-            message: 'Failed to connect to the server.',
-          };
-        } else if (status === 503) {
-          const message = response.data.errors[0].message;
-
-          return {
-            status,
-            message: `${message}. Check the Host and Port fields.` || 'Error',
-          };
-        }
-
-        return response;
-      },
+      transformErrorResponse: handleTransformErrorResponse,
       invalidatesTags: ['DataSource'],
     }),
     updateDataSource: builder.mutation<IDataSource, UpdateDataSourceParams>({
@@ -52,6 +45,7 @@ export const dataSourceApi = createApi({
         method: 'PUT',
         body: rest,
       }),
+      transformErrorResponse: handleTransformErrorResponse,
       invalidatesTags: ['DataSource'],
     }),
     deleteDataSource: builder.mutation<IDataSource, string>({
@@ -63,3 +57,43 @@ export const dataSourceApi = createApi({
     }),
   }),
 });
+
+function handleTransformErrorResponse(
+  response: FetchBaseQueryError,
+): ClientErrorResponse {
+  const status = response.status;
+  const data = response.data as ServerError;
+
+  switch (status) {
+    case 400: {
+      const message = extractErrorMessages(data);
+
+      return {
+        status,
+        message,
+      };
+    }
+    case 500: {
+      return {
+        status,
+        message: 'Failed to connect to the server.',
+      };
+    }
+    case 503: {
+      const message = data.errors[0].message;
+
+      return {
+        status,
+        message: `${message}. Check the Host and Port fields.`,
+      };
+    }
+
+    default: {
+      return {
+        status,
+        message: `HTTP ${status}: Unhandled error.`,
+        error: data,
+      } as ClientUnhandledErrorResponse;
+    }
+  }
+}

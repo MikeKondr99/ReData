@@ -24,3 +24,25 @@ export interface INewDataSource {
     password?: string;
   };
 }
+
+interface ErrorDetail {
+  message: string;
+  metadata: {
+    [key: string]: string[];
+  };
+}
+
+interface ErrorResponse {
+  errors: ErrorDetail[];
+}
+
+export type ServerError = ErrorResponse;
+
+export interface ClientErrorResponse {
+  status: number;
+  message: string;
+}
+
+export interface ClientUnhandledErrorResponse extends ClientErrorResponse {
+  error: unknown;
+}

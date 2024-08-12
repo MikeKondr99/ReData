@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { dataSourceApi } from '../app/services/dataSourceApi';
 import ResourceForm from '../components/ResourceForm';
+import ErrorAlert from '../components/ErrorAlert';
 
 const EditResourcePage: React.FC = () => {
   useDocumentTitle('Edit resource - ReData');
@@ -24,7 +25,7 @@ const EditResourcePage: React.FC = () => {
 
   const { data, error, isLoading, isFetching } =
     dataSourceApi.useGetDataSourceByIdQuery(resourceId);
-  const [updateDataSource, { isLoading: isLoadingUpdate }] =
+  const [updateDataSource, { isLoading: isLoadingUpdate, error: errorUpdate }] =
     dataSourceApi.useUpdateDataSourceMutation();
 
   const form = useForm({
@@ -92,7 +93,7 @@ const EditResourcePage: React.FC = () => {
   if (error && error.status === 404)
     return (
       <Text>
-        Not found. <Link to="/resources">Back to Data Source list</Link>
+        Not found. <Link to="/datasource">Back to Data Source list</Link>
       </Text>
     );
 
@@ -124,6 +125,8 @@ const EditResourcePage: React.FC = () => {
       </Flex>
 
       <Divider mb="sm" />
+
+      {errorUpdate && <ErrorAlert message={errorUpdate.message} />}
 
       {isLoading && isFetching ? (
         <Box>

@@ -22,7 +22,7 @@ const ResourceList: React.FC = () => {
       {isLoading && isFetching && <Loader />}
       {error && <ErrorAlert message="error" />}
 
-      {resources === undefined ? (
+      {resources.length === 0 ? (
         <Text>No resources found</Text>
       ) : (
         resources.map((resource: IDataSource) => (
