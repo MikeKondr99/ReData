@@ -49,7 +49,7 @@ const ResourceListItem: React.FC<ResourceListItemProps> = ({
             </Box>
           </Flex>
           <Button.Group>
-            <Button onClick={() => navigate(`/resources/${resource.id}`)}>
+            <Button onClick={() => navigate(`/datasource/${resource.id}`)}>
               Edit
             </Button>
             <Button onClick={openDeleteModal} variant="filled" color="red">

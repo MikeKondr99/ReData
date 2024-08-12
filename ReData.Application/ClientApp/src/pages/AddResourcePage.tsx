@@ -57,7 +57,7 @@ const AddResourcePage: React.FC = () => {
     try {
       await createDataSource(values).unwrap();
 
-      navigate('/resources');
+      navigate('/datasource');
     } catch (error) {
       console.error('Error:', error);
     }

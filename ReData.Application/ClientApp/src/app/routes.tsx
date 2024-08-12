@@ -15,15 +15,15 @@ const routes = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: 'resources',
+        path: 'datasource',
         element: <ResourcesPage />,
       },
       {
-        path: 'resources/new',
+        path: 'datasource/new',
         element: <AddResourcePage />,
       },
       {
-        path: 'resources/:resourceId',
+        path: 'datasource/:resourceId',
         element: <EditResourcePage />,
       },
     ],

@@ -11,7 +11,7 @@ const ResourcesPage: React.FC = () => {
         <Title order={2}>Resources</Title>
 
         <Group>
-          <Button onClick={() => navigate('/resources/new')} size="compact-sm">
+          <Button onClick={() => navigate('/datasource/new')} size="compact-sm">
             Add new resource
           </Button>
         </Group>

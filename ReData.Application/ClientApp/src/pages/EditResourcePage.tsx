@@ -83,7 +83,7 @@ const EditResourcePage: React.FC = () => {
 
       await updateDataSource({ id: resourceId, rest: values }).unwrap();
 
-      navigate('/resources');
+      navigate('/datasource');
     } catch (error) {
       console.error('Error:', error);
     }
