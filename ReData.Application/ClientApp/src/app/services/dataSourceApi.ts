@@ -11,6 +11,7 @@ import {
   ServerError,
   UpdateDataSourceParams,
 } from '../types';
+import { removeExtraSpaces } from '../../utils/textUtils';
 
 export const dataSourceApi = createApi({
   reducerPath: 'dataSourceApi',
@@ -29,7 +30,11 @@ export const dataSourceApi = createApi({
       query: (payload) => ({
         url: '/datasource',
         method: 'POST',
-        body: payload,
+        body: {
+          ...payload,
+          name: removeExtraSpaces(payload.name as string),
+          description: removeExtraSpaces(payload.description as string),
+        },
       }),
       transformErrorResponse: handleTransformErrorResponse,
       invalidatesTags: ['DataSource'],
@@ -38,7 +43,11 @@ export const dataSourceApi = createApi({
       query: ({ id, rest }) => ({
         url: `/datasource/${id}`,
         method: 'PUT',
-        body: rest,
+        body: {
+          ...rest,
+          name: removeExtraSpaces(rest.name as string),
+          description: removeExtraSpaces(rest.description as string),
+        },
       }),
       transformErrorResponse: handleTransformErrorResponse,
       invalidatesTags: ['DataSource'],

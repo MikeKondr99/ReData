@@ -66,8 +66,8 @@ const AddResourcePage: React.FC = () => {
       setTimeout(() => {
         notifications.update({
           id: 'datasource',
-          title: 'Data source has been created',
-          message: 'Congrats.',
+          title: 'Data source created successfully',
+          message: 'The new data source has been added.',
           withCloseButton: true,
           position: 'top-right',
           color: 'green',
@@ -99,7 +99,7 @@ const AddResourcePage: React.FC = () => {
     if (isCreateError) {
       notifications.update({
         id: 'datasource',
-        title: 'Error creating the data source',
+        title: 'Error creating data source',
         message: 'Double-check the entered data and try again.',
         withCloseButton: true,
         position: 'top-right',

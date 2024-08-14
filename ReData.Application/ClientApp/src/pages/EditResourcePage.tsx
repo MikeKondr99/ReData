@@ -104,7 +104,7 @@ const EditResourcePage: React.FC = () => {
       setTimeout(() => {
         notifications.update({
           id: 'datasource',
-          title: 'Resource updated successfully',
+          title: 'Data source updated successfully',
           message: 'Your changes have been saved.',
           withCloseButton: true,
           position: 'top-right',
@@ -125,7 +125,7 @@ const EditResourcePage: React.FC = () => {
     if (isUpdateLoading) {
       notifications.show({
         id: 'datasource',
-        title: 'Updating resource',
+        title: 'Updating data source',
         message: 'Please wait until the request is processed.',
         withCloseButton: false,
         position: 'top-right',
@@ -137,26 +137,12 @@ const EditResourcePage: React.FC = () => {
     if (isUpdateError) {
       notifications.update({
         id: 'datasource',
-        title: 'Error updating resource',
+        title: 'Error updating data source',
         message: 'Please check the details and try again.',
         withCloseButton: true,
         position: 'top-right',
         color: 'red',
         icon: <IconExclamationMark />,
-        loading: false,
-        autoClose: 3000,
-      });
-    }
-
-    if (isUpdateSuccess) {
-      notifications.update({
-        id: 'datasource',
-        title: 'Resource updated successfully',
-        message: 'Your changes have been saved.',
-        withCloseButton: true,
-        position: 'top-right',
-        color: 'green',
-        icon: <IconCheck />,
         loading: false,
         autoClose: 3000,
       });
@@ -206,7 +192,9 @@ const EditResourcePage: React.FC = () => {
 
       <Divider mb="sm" />
 
-      {errorUpdate && <ErrorAlert error={errorUpdate as ClientErrorResponse} />}
+      {errorUpdate && (
+        <ErrorAlert mb={'1em'} error={errorUpdate as ClientErrorResponse} />
+      )}
 
       {isResourceLoading && isResourceFetching ? (
         <Box>
