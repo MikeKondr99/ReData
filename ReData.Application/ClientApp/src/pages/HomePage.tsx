@@ -14,7 +14,7 @@ const HomePage: React.FC = () => {
       <Divider mb="sm" />
 
       <Stack>
-        <Link to="/datasource">Resources</Link>
+        <Link to="/datasource">Data sources</Link>
       </Stack>
     </>
   );

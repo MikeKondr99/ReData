@@ -1,14 +1,4 @@
-import {
-  ActionIcon,
-  Box,
-  Button,
-  Divider,
-  Flex,
-  Group,
-  Loader,
-  Text,
-  Title,
-} from '@mantine/core';
+import { ActionIcon, Button, Divider, Flex, Group, Title } from '@mantine/core';
 import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -18,32 +8,25 @@ import {
   IconExclamationMark,
 } from '@tabler/icons-react';
 import { useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { dataSourceApi } from '../app/services/dataSourceApi';
 import { ClientErrorResponse } from '../app/types';
 import ErrorAlert from '../components/ErrorAlert';
-import ResourceForm from '../components/ResourceForm';
+import DataSourceForm from '../components/DataSourceForm';
 
-const EditResourcePage: React.FC = () => {
-  useDocumentTitle('Edit resource - ReData');
-  const { resourceId } = useParams();
+const AddDataSourcePage: React.FC = () => {
+  useDocumentTitle('New data source - ReData');
   const navigate = useNavigate();
 
-  const {
-    data: resource,
-    error: resourceError,
-    isLoading: isResourceLoading,
-    isFetching: isResourceFetching,
-  } = dataSourceApi.useGetDataSourceByIdQuery(resourceId as string);
   const [
-    updateDataSource,
+    createDataSource,
     {
-      isLoading: isUpdateLoading,
-      error: errorUpdate,
-      isSuccess: isUpdateSuccess,
-      isError: isUpdateError,
+      error: createError,
+      isLoading: isCreateLoading,
+      isError: isCreateError,
+      isSuccess: isCreateSuccess,
     },
-  ] = dataSourceApi.useUpdateDataSourceMutation();
+  ] = dataSourceApi.useCreateDataSourceMutation();
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -63,7 +46,7 @@ const EditResourcePage: React.FC = () => {
     validateInputOnChange: ['parameters.port'],
     validate: {
       name: hasLength({ min: 2 }, 'Name must have at least 2 letters'),
-      type: isNotEmpty('You need to select the type of resource'),
+      type: isNotEmpty('You need to select the type of data source'),
       parameters: {
         host: isNotEmpty('This field is required'),
         port: (value) =>
@@ -76,36 +59,15 @@ const EditResourcePage: React.FC = () => {
     },
   });
 
-  useEffect(() => {
-    if (resource) {
-      form.setValues({
-        name: resource.name || '',
-        description: resource.description || '',
-        type: resource.type || '',
-        parameters: {
-          host: resource.parameters?.host || '',
-          port: resource.parameters?.port || '5432',
-          database: resource.parameters?.database || '',
-          username: resource.parameters?.username || '',
-          password: resource.parameters?.password || '',
-        },
-      });
-    }
-  }, [resource]);
-
   const handleSubmit = async (values: typeof form.values) => {
     try {
-      if (!resourceId) {
-        throw new Error('Resource ID is required');
-      }
-
-      await updateDataSource({ id: resourceId, rest: values }).unwrap();
+      await createDataSource(values).unwrap();
 
       setTimeout(() => {
         notifications.update({
           id: 'datasource',
-          title: 'Data source updated successfully',
-          message: 'Your changes have been saved.',
+          title: 'Data source created successfully',
+          message: 'The new data source has been added.',
           withCloseButton: true,
           position: 'top-right',
           color: 'green',
@@ -122,11 +84,11 @@ const EditResourcePage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isUpdateLoading) {
+    if (isCreateLoading) {
       notifications.show({
         id: 'datasource',
-        title: 'Updating data source',
-        message: 'Please wait until the request is processed.',
+        title: 'Creating data source',
+        message: 'Wait until the request is processed. Do not close the page.',
         withCloseButton: false,
         position: 'top-right',
         loading: true,
@@ -134,11 +96,11 @@ const EditResourcePage: React.FC = () => {
       });
     }
 
-    if (isUpdateError) {
+    if (isCreateError) {
       notifications.update({
         id: 'datasource',
-        title: 'Error updating data source',
-        message: 'Please check the details and try again.',
+        title: 'Error creating data source',
+        message: 'Double-check the entered data and try again.',
         withCloseButton: true,
         position: 'top-right',
         color: 'red',
@@ -147,18 +109,7 @@ const EditResourcePage: React.FC = () => {
         autoClose: 3000,
       });
     }
-  }, [isUpdateLoading, isUpdateError, isUpdateSuccess]);
-
-  if (
-    resourceError &&
-    'status' in resourceError &&
-    resourceError.status === 404
-  )
-    return (
-      <Text>
-        Not found. <Link to="/datasource">Back to Data Source list</Link>
-      </Text>
-    );
+  }, [isCreateLoading, isCreateError]);
 
   return (
     <>
@@ -175,37 +126,30 @@ const EditResourcePage: React.FC = () => {
               stroke={2}
             />
           </ActionIcon>
-          <Title order={2}>Update resource</Title>
+          <Title order={2}>Configure new data source</Title>
         </Group>
 
         <Group align="center">
           <Button
             type="submit"
             size="compact-sm"
-            form="resource-form"
-            disabled={isUpdateLoading || isUpdateSuccess}
+            form="datasource-form"
+            disabled={isCreateLoading || isCreateSuccess}
           >
-            Update resource
+            Create data source
           </Button>
         </Group>
       </Flex>
 
       <Divider mb="sm" />
 
-      {errorUpdate && (
-        <ErrorAlert mb={'1em'} error={errorUpdate as ClientErrorResponse} />
+      {createError && (
+        <ErrorAlert mb={'1em'} error={createError as ClientErrorResponse} />
       )}
 
-      {isResourceLoading && isResourceFetching ? (
-        <Box>
-          <Loader />
-          <Text>Loading...</Text>
-        </Box>
-      ) : (
-        <ResourceForm isEditing form={form} onSubmit={handleSubmit} />
-      )}
+      <DataSourceForm form={form} onSubmit={handleSubmit} />
     </>
   );
 };
 
-export default EditResourcePage;
+export default AddDataSourcePage;

@@ -2,16 +2,16 @@ import { Grid, Loader, Text } from '@mantine/core';
 import { useDocumentTitle } from '@mantine/hooks';
 import React from 'react';
 import { dataSourceApi } from '../app/services/dataSourceApi';
-import { IDataSource } from '../app/types';
+import { ClientErrorResponse, IDataSource } from '../app/types';
 import ErrorAlert from './ErrorAlert';
-import ResourceListItem from './ResourceListItem';
+import DataSourceListItem from './DataSourceListItem';
 
-const ResourceList: React.FC = () => {
-  useDocumentTitle('Resources - ReData');
+const DataSourceList: React.FC = () => {
+  useDocumentTitle('Data sources - ReData');
 
   const [removeDataSource] = dataSourceApi.useDeleteDataSourceMutation();
   const {
-    data: resources = [],
+    data: datasources = [],
     isLoading,
     isFetching,
     error,
@@ -20,15 +20,15 @@ const ResourceList: React.FC = () => {
   return (
     <Grid>
       {isLoading && isFetching && <Loader />}
-      {error && <ErrorAlert message="error" />}
+      {error && <ErrorAlert error={error as ClientErrorResponse} />}
 
-      {!isLoading && resources.length === 0 ? (
-        <Text>No resources found</Text>
+      {!isLoading && datasources.length === 0 ? (
+        <Text>No data sources found</Text>
       ) : (
-        resources.map((resource: IDataSource) => (
-          <ResourceListItem
-            key={resource.id}
-            resource={resource}
+        datasources.map((datasource: IDataSource) => (
+          <DataSourceListItem
+            key={datasource.id}
+            datasource={datasource}
             remove={removeDataSource}
           />
         ))
@@ -37,4 +37,4 @@ const ResourceList: React.FC = () => {
   );
 };
 
-export default ResourceList;
+export default DataSourceList;

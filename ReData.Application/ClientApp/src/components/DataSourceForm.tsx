@@ -20,7 +20,7 @@ const data: ComboboxData = [
   },
 ];
 
-interface ResourceFormProps {
+interface DataSourceFormProps {
   isEditing?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: any;
@@ -28,11 +28,11 @@ interface ResourceFormProps {
   form: any;
 }
 
-const ResourceForm: React.FC<ResourceFormProps> = (props) => {
+const DataSourceForm: React.FC<DataSourceFormProps> = (props) => {
   const { isEditing = false, form, onSubmit } = props;
 
   return (
-    <form id="resource-form" onSubmit={form.onSubmit(onSubmit)}>
+    <form id="datasource-form" onSubmit={form.onSubmit(onSubmit)}>
       <Stack gap="0.5em" mb="md">
         <Title order={3} size="1em" fw={500}>
           General
@@ -47,13 +47,13 @@ const ResourceForm: React.FC<ResourceFormProps> = (props) => {
         />
         <TextInput
           label="Description"
-          placeholder="Enter a short description for this resource"
+          placeholder="Enter a short description for this data source"
           key={form.key('description')}
           {...form.getInputProps('description')}
         />
         {!isEditing && (
           <Select
-            label="Resource type"
+            label="Data source type"
             placeholder="Start typing to search"
             data={data}
             searchable
@@ -112,4 +112,4 @@ const ResourceForm: React.FC<ResourceFormProps> = (props) => {
   );
 };
 
-export default ResourceForm;
+export default DataSourceForm;

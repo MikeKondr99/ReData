@@ -1,9 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/Layout';
-import AddResourcePage from '../pages/AddResourcePage';
-import EditResourcePage from '../pages/EditResourcePage';
+import AddDataSourcePage from '../pages/AddDataSourcePage';
+import EditDataSourcePage from '../pages/EditDataSourcePage';
 import HomePage from '../pages/HomePage';
-import ResourcesPage from '../pages/ResourcesPage';
+import DataSourcesPage from '../pages/DataSourcesPage';
 
 const routes = createBrowserRouter([
   {
@@ -16,15 +16,15 @@ const routes = createBrowserRouter([
       },
       {
         path: 'datasource',
-        element: <ResourcesPage />,
+        element: <DataSourcesPage />,
       },
       {
         path: 'datasource/new',
-        element: <AddResourcePage />,
+        element: <AddDataSourcePage />,
       },
       {
-        path: 'datasource/:resourceId',
-        element: <EditResourcePage />,
+        path: 'datasource/:datasourceId',
+        element: <EditDataSourcePage />,
       },
     ],
   },

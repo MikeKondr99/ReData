@@ -1,25 +1,25 @@
 import { Button, Flex, Group, Title } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import ResourceList from '../components/ResourceList';
+import DataSourceList from '../components/DataSourceList';
 
-const ResourcesPage: React.FC = () => {
+const DataSourcesPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <>
       <Flex align="center" justify="space-between" mt="lg" mb="lg">
-        <Title order={2}>Resources</Title>
+        <Title order={2}>Data sources</Title>
 
         <Group>
           <Button onClick={() => navigate('/datasource/new')} size="compact-sm">
-            Add new resource
+            Add new data source
           </Button>
         </Group>
       </Flex>
 
-      <ResourceList />
+      <DataSourceList />
     </>
   );
 };
 
-export default ResourcesPage;
+export default DataSourcesPage;

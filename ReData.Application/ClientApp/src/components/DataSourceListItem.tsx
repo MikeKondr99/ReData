@@ -4,52 +4,52 @@ import { useNavigate } from 'react-router-dom';
 import { IDataSource } from '../app/types';
 import { getIcon } from '../utils/iconUtils';
 
-interface ResourceListItemProps {
-  resource: IDataSource;
+interface DataSourceListItemProps {
+  datasource: IDataSource;
   remove: (id: string) => void;
 }
 
-const ResourceListItem: React.FC<ResourceListItemProps> = ({
-  resource,
+const DataSourceListItem: React.FC<DataSourceListItemProps> = ({
+  datasource,
   remove,
 }) => {
   const navigate = useNavigate();
 
   const openDeleteModal = () =>
     modals.openConfirmModal({
-      title: 'Delete resource',
+      title: 'Delete data source',
       children: (
         <Text size="sm">
-          Are you sure you want to delete the resource?
+          Are you sure you want to delete this data source?
           <br />
           This action cannot be undone.
         </Text>
       ),
       labels: { confirm: 'Delete', cancel: 'Cancel' },
       confirmProps: { color: 'red' },
-      onConfirm: () => remove(resource.id),
+      onConfirm: () => remove(datasource.id),
     });
 
   return (
-    <Grid.Col key={resource.id}>
+    <Grid.Col key={datasource.id}>
       <Card shadow="sm" padding="lg">
         <Flex align="center" justify="space-between">
           <Flex align="center">
             <Image
-              src={getIcon(resource.type)}
+              src={getIcon(datasource.type)}
               width={40}
               height={40}
-              alt={resource.type}
+              alt={datasource.type}
             />
             <Box>
-              <Text>{resource.name}</Text>
+              <Text>{datasource.name}</Text>
               <Text size="sm" color="dimmed">
-                {resource.description}
+                {datasource.description}
               </Text>
             </Box>
           </Flex>
           <Button.Group>
-            <Button onClick={() => navigate(`/datasource/${resource.id}`)}>
+            <Button onClick={() => navigate(`/datasource/${datasource.id}`)}>
               Edit
             </Button>
             <Button onClick={openDeleteModal} variant="filled" color="red">
@@ -62,4 +62,4 @@ const ResourceListItem: React.FC<ResourceListItemProps> = ({
   );
 };
 
-export default ResourceListItem;
+export default DataSourceListItem;
