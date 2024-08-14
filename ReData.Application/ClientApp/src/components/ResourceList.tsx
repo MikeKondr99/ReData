@@ -8,6 +8,8 @@ import ResourceListItem from './ResourceListItem';
 
 const ResourceList: React.FC = () => {
   useDocumentTitle('Resources - ReData');
+
+  const [removeDataSource] = dataSourceApi.useDeleteDataSourceMutation();
   const {
     data: resources = [],
     isLoading,
@@ -15,14 +17,12 @@ const ResourceList: React.FC = () => {
     error,
   } = dataSourceApi.useGetAllDataSourcesQuery('');
 
-  const [removeDataSource] = dataSourceApi.useDeleteDataSourceMutation();
-
   return (
     <Grid>
       {isLoading && isFetching && <Loader />}
       {error && <ErrorAlert message="error" />}
 
-      {resources.length === 0 ? (
+      {!isLoading && resources.length === 0 ? (
         <Text>No resources found</Text>
       ) : (
         resources.map((resource: IDataSource) => (

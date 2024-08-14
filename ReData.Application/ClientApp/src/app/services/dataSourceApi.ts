@@ -1,21 +1,16 @@
 import {
   createApi,
   fetchBaseQuery,
-  FetchBaseQueryError
+  FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react';
 import { extractErrorMessages } from '../../utils/serverErrorUtils';
 import {
   ClientErrorResponse,
-  ClientUnhandledErrorResponse,
   IDataSource,
   INewDataSource,
   ServerError,
+  UpdateDataSourceParams,
 } from '../types';
-
-interface UpdateDataSourceParams {
-  id: string;
-  rest: Partial<IDataSource>;
-}
 
 export const dataSourceApi = createApi({
   reducerPath: 'dataSourceApi',
@@ -93,7 +88,7 @@ function handleTransformErrorResponse(
         status,
         message: `HTTP ${status}: Unhandled error.`,
         error: data,
-      } as ClientUnhandledErrorResponse;
+      } as ClientErrorResponse;
     }
   }
 }

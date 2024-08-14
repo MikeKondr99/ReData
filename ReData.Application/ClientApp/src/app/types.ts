@@ -3,26 +3,27 @@ export interface IDataSource {
   name: string;
   description: string;
   type: string;
-  parameters: {
-    host: string;
-    port: string;
-    database?: string;
-    username?: string;
-    password?: string;
-  };
+  parameters: DataSourceParameters;
 }
 
 export interface INewDataSource {
   name: string;
   description: string;
   type: string;
-  parameters: {
-    host: string;
-    port: string;
-    database?: string;
-    username?: string;
-    password?: string;
-  };
+  parameters: DataSourceParameters;
+}
+
+interface DataSourceParameters {
+  host: string;
+  port: string;
+  database?: string;
+  username?: string;
+  password?: string;
+}
+
+export interface UpdateDataSourceParams {
+  id: string;
+  rest: Partial<IDataSource>;
 }
 
 interface ErrorDetail {
@@ -41,8 +42,5 @@ export type ServerError = ErrorResponse;
 export interface ClientErrorResponse {
   status: number;
   message: string;
-}
-
-export interface ClientUnhandledErrorResponse extends ClientErrorResponse {
-  error: unknown;
+  error?: unknown;
 }

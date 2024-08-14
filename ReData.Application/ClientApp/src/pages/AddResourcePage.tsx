@@ -1,17 +1,16 @@
-import {
-  ActionIcon,
-  Button,
-  Divider,
-  Flex,
-  Group,
-  Text,
-  Title,
-} from '@mantine/core';
+import { ActionIcon, Button, Divider, Flex, Group, Title } from '@mantine/core';
 import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
-import { IconChevronLeft } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+import {
+  IconCheck,
+  IconChevronLeft,
+  IconExclamationMark,
+} from '@tabler/icons-react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dataSourceApi } from '../app/services/dataSourceApi';
+import { ClientErrorResponse } from '../app/types';
 import ErrorAlert from '../components/ErrorAlert';
 import ResourceForm from '../components/ResourceForm';
 
@@ -19,8 +18,15 @@ const AddResourcePage: React.FC = () => {
   useDocumentTitle('New resource - ReData');
   const navigate = useNavigate();
 
-  const [createDataSource, { error, isLoading }] =
-    dataSourceApi.useCreateDataSourceMutation();
+  const [
+    createDataSource,
+    {
+      error: createError,
+      isLoading: isCreateLoading,
+      isError: isCreateError,
+      isSuccess: isCreateSuccess,
+    },
+  ] = dataSourceApi.useCreateDataSourceMutation();
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -57,11 +63,53 @@ const AddResourcePage: React.FC = () => {
     try {
       await createDataSource(values).unwrap();
 
-      navigate('/datasource');
+      setTimeout(() => {
+        notifications.update({
+          id: 'datasource',
+          title: 'Data source has been created',
+          message: 'Congrats.',
+          withCloseButton: true,
+          position: 'top-right',
+          color: 'green',
+          icon: <IconCheck />,
+          loading: false,
+          autoClose: 3000,
+        });
+
+        navigate('/datasource');
+      }, 1000);
     } catch (error) {
       console.error('Error:', error);
     }
   };
+
+  useEffect(() => {
+    if (isCreateLoading) {
+      notifications.show({
+        id: 'datasource',
+        title: 'Creating data source',
+        message: 'Wait until the request is processed. Do not close the page.',
+        withCloseButton: false,
+        position: 'top-right',
+        loading: true,
+        autoClose: false,
+      });
+    }
+
+    if (isCreateError) {
+      notifications.update({
+        id: 'datasource',
+        title: 'Error creating the data source',
+        message: 'Double-check the entered data and try again.',
+        withCloseButton: true,
+        position: 'top-right',
+        color: 'red',
+        icon: <IconExclamationMark />,
+        loading: false,
+        autoClose: 3000,
+      });
+    }
+  }, [isCreateLoading, isCreateError]);
 
   return (
     <>
@@ -82,7 +130,12 @@ const AddResourcePage: React.FC = () => {
         </Group>
 
         <Group align="center">
-          <Button type="submit" size="compact-sm" form="resource-form">
+          <Button
+            type="submit"
+            size="compact-sm"
+            form="resource-form"
+            disabled={isCreateLoading || isCreateSuccess}
+          >
             Create resource
           </Button>
         </Group>
@@ -90,9 +143,9 @@ const AddResourcePage: React.FC = () => {
 
       <Divider mb="sm" />
 
-      {error && <ErrorAlert message={error.message} />}
-
-      {isLoading && <Text>sending</Text>}
+      {createError && (
+        <ErrorAlert mb={'1em'} error={createError as ClientErrorResponse} />
+      )}
 
       <ResourceForm form={form} onSubmit={handleSubmit} />
     </>

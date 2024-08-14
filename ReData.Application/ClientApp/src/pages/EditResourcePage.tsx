@@ -11,22 +11,39 @@ import {
 } from '@mantine/core';
 import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
-import { IconChevronLeft } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+import {
+  IconCheck,
+  IconChevronLeft,
+  IconExclamationMark,
+} from '@tabler/icons-react';
 import { useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { dataSourceApi } from '../app/services/dataSourceApi';
-import ResourceForm from '../components/ResourceForm';
+import { ClientErrorResponse } from '../app/types';
 import ErrorAlert from '../components/ErrorAlert';
+import ResourceForm from '../components/ResourceForm';
 
 const EditResourcePage: React.FC = () => {
   useDocumentTitle('Edit resource - ReData');
   const { resourceId } = useParams();
   const navigate = useNavigate();
 
-  const { data, error, isLoading, isFetching } =
-    dataSourceApi.useGetDataSourceByIdQuery(resourceId);
-  const [updateDataSource, { isLoading: isLoadingUpdate, error: errorUpdate }] =
-    dataSourceApi.useUpdateDataSourceMutation();
+  const {
+    data: resource,
+    error: resourceError,
+    isLoading: isResourceLoading,
+    isFetching: isResourceFetching,
+  } = dataSourceApi.useGetDataSourceByIdQuery(resourceId as string);
+  const [
+    updateDataSource,
+    {
+      isLoading: isUpdateLoading,
+      error: errorUpdate,
+      isSuccess: isUpdateSuccess,
+      isError: isUpdateError,
+    },
+  ] = dataSourceApi.useUpdateDataSourceMutation();
 
   const form = useForm({
     mode: 'uncontrolled',
@@ -60,21 +77,21 @@ const EditResourcePage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (data) {
+    if (resource) {
       form.setValues({
-        name: data.name || '',
-        description: data.description || '',
-        type: data.type || '',
+        name: resource.name || '',
+        description: resource.description || '',
+        type: resource.type || '',
         parameters: {
-          host: data.parameters?.host || '',
-          port: data.parameters?.port || '5432',
-          database: data.parameters?.database || '',
-          username: data.parameters?.username || '',
-          password: data.parameters?.password || '',
+          host: resource.parameters?.host || '',
+          port: resource.parameters?.port || '5432',
+          database: resource.parameters?.database || '',
+          username: resource.parameters?.username || '',
+          password: resource.parameters?.password || '',
         },
       });
     }
-  }, [data]);
+  }, [resource]);
 
   const handleSubmit = async (values: typeof form.values) => {
     try {
@@ -84,13 +101,73 @@ const EditResourcePage: React.FC = () => {
 
       await updateDataSource({ id: resourceId, rest: values }).unwrap();
 
-      navigate('/datasource');
+      setTimeout(() => {
+        notifications.update({
+          id: 'datasource',
+          title: 'Resource updated successfully',
+          message: 'Your changes have been saved.',
+          withCloseButton: true,
+          position: 'top-right',
+          color: 'green',
+          icon: <IconCheck />,
+          loading: false,
+          autoClose: 3000,
+        });
+
+        navigate('/datasource');
+      }, 1000);
     } catch (error) {
       console.error('Error:', error);
     }
   };
 
-  if (error && error.status === 404)
+  useEffect(() => {
+    if (isUpdateLoading) {
+      notifications.show({
+        id: 'datasource',
+        title: 'Updating resource',
+        message: 'Please wait until the request is processed.',
+        withCloseButton: false,
+        position: 'top-right',
+        loading: true,
+        autoClose: false,
+      });
+    }
+
+    if (isUpdateError) {
+      notifications.update({
+        id: 'datasource',
+        title: 'Error updating resource',
+        message: 'Please check the details and try again.',
+        withCloseButton: true,
+        position: 'top-right',
+        color: 'red',
+        icon: <IconExclamationMark />,
+        loading: false,
+        autoClose: 3000,
+      });
+    }
+
+    if (isUpdateSuccess) {
+      notifications.update({
+        id: 'datasource',
+        title: 'Resource updated successfully',
+        message: 'Your changes have been saved.',
+        withCloseButton: true,
+        position: 'top-right',
+        color: 'green',
+        icon: <IconCheck />,
+        loading: false,
+        autoClose: 3000,
+      });
+    }
+  }, [isUpdateLoading, isUpdateError, isUpdateSuccess]);
+
+  if (
+    resourceError &&
+    'status' in resourceError &&
+    resourceError.status === 404
+  )
     return (
       <Text>
         Not found. <Link to="/datasource">Back to Data Source list</Link>
@@ -116,9 +193,12 @@ const EditResourcePage: React.FC = () => {
         </Group>
 
         <Group align="center">
-          {isLoadingUpdate && <Text>sending</Text>}
-
-          <Button type="submit" size="compact-sm" form="resource-form">
+          <Button
+            type="submit"
+            size="compact-sm"
+            form="resource-form"
+            disabled={isUpdateLoading || isUpdateSuccess}
+          >
             Update resource
           </Button>
         </Group>
@@ -126,9 +206,9 @@ const EditResourcePage: React.FC = () => {
 
       <Divider mb="sm" />
 
-      {errorUpdate && <ErrorAlert message={errorUpdate.message} />}
+      {errorUpdate && <ErrorAlert error={errorUpdate as ClientErrorResponse} />}
 
-      {isLoading && isFetching ? (
+      {isResourceLoading && isResourceFetching ? (
         <Box>
           <Loader />
           <Text>Loading...</Text>
