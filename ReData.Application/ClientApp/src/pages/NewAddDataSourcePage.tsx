@@ -27,7 +27,7 @@ const NewAddDataSourcePage: React.FC = () => {
         </Group>
 
         <Group align="center">
-          <Button type="submit" size="compact-sm" form="datasource-form" disabled>
+          <Button type="submit" size="compact-sm" form="new-datasource-form">
             Create data source
           </Button>
         </Group>

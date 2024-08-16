@@ -1,5 +1,15 @@
-import { Button, Flex, Select, TextInput, Title } from '@mantine/core';
+import {
+  Divider,
+  FileInput,
+  Flex,
+  PasswordInput,
+  Select,
+  Stack,
+  TextInput,
+  Title,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { IconFile } from '@tabler/icons-react';
 
 interface Field {
   name: string;
@@ -8,31 +18,51 @@ interface Field {
   placeholder?: string;
   required?: boolean;
   recommended?: boolean;
-  defaultValue?: string | number;
+  defaultValue?: string | number | null;
+  mediaType?: string;
 }
 
 type DataSourceType = 'PostgreSQL' | 'CSV' | 'MongoDB';
 
 const dataSourceFields: Record<DataSourceType, Field[]> = {
   PostgreSQL: [
-    { name: 'host', label: 'Host', type: 'text', required: true },
+    {
+      name: 'host',
+      label: 'Host',
+      type: 'text',
+      required: true,
+    },
     {
       name: 'port',
       label: 'Port',
       type: 'number',
       required: true,
       defaultValue: 5432,
+      placeholder: '5432',
     },
-    { name: 'database', label: 'Database', type: 'text', recommended: true },
-    { name: 'user', label: 'Username', type: 'text', recommended: true },
+    {
+      name: 'database',
+      label: 'Database',
+      type: 'text',
+      placeholder: 'postgres',
+    },
+    { name: 'user', label: 'Username', type: 'text', placeholder: 'postgres' },
     {
       name: 'password',
       label: 'Password',
       type: 'password',
-      recommended: true,
+      placeholder: 'postgres',
     },
   ],
-  CSV: [{ name: 'file', label: 'File', type: 'file', required: true }],
+  CSV: [
+    {
+      name: 'file',
+      label: 'File',
+      type: 'file',
+      required: true,
+      mediaType: 'text/csv',
+    },
+  ],
   MongoDB: [
     { name: 'host', label: 'Host', type: 'text', required: true },
     {
@@ -55,10 +85,10 @@ interface FormValues {
 }
 
 interface Parameters {
-  [key: string]: string | number;
+  [key: string]: string | number | unknown;
 }
 
-const DataSourceForm = () => {
+const DataSourceForm: React.FC = () => {
   const initialValues = {
     name: '',
     description: '',
@@ -71,6 +101,8 @@ const DataSourceForm = () => {
     initialValues,
   });
 
+  const currentType = form.getValues().type;
+
   const handleTypeChange = (value: string | null) => {
     form.setFieldValue('type', value as DataSourceType);
 
@@ -80,7 +112,7 @@ const DataSourceForm = () => {
 
       if (fields) {
         fields.forEach((field) => {
-          newParameters[field.name] = field.defaultValue || '';
+          newParameters[field.name] = field.defaultValue || null;
         });
       }
 
@@ -95,35 +127,107 @@ const DataSourceForm = () => {
 
   const handleSubmit = (values: FormValues) => {
     console.log(values);
-
-    console.log(form.key);
   };
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <Select
-        {...form.getInputProps('type')}
-        label="Data source type"
-        placeholder="Start typing to search"
-        searchable
-        data={Object.keys(dataSourceFields)}
-        onChange={handleTypeChange}
-      />
+    <form id="new-datasource-form" onSubmit={form.onSubmit(handleSubmit)}>
+      <Stack gap="0.5em" mb="md">
+        <Title order={3} size="1em" fw={500}>
+          General
+        </Title>
 
-      <Title order={3}>Rendered inputs</Title>
+        <TextInput
+          {...form.getInputProps('name')}
+          key={form.key('name')}
+          label="Name"
+          placeholder='i.e. "UsersDB (readonly)" or "Internal Admin API"'
+          required
+        />
+        <TextInput
+          {...form.getInputProps('description')}
+          key={form.key('description')}
+          label="Description"
+          placeholder="Enter a short description for this data source"
+        />
+        <Select
+          {...form.getInputProps('type')}
+          label="Data source type"
+          placeholder="Start typing to search"
+          searchable
+          required
+          data={Object.keys(dataSourceFields)}
+          onChange={handleTypeChange}
+        />
+      </Stack>
+      {currentType && (
+        <>
+          <Divider mb="md" />
+          <Stack gap="0.5em" mb="md">
+            <Title order={3} size="1em" fw={500}>
+              Required parameters
+            </Title>
 
-      <Flex direction={'column'}>
-        {form.getValues().type &&
-          dataSourceFields[form.getValues().type].map((field) => (
-            <TextInput
-              {...form.getInputProps(`parameters.${field.name}`)}
-              key={`${form.getValues().type}-${field.name}`}
-              label={field.label}
-            />
-          ))}
-      </Flex>
+            <Flex direction={'column'}>
+              {dataSourceFields[currentType].map((field) => {
+                if (!field.required) return null;
 
-      <Button type="submit">Submit</Button>
+                switch (field.type) {
+                  case 'number':
+                  case 'text': {
+                    return (
+                      <TextInput
+                        {...form.getInputProps(`parameters.${field.name}`)}
+                        key={`${currentType}-${field.name}`}
+                        label={field.label}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    );
+                  }
+                  case 'file': {
+                    return (
+                      <FileInput
+                        {...form.getInputProps(`parameters.${field.name}`)}
+                        key={`${currentType}-${field.name}`}
+                        label={field.label}
+                        required={field.required}
+                        accept={field.mediaType}
+                        placeholder="CSV-file with data"
+                        leftSectionPointerEvents="none"
+                        leftSection={<IconFile />}
+                      />
+                    );
+                  }
+                  case 'password': {
+                    return (
+                      <PasswordInput
+                        {...form.getInputProps(`parameters.${field.name}`)}
+                        key={`${currentType}-${field.name}`}
+                        label={field.label}
+                        placeholder="••••••••"
+                        required={field.required}
+                      />
+                    );
+                  }
+                }
+              })}
+            </Flex>
+          </Stack>
+        </>
+      )}
+
+      {/* Checking that there are no objects in the array without the required key */}
+      {currentType &&
+      dataSourceFields[currentType].every((field) => field.required) ? null : (
+        <>
+          <Divider mb="md" />
+          <Stack gap="0.5em" mb="md">
+            <Title order={3} size="1em" fw={500}>
+              Recommended parameters
+            </Title>
+          </Stack>
+        </>
+      )}
     </form>
   );
 };
