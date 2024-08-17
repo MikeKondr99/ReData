@@ -1,90 +1,23 @@
 import {
+  Box,
+  Button,
   FileInput,
+  Group,
+  MultiSelect,
   PasswordInput,
   Select,
-  Text,
   TextInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconFile } from '@tabler/icons-react';
+import { useState } from 'react';
+import dataSourceFields, {
+  DataSourceType,
+  DataSourceConfigField as Field,
+  DataSourceFormValues as FormValues,
+  DataSourceParameters as Parameters,
+} from '../configs/dataSourceConfig';
 import FieldsBlock from './FieldsBlock';
-
-interface Field {
-  name: string;
-  label: string;
-  type: string;
-  placeholder?: string;
-  required?: boolean;
-  recommended?: boolean;
-  defaultValue?: string | number | null;
-  mediaType?: string;
-}
-
-type DataSourceType = 'PostgreSQL' | 'CSV' | 'MongoDB';
-
-const dataSourceFields: Record<DataSourceType, Field[]> = {
-  PostgreSQL: [
-    {
-      name: 'host',
-      label: 'Host',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'port',
-      label: 'Port',
-      type: 'number',
-      required: true,
-      defaultValue: 5432,
-      placeholder: '5432',
-    },
-    {
-      name: 'database',
-      label: 'Database',
-      type: 'text',
-      placeholder: 'postgres',
-    },
-    { name: 'user', label: 'Username', type: 'text', placeholder: 'postgres' },
-    {
-      name: 'password',
-      label: 'Password',
-      type: 'password',
-      placeholder: 'postgres',
-    },
-  ],
-  CSV: [
-    {
-      name: 'file',
-      label: 'File',
-      type: 'file',
-      required: true,
-      mediaType: 'text/csv',
-    },
-  ],
-  MongoDB: [
-    { name: 'host', label: 'Host', type: 'text', required: true },
-    {
-      name: 'port',
-      label: 'Port',
-      type: 'number',
-      required: true,
-      defaultValue: 27017,
-    },
-    { name: 'user', label: 'Username', type: 'text', required: true },
-    { name: 'password', label: 'Password', type: 'password', required: true },
-  ],
-};
-
-interface FormValues {
-  name: string;
-  description: string;
-  type: DataSourceType | null;
-  parameters: Parameters;
-}
-
-interface Parameters {
-  [key: string]: string | number | unknown;
-}
 
 const DataSourceForm: React.FC = () => {
   const initialValues = {
@@ -99,6 +32,7 @@ const DataSourceForm: React.FC = () => {
     initialValues,
   });
 
+  const [selectedParameters, setSelectedParameters] = useState<string[]>([]);
   const currentType = form.getValues().type;
 
   const handleTypeChange = (value: string | null) => {
@@ -114,17 +48,66 @@ const DataSourceForm: React.FC = () => {
         });
       }
 
-      console.log(dataSourceFields[value as DataSourceType]);
-
       form.setFieldValue('parameters', newParameters);
+      setSelectedParameters([]);
     } else {
       form.setFieldValue('type', null);
       form.setFieldValue('parameters', {});
+      setSelectedParameters([]);
     }
+  };
+
+  const handleRemoveParameter = (parameter: string) => {
+    setSelectedParameters((prev) => prev.filter((p) => p !== parameter));
+    form.setFieldValue(`parameters.${parameter}`, null);
   };
 
   const handleSubmit = (values: FormValues) => {
     console.log(values);
+  };
+
+  const renderField = (field: Field) => {
+    const commonProps = {
+      ...form.getInputProps(`parameters.${field.name}`),
+      label: field.label,
+      required: field.required,
+    };
+
+    switch (field.type) {
+      case 'number':
+      case 'text':
+        return (
+          <TextInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            placeholder={field.placeholder}
+            flex={1}
+          />
+        );
+      case 'file':
+        return (
+          <FileInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            accept={field.mediaType}
+            placeholder="CSV-file with data"
+            leftSectionPointerEvents="none"
+            leftSection={<IconFile />}
+            flex={1}
+          />
+        );
+      case 'password':
+        return (
+          <PasswordInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            placeholder="••••••••"
+            flex={1}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -132,14 +115,12 @@ const DataSourceForm: React.FC = () => {
       <FieldsBlock label="General">
         <TextInput
           {...form.getInputProps('name')}
-          key={form.key('name')}
           label="Name"
           placeholder='i.e. "UsersDB (readonly)" or "Internal Admin API"'
           required
         />
         <TextInput
           {...form.getInputProps('description')}
-          key={form.key('description')}
           label="Description"
           placeholder="Enter a short description for this data source"
         />
@@ -159,59 +140,47 @@ const DataSourceForm: React.FC = () => {
           {dataSourceFields[currentType].map((field) => {
             if (!field.required) return null;
 
-            switch (field.type) {
-              case 'number':
-              case 'text': {
-                return (
-                  <TextInput
-                    {...form.getInputProps(`parameters.${field.name}`)}
-                    key={`${currentType}-${field.name}`}
-                    label={field.label}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
-                );
-              }
-              case 'file': {
-                return (
-                  <FileInput
-                    {...form.getInputProps(`parameters.${field.name}`)}
-                    key={`${currentType}-${field.name}`}
-                    label={field.label}
-                    required={field.required}
-                    accept={field.mediaType}
-                    placeholder="CSV-file with data"
-                    leftSectionPointerEvents="none"
-                    leftSection={<IconFile />}
-                  />
-                );
-              }
-              case 'password': {
-                return (
-                  <PasswordInput
-                    {...form.getInputProps(`parameters.${field.name}`)}
-                    key={`${currentType}-${field.name}`}
-                    label={field.label}
-                    placeholder="••••••••"
-                    required={field.required}
-                  />
-                );
-              }
-            }
+            return renderField(field);
           })}
         </FieldsBlock>
       )}
 
-      {/* Checking that there are no objects in the array without the required key */}
       {currentType ? (
         dataSourceFields[currentType].every(
           (field) => field.required,
         ) ? null : (
           <FieldsBlock label="Recommended parameters" dividerBefore>
-            <Text>Current type: {currentType}</Text>
+            <MultiSelect
+              label="Select parameters to add"
+              placeholder="Select parameters"
+              data={dataSourceFields[currentType]
+                .filter((field) => !field.required)
+                .map((field) => ({ value: field.name, label: field.label }))}
+              value={selectedParameters}
+              onChange={setSelectedParameters}
+              searchable
+              clearable
+            />
+
+            {dataSourceFields[currentType]
+              .filter((field) => selectedParameters.includes(field.name))
+              .map((parameter) => (
+                <Group key={parameter.name} mt="xs">
+                  {renderField(parameter)}
+                  <Button
+                    variant="outline"
+                    color="red"
+                    onClick={() => handleRemoveParameter(parameter.name)}
+                  >
+                    Remove
+                  </Button>
+                </Group>
+              ))}
           </FieldsBlock>
         )
       ) : null}
+
+      <Box style={{ marginBottom: '150px' }} />
     </form>
   );
 };
