@@ -1,15 +1,13 @@
 import {
-  Divider,
   FileInput,
-  Flex,
   PasswordInput,
   Select,
-  Stack,
+  Text,
   TextInput,
-  Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconFile } from '@tabler/icons-react';
+import FieldsBlock from './FieldsBlock';
 
 interface Field {
   name: string;
@@ -131,11 +129,7 @@ const DataSourceForm: React.FC = () => {
 
   return (
     <form id="new-datasource-form" onSubmit={form.onSubmit(handleSubmit)}>
-      <Stack gap="0.5em" mb="md">
-        <Title order={3} size="1em" fw={500}>
-          General
-        </Title>
-
+      <FieldsBlock label="General">
         <TextInput
           {...form.getInputProps('name')}
           key={form.key('name')}
@@ -158,76 +152,66 @@ const DataSourceForm: React.FC = () => {
           data={Object.keys(dataSourceFields)}
           onChange={handleTypeChange}
         />
-      </Stack>
+      </FieldsBlock>
+
       {currentType && (
-        <>
-          <Divider mb="md" />
-          <Stack gap="0.5em" mb="md">
-            <Title order={3} size="1em" fw={500}>
-              Required parameters
-            </Title>
+        <FieldsBlock label="Required parameters" dividerBefore>
+          {dataSourceFields[currentType].map((field) => {
+            if (!field.required) return null;
 
-            <Flex direction={'column'}>
-              {dataSourceFields[currentType].map((field) => {
-                if (!field.required) return null;
-
-                switch (field.type) {
-                  case 'number':
-                  case 'text': {
-                    return (
-                      <TextInput
-                        {...form.getInputProps(`parameters.${field.name}`)}
-                        key={`${currentType}-${field.name}`}
-                        label={field.label}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                      />
-                    );
-                  }
-                  case 'file': {
-                    return (
-                      <FileInput
-                        {...form.getInputProps(`parameters.${field.name}`)}
-                        key={`${currentType}-${field.name}`}
-                        label={field.label}
-                        required={field.required}
-                        accept={field.mediaType}
-                        placeholder="CSV-file with data"
-                        leftSectionPointerEvents="none"
-                        leftSection={<IconFile />}
-                      />
-                    );
-                  }
-                  case 'password': {
-                    return (
-                      <PasswordInput
-                        {...form.getInputProps(`parameters.${field.name}`)}
-                        key={`${currentType}-${field.name}`}
-                        label={field.label}
-                        placeholder="••••••••"
-                        required={field.required}
-                      />
-                    );
-                  }
-                }
-              })}
-            </Flex>
-          </Stack>
-        </>
+            switch (field.type) {
+              case 'number':
+              case 'text': {
+                return (
+                  <TextInput
+                    {...form.getInputProps(`parameters.${field.name}`)}
+                    key={`${currentType}-${field.name}`}
+                    label={field.label}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                  />
+                );
+              }
+              case 'file': {
+                return (
+                  <FileInput
+                    {...form.getInputProps(`parameters.${field.name}`)}
+                    key={`${currentType}-${field.name}`}
+                    label={field.label}
+                    required={field.required}
+                    accept={field.mediaType}
+                    placeholder="CSV-file with data"
+                    leftSectionPointerEvents="none"
+                    leftSection={<IconFile />}
+                  />
+                );
+              }
+              case 'password': {
+                return (
+                  <PasswordInput
+                    {...form.getInputProps(`parameters.${field.name}`)}
+                    key={`${currentType}-${field.name}`}
+                    label={field.label}
+                    placeholder="••••••••"
+                    required={field.required}
+                  />
+                );
+              }
+            }
+          })}
+        </FieldsBlock>
       )}
 
       {/* Checking that there are no objects in the array without the required key */}
-      {currentType &&
-      dataSourceFields[currentType].every((field) => field.required) ? null : (
-        <>
-          <Divider mb="md" />
-          <Stack gap="0.5em" mb="md">
-            <Title order={3} size="1em" fw={500}>
-              Recommended parameters
-            </Title>
-          </Stack>
-        </>
-      )}
+      {currentType ? (
+        dataSourceFields[currentType].every(
+          (field) => field.required,
+        ) ? null : (
+          <FieldsBlock label="Recommended parameters" dividerBefore>
+            <Text>Current type: {currentType}</Text>
+          </FieldsBlock>
+        )
+      ) : null}
     </form>
   );
 };
