@@ -1,10 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AddDataSourcePage from '../pages/AddDataSourcePage';
+import DataSourcesPage from '../pages/DataSourcesPage';
 import EditDataSourcePage from '../pages/EditDataSourcePage';
 import HomePage from '../pages/HomePage';
-import DataSourcesPage from '../pages/DataSourcesPage';
-import NewAddDataSourcePage from '../pages/NewAddDataSourcePage';
 
 const routes = createBrowserRouter([
   {
@@ -26,12 +25,6 @@ const routes = createBrowserRouter([
       {
         path: 'datasource/:datasourceId',
         element: <EditDataSourcePage />,
-      },
-
-      
-      {
-        path: 'datasource/newform',
-        element: <NewAddDataSourcePage />,
       },
     ],
   },

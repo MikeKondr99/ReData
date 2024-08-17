@@ -1,5 +1,4 @@
 import { ActionIcon, Button, Divider, Flex, Group, Title } from '@mantine/core';
-import { hasLength, isNotEmpty, useForm } from '@mantine/form';
 import { useDocumentTitle } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
@@ -13,6 +12,7 @@ import { dataSourceApi } from '../app/services/dataSourceApi';
 import { ClientErrorResponse } from '../app/types';
 import ErrorAlert from '../components/ErrorAlert';
 import DataSourceForm from '../components/DataSourceForm';
+import { DataSourceFormValues } from '../configs/dataSourceConfig';
 
 const AddDataSourcePage: React.FC = () => {
   useDocumentTitle('New data source - ReData');
@@ -28,38 +28,7 @@ const AddDataSourcePage: React.FC = () => {
     },
   ] = dataSourceApi.useCreateDataSourceMutation();
 
-  const form = useForm({
-    mode: 'uncontrolled',
-    clearInputErrorOnChange: true,
-    initialValues: {
-      name: '',
-      description: '',
-      type: '',
-      parameters: {
-        host: '',
-        port: '5432',
-        database: '',
-        username: '',
-        password: '',
-      },
-    },
-    validateInputOnChange: ['parameters.port'],
-    validate: {
-      name: hasLength({ min: 2 }, 'Name must have at least 2 letters'),
-      type: isNotEmpty('You need to select the type of data source'),
-      parameters: {
-        host: isNotEmpty('This field is required'),
-        port: (value) =>
-          value.length === 0
-            ? 'This field is required'
-            : /^\d+$/.test(value)
-            ? null
-            : 'Port should be a number',
-      },
-    },
-  });
-
-  const handleSubmit = async (values: typeof form.values) => {
+  const handleSubmit = async (values: DataSourceFormValues) => {
     try {
       await createDataSource(values).unwrap();
 
@@ -133,7 +102,7 @@ const AddDataSourcePage: React.FC = () => {
           <Button
             type="submit"
             size="compact-sm"
-            form="datasource-form"
+            form="new-datasource-form"
             disabled={isCreateLoading || isCreateSuccess}
           >
             Create data source
@@ -147,7 +116,7 @@ const AddDataSourcePage: React.FC = () => {
         <ErrorAlert mb={'1em'} error={createError as ClientErrorResponse} />
       )}
 
-      <DataSourceForm form={form} onSubmit={handleSubmit} />
+      <DataSourceForm onSubmit={handleSubmit} />
     </>
   );
 };

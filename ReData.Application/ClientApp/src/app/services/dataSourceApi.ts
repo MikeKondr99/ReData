@@ -7,11 +7,11 @@ import { extractErrorMessages } from '../../utils/serverErrorUtils';
 import {
   ClientErrorResponse,
   IDataSource,
-  INewDataSource,
   ServerError,
   UpdateDataSourceParams,
 } from '../types';
 import { removeExtraSpaces } from '../../utils/textUtils';
+import { DataSourceFormValues } from '../../configs/dataSourceConfig';
 
 export const dataSourceApi = createApi({
   reducerPath: 'dataSourceApi',
@@ -26,7 +26,7 @@ export const dataSourceApi = createApi({
       query: (id) => `/datasource/${id}`,
       providesTags: ['DataSource'],
     }),
-    createDataSource: builder.mutation<IDataSource, INewDataSource>({
+    createDataSource: builder.mutation<IDataSource, DataSourceFormValues>({
       query: (payload) => ({
         url: '/datasource',
         method: 'POST',

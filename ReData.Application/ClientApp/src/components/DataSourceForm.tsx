@@ -1,113 +1,189 @@
 import {
-  ComboboxData,
-  Divider,
+  Box,
+  Button,
+  FileInput,
   Group,
+  MultiSelect,
   PasswordInput,
   Select,
-  Stack,
   TextInput,
-  Title,
 } from '@mantine/core';
-
-const data: ComboboxData = [
-  {
-    label: 'PostgreSQL',
-    value: 'PostgreSql',
-  },
-  {
-    label: 'CSV',
-    value: 'Csv',
-  },
-];
+import { useForm } from '@mantine/form';
+import { IconFile } from '@tabler/icons-react';
+import { useState } from 'react';
+import dataSourceFields, {
+  DataSourceFormValues,
+  DataSourceType,
+  DataSourceConfigField as Field,
+  DataSourceFormValues as FormValues,
+  DataSourceParameters as Parameters,
+} from '../configs/dataSourceConfig';
+import FieldsBlock from './FieldsBlock';
 
 interface DataSourceFormProps {
-  isEditing?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSubmit: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: any;
+  onSubmit: (values: DataSourceFormValues) => void;
 }
 
 const DataSourceForm: React.FC<DataSourceFormProps> = (props) => {
-  const { isEditing = false, form, onSubmit } = props;
+  const { onSubmit } = props;
+
+  const initialValues = {
+    name: '',
+    description: '',
+    type: null,
+    parameters: {},
+  };
+
+  const form = useForm<FormValues>({
+    mode: 'uncontrolled',
+    initialValues,
+  });
+
+  const [selectedParameters, setSelectedParameters] = useState<string[]>([]);
+  const currentType = form.getValues().type;
+
+  const handleTypeChange = (value: string | null) => {
+    form.setFieldValue('type', value as DataSourceType);
+
+    if (value && value in dataSourceFields) {
+      const fields = dataSourceFields[value as DataSourceType];
+      const newParameters: Parameters = {};
+
+      if (fields) {
+        fields.forEach((field) => {
+          newParameters[field.name] = field.defaultValue || null;
+        });
+      }
+
+      form.setFieldValue('parameters', newParameters);
+      setSelectedParameters([]);
+    } else {
+      form.setFieldValue('type', null);
+      form.setFieldValue('parameters', {});
+      setSelectedParameters([]);
+    }
+  };
+
+  const handleRemoveParameter = (parameter: string) => {
+    setSelectedParameters((prev) => prev.filter((p) => p !== parameter));
+    form.setFieldValue(`parameters.${parameter}`, null);
+  };
+
+  const renderField = (field: Field) => {
+    const commonProps = {
+      ...form.getInputProps(`parameters.${field.name}`),
+      label: field.label,
+      required: field.required,
+    };
+
+    switch (field.type) {
+      case 'number':
+      case 'text':
+        return (
+          <TextInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            placeholder={field.placeholder}
+            flex={1}
+          />
+        );
+      case 'file':
+        return (
+          <FileInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            accept={field.mediaType}
+            placeholder="CSV-file with data"
+            leftSectionPointerEvents="none"
+            leftSection={<IconFile />}
+            flex={1}
+          />
+        );
+      case 'password':
+        return (
+          <PasswordInput
+            {...commonProps}
+            key={`${currentType}-${field.name}`}
+            placeholder="••••••••"
+            flex={1}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <form id="datasource-form" onSubmit={form.onSubmit(onSubmit)}>
-      <Stack gap="0.5em" mb="md">
-        <Title order={3} size="1em" fw={500}>
-          General
-        </Title>
-
+    <form id="new-datasource-form" onSubmit={form.onSubmit(onSubmit)}>
+      <FieldsBlock label="General">
         <TextInput
+          {...form.getInputProps('name')}
           label="Name"
           placeholder='i.e. "UsersDB (readonly)" or "Internal Admin API"'
-          withAsterisk
-          key={form.key('name')}
-          {...form.getInputProps('name')}
+          required
         />
         <TextInput
+          {...form.getInputProps('description')}
           label="Description"
           placeholder="Enter a short description for this data source"
-          key={form.key('description')}
-          {...form.getInputProps('description')}
         />
-        {!isEditing && (
-          <Select
-            label="Data source type"
-            placeholder="Start typing to search"
-            data={data}
-            searchable
-            withAsterisk
-            key={form.key('type')}
-            {...form.getInputProps('type')}
-          />
-        )}
-      </Stack>
-
-      <Divider mb="md" />
-
-      <Stack gap="0.5em" mb="md">
-        <Title order={3} size="1em" fw={500}>
-          Credentials
-        </Title>
-
-        <Group align="flex-start">
-          <TextInput
-            label="Host"
-            flex="1"
-            withAsterisk
-            key={form.key('parameters.host')}
-            {...form.getInputProps('parameters.host')}
-          />
-          <TextInput
-            label="Port"
-            placeholder="5432"
-            withAsterisk
-            key={form.key('parameters.port')}
-            {...form.getInputProps('parameters.port')}
-          />
-        </Group>
-
-        <TextInput
-          label="Database name"
-          placeholder="postgres"
-          key={form.key('parameters.database')}
-          {...form.getInputProps('parameters.database')}
+        <Select
+          {...form.getInputProps('type')}
+          label="Data source type"
+          placeholder="Start typing to search"
+          searchable
+          required
+          data={Object.keys(dataSourceFields)}
+          onChange={handleTypeChange}
         />
+      </FieldsBlock>
 
-        <TextInput
-          label="Database username"
-          placeholder="postgres"
-          key={form.key('parameters.username')}
-          {...form.getInputProps('parameters.username')}
-        />
-        <PasswordInput
-          label="Database password"
-          placeholder="••••••••"
-          key={form.key('parameters.password')}
-          {...form.getInputProps('parameters.password')}
-        />
-      </Stack>
+      {currentType && (
+        <FieldsBlock label="Required parameters" dividerBefore>
+          {dataSourceFields[currentType].map((field) => {
+            if (!field.required) return null;
+
+            return renderField(field);
+          })}
+        </FieldsBlock>
+      )}
+
+      {currentType ? (
+        dataSourceFields[currentType].every(
+          (field) => field.required,
+        ) ? null : (
+          <FieldsBlock label="Recommended parameters" dividerBefore>
+            <MultiSelect
+              label="Select parameters to add"
+              placeholder="Select parameters"
+              data={dataSourceFields[currentType]
+                .filter((field) => !field.required)
+                .map((field) => ({ value: field.name, label: field.label }))}
+              value={selectedParameters}
+              onChange={setSelectedParameters}
+              searchable
+              clearable
+            />
+
+            {dataSourceFields[currentType]
+              .filter((field) => selectedParameters.includes(field.name))
+              .map((parameter) => (
+                <Group key={parameter.name} mt="xs" align="flex-end">
+                  {renderField(parameter)}
+                  <Button
+                    variant="outline"
+                    color="red"
+                    onClick={() => handleRemoveParameter(parameter.name)}
+                  >
+                    Remove
+                  </Button>
+                </Group>
+              ))}
+          </FieldsBlock>
+        )
+      ) : null}
+
+      <Box style={{ marginBottom: '150px' }} />
     </form>
   );
 };
