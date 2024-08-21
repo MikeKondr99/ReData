@@ -37,17 +37,17 @@ public record FunctionSignature(string Name, IEnumerable<ExprType> Parameters);
 
 public class FunctionStorage
 {
-    private Dictionary<FunctionSignature, ExpressionFunc> storage =
-        new ()
-        {
-            [new ("Upper",[ExprType.String])] = (writer, args) =>
-                writer
-                .Add("UPPER(")
-                .Add(args[0])
-                .Add(")"),
-            []
-            
-        };
+    // private Dictionary<FunctionSignature, ExpressionFunc> storage =
+    //     new ()
+    //     {
+    //         [new ("Upper",[ExprType.String])] = (writer, args) =>
+    //             writer
+    //             .Add("UPPER(")
+    //             .Add(args[0])
+    //             .Add(")"),
+    //         []
+    //         
+    //     };
 }
 
 
