@@ -17,6 +17,7 @@ public class ApplicationDatabaseContext : DbContext, IDatabase
         modelBuilder.ApplyConfiguration(new DataSourceConfig());
         modelBuilder.ApplyConfiguration(new DataSourceParameterConfig());
         modelBuilder.ApplyConfiguration(new DataSetConfig());
+        modelBuilder.ApplyConfiguration(new TransformationConfig());
     }
 }
 

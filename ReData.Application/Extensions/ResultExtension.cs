@@ -55,7 +55,7 @@ public record ErrorObject
     public required IEnumerable<Error> Errors { get; init; }
 }
 
-public class Error(IError innerError)
+public sealed class Error(IError innerError)
 {
     public string Message => innerError.Message;
 

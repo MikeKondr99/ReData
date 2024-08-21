@@ -24,4 +24,4 @@ app.Migrate<ApplicationDatabaseContext>();
 
 app.MapFallbackToFile("/index.html");
 
-app.Run();
+await app.RunAsync();

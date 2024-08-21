@@ -17,6 +17,9 @@ public sealed class DataSetRepository : Repository<DataSet, Entity.DataSet>
 {
     protected override IQueryable<Entity.DataSet> Query(IQueryable<Entity.DataSet> query)
     {
-        return query;
+        return query.Include(ds => ds.Transformations);
     }
 }
+
+
+

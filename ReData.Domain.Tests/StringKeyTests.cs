@@ -3,7 +3,7 @@ using ReData.Core;
 
 namespace ReData.Domain.Tests;
 
-public class StringKeyTests
+public sealed class StringKeyTests
 {
     [Fact]
     public void SameKeyWillOverrideValue()

@@ -3,7 +3,7 @@ using FluentResults;
 
 namespace ReData.Domain.Mapper;
 
-public class ResultMapping : Profile
+public sealed class ResultMapping : Profile
 {
     public ResultMapping()
     {

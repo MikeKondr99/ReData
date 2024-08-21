@@ -29,7 +29,7 @@ public static class DataSourceConnectionCheckerFactoryExtension
 
 }
 
-public class DataSourceConnectionCheckFactory : IDataSourceConnectorFactory
+public sealed class DataSourceConnectionCheckFactory : IDataSourceConnectorFactory
 {
     public required IEnumerable<IDataSourceConnector> ConnectionCheckers { private get; init; }
     
@@ -44,7 +44,7 @@ public class DataSourceConnectionCheckFactory : IDataSourceConnectorFactory
     }
 }
 
-public class PostgresConnector : IDataSourceConnector
+public sealed class PostgresConnector : IDataSourceConnector
 {
     public Entity.DataSourceType Type => Entity.DataSourceType.PostgreSql;
     
@@ -84,27 +84,9 @@ public class PostgresConnector : IDataSourceConnector
     }
 }
 
-public class CsvConnector : IDataSourceConnector
+public sealed class CsvConnector : IDataSourceConnector
 {
     public Entity.DataSourceType Type => Entity.DataSourceType.Csv;
     
     public Result CheckConnection(Domain.DataSource dataSource) => Result.Ok();
-}
-
-public record TableSchema
-{
-    public required string FullPath { get; init; }
-    
-    public required string Name { get; init; }
-    
-    public required IEnumerable<FieldData> Fields { get; init; }
-}
-
-public record FieldData
-{
-    public required string Name { get; init; }
-    
-    public required Entity.FieldType Type { get; init; }
-
-    public required bool Nullable { get; init; }
 }

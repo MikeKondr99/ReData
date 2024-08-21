@@ -22,6 +22,24 @@ namespace ReData.Database.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ReData.Database.Entities.DataSet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("DataSets", (string)null);
+                });
+
             modelBuilder.Entity("ReData.Database.Entities.DataSource", b =>
                 {
                     b.Property<Guid>("Id")
@@ -43,7 +61,7 @@ namespace ReData.Database.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("DataSources");
+                    b.ToTable("DataSources", (string)null);
                 });
 
             modelBuilder.Entity("ReData.Database.Entities.DataSourceParameter", b =>
@@ -60,7 +78,24 @@ namespace ReData.Database.Migrations
 
                     b.HasKey("DataSourceId", "Key");
 
-                    b.ToTable("DataSourceParameter");
+                    b.ToTable("DataSourceParameter", (string)null);
+                });
+
+            modelBuilder.Entity("ReData.Database.Entities.Transformation", b =>
+                {
+                    b.Property<Guid>("DataSetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Order")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("DataSetId", "Order");
+
+                    b.ToTable("Transformations", (string)null);
                 });
 
             modelBuilder.Entity("ReData.Database.Entities.DataSourceParameter", b =>
@@ -70,6 +105,20 @@ namespace ReData.Database.Migrations
                         .HasForeignKey("DataSourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ReData.Database.Entities.Transformation", b =>
+                {
+                    b.HasOne("ReData.Database.Entities.DataSet", null)
+                        .WithMany("Transformations")
+                        .HasForeignKey("DataSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ReData.Database.Entities.DataSet", b =>
+                {
+                    b.Navigation("Transformations");
                 });
 
             modelBuilder.Entity("ReData.Database.Entities.DataSource", b =>

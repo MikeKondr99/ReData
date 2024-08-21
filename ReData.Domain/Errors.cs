@@ -12,7 +12,7 @@ public interface IServiceUnavailableError : IServerError;
 
 public interface INotFoundError : IUserError;
 
-public class OperationFail<T> : Error
+public sealed class OperationFail<T> : Error
 {
     private OperationFail() { }
     
@@ -21,16 +21,15 @@ public class OperationFail<T> : Error
     public static OperationFail<T> Delete => new OperationFail<T> {  Message = $"{typeof(T).Name} deletion failed"};
 }
 
-public class EntityNotFound<T> : Error
+public sealed class EntityNotFound<T> : Error
 {
     private EntityNotFound() { }
-    private Guid Id { get; init; }
 
     public static EntityNotFound<T> WithId(Guid id) => new() { Message = $"{typeof(T).Name} with id:'{id}' not found" };
 
 }
 
-public class EntityNotValid<T> : Error, IUserError
+public sealed class EntityNotValid<T> : Error, IUserError
 {
     private static string ValidationError = $"Validation of {typeof(T).Name} failed";
     public EntityNotValid(ValidationResult validationResult)
@@ -47,7 +46,7 @@ public class EntityNotValid<T> : Error, IUserError
 
 }
 
-public class ConnectionInvalid : Error, IUserError
+public sealed class ConnectionInvalid : Error, IUserError
 {
     public ConnectionInvalid(Dictionary<string,string> parameters)
     {
@@ -60,7 +59,7 @@ public class ConnectionInvalid : Error, IUserError
     }
 }
 
-public class ConnectionAuthFailed : Error, IUserError
+public sealed class ConnectionAuthFailed : Error, IUserError
 {
     public ConnectionAuthFailed()
     {
@@ -68,7 +67,7 @@ public class ConnectionAuthFailed : Error, IUserError
     }
 }
 
-public class ConnectionCrushed : Error, IServiceUnavailableError
+public sealed class ConnectionCrushed : Error, IServiceUnavailableError
 {
     public ConnectionCrushed(string message)
     {

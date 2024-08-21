@@ -22,4 +22,8 @@
         <ProjectReference Include="..\ReData.Domain\ReData.Domain.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Controllers\Validators\" />
+    </ItemGroup>
+
 </Project>

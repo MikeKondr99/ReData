@@ -1,17 +1,47 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=21469e46_002D2fa0_002D412e_002Da5e2_002Dde5cd0c66cd2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="RepositoryNameMustBeUnique" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;And&gt;&#xD;
-    &lt;TestAncestor&gt;&#xD;
-      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests&lt;/TestId&gt;&#xD;
-      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.SameKeyWillThrow&lt;/TestId&gt;&#xD;
-      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.SameKeyWillOverrideValue&lt;/TestId&gt;&#xD;
-      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.CanGetValueWithdifferentCaseKey&lt;/TestId&gt;&#xD;
-    &lt;/TestAncestor&gt;&#xD;
-    &lt;Not&gt;&#xD;
+	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
+  &lt;Assembly Path="C:\Users\Mike\.nuget\packages\antlr4.runtime\4.6.6\lib\netstandard1.1\Antlr4.Runtime.dll" /&gt;&#xD;
+&lt;/AssemblyExplorer&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=21469e46_002D2fa0_002D412e_002Da5e2_002Dde5cd0c66cd2/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="RepositoryNameMustBeUnique" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;Or&gt;&#xD;
+    &lt;And&gt;&#xD;
       &lt;TestAncestor&gt;&#xD;
-        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests.RepositoryNameMustBeUnique&lt;/TestId&gt;&#xD;
-        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests.SuccessfulCreate&lt;/TestId&gt;&#xD;
+        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests&lt;/TestId&gt;&#xD;
+        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.SameKeyWillThrow&lt;/TestId&gt;&#xD;
+        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.SameKeyWillOverrideValue&lt;/TestId&gt;&#xD;
+        &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.StringKeyTests.CanGetValueWithdifferentCaseKey&lt;/TestId&gt;&#xD;
       &lt;/TestAncestor&gt;&#xD;
-    &lt;/Not&gt;&#xD;
-  &lt;/And&gt;&#xD;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+      &lt;Not&gt;&#xD;
+        &lt;TestAncestor&gt;&#xD;
+          &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests.RepositoryNameMustBeUnique&lt;/TestId&gt;&#xD;
+          &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.DataSourceRepositoryTests.SuccessfulCreate&lt;/TestId&gt;&#xD;
+        &lt;/TestAncestor&gt;&#xD;
+      &lt;/Not&gt;&#xD;
+    &lt;/And&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.SimpleQuery&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.QueryAll&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.QueryWithFilters&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.QueryWithManyFilters&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.QueryWithFilter&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.QueryFromQuery&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::C864389D-D32B-459C-9E23-2EE92B4697D6::net8.0::ReData.Domain.Tests.SqlQueryTests.MultipleQueryFromQuery&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1.Test1&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1.NameShouldParse&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1.BlockNameShouldParse&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1.BlockNameShouldTrimSpaces&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1.BlockNameShouldTrimEmprySymbols&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+  &lt;/Or&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c2f9a759_002D97d4_002D4dd6_002D8146_002Df9194132e1d3/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="UnitTest1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.UnitTest1&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f8ed2b69_002D4f58_002D40e4_002D9b6b_002Dc8c597ccec00/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="StringShouldParse" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	</wpf:ResourceDictionary>

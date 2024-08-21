@@ -21,7 +21,7 @@ public abstract class Repository<T, TEntity> : IRepository<T>
 
     private static string EntityName { get; } = typeof(T).Name;
 
-    public async Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter, CancellationToken ct = default)
+    public async Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter = null, CancellationToken ct = default)
     {
         filter ??= x => true;
         var entities = await Query(Database.Set<TEntity>()).AsNoTracking().ToListAsync(ct);

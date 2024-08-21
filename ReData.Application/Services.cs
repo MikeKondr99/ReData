@@ -48,6 +48,8 @@ public static class Services
         
         container.Register<IRepository<DataSource>,DataSourceRepository>(Lifestyle.Scoped);
         container.RegisterDecorator<IRepository<DataSource>, ValidatedRepository<DataSource>>(Lifestyle.Scoped);
+        
+        container.Register<IRepository<DataSet>, DataSetRepository>(Lifestyle.Scoped);
 
         container.Collection.Register<IDataSourceConnector>([typeof(PostgresConnector), typeof(CsvConnector)]);
         

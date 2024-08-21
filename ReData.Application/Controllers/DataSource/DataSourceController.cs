@@ -9,7 +9,7 @@ namespace ReData.Application.Controllers.DataSource;
 
 [ApiController]
 [Route("/api/datasource")]
-public class DataSourceController : Controller
+public sealed class DataSourceController : ControllerBase
 {
     
     public required DataSourceService Service { private get; init; }

@@ -7,7 +7,7 @@ using DataSource = ReData.Domain.DataSource;
 
 namespace ReData.Domain.Services;
 
-public class DataSourceService
+public sealed class DataSourceService
 {
     public required IRepository<Domain.DataSource> Repository { private get; init; }
     

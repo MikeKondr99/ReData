@@ -4,7 +4,7 @@ using ReData.Database.Entities;
 
 namespace ReData.Domain.Repositories;
 
-public class ValidatedRepository<T> : IRepository<T> 
+public sealed class ValidatedRepository<T> : IRepository<T> 
 where T : IEntity
 {
     public ValidatedRepository(IRepository<T> inner)
@@ -24,7 +24,7 @@ where T : IEntity
     }
     
     
-    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter, CancellationToken ct)
+    public Task<Result<IEnumerable<T>>> GetAsync(Func<T,bool>? filter = null, CancellationToken ct = default)
     {
         return InnerRepository.GetAsync(filter, ct);
     }
@@ -34,17 +34,17 @@ where T : IEntity
         return InnerRepository.GetByIdAsync(id, ct);
     }
 
-    public async Task<Result<T>> CreateAsync(T entity, CancellationToken ct)
+    public async Task<Result<T>> CreateAsync(T entity, CancellationToken ct = default)
     {
         return await ValidateAnd(entity, ct, InnerRepository.CreateAsync);
     }
 
-    public async Task<Result<T>> UpdateAsync(T entity, CancellationToken ct)
+    public async Task<Result<T>> UpdateAsync(T entity, CancellationToken ct = default)
     {
         return await ValidateAnd(entity, ct, InnerRepository.UpdateAsync);
     }
 
-    public Task<Result<T>> DeleteAsync(T entity, CancellationToken ct)
+    public Task<Result<T>> DeleteAsync(T entity, CancellationToken ct = default)
     {
         return InnerRepository.DeleteAsync(entity, ct);
     }

@@ -5,23 +5,23 @@ using SimpleInjector.Advanced;
 // ReSharper disable once CheckNamespace
 namespace ReData.Application;
 
-class InjectPropertySelectionBehavior : IPropertySelectionBehavior
+sealed class InjectPropertySelectionBehavior : IPropertySelectionBehavior
 {
-    public bool SelectProperty(Type implementationType, PropertyInfo prop)
+    public bool SelectProperty(Type implementationType, PropertyInfo propertyInfo)
     {
         // свойство должно быть недоступно публично
-        if (prop.GetMethod?.IsPublic == true)
+        if (propertyInfo.GetMethod?.IsPublic == true)
         {
             return false;
         }
 
         // свойство должно быть requiered
-        if (prop.CustomAttributes.All(a => a.AttributeType != typeof(RequiredMemberAttribute)))
+        if (propertyInfo.CustomAttributes.All(a => a.AttributeType != typeof(RequiredMemberAttribute)))
         {
             return false;
         }
 
-        if (prop.SetMethod?.IsPublic == true)
+        if (propertyInfo.SetMethod?.IsPublic == true)
         {
             return true;
         }

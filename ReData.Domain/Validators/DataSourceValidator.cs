@@ -6,9 +6,10 @@ using ReData.Database.Entities;
 
 namespace ReData.Domain.Validators;
 
-public class DataSourceValidator : AbstractValidator<DataSource>
+public sealed class DataSourceValidator : AbstractValidator<DataSource>
 {
     public required IDatabase Database { private get; init; }
+    
     public DataSourceValidator()
     {
         RuleFor(x => x.Type)

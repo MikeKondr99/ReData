@@ -4,7 +4,7 @@ using ReData.Domain.Services.DataSource.Models;
 
 namespace ReData.Application.Mapper;
 
-public class DataSourceProfile : Profile
+public sealed class DataSourceProfile : Profile
 {
     public DataSourceProfile()
     {

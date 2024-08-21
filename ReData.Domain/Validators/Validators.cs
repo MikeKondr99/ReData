@@ -14,7 +14,7 @@ public static class Validators
             var props = properties.ToArray();
             foreach (var prop in props)
             {
-                options = options.Must(d => props.All(p => d.ContainsKey(p)))
+                options = options.Must(d => Array.TrueForAll(props, p => d.ContainsKey(p)))
                     .WithMessage($"Parameter '{prop}' is required");
             }
 

@@ -8,8 +8,8 @@ public class DataSetConfig : IEntityTypeConfiguration<DataSet>
 {
     public void Configure(EntityTypeBuilder<DataSet> builder)
     {
-        builder.ToTable("DataSets");
+        builder.HasIndex(x => x.Name).IsUnique();
 
-        builder.Property(d => d.Fields).HasColumnType("jsonb");
+        builder.ToTable("DataSets");
     }
 }
