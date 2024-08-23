@@ -34,14 +34,26 @@
     &lt;/TestAncestor&gt;&#xD;
   &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c2f9a759_002D97d4_002D4dd6_002D8146_002Df9194132e1d3/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="UnitTest1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=62ac0262_002Db73f_002D42e9_002D9e4d_002Dbc9a9fd2348f/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="FunctionSignatureTest" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.UnitTest1&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeVisitorTests.ShouldWorkWithLiterals&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.LiteralsTest&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeVisitorTests.ShouldWorkWithFields&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeVisitorTests.ShouldWorkWithFunctionsRecursively&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.GeneratorVisitorTests.ShouldWorkWithFunctions&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.GeneratorVisitorTests.ShouldWorkWithFunctionsRecursively&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String>
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=c2f9a759_002D97d4_002D4dd6_002D8146_002Df9194132e1d3/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="UnitTest1" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeResolverTests.FunctionTest&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f8ed2b69_002D4f58_002D40e4_002D9b6b_002Dc8c597ccec00/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="StringShouldParse" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
     &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net8.0::ReData.Domain.Query.Lang.Tests.UnitTest1&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeResolverTests.FunctionTest&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::37E18B14-0F3B-425F-B0B2-CB964A74EB26::net8.0::ReData.Domain.Query.Tests.TypeResolverTests.FunctionSignatureTest&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	</wpf:ResourceDictionary>
