@@ -1,19 +1,25 @@
-﻿using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Visitors;
 
-public interface IToken;
-
-public record struct ConstToken(string Text) : IToken;
-
-public record struct ArgToken(int Index) : IToken;
 
 public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
 {
     
+    public override StringBuilder Visit(IExpr expr)
+    {
+        return expr switch
+        {
+            StringLiteral s => StringBuilder.Append($"'{s.Value}'"),
+            NumberLiteral n => StringBuilder.Append($"{n.Value:0.0}".Replace(",",".")),
+            IntegerLiteral i => StringBuilder.Append(i.Value),
+            BooleanLiteral b => StringBuilder.Append(b.Value ? "TRUE" : "FALSE"),
+            NullLiteral nl => StringBuilder.Append("NULL"),
+            NameExpr n => StringBuilder.Append($"\"{n.Value}\""),
+            FuncExpr f => Visit(f),
+        };
+    }
     public required StringBuilder StringBuilder { get; init; }
     public required TypeVisitor TypeVisitor { get; init; }
 
@@ -27,69 +33,29 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
 
     public override StringBuilder Visit(BooleanLiteral expr) => StringBuilder.Append(expr.Value ? "TRUE" : "FALSE");
 
-    public override StringBuilder Visit(NameExpr expr) => StringBuilder.Append($"\"expr.Value\"");
+    public override StringBuilder Visit(NameExpr expr) => StringBuilder.Append($"\"{expr.Value}\"");
 
     public override StringBuilder Visit(NullLiteral expr) => StringBuilder.Append("NULL");
 
-    public override StringBuilder Visit(FuncExpr expr) 
+    public override StringBuilder Visit(FuncExpr expr)
     {
-        var sign = new FunctionSignature(expr.Name, expr.Arguments.Select(a => TypeVisitor.Visit(a)));
-        var tokens = FunctionTokens.GetTemplate(sign);
-        foreach (var token in tokens)
+        ExprType[] types = new ExprType[expr.Arguments.Length];
+        
+        for (int i = 0; i < expr.Arguments.Length; i++)
         {
-            _ = token switch
+            types[i] = TypeVisitor.Visit(expr.Arguments[i]);
+        }
+        
+        var sign = new FunctionSignature(expr.Name, types);
+        var tokens = FunctionTokens.GetTemplate(sign).Tokens;
+        for (int i = 0; i < tokens.Count; i++)
+        {
+            _ = tokens[i] switch
             {
                 ConstToken(var str) => StringBuilder.Append(str),
                 ArgToken(var idx) => Visit(expr.Arguments[idx]),
             };
         }
         return StringBuilder;
-        throw new KeyNotFoundException($"{sign.Name}({String.Join(", ", sign.Parameters)})");
-    }
-}
-
-public interface ITemplate : IEnumerable<IToken>;
-
-public class Template : ITemplate
-{
-    private Template(IReadOnlyList<IToken> list)
-    {
-        this.list = list;
-    }
-    private IReadOnlyList<IToken> list;
-    
-    public static Template Compile(TemplateInterpolatedStringHandler template)
-    {
-        return new Template(template.tokens);
-    }
-    
-    public IEnumerator<IToken> GetEnumerator() => this.list.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => this.list.GetEnumerator();
-}
-
-[InterpolatedStringHandler]
-public ref struct TemplateInterpolatedStringHandler
-{
-    public List<IToken> tokens;
-
-    public TemplateInterpolatedStringHandler(int literalLength, int formattedCount)
-    {
-        tokens = new List<IToken>(literalLength + formattedCount);
-    }
-
-    public void AppendLiteral(string s)
-    {
-        tokens.Add(new ConstToken(s));
-    }
-
-    public void AppendFormatted<T>(T t)
-    {
-        if (t is int idx)
-        {
-            tokens.Add(new ArgToken(idx));
-            return;
-        }
-        throw new Exception($"Template must only contain Int32 numbers indicating index of function argument, but was {typeof(T)}");
     }
 }

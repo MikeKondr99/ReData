@@ -7,7 +7,7 @@ namespace ReData.Query.Tests;
 
 internal class FakeExpressionBuilder : IExpressionBuilder
 {
-    public void Write(StringBuilder res, IExpr expr, Dictionary<string,ExprType> fields)
+    public void Write(StringBuilder res, IExpr expr, IReadOnlyDictionary<string,ExprType> fields)
     {
         res.Append("EXPR");
     }
@@ -15,7 +15,7 @@ internal class FakeExpressionBuilder : IExpressionBuilder
 
 public class BasicStructureTests
 {
-    private static Query query = new Query("table")
+    private static Query query = new Query("table",new Dictionary<string, ExprType>() {["column1"] = ExprType.String })
         {
             Select = 
             [

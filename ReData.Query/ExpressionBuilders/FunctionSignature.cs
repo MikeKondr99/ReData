@@ -1,8 +1,8 @@
 ﻿namespace ReData.Query;
 
-public sealed class FunctionSignature
+public struct FunctionSignature
 {
-    public FunctionSignature(string Name, IEnumerable<ExprType> Parameters)
+    public FunctionSignature(string Name, IReadOnlyList<ExprType> Parameters)
     {
         this.Name = Name;
         this.Parameters = Parameters;
@@ -14,9 +14,9 @@ public sealed class FunctionSignature
         {
             int hash = 17;
             hash = hash * 23 + (Name?.GetHashCode() ?? 0);
-            foreach (var parameter in Parameters)
+            for (int i = 0; i < Parameters.Count; i++)
             {
-                hash = hash * 23 + (parameter.GetHashCode());
+                hash = hash * 23 + (Parameters[i].GetHashCode());
             }
             return hash;
         }
@@ -37,7 +37,7 @@ public sealed class FunctionSignature
     }
 
     public string Name { get; init; }
-    public IEnumerable<ExprType> Parameters { get; init; }
+    public IReadOnlyList<ExprType> Parameters { get; init; }
 
     public void Deconstruct(out string Name, out IEnumerable<ExprType> Parameters)
     {

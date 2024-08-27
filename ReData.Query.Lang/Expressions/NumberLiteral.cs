@@ -1,3 +1,3 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public record NumberLiteral(double Value) : ILiteral<double>;
+public record struct NumberLiteral(double Value) : ILiteral<double>;

@@ -1,6 +1,6 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public sealed record FuncExpr : IExpr
+public class FuncExpr : IExpr
 {
     public required string Name { get; init; }
     

@@ -1,3 +1,3 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public record NullLiteral : ILiteral;
+public record struct NullLiteral : ILiteral;

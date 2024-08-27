@@ -80,7 +80,7 @@ public abstract class SqlQueryBuilder : IQueryBuilder
 
             if (field.Value is not null)
             {
-                ExpressionBuilder.Write(res,field.Value, );
+                ExpressionBuilder.Write(res,field.Value, query.Fields);
                 res.Append(" AS ");
             }
             
@@ -92,9 +92,9 @@ public abstract class SqlQueryBuilder : IQueryBuilder
         }
     }
 
-    protected virtual void WriteExpression(StringBuilder res, IExpr expr)
+    protected virtual void WriteExpression(StringBuilder res, IExpr expr, IReadOnlyDictionary<string, ExprType> fields)
     {
-        ExpressionBuilder.Write(res, expr, );
+        ExpressionBuilder.Write(res, expr, fields);
     }
 
     protected virtual void WriteWhere(StringBuilder res, Query query)
@@ -102,7 +102,7 @@ public abstract class SqlQueryBuilder : IQueryBuilder
         foreach (var filter in query.Where)
         {
             res.Append("WHERE ");
-            WriteExpression(res, filter);
+            WriteExpression(res, filter, query.Fields);
             res.Append('\n');
         }
     }
@@ -119,7 +119,7 @@ public abstract class SqlQueryBuilder : IQueryBuilder
         for (var i = 0; i < query.OrderBy.Count; i++)
         {
             var order = query.OrderBy[i];
-            WriteExpression(res, order.Item1);
+            WriteExpression(res, order.Item1, query.Fields);
             res.Append(order.Item2 == Query.Order.Desc ? " DESC" : " ASC");
 
             if (i != last)
