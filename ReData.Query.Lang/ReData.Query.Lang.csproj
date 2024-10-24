@@ -18,6 +18,10 @@
       <Content Include="Lang.g4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ReData.Core\ReData.Core.csproj" />
+    </ItemGroup>
+
 
 
 

@@ -1,3 +1,11 @@
-﻿namespace ReData.Query.Lang.Expressions;
+﻿using System.Globalization;
 
-public record struct NumberLiteral(double Value) : ILiteral<double>;
+namespace ReData.Query.Lang.Expressions;
+
+public record struct NumberLiteral(double Value) : ILiteral<double>
+{
+    public override string ToString()
+    {
+        return Value.ToString();
+    }
+}

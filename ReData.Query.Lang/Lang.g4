@@ -1,13 +1,16 @@
 ﻿grammar Lang;
 
-expr:
-	| expr ('*' | '/') expr
-	| expr ('+' | '-') expr
-    | expr ('<=' | '>=' | '<' | '>') expr
-    | expr ('=' | '!=') expr
+start:
+    expr EOF;
+
+expr: MINUS expr
+    | expr (MUL | DIV) expr
+	| expr (PLUS | MINUS) expr
+    | expr (LESS_THEN | LESS_EQUAL | GREATER_THEN | GREATER_EQUAL) expr
+    | expr (EQUAL | NOT_EQUAL) expr
     | expr AND expr
     | expr OR expr
-	| LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
+    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
 	| string
 	| boolean
 	| null
@@ -27,13 +30,9 @@ name: NAME | BLOCKED_NAME;
 
 integer: INTEGER;
 
-
-
 number: NUMBER;
 
-func:
-	| NAME LEFT_PARENTHESIS RIGHT_PARENTHESIS
-	| NAME LEFT_PARENTHESIS expr (',' expr)* RIGHT_PARENTHESIS;
+func: NAME LEFT_PARENTHESIS expr (',' expr)* RIGHT_PARENTHESIS;
 
 AND: [a] [n] [d];
 OR: [o] [r];
@@ -47,6 +46,8 @@ LESS_EQUAL: '<=';
 LESS_THEN: '<';
 GREATER_EQUAL: '>=';
 GREATER_THEN: '>';
+EQUAL: '=';
+NOT_EQUAL: '!=';
 
 BOOLEAN: 'true' | 'false';
 
@@ -58,10 +59,8 @@ BLOCKED_NAME: '[' (' ')* [a-z-A-Z_] ([a-zA-Z_0-9] | ' ')* ']';
 
 STRING: ['] (~['\r\n])* ['];
 
-NEWLINE: ('\r'? '\n' | '\r')+;
-
 INTEGER: [0-9]+;
 
-NUMBER: [0-9]+ '.' [0-9]+;
+NUMBER: ([0-9]* '.' [0-9]+) | ([0-9]+ '.' [0-9]*);
 
-WS: (' ' | '\t')* -> skip;
+WS: [ \t\r\n]+ -> skip;

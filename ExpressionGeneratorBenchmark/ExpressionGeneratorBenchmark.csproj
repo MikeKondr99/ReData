@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ReData.Query.Impl\ReData.Query.Impl.csproj" />
       <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
     </ItemGroup>
 

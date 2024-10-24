@@ -1,73 +1,58 @@
 ﻿using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using ReData.Query.Lang.Expressions;
+using ReData.Query.Visitors;
 
 namespace ReData.Query;
 
-public sealed class Query
+public sealed record Query : IQuerySource
 {
-    public Query(string table, IReadOnlyDictionary<string, ExprType> fields)
+    public IQuerySource From { get; init; } = new NoSource();
+
+    public IReadOnlyList<Map>? Select { get; init; }
+
+    public IReadOnlyList<IExpr>? Where { get; init; }
+
+    public IReadOnlyList<Order>? OrderBy { get; init; }
+
+    public uint Limit { get; init; }
+
+    public uint Offset { get; init; }
+
+    public record struct Order(IExpr Expr, Order.Type Direction)
     {
-        this.Fields = fields;
-        this.Table = table;
-    }
-
-    // public Query(Query query)
-    // {
-    //     _commonTables = query._commonTables;
-    //     _commonTables ??= new List<Query>();
-    //     _commonTables.Add(query);
-    //     
-    //     query._commonTables = null;
-    //     
-    //     Select = query.Select;
-    //     this.Table = $"CTE{_commonTables.Count}";
-    // }
-    
-    private List<Query>? _commonTables = null;
-
-    public IReadOnlyList<Query>? CommonTables => _commonTables;
-
-    public IReadOnlyDictionary<string, ExprType> Fields { get; init; }
-    
-    public required IReadOnlyList<OneSelect> Select { get; set; }
-
-    public List<IExpr> Where { get; init; } = new();
-
-    public List<(IExpr, Order)> OrderBy { get; init; } = new();
-
-    public uint Limit { get; set; } = 0;
-
-    public uint Offset { get; set; } = 0;
-    
-    public string Table { get; private init; }
-
-    public void AddFilters(IEnumerable<string> filter)
-    {
-        this.Where.AddRange(filter.Select(Expr.Parse));
+        public enum Type
+        {
+            Asc,
+            Desc
+        }
     }
     
-    public void AddOrders(IEnumerable<(string, Order)> orders)
+    public record struct Field(string Name, ExprType Type);
+    public record struct Map(string Name, IExpr Expr);
+
+    public string Name => $"STEP{No}";
+
+    public int No { get; init; } = 1;
+
+    public IFieldStorage Fields(IFunctionStorage functions)
     {
-        this.OrderBy.AddRange(orders.Select((t) => (Expr.Parse(t.Item1),t.Item2)));
-    }
+        var fields = this.From.Fields(functions);
+        var typeVisitor = new TypeVisitor()
+        {
+            FieldTypes = fields,
+            FunctionTypes = functions,
+        };
+        
+        if (Select is null) return fields;
 
-
-    public enum Order
-    {
-        Asc,
-        Desc,
-    }
-}
-
-public record struct OneSelect(string Name, IExpr Value);
-
-public static class ExprExtension
-{
-    public static OneSelect As(this IExpr expr, string name)
-    {
-        return new OneSelect(name, expr);
-
+        var result = Select.Select(m => new Field(m.Name,typeVisitor.Visit(m.Expr)));
+        return new FieldStorage(result.ToArray());
     }
     
+    private record struct NoSource() : IQuerySource
+    {
+        public string? Name => null;
+        public IFieldStorage Fields(IFunctionStorage functions) => new EmptyFieldStorage();
+    }
 }

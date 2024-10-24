@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using Antlr4.Runtime.Tree;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
@@ -13,7 +14,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         ["*"] = "@mul",
         ["/"] = "@div",
         ["and"] = "@and",
-        ["or"] ="@or",
+        ["or"] = "@or",
         ["="] = "@eq",
         ["!="] = "@neq",
         ["<"] = "@lt",
@@ -21,31 +22,42 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         [">"] = "@gt",
         [">="] = "@geq",
     };
-    
+
+    private Dictionary<string, string> _UnaryOperators = new()
+    {
+        ["-"] = "@un_sub",
+    };
+
+
+
+    public override IExpr VisitStart(LangParser.StartContext context)
+    {
+        return Visit(context.children[0]);
+    }
+
     public override IExpr VisitExpr(LangParser.ExprContext context)
     {
-        if (context.children?.Count == 3)
+        return context.children switch
         {
-            if (context.children[0].GetText() == "(" && context.children[2].GetText() == ")")
-            {
-                return Visit(context.children[1]);
-            }
-
-            if (context.children[0] is LangParser.ExprContext && context.children[2] is LangParser.ExprContext)
-            {
-                var key = context.children[1].GetText();
-                if (_binaryOperators.TryGetValue(key, out var name))
+            // Скобки ( expr )
+            [TerminalNodeImpl, LangParser.ExprContext expr, TerminalNodeImpl] => VisitExpr(expr),
+            // Бинарное expr + expr
+            [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right] =>
+                new FuncExpr()
                 {
-                    return new FuncExpr()
-                    {
-                        Name = key,
-                        Arguments = [Visit(context.children[0]), Visit(context.children[2])]
-                    };
-                }
-            }
-        }
-
-        return base.VisitExpr(context);
+                    Name = op.GetText(),
+                    Arguments = [VisitExpr(left), VisitExpr(right)]
+                },
+            // Унарное -expr
+            [TerminalNodeImpl op, LangParser.ExprContext expr] =>
+                new FuncExpr()
+                {
+                    Name = op.GetText(),
+                    Arguments = [VisitExpr(expr)]
+                },
+            // Остальное
+            _ => base.VisitExpr(context),
+        };
     }
 
     public override IExpr VisitName(LangParser.NameContext context)
@@ -55,7 +67,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         {
             name = name[1..^1];
         }
-        
+
         name = name.Trim();
 
         return new NameExpr(name);

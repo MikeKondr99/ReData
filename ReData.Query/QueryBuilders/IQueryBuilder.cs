@@ -3,5 +3,4 @@
 public interface IQueryBuilder
 {
     string Build(Query query);
-
 }

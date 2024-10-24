@@ -12,4 +12,8 @@
       <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="DotNetGraph" Version="3.2.0" />
+    </ItemGroup>
+
 </Project>

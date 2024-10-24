@@ -11,12 +11,12 @@ namespace ReData.Query;
 
 public interface IExpressionBuilder
 {
-    void Write(StringBuilder res, IExpr expr, IReadOnlyDictionary<string, ExprType> fields);
+    void Write(StringBuilder res, IExpr expr, IFieldStorage fields);
     
-    public string Build(IExpr expr, IReadOnlyDictionary<string,ExprType> fields = null!)
+    public string Build(IExpr expr, IFieldStorage fields)
     {
         var res = new StringBuilder();
-        Write(res, expr, fields ?? new Dictionary<string, ExprType>());
+        Write(res, expr, fields);
         return res.ToString();
     }
 
@@ -27,7 +27,10 @@ public sealed class ExpressionBuilder : IExpressionBuilder
 {
     public required FunctionStorage FunctionStorage { get; init; }
     
-    public void Write(StringBuilder res, IExpr expr, IReadOnlyDictionary<string, ExprType> fields)
+    public required ILiteralBuilder LiteralBuilder { get; init; }
+    
+    
+    public void Write(StringBuilder res, IExpr expr, IFieldStorage fields)
     {
         var typeVisitor = new TypeVisitor()
         {
@@ -38,8 +41,9 @@ public sealed class ExpressionBuilder : IExpressionBuilder
         var visitor = new GeneratorVisitor()
         {
             StringBuilder = res,
-            FunctionTokens = FunctionStorage,
+            FunctionStorage = FunctionStorage,
             TypeVisitor = typeVisitor,
+            LiteralBuilder = LiteralBuilder
         };
 
         visitor.Visit(expr);
