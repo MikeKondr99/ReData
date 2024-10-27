@@ -2,7 +2,6 @@
 using System.Globalization;
 using ClickHouse.Client.Numerics;
 using FluentAssertions;
-using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Tests;
@@ -51,7 +50,13 @@ public abstract class ExprTests(ISqlRunner runner)
             exp = Math.Round(exp, 7);
             double res = Math.Round((double)dec, 7);
             res.Should().Be(exp);
+        } else if (expected is null)
+        {
+            result.Should().BeOneOf(DBNull.Value,null);
         }
-        result.Should().Be(expected);
+        else
+        {
+            result.Should().Be(expected);
+        }
     }
 }

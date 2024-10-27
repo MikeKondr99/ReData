@@ -35,6 +35,7 @@ public class GlobalFunctionsStorage
                 Arguments = f.Arguments,
                 Template = f.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value,
                 ReturnType = f.ReturnType,
+                Kind = f.Kind,
             }));
     }
 }

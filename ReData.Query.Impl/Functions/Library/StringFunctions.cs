@@ -22,31 +22,37 @@ public static class StringFunctions
         [Oracle] = $"SUBSTR({input}, {start}, {count})"
     };
 
+    [Method]
     public static Ret<Text> Lower(Text input) => new()
     {
         [All] = $"LOWER({input})"
     };
     
+    [Method]
     public static Ret<Text> Upper(Text input) => new()
     {
         [All] = $"Upper({input})"
     };
     
+    [Method]
     public static Ret<Text> Trim(Text input) => new()
     {
         [All] = $"TRIM({input})"
     };
     
+    [Method]
     public static Ret<Text> TrimLeft(Text input) => new()
     {
         [All] = $"LTRIM({input})"
     };
     
+    [Method]
     public static Ret<Text> TrimRight(Text input) => new()
     {
         [All] = $"RTRIM({input})"
     };
     
+    [Method]
     public static Ret<Text> Reverse(Text input) => new()
     {
         [All] = $"REVERSE({input})"
@@ -61,12 +67,14 @@ public static class StringFunctions
     };
     
     // TODO: NotTested
+    [Method]
     public static Ret<Text?> EmptyIsNull(Text input) => new()
     {
         [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
     };
     
     // TODO: NotTested
+    [Method]
     public static Ret<Text?> EmptyIsNull(Text? input) => new()
     {
         [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 

@@ -16,7 +16,7 @@ using ReData.Query.Visitors;
 var test = new ExprGenerationTest();
 using (Measure.TimeAndMemory())
 {
-    test.ExprGenerator();
+    // test.ExprGenerator();
 }
 
 [MemoryDiagnoser]
@@ -43,42 +43,42 @@ public class ExprGenerationTest
         }
     }
 
-    [Benchmark]
-    public string ExprGenerator()
-    {
-        var res = new ExpressionBuilder()
-        {
-            FunctionStorage = Static.Functions,
-            LiteralBuilder = new PostgresLiteralBuilder()
-        };
-        StringBuilder sb = new StringBuilder();
-        res.Write(sb, expr, Static.Fields);
-
-        // GC.Collect();
-        // sb = new StringBuilder();
-        // res.Write(sb,expr,Static.Fields);
-
-        return sb.ToString();
-    }
-
-    [Benchmark(Baseline = true)]
-    public string NaiveConcatination()
-    {
-        var result = "";
-        for (int i = 0; i < numbers.Length; i++)
-        {
-            result += "(";
-            result += numbers[i].ToString();
-            if (i != 9)
-            {
-                result += " + ";
-            }
-
-            result += ")";
-        }
-
-        return result;
-    }
+    // [Benchmark]
+    // public string ExprGenerator()
+    // {
+    //     var res = new ExpressionBuilder()
+    //     {
+    //         FunctionStorage = Static.Functions,
+    //         LiteralBuilder = new PostgresLiteralBuilder()
+    //     };
+    //     StringBuilder sb = new StringBuilder();
+    //     res.Write(sb, expr, Static.Fields);
+    //
+    //     // GC.Collect();
+    //     // sb = new StringBuilder();
+    //     // res.Write(sb,expr,Static.Fields);
+    //
+    //     return sb.ToString();
+    // }
+    //
+    // [Benchmark(Baseline = true)]
+    // public string NaiveConcatination()
+    // {
+    //     var result = "";
+    //     for (int i = 0; i < numbers.Length; i++)
+    //     {
+    //         result += "(";
+    //         result += numbers[i].ToString();
+    //         if (i != 9)
+    //         {
+    //             result += " + ";
+    //         }
+    //
+    //         result += ")";
+    //     }
+    //
+    //     return result;
+    // }
 }
 
 public static class Measure

@@ -17,13 +17,13 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     
     [Theory(DisplayName = "Unary minus")]
     [InlineData("-4", -4)]
-    [InlineData("-3.", -3.0)]
-    [InlineData("-0.", 0.0)]
+    [InlineData("-3.0", -3.0)]
+    [InlineData("-0.0", 0.0)]
     [InlineData("-0", 0)]
     public Task UnSub(string expr, object? expected) => Test(expr, expected);
     
     [Theory(DisplayName = "Multiplication")]
-    [InlineData("-4. * 8.", -32.0)]
+    [InlineData("-4.0 * 8.0", -32.0)]
     [InlineData("-8 * -3", 24)]
     public Task Mul(string expr, object? expected) => Test(expr, expected);
     
@@ -38,5 +38,12 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     [InlineData("(2 + 2) * 2", 8)]
     public Task Priority(string expr, object? expected) => Test(expr, expected);
     
+    
+    [Theory(DisplayName = "Between")]
+    [InlineData("Between(5, 2, 10)", true)]
+    [InlineData("5.Between(2, 10)", true)]
+    [InlineData("Between(2, 5, 10)", false)]
+    [InlineData("2.Between(5, 10)", false)]
+    public Task Between(string expr, object? expected) => Test(expr, expected);
     
 }

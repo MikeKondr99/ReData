@@ -30,15 +30,19 @@ public static class FunctionAnalyzer
         if (prs is null) return null;
         // templates
         object?[] args = new object[prs.Count];
+        var methodParameters = method.GetParameters();
         for (int i = 0; i < prs.Count; i++)
         {
-            args[i] = Activator.CreateInstance(method.GetParameters()[i].ParameterType, args: [i]);
+            args[i] = CreateArg(methodParameters[i].ParameterType, i);
         }
         var templates = method.Invoke(null, args) as Ret;
         if (templates is null) return null;
         
         var doc = method.GetCustomAttribute<DocAttribute>()?.Text;
         var rename = method.GetCustomAttribute<FunctionNameAttribute>()?.Name;
+        var isBinary = method.GetCustomAttribute<BinaryAttribute>() is not null;
+        var isUnary = method.GetCustomAttribute<BinaryAttribute>() is not null;
+        var isMethod = method.GetCustomAttribute<MethodAttribute>() is not null;
         return new FunctionDefinition()
         {
             Name = rename ?? method.Name,
@@ -48,9 +52,32 @@ public static class FunctionAnalyzer
                 DataType = retType,
                 CanBeNull = canReturnNull,
             },
+            Kind =
+                isBinary ? 
+                    FunctionKind.Binary 
+                : isUnary ? 
+                    FunctionKind.Unary 
+                : isMethod ? 
+                    FunctionKind.Method 
+                : 
+                    FunctionKind.Default,
             Arguments = prs,
             Templates = templates.Templates,
         };
+    }
+
+    private static object? CreateArg(Type type, int index)
+    {
+        var innerType = type;
+        var nullable = UnwrapNullable(ref innerType);
+        
+        var instance = Activator.CreateInstance(innerType, args: [index]);
+
+        if (nullable)
+        {
+            instance = Activator.CreateInstance(type, args: [instance]);
+        }
+        return instance;
     }
 
     private static (DataType type, bool canReturnNull)? GetReturnType(MethodInfo method)
@@ -69,17 +96,21 @@ public static class FunctionAnalyzer
         return null;
     }
 
-    static Type[] types = [typeof(Integer), typeof(Number), typeof(Text), typeof(Bool)];
+    static Type[] types = [typeof(Integer), typeof(Number), typeof(Text), typeof(Bool), typeof(Null)];
     
     private static IReadOnlyList<FunctionArgument>? GetArgumentsTypes(MethodInfo method)
     {
+        if (method.Name == "Coalesce")
+        {
+            int a = 5;
+        }
         var result = new List<FunctionArgument>();
         var prs = method.GetParameters();
         foreach (var p in prs)
         {
             var pt = p.ParameterType;
             var canBeNull = UnwrapNullable(ref pt);
-            if (!types.Contains(p.ParameterType)) return null;
+            if (!types.Contains(pt)) return null;
             result.Add(new FunctionArgument()
             {
                 Name = p.Name,

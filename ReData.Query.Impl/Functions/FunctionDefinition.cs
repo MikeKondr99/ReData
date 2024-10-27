@@ -13,6 +13,8 @@ public record FunctionDefinition
 
     public required FunctionReturnType ReturnType { get; init; }
     
+    public required FunctionKind Kind { get; init; }
+    
     public required IReadOnlyDictionary<DatabaseTypeFlags, ITemplate> Templates { get; init; }
     
 

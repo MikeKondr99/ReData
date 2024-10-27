@@ -30,7 +30,7 @@ public static class ConversionFunctions
         [All] = $"{input}",
     };
     
-    public static Ret<Integer?> Int(Null input) => new()
+    public static Ret<Integer?> Int(Null? input) => new()
     {
         [All] = $"{input}",
     };
@@ -57,7 +57,7 @@ public static class ConversionFunctions
         [ClickHouse] = $"toDecimal64({input},10)"
     };
     
-    public static Ret<Number?> Num(Null input) => new()
+    public static Ret<Number?> Num(Null? input) => new()
     {
         [All] = $"{input}",
     };
@@ -83,7 +83,7 @@ public static class ConversionFunctions
         [All] = $"({input} > 0)"
     };
     
-    public static Ret<Bool?> Bool(Null input) => new()
+    public static Ret<Bool?> Bool(Null? input) => new()
     {
         [All] = $"{input}",
     };
@@ -112,7 +112,7 @@ public static class ConversionFunctions
         [Oracle] = $"TO_CHAR({input})"
     };
     
-    public static Ret<Text?> Text(Null input) => new()
+    public static Ret<Text?> Text(Null? input) => new()
     {
         [All] = $"{input}",
     };

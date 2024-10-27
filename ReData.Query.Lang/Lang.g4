@@ -3,21 +3,23 @@
 start:
     expr EOF;
 
-expr: MINUS expr
-    | expr (MUL | DIV) expr
-	| expr (PLUS | MINUS) expr
-    | expr (LESS_THEN | LESS_EQUAL | GREATER_THEN | GREATER_EQUAL) expr
-    | expr (EQUAL | NOT_EQUAL) expr
-    | expr AND expr
-    | expr OR expr
-    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS
-	| string
-	| boolean
-	| null
-	| name
-	| func
-	| integer
-	| number
+expr
+    : MINUS expr #unary
+    | expr (MUL | DIV) expr #binary
+	| expr (PLUS | MINUS) expr #binary
+    | expr (LESS_THEN | LESS_EQUAL | GREATER_THEN | GREATER_EQUAL) expr #binary
+    | expr (EQUAL | NOT_EQUAL) expr #binary
+    | expr AND expr #binary
+    | expr OR expr #binary
+    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS #scope
+	| string #literal
+	| boolean #literal
+	| null #literal
+	| name #literal
+	| func #function
+	| integer #literal
+	| number #literal
+	| expr DOT NAME LEFT_PARENTHESIS (expr (',' expr)*)? RIGHT_PARENTHESIS #objectFunction
 	;
 	
 string: STRING;
@@ -32,7 +34,7 @@ integer: INTEGER;
 
 number: NUMBER;
 
-func: NAME LEFT_PARENTHESIS expr (',' expr)* RIGHT_PARENTHESIS;
+func : NAME LEFT_PARENTHESIS (expr (',' expr)*)? RIGHT_PARENTHESIS;
 
 AND: [a] [n] [d];
 OR: [o] [r];
@@ -48,6 +50,7 @@ GREATER_EQUAL: '>=';
 GREATER_THEN: '>';
 EQUAL: '=';
 NOT_EQUAL: '!=';
+DOT: '.';
 
 BOOLEAN: 'true' | 'false';
 
@@ -61,6 +64,6 @@ STRING: ['] (~['\r\n])* ['];
 
 INTEGER: [0-9]+;
 
-NUMBER: ([0-9]* '.' [0-9]+) | ([0-9]+ '.' [0-9]*);
+NUMBER: ([0-9]* '.' [0-9]+) | ([0-9]+ '.' [0-9]+);
 
 WS: [ \t\r\n]+ -> skip;

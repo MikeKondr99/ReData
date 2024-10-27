@@ -2,14 +2,6 @@
 
 namespace ReData.Query.Functions;
 
-public struct FunctionInfo
-{
-    public required string Name;
-    public required IReadOnlyList<FunctionArgument> Arguments;
-    public required ExprType ReturnType;
-    public required ITemplate Template;
-}
-
 public record FunctionReturnType
 {
     public required DataType DataType { get; init; }
@@ -29,6 +21,7 @@ public record FunctionDefinition
     
     public required FunctionReturnType ReturnType { get; init; }
     
+    public required FunctionKind Kind { get; init; }
 
     public required ITemplate Template { get; init; }
 
@@ -39,4 +32,12 @@ public record FunctionDefinition
         }) -> {ReturnType.DataType}{(ReturnType.CanBeNull ? "?" : "")}";
 
     }
+}
+
+public enum FunctionKind
+{
+    Default = 0,
+    Method = 1,
+    Binary = 2,
+    Unary = 3,
 }

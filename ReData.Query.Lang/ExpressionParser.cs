@@ -35,28 +35,45 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         return Visit(context.children[0]);
     }
 
-    public override IExpr VisitExpr(LangParser.ExprContext context)
+    public override IExpr VisitUnary(LangParser.UnaryContext context)
     {
-        return context.children switch
+        if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
         {
-            // Скобки ( expr )
-            [TerminalNodeImpl, LangParser.ExprContext expr, TerminalNodeImpl] => VisitExpr(expr),
-            // Бинарное expr + expr
-            [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right] =>
-                new FuncExpr()
-                {
-                    Name = op.GetText(),
-                    Arguments = [VisitExpr(left), VisitExpr(right)]
-                },
-            // Унарное -expr
-            [TerminalNodeImpl op, LangParser.ExprContext expr] =>
-                new FuncExpr()
-                {
-                    Name = op.GetText(),
-                    Arguments = [VisitExpr(expr)]
-                },
-            // Остальное
-            _ => base.VisitExpr(context),
+            return new FuncExpr()
+            {
+                Name = op.GetText(),
+                Arguments = [VisitExpr(expr)]
+            };
+        }
+        throw new Exception("Non valid unary expression");
+    }
+
+    public override IExpr VisitScope(LangParser.ScopeContext context)
+    {
+        return Visit(context.children[1]);
+    }
+
+    public override IExpr VisitBinary(LangParser.BinaryContext context)
+    {
+        if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
+        {
+            return new FuncExpr()
+            {
+                Name = op.GetText(),
+                Arguments = [Visit(left), Visit(right)]
+            };
+        }
+        throw new Exception("Non valid binary expression");
+    }
+
+    public override IExpr VisitObjectFunction(LangParser.ObjectFunctionContext context)
+    {
+        var args = context.children.OfType<LangParser.ExprContext>().Select(a => Visit(a));
+        return new FuncExpr()
+        {
+            Name = context.children[2].GetText(),
+            Arguments = args.ToArray(),
+            Kind = FuncExprKind.Method,
         };
     }
 

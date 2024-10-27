@@ -58,7 +58,7 @@ public class LiteralsTest
     [InlineData("1.3",1.3)]
     [InlineData("0.0", 0.0)]
     [InlineData(".3", .3)]
-    [InlineData("5.", 5.0)]
+    [InlineData("5.0", 5.0)]
     [InlineData("0.0000000000", 0.0)]
     [InlineData("0.1234567890", 0.1234567890)]
     public void ShouldParseNumber(string input, double expected)

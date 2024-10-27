@@ -23,6 +23,15 @@ public sealed class FunctionStorage : IFunctionStorage
             if (func.Arguments.Count != sign.ArgumentTypes.Count) continue;
             for (int i = 0; i < func.Arguments.Count; i++)
             {
+                // можно сократить, но да ладно
+                if (!((func.Kind, sign.Kind) switch
+                    {
+                        (FunctionKind.Binary, FunctionKind.Binary) => true,
+                        (FunctionKind.Unary, FunctionKind.Unary) => true,
+                        (FunctionKind.Method, FunctionKind.Method or FunctionKind.Default) => true,
+                        (FunctionKind.Default, FunctionKind.Default) => true,
+                        _ => false,
+                    })) continue; 
                 if(func.Arguments[i].Type.DataType != sign.ArgumentTypes[i].DataType) continue;
                 if(!func.Arguments[i].Type.CanBeNull && sign.ArgumentTypes[i].CanBeNull) continue;
                 return func;

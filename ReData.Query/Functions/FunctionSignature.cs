@@ -6,6 +6,8 @@ namespace ReData.Query;
 public record FunctionSignature
 {
     public required string Name { get; init; }
+    
+    public required FunctionKind Kind { get; init; }
 
     public required IReadOnlyList<FunctionArgumentType> ArgumentTypes { get; init; }
      public override string ToString()

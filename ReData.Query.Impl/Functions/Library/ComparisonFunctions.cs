@@ -29,7 +29,7 @@ public static class ComparisonFunctions
         [All] = $"({left} >= {right})", 
     };
     
-    // TODO: Not tested
+    [Method]
     public static Ret<Bool> Between(Integer input, Integer min, Integer max) => new()
     {
         [All] = $"({input} BETWEEN {min} AND {max})",
@@ -59,7 +59,7 @@ public static class ComparisonFunctions
         [All] = $"({left} >= {right})", 
     };
     
-    // TODO: Not tested
+    [Method]
     public static Ret<Bool> Between(Number input, Number min, Number max) => new()
     {
         [All] = $"({input} BETWEEN {min} AND {max})",

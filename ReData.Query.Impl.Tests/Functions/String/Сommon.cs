@@ -37,4 +37,14 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
      [Theory(DisplayName = "KeepChars", Skip="NotImplemented yet")]
      [InlineData("KeepChars('H2el1l3o','123')", "213")]
      public Task KeepChars(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "EmptyIsNull")]
+     [InlineData("EmptyIsNull('Hello world!')", "Hello world!")]
+     [InlineData("EmptyIsNull('')", null)]
+     [InlineData("EmptyIsNull(Text(null))", null)]
+     public Task EmptyIsNull(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "Composite")]
+     [InlineData("'  HeLLo World! '.Trim().Lower()", "hello world!")]
+     public Task Composite(string expr, object? expected) => Test(expr, expected);
 }

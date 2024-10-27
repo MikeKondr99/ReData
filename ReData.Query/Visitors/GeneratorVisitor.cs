@@ -49,9 +49,9 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
 
     public override StringBuilder Visit(FuncExpr expr)
     {
-        ExprType[] types = new ExprType[expr.Arguments.Length];
+        ExprType[] types = new ExprType[expr.Arguments.Count];
         
-        for (int i = 0; i < expr.Arguments.Length; i++)
+        for (int i = 0; i < expr.Arguments.Count; i++)
         {
             types[i] = TypeVisitor.Visit(expr.Arguments[i]);
         }
@@ -59,13 +59,23 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
         var sign = new FunctionSignature
         {
             Name = expr.Name,
+            Kind = expr.Kind switch
+            {
+                FuncExprKind.Binary => FunctionKind.Binary,
+                FuncExprKind.Method => FunctionKind.Method,
+                FuncExprKind.Unary => FunctionKind.Unary,
+                FuncExprKind.Default => FunctionKind.Default,
+                var a => (FunctionKind)a,
+            },
             ArgumentTypes = types.Select(t => new FunctionArgumentType()
             {
                 DataType = t.Type,
                 CanBeNull = t.CanBeNull,
             }).ToArray()
         };
-        var tokens = FunctionStorage.GetFunction(sign).Template.Tokens;
+        var func = FunctionStorage.GetFunction(sign);
+        var tokens = func.Template.Tokens;
+
         for (int i = 0; i < tokens.Count; i++)
         {
             _ = tokens[i] switch
