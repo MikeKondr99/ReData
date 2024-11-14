@@ -1,4 +1,5 @@
-﻿using ReData.Query.Visitors;
+﻿using System.Security.Cryptography.X509Certificates;
+using ReData.Query.Visitors;
 
 namespace ReData.Query.Functions;
 
@@ -9,7 +10,14 @@ public record FunctionReturnType
     public required bool CanBeNull { get; init; }
     
     public bool Aggregated { get; init; }
+
+    public override string ToString()
+    {
+        return $"{DataType}{(CanBeNull ? "?" : "")}";
+    }
 }
+
+
 
 public record FunctionDefinition
 {
@@ -24,16 +32,28 @@ public record FunctionDefinition
     public required FunctionKind Kind { get; init; }
 
     public required ITemplate Template { get; init; }
+    
+    public required ImplicitCastMetadata? ImplicitCast { get; init; }
+    
+    public required Func<bool[], bool>? NullIf { get; init; }
 
     public override string ToString()
     {
+        if (Kind is FunctionKind.Binary)
+        {
+            return $"({Arguments[0].Type} {Name} {Arguments[1].Type}) -> {ReturnType}";
+        }
         return $"{Name}({
-            String.Join(", ", Arguments.Select(a => $"{a.Name}:{a.Type.DataType}{(a.Type.CanBeNull ? "?" : "")}"))
-        }) -> {ReturnType.DataType}{(ReturnType.CanBeNull ? "?" : "")}";
-
+            String.Join(", ", Arguments.Select(a => $"{a}"))
+        }) -> {ReturnType}";
     }
 }
 
+public class ImplicitCastMetadata
+{
+    public uint Cost { get; init; }
+    
+}
 public enum FunctionKind
 {
     Default = 0,

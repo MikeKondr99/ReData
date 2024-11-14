@@ -38,3 +38,4 @@ public ref struct TemplateInterpolatedStringHandler
         return new Template() { Tokens = this.tokens, };
     }
 }
+

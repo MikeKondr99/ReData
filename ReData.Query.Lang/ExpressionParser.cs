@@ -21,6 +21,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         ["<="] = "@leq",
         [">"] = "@gt",
         [">="] = "@geq",
+        ["^"] = "@hat",
     };
 
     private Dictionary<string, string> _UnaryOperators = new()
@@ -42,7 +43,8 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
             return new FuncExpr()
             {
                 Name = op.GetText(),
-                Arguments = [VisitExpr(expr)]
+                Arguments = [VisitExpr(expr)],
+                Kind = FuncExprKind.Unary,
             };
         }
         throw new Exception("Non valid unary expression");
@@ -60,7 +62,8 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
             return new FuncExpr()
             {
                 Name = op.GetText(),
-                Arguments = [Visit(left), Visit(right)]
+                Arguments = [Visit(left), Visit(right)],
+                Kind = FuncExprKind.Binary,
             };
         }
         throw new Exception("Non valid binary expression");
@@ -113,6 +116,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         {
             Name = context.children[0].GetText(),
             Arguments = args.ToArray(),
+            Kind = FuncExprKind.Default,
         };
     }
 

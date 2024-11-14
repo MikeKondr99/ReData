@@ -7,6 +7,9 @@ public interface IArg
     
 }
 
+
+public record struct Unknown(int Index) : IArg;
+
 public record struct Number(int Index) : IArg;
 
 public record struct Text(int Index) : IArg;

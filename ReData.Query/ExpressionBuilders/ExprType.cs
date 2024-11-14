@@ -90,7 +90,7 @@ public record struct ExprType
 
     public override string ToString()
     {
-        return $"{(IsConstant ? "const" : "")}{(Aggregated ? "aggr" : "")}{Type}{(CanBeNull ? "?" : "")}";
+        return $"{(IsConstant ? "const " : "")}{(Aggregated ? "aggr " : "")}{Type}{(CanBeNull ? "?" : "")}";
     }
 }
 

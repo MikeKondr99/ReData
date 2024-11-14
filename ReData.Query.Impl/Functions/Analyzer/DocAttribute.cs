@@ -11,5 +11,11 @@ public class MethodAttribute() : Attribute
 {
 }
 
+public class ImplicitAttribute(uint priority) : Attribute
+{
+    public uint Priority => priority;
+    
+}
+
     
     

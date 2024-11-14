@@ -9,12 +9,28 @@
         <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
         <SpaProxyServerUrl>https://localhost:5173</SpaProxyServerUrl>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <SpaRoot>ReDataClient\</SpaRoot>
+        <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Don't publish the SPA source files, but do show them in the project files list -->
+        <Content Remove="$(SpaRoot)**" />
+        <None Remove="$(SpaRoot)**" />
+        <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+    </ItemGroup>
     
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1"/>
         <PackageReference Include="FluentResults" Version="3.16.0"/>
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0"/>
         <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.10" />
+        <PackageReference Include="OmniSharp.Extensions.JsonRpc" Version="0.19.9" />
+        <PackageReference Include="OmniSharp.Extensions.JsonRpc.Generators" Version="0.19.9" />
+        <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="0.19.9" />
         <PackageReference Include="SimpleInjector.Integration.AspNetCore.Mvc" Version="5.5.0"/>
     </ItemGroup>
 
@@ -25,5 +41,30 @@
     <ItemGroup>
       <Folder Include="Controllers\Validators\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="ReDataClient\angular.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\package-lock.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\package.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.app.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.spec.json" />
+    </ItemGroup>
+
+    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+        <!-- As part of publishing, ensure the JS resources are freshly built in production mode -->
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build -- --prod" />
+
+        <!-- Include the newly-built files in the publish output -->
+        <ItemGroup>
+            <DistFiles Include="$(SpaRoot)dist\**" />
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
 
 </Project>

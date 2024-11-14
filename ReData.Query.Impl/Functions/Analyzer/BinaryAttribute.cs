@@ -2,6 +2,7 @@
 
 public class BinaryAttribute(BinaryOperation operation) : FunctionNameAttribute(operation switch
 {
+        BinaryOperation.Power => "^",
         BinaryOperation.Plus => "+",
         BinaryOperation.Minus => "-",
         BinaryOperation.Multiply => "*",
@@ -30,4 +31,5 @@ public enum BinaryOperation
     LessOrEqual = 10,
     GreaterThen = 11,
     GreaterOrEqual = 12,
+    Power = 13,
 }

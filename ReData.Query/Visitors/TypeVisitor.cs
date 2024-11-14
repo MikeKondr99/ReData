@@ -63,7 +63,23 @@ public class TypeVisitor : ExprVisitor<ExprType>, ITypeVisitor
                 CanBeNull = t.CanBeNull,
             }).ToArray()
         };
-        var type = FunctionTypes.GetFunction(sign).ReturnType;
+        var res  = FunctionTypes.ResolveFunction(sign);
+        if (res is null)
+        {
+            throw new Exception($"function `{sign} not found");
+        }
+        var type = res.Function.ReturnType;
+        if (type.CanBeNull)
+        {
+            var nullIf = res.Function.NullIf ?? (args => args.Any(a => a));
+            if (!nullIf([..sign.ArgumentTypes.Select(t => t.CanBeNull)]))
+            {
+                type = type with
+                {
+                    CanBeNull = false,
+                };
+            }
+        }
         return new ExprType()
         {
             Type = type.DataType,

@@ -376,5 +376,4 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
     }
     
-    
 }

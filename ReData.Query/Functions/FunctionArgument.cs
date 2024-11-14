@@ -5,6 +5,11 @@ public record FunctionArgument
     public required string Name { get; init; }
 
     public required FunctionArgumentType Type { get; init; }
+
+    public override string ToString()
+    {
+        return $"{Name}: {Type}";
+    }
 }
 
 public record FunctionArgumentType

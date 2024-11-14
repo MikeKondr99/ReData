@@ -9,9 +9,7 @@ public interface ITemplate
 public struct Template : ITemplate
 {
     public required IReadOnlyList<IToken> Tokens { get; init; }
-
     
-
     public override string ToString()
     {
         return String.Concat(Tokens.Select(t => t switch

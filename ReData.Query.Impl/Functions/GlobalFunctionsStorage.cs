@@ -15,6 +15,7 @@ public class GlobalFunctionsStorage
     public static IReadOnlyList<FunctionDefinition> Functions { get; } =
         new IEnumerable<FunctionDefinition>[]
         {
+            FunctionAnalyzer.GetFunctions(typeof(ImplicitConversionFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(StringFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(ConversionFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(ComparisonFunctions)),
@@ -23,6 +24,7 @@ public class GlobalFunctionsStorage
             FunctionAnalyzer.GetFunctions(typeof(FinancialFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(ConditionalFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(LogicFunctions)),
+            FunctionAnalyzer.GetFunctions(typeof(ReflectionFunctions)),
         }.SelectMany(f => f).ToArray();
 
     public static FunctionStorage GetFunctions(DatabaseTypeFlags database)
@@ -36,6 +38,8 @@ public class GlobalFunctionsStorage
                 Template = f.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value,
                 ReturnType = f.ReturnType,
                 Kind = f.Kind,
+                ImplicitCast = f.ImplicitCast,
+                NullIf = f.NullIf
             }));
     }
 }

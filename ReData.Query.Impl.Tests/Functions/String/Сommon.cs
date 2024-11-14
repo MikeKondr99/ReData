@@ -1,4 +1,5 @@
-﻿using ReData.Query.Impl.QueryBuilders;
+﻿using System.Runtime.CompilerServices;
+using ReData.Query.Impl.QueryBuilders;
 
 namespace ReData.Query.Impl.Tests.Functions.String;
 
@@ -34,14 +35,14 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
      [InlineData("Reverse('Hello')", "olleH")]
      public Task Reverse(string expr, object? expected) => Test(expr, expected);
      
-     [Theory(DisplayName = "KeepChars", Skip="NotImplemented yet")]
+     [Theory(DisplayName = "KeepChars", Skip = "Not implemented yet")]
      [InlineData("KeepChars('H2el1l3o','123')", "213")]
      public Task KeepChars(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "EmptyIsNull")]
      [InlineData("EmptyIsNull('Hello world!')", "Hello world!")]
      [InlineData("EmptyIsNull('')", null)]
-     [InlineData("EmptyIsNull(Text(null))", null)]
+     [InlineData("EmptyIsNull(null)", null)]
      public Task EmptyIsNull(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Composite")]

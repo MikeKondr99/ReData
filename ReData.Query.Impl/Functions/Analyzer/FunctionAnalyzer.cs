@@ -23,8 +23,8 @@ public static class FunctionAnalyzer
     private static FunctionDefinition? GetFunction(MethodInfo method)
     {
         // return type
-        var ret = GetReturnType(method);
-        if (ret is not var (retType, canReturnNull)) return null;
+        var rt = GetReturnType(method);
+        if (rt is not var (retType, canReturnNull)) return null;
         // params
         var prs = GetArgumentsTypes(method);
         if (prs is null) return null;
@@ -35,15 +35,16 @@ public static class FunctionAnalyzer
         {
             args[i] = CreateArg(methodParameters[i].ParameterType, i);
         }
-        var templates = method.Invoke(null, args) as Ret;
-        if (templates is null) return null;
+        var ret = method.Invoke(null, args) as Ret;
+        if (ret is null) return null;
         
         var doc = method.GetCustomAttribute<DocAttribute>()?.Text;
+        var isImplicit = method.GetCustomAttribute<ImplicitAttribute>();
         var rename = method.GetCustomAttribute<FunctionNameAttribute>()?.Name;
         var isBinary = method.GetCustomAttribute<BinaryAttribute>() is not null;
-        var isUnary = method.GetCustomAttribute<BinaryAttribute>() is not null;
+        var isUnary = method.GetCustomAttribute<UnaryAttribute>() is not null;
         var isMethod = method.GetCustomAttribute<MethodAttribute>() is not null;
-        return new FunctionDefinition()
+        return new FunctionDefinition
         {
             Name = rename ?? method.Name,
             Doc = doc,
@@ -52,17 +53,21 @@ public static class FunctionAnalyzer
                 DataType = retType,
                 CanBeNull = canReturnNull,
             },
-            Kind =
-                isBinary ? 
-                    FunctionKind.Binary 
-                : isUnary ? 
-                    FunctionKind.Unary 
-                : isMethod ? 
-                    FunctionKind.Method 
-                : 
-                    FunctionKind.Default,
+            Kind = (isBinary,isUnary,isMethod) switch
+            {
+                (true,_,_) => FunctionKind.Binary,
+                (_,true,_) => FunctionKind.Unary,
+                (_,_,true) => FunctionKind.Method,
+                _ => FunctionKind.Default,
+            },
             Arguments = prs,
-            Templates = templates.Templates,
+            Templates = ret.Templates,
+            ImplicitCast = isImplicit is not null ? new ImplicitCastMetadata() 
+            {
+                Cost = isImplicit.Priority
+            } : null,
+            NullIf = ret.NullIf,
+
         };
     }
 

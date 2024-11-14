@@ -10,8 +10,15 @@ public record FunctionSignature
     public required FunctionKind Kind { get; init; }
 
     public required IReadOnlyList<FunctionArgumentType> ArgumentTypes { get; init; }
-     public override string ToString()
-     {
-         return $"{Name}({String.Join(", ", ArgumentTypes.JoinBy(", "))})";
-     }
+     
+    public override string ToString()
+    {
+        if (Kind is FunctionKind.Binary)
+        {
+            return $"({ArgumentTypes[0]} {Name} {ArgumentTypes[1]})";
+        }
+        return $"{Name}({
+            String.Join(", ", ArgumentTypes.Select(a => $"{a}"))
+        })";
+    }
 }

@@ -5,5 +5,5 @@ namespace ReData.Query;
 
 public interface IFunctionStorage
 {
-    public FunctionDefinition GetFunction (FunctionSignature sign);
+    public FunctionResolution? ResolveFunction(FunctionSignature sign);
 }

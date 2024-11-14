@@ -114,16 +114,19 @@ public static class ComparisonFunctions
         [All] = $"({left} <> {right})", 
     };
     
+    [Method]
     public static Ret<Bool> IsNull(Integer? value) => new()
     {
         [All] = $"({value} IS NULL)", 
     };
     
+    [Method]
     public static Ret<Bool> IsNull(Number? value) => new()
     {
         [All] = $"({value} IS NULL)", 
     };
     
+    [Method]
     public static Ret<Bool> IsNull(Text? value) => new()
     {
         [All] = $"({value} IS NULL)", 

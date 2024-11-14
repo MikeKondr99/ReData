@@ -73,16 +73,22 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
                 CanBeNull = t.CanBeNull,
             }).ToArray()
         };
-        var func = FunctionStorage.GetFunction(sign);
-        var tokens = func.Template.Tokens;
-
-        for (int i = 0; i < tokens.Count; i++)
+        var res = FunctionStorage.ResolveFunction(sign);
+        if (res is null)
         {
-            _ = tokens[i] switch
+            throw new Exception($"function `{sign}` not found");
+        }
+
+        var tokens = res.GetTokens();
+
+        foreach (var token in tokens)
+        {
+            _ = token switch
             {
                 ConstToken(var str) => StringBuilder.Append(str),
                 ArgToken(var idx) => Visit(expr.Arguments[idx]),
             };
+            
         }
         return StringBuilder;
     }

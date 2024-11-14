@@ -1,4 +1,5 @@
-﻿using ReData.Query.Lang.Expressions;
+﻿using System.Linq.Expressions;
+using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query;
 
@@ -19,6 +20,11 @@ public static class QueryLinq
         {
             Where = [..query.Where ?? [], Expr.Parse(predicate)]
         };
+    }
+    
+    public static Query Where(this Query query, Expression<Func<string,string>> predicate)
+    {
+        return Where(query, "");
     }
 
     private static Query Order(this Query query, string expr, Query.Order.Type type)
@@ -122,5 +128,5 @@ public static class QueryLinq
             
         }
     }
-    
+
 }

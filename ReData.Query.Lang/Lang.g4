@@ -5,6 +5,7 @@ start:
 
 expr
     : MINUS expr #unary
+    | <assoc=right> expr (HAT) expr #binary
     | expr (MUL | DIV) expr #binary
 	| expr (PLUS | MINUS) expr #binary
     | expr (LESS_THEN | LESS_EQUAL | GREATER_THEN | GREATER_EQUAL) expr #binary
@@ -40,6 +41,7 @@ AND: [a] [n] [d];
 OR: [o] [r];
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
+HAT: '^';
 PLUS: '+';
 MINUS: '-';
 MUL: '*';

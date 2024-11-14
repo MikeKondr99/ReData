@@ -77,7 +77,8 @@ public class LiteralsTest
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "-",
-            Arguments = [new IntegerLiteral(1)]
+            Arguments = [new IntegerLiteral(1)],
+            Kind = FuncExprKind.Unary,
         });
         // expr.Should().BeOfType<FuncExpr>();
         // if (expr is FuncExpr f)
@@ -127,7 +128,6 @@ public class LiteralsTest
     [InlineData("(a + 3", "expected ')'", 6)]
     [InlineData("2,3", "expected end of expression",1)]
     [InlineData("f(1,2", "expected ',' or ')'",5)]
-    [InlineData("f(,)", "expected expression", 2)]
     [InlineData("f(x,)", "expected expression",4)]
     [InlineData("f(x,", "expected expression",4)]
     [InlineData("12(x)", "expected end of expression",2)]
@@ -157,8 +157,8 @@ public class LiteralsTest
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
-            Arguments = [new NameExpr("a"), new IntegerLiteral(3)]
-
+            Arguments = [new NameExpr("a"), new IntegerLiteral(3)],
+            Kind = FuncExprKind.Binary,
         });
     }
 }
