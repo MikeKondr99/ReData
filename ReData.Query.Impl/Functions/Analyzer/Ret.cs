@@ -12,7 +12,6 @@ public record Ret<T> : Ret
     {
         var res = new Ret<T2>
         {
-            Const = Const,
             NullIf = NullIf,
             _templates = _templates
         };
@@ -33,7 +32,7 @@ public record Ret
     
     // public ConstTemplate Const { get; init; }
     
-    public Func<bool[],bool> NullIf { get; init; }
+    public Func<bool[],bool>? NullIf { get; init; }
     
     
 }

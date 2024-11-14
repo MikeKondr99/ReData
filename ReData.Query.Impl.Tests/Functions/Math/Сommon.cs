@@ -78,6 +78,8 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     [Theory(DisplayName = "Priority")]
     [InlineData("2 + 2 * 2", 6)]
     [InlineData("(2 + 2) * 2", 8)]
+    [InlineData("(-10 + 1).Sign()", -1)]
+    [InlineData("-10 + 1.Sign()", 1)]
     public Task Priority(string expr, object? expected) => Test(expr, expected);
     
     

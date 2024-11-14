@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using ReData.Query.Impl.QueryBuilders;
-
+﻿
 namespace ReData.Query.Impl.Tests.Functions.String;
 
 public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
