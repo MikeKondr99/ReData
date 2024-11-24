@@ -1,0 +1,60 @@
+﻿<Project>
+    
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <!-- Подключенные везде зависимости (анализаторы) -->
+    <ItemGroup>
+<!--        <PackageReference Include="Nopen.NET"/>-->
+    </ItemGroup>
+
+    <!-- Версии зависимостей -->
+    <ItemGroup>
+        <PackageVersion Include="Nopen.NET" Version="0.1.6" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+
+        <PackageVersion Include="DotNetGraph" Version="3.2.0" />
+
+        <PackageVersion Include="AutoMapper" Version="13.0.1"/>
+        <PackageVersion Include="FluentResults" Version="3.16.0"/>
+        <PackageVersion Include="FluentValidation" Version="11.3.0" />
+        <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0"/>
+        <PackageVersion Include="SimpleInjector.Integration.AspNetCore.Mvc" Version="5.5.0"/>
+
+        <PackageVersion Include="Antlr4.Runtime" Version="4.6.6" />
+        <PackageVersion Include="Antlr4" Version="4.6.6">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+
+
+        <PackageVersion Include="AutoFixture" Version="4.18.1" />
+        <PackageVersion Include="coverlet.collector" Version="6.0.2"/>
+        <PackageVersion Include="FluentResults.Extensions.FluentAssertions" Version="2.1.2" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
+        <PackageVersion Include="MockQueryable.Moq" Version="7.0.3" />
+        <PackageVersion Include="Moq" Version="4.20.72" />
+        <PackageVersion Include="xunit" Version="2.5.3"/>
+        <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3"/>
+
+        <PackageVersion Include="ClickHouse.Client" Version="7.9.1" />
+        <PackageVersion Include="FluentAssertions" Version="6.12.2" />
+        <PackageVersion Include="MySql.Data" Version="9.1.0" />
+        <PackageVersion Include="Npgsql" Version="9.0.1" />
+        <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
+        <PackageVersion Include="Microsoft.Data.SqlClient" Version="4.9.0" />
+        <PackageVersion Include="Testcontainers" Version="4.0.0" />
+        <PackageVersion Include="Testcontainers.ClickHouse" Version="4.0.0" />
+        <PackageVersion Include="Testcontainers.MsSql" Version="4.0.0" />
+        <PackageVersion Include="Testcontainers.MySql" Version="4.0.0" />
+        <PackageVersion Include="Testcontainers.Oracle" Version="4.0.0" />
+        <PackageVersion Include="Testcontainers.PostgreSql" Version="4.0.0" />
+
+        <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
+    </ItemGroup>
+</Project>

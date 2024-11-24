@@ -1,0 +1,15 @@
+﻿
+<Project>
+    <PropertyGroup>
+        <Authors>Mike Kondr</Authors>
+        <LangVersion>latest</LangVersion>
+        <TargetFramework>net9.0</TargetFramework>
+        <DebugType>embedded</DebugType>
+        <NoWarn>$(NoWarn);1701;1702;1591;CS3021</NoWarn>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <PackageProjectUrl>https://github.com/MikeKondr99/ReData/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/MikeKondr99/ReData/</RepositoryUrl>
+        <NeutralLanguage>en</NeutralLanguage>
+        <NuGetAudit>false</NuGetAudit>
+    </PropertyGroup>
+</Project>

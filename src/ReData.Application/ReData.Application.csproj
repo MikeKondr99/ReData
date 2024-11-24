@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="AutoMapper"/>
+        <PackageReference Include="FluentResults"/>
+        <PackageReference Include="FluentValidation.AspNetCore"/>
+        <PackageReference Include="SimpleInjector.Integration.AspNetCore.Mvc"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ReData.Domain\ReData.Domain.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Controllers\Validators\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="ReDataClient\angular.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\package-lock.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\package.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.app.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.json" />
+      <_ContentIncludedByDefault Remove="ReDataClient\tsconfig.spec.json" />
+    </ItemGroup>
+</Project>
