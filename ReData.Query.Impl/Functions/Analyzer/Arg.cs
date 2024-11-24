@@ -14,6 +14,8 @@ public record struct Number(int Index) : IArg;
 
 public record struct Text(int Index) : IArg;
 
+public record struct DateTime(int Index) : IArg;
+
 public record struct Integer(int Index) : IArg;
 
 public record struct Null(int Index) : IArg;

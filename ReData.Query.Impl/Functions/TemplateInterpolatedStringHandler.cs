@@ -3,7 +3,7 @@
 namespace ReData.Query.Visitors;
 
 [InterpolatedStringHandler]
-public ref struct TemplateInterpolatedStringHandler
+public struct TemplateInterpolatedStringHandler
 {
     public List<IToken> tokens;
 

@@ -146,6 +146,7 @@ public static class FunctionAnalyzer
         if (type == typeof(Number)) return DataType.Number;
         if (type == typeof(Bool)) return DataType.Boolean;
         if (type == typeof(Null)) return DataType.Null;
+        if (type == typeof(DateTime)) return DataType.DateTime;
         throw new Exception($"Не удалось определить тип данных по типу {type.Name}");
     }
 }

@@ -45,6 +45,6 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
      [InlineData("Bool('')", false)]
      [InlineData("Bool(false)", false)]
      [InlineData("Bool(true)", true)]
-     [InlineData("If(Bool(null) or true, 'then', 'else'", "else")]
+     [InlineData("If(Bool(null) or true, 'then', 'else')", "else")]
      public Task Bool(string expr, object? expected) => Test(expr, expected);
 }

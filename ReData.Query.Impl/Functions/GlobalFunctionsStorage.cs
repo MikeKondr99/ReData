@@ -18,7 +18,7 @@ public class GlobalFunctionsStorage
             FunctionAnalyzer.GetFunctions(typeof(ImplicitConversionFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(StringFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(ConversionFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(ComparisonFunctions)),
+            new ComparisonFunctions().GetFunctions(),
             FunctionAnalyzer.GetFunctions(typeof(NumberFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(MathFunctions)),
             FunctionAnalyzer.GetFunctions(typeof(FinancialFunctions)),

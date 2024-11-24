@@ -49,6 +49,14 @@ public record struct ExprType
         };
     }
     
+    public static ExprType DateTime()
+    {
+        return new ExprType()
+        {
+            Type = DataType.DateTime,
+        };
+    }
+    
     public static ExprType Integer()
     {
         return new ExprType()
@@ -102,4 +110,5 @@ public enum DataType
     Integer = 3,
     Text = 4,
     Boolean = 5,
+    DateTime = 6,
 }

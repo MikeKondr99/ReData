@@ -80,7 +80,7 @@ public static class NumberFunctions
     {
         [All &~ SqlServer &~ ClickHouse] = $"Round(({input} - {offset}) / {step}) * {step} + {offset}", 
         [SqlServer] = $"Round(({input} - {offset}) / {step}, 0) * {step} + {offset}", 
-        [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}", 
+        [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}",
     };
     
     
