@@ -21,7 +21,7 @@ public class ConversionFunctions : FunctionsDescriptor
             Boolean => "Bool",
             var any => throw new UnknownEnumValueException<DataType>(any),
         };
-        return Function(name)
+        return Method(name)
             .Arg("input", input)
             .Returns(ret);
     }

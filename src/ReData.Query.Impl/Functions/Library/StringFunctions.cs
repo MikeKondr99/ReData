@@ -77,12 +77,11 @@ public class StringFunctions : FunctionsDescriptor
             });
         
         
-        // TODO: NotTested
-        // TODO: Неверный Null Propagate
         // NullIf = (_) => true,
         Method("EmptyIsNull")
             .Arg("input", Text)
             .Returns(Text)
+            .CustomNullPropagation(nulls => true)
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 

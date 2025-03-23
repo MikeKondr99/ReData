@@ -32,13 +32,13 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Number)
-            .Template($"({0} + 0.0)");
+            .Template($"SIGN({0})");
 
         Function("IntegerFromNull")
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Integer)
-            .Template($"({0} + 0)");
+            .Template($"SIGN({0})");
 
         Function("BoolFromNull")
             .ImplicitCast(1)
@@ -52,7 +52,6 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .Returns(Text)
             .Template($"LOWER({0})");
 
-        // TODO Неверный Propagate наверно
         foreach (var T in new[]
                  {
                      Integer, Number, Boolean, Text

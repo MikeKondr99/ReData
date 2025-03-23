@@ -16,15 +16,7 @@ public abstract class ExprTests(IDatabaseFixture fixture)
     {
         var runner = await fixture.GetRunnerAsync();
         var input = Expr.Parse(expr);
-        if (expected is bool b)
-        {
-            input = new FuncExpr()
-            {
-                Name = "If",
-                Arguments = [input, new IntegerLiteral(1), new IntegerLiteral(0)]
-            };
-            expected = b ? 1 : 0;
-        }
+        expected = PrepareBoolTests(expected, ref input);
         Query query = new Query()
         {
             Select =
@@ -35,7 +27,28 @@ public abstract class ExprTests(IDatabaseFixture fixture)
         var result = await runner.SingleAsync(query);
         Compare(result, Mapper.MapField(expected));
     }
-    
+
+    private static object? PrepareBoolTests(object? expected, ref IExpr input)
+    {
+        if (expected is bool or Null)
+        {
+            input = new FuncExpr()
+            {
+                Name = "If",
+                Arguments = [input, new IntegerLiteral(1), new IntegerLiteral(0)]
+            };
+        }
+
+        expected = expected switch
+        {
+            bool b => b ? 1 : 0,
+            Null => null,
+            _ => expected
+        };
+
+        return expected;
+    }
+
     public void Compare(IValue result, IValue expected)
     {
         object? o =(result, expected) switch
@@ -52,7 +65,12 @@ public abstract class ExprTests(IDatabaseFixture fixture)
         };
 
     }
+    
+    internal readonly struct BoolNull;
+
+    internal const string Null = "εNULLε";
 }
+
 
 file static class QueryRunnerExtensions
 {

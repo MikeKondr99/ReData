@@ -63,22 +63,22 @@ public class MathFunctions : FunctionsDescriptor
             [All] = $"POWER({0}, {1})",
         };
 
+       // TODO: Not Tested
         Method("Pow")
             .Arg("left", Number)
             .Arg("right", Number)
             .Returns(Number)
             .Templates(powTemplates);
         
+       // TODO: Not Tested
        Binary("^", Number, Number)
             .Returns(Number)
             .Templates(powTemplates);
        
-       // TODO: Not Tested
        Function("E")
             .Returns(Number)
             .Template($"2.718281828459045");
        
-       // TODO: Not Tested
        Function("Pi")
             .Returns(Number)
             .Template($"3.141592653589793");

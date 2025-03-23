@@ -13,10 +13,6 @@ public interface IQueryRunner : IAsyncDisposable
 
 public class PostgresRunner : IQueryRunner
 {
-    public PostgresRunner()
-    {
-        int a = 5;
-    }
     public required NpgsqlConnection Connection { private get; init; }
     public required IQueryCompiler QueryCompiler { private get; init; }
     public required IFunctionStorage FunctionStorage { private get; init; }

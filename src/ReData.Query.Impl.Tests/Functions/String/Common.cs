@@ -43,11 +43,11 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("EmptyIsNull('Hello world!')", "Hello world!")]
      [InlineData("EmptyIsNull('')", null)]
      [InlineData("EmptyIsNull(null)", null)]
+     [InlineData("EmptyIsNull('').Type()", "Text?")]
      public Task EmptyIsNull(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Composite")]
      [InlineData("'  HeLLo World! '.Trim().Lower()", "hello world!")]
      public Task Composite(string expr, object? expected) => Test(expr, expected);
      
-     [Theory]
 }
