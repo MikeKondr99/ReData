@@ -1,23 +1,32 @@
 ﻿namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
+using static DataType;
 
-public static class LogicFunctions 
+public class LogicFunctions : FunctionsDescriptor
 {
-    [Binary(BinaryOperation.And)]
-    public static Ret<Bool?> And(Bool? left, Bool? right) => new()
+    protected override void Functions()
     {
-        [All] = $"({left} AND {right})", 
-    };
-    
-    [Binary(BinaryOperation.Or)]
-    public static Ret<Bool?> Or(Bool? left, Bool? right) => new()
-    {
-        [All] = $"({left} OR {right})", 
-    };
-    
-    public static Ret<Bool?> Not(Bool? input) => new()
-    {
-        [All] = $"(NOT {input})", 
-    };
+        Binary("and", Boolean, Boolean)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All] = $"({0} AND {1})",
+            });
+
+        Binary("or", Boolean, Boolean)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All] = $"({0} OR {1})",
+            });
+
+        Function("Not")
+            .Arg("input", Boolean)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All] = $"(NOT {0})",
+            });
+    }
 }

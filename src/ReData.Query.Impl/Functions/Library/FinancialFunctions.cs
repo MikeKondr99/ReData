@@ -1,13 +1,24 @@
 ﻿namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
+using static DataType;
 
-public static class FinancialFunctions
+public class FinancialFunctions : FunctionsDescriptor
 {
-    public static Ret<Number?> FutureValue(Number? rate, Integer? nper, Number? pmt) => new()
+    protected override void Functions()
     {
-        [All & ~SqlServer] = $"(-1 * {pmt} * (1 - POWER(1 + {rate}, -{nper})) / {rate}) * POWER(1 + {rate}, {nper})", 
-        [SqlServer] = $"(-1.0 * CAST({pmt} AS DECIMAL(30,20)) * (1.0 - POWER(1 + CAST({rate} AS DECIMAL(30,20)), -{nper})) / {rate}) * POWER(1 + CAST({rate} AS DECIMAL(30,20)), {nper})", 
-    };
-    
+        int rate = 0, nper = 1, pmt = 2;
+        Function("FutureValue")
+            .Arg("rate", Number)
+            .Arg("nper", Integer)
+            .Arg("pmt", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~SqlServer] =
+                    $"(-1 * {pmt} * (1 - POWER(1 + {rate}, -{nper})) / {rate}) * POWER(1 + {rate}, {nper})",
+                [SqlServer] =
+                    $"(-1.0 * CAST({pmt} AS DECIMAL(30,20)) * (1.0 - POWER(1 + CAST({rate} AS DECIMAL(30,20)), -{nper})) / {rate}) * POWER(1 + CAST({rate} AS DECIMAL(30,20)), {nper})",
+            });
+    }
 }

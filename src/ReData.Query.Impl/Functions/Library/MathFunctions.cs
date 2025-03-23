@@ -1,95 +1,86 @@
-﻿namespace ReData.Query.Impl.Functions.Library;
+﻿using ReData.Query.Visitors;
+
+namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
-using static BinaryOperation;
+using static DataType;
 
-public static class MathFunctions
+public class MathFunctions : FunctionsDescriptor
 {
-    [Binary(Plus)]
-    public static Ret<Integer?> Add(Integer? left, Integer? right) => new()
+    protected override void Functions()
     {
-        [All] = $"({left} + {right})", 
-    };
-    
-    
-    [Binary(Plus)]
-    public static Ret<Number?> Add(Number? left, Number? right) => new()
-    {
-        [All] = $"({left} + {right})", 
-    };
-    
-    [Binary(Minus)]
-    public static Ret<Integer?> Sub(Integer? left, Integer? right) => new()
-    {
-        [All] = $"({left} - {right})", 
-    };
-    
-    [Binary(Minus)]
-    public static Ret<Number?> Sub(Number? left, Number? right) => new()
-    {
-        [All] = $"({left} - {right})", 
-    };
-    
-    [Unary(UnaryOperation.Minus)]
-    public static Ret<Integer?> UnaryMinus(Integer? value) => new()
-    {
-        [All] = $"(-{value})", 
-    };
-    
-    [Unary(UnaryOperation.Minus)]
-    public static Ret<Number?> UnaryMinus(Number? value) => new()
-    {
-        [All] = $"(-{value})", 
-    };
-    
-    [Binary(Multiply)]
-    public static Ret<Integer?> Mul(Integer? left, Integer? right) => new()
-    {
-        [All] = $"({left} * {right})", 
-    };
-    
-    
-    [Binary(Multiply)]
-    public static Ret<Number?> Mul(Number? left, Number? right) => new()
-    {
-        [All] = $"({left} * {right})", 
-    };
-    
-    [Binary(Divide)]
-    public static Ret<Number?> Div(Number? left, Number? right) => new()
-    {
-        [All] = $"({left} / {right})", 
-    };
-    
-    [Binary(Divide)]
-    public static Ret<Integer?> Div(Integer? left, Integer? right) => new()
-    {
-        [PostgreSql | SqlServer] = $"({left} / {right})", 
-        [MySql] = $"({left} DIV {right})", 
-        [Oracle] = $"FLOOR({left} / {right})", 
-        [ClickHouse] = $"intDiv({left}, {right})" 
-    };
-    
-    
-    
-    [Method]
-    public static Ret<Number?> Pow(Number? left, Number? right) => new()
-    {
-        [All] = $"POWER({left}, {right})", 
-    };
-    
-    [Binary(Power)]
-    public static Ret<Number?> PowOperator(Number? left, Number? right) => Pow(left, right);
-    
-    // TODO: NotTested
-    public static Ret<Integer> E() => new()
-    {
-        [All] = $"2.718281828459045", 
-    };
-    
-    // TODO: NotTested
-    public static Ret<Integer> Pi() => new()
-    {
-        [All] = $"3.141592653589793", 
-    };
+        foreach (var T in new [] { Integer, Number })
+        {
+            Binary("+", T, T)
+                .Returns(T)
+                .Templates(new()
+                {
+                    [All] = $"({0} + {1})",
+                });
+            
+            Binary("-", T, T)
+                .Returns(T)
+                .Templates(new()
+                {
+                    [All] = $"({0} - {1})",
+                });
+
+            Unary("-")
+                .Arg("value", T)
+                .Returns(T)
+                .Templates(new()
+                {
+                    [All] = $"(-{0})",
+                });
+            
+            Binary("*", T, T)
+                .Returns(T)
+                .Templates(new()
+                {
+                    [All] = $"({0} * {1})", 
+                });
+        }
+
+        Binary("/", Number, Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All] = $"({0} / {1})", 
+            });
+        
+        Binary("/", Integer, Integer)
+            .Returns(Integer)
+            .Templates(new()
+            {
+                [PostgreSql | SqlServer] = $"({0} / {1})", 
+                [MySql] = $"({0} DIV {1})", 
+                [Oracle] = $"FLOOR({0} / {1})", 
+                [ClickHouse] = $"intDiv({0}, {1})" 
+            });
+
+        Dictionary<DatabaseTypeFlags, TemplateInterpolatedStringHandler> powTemplates = new()
+        {
+            [All] = $"POWER({0}, {1})",
+        };
+
+        Method("Pow")
+            .Arg("left", Number)
+            .Arg("right", Number)
+            .Returns(Number)
+            .Templates(powTemplates);
+        
+       Binary("^", Number, Number)
+            .Returns(Number)
+            .Templates(powTemplates);
+       
+       // TODO: Not Tested
+       Function("E")
+            .Returns(Number)
+            .Template($"2.718281828459045");
+       
+       // TODO: Not Tested
+       Function("Pi")
+            .Returns(Number)
+            .Template($"3.141592653589793");
+    }
 }

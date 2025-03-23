@@ -68,6 +68,7 @@ public sealed class FunctionStorage : IFunctionStorage
                     {
                         Name = "input",
                         Type = from,
+                        PropagateNull = true,
                     }
                 ],
                 ReturnType = new FunctionReturnType()
@@ -85,7 +86,7 @@ public sealed class FunctionStorage : IFunctionStorage
                 {
                     Cost = 0,
                 },
-                NullIf = null,
+                CustomNullPropagation = null,
             };
         
         return _implicitCasts[from].FirstOrDefault(f =>

@@ -1,117 +1,174 @@
 ﻿namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
+using static DataType;
 
-public static class NumberFunctions
+public class NumberFunctions : FunctionsDescriptor
 {
-        
-    [Method]
-    public static Ret<Integer?> Mod(Integer? input, Integer? modulus) => new()
+    protected override void Functions()
     {
-        [All & ~SqlServer] = $"MOD({input}, {modulus})", 
-        [SqlServer] = $"{input} % {modulus}" 
-    };
-    
-    [Method]
-    public static Ret<Integer?> Rem(Integer? input, Integer? modulus) => new()
-    {
-        [All & ~SqlServer] = $"MOD({input}, {modulus})", 
-        [SqlServer] = $"{input} % {modulus}" 
-    };
-    
-    public static Ret<Integer?> Abs(Integer? input) => new()
-    {
-        [All] = $"ABS({input})" 
-    };
-    
-    public static Ret<Number?> Abs(Number? input) => new()
-    {
-        [All] = $"ABS({input})" 
-    };
+        int input = 0, step = 1, offset = 2;
+        int modulus = 1;
+        Method("Mod")
+            .Arg("input", Integer)
+            .ReqArg("modulus", Integer)
+            .Returns(Integer)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"MOD({input}, {modulus})",
+                [SqlServer] = $"({input} % {modulus})",
+            });
 
-    public static Ret<Number?> Floor(Number? input) => new()
-    {
-        [All] = $"FLOOR({input})"
-    };
-    
-    public static Ret<Number?> Ceil(Number? input) => new()
-    {
-        [All & ~SqlServer] = $"CEIL({input})", 
-        [SqlServer] = $"CEILING({input})" 
-    };
+        Method("Rem")
+            .Arg("input", Integer)
+            .Arg("modulus", Integer)
+            .Returns(Integer)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"ABS(MOD({input}, {modulus}))",
+                [SqlServer] = $"ABS({input} % {modulus})"
+            });
 
-    public static Ret<Number?> Round(Number? input) => new()
-    {
-        [All &~ SqlServer &~ ClickHouse] = $"ROUND({input})", 
-        [SqlServer] = $"ROUND(CAST({input} AS NUMERIC),0)", 
-        [ClickHouse] = $"ROUND(CAST({input},'Decimal64(6)'),0)" 
-    };
-    
-    public static Ret<Number?> Floor(Number? input, Number? step) => new()
-    {
-        [All] = $"FLOOR({input} / {step}) * {step}", 
-    };
-    
-    public static Ret<Number?> Ceil(Number? input, Number? step) => new()
-    {
-        [All & ~Oracle] = $"CEILING({input} / {step}) * {step}", 
-        [Oracle] = $"CEIL({input} / {step}) * {step}" 
-    };
+        foreach (var T in new[]
+                 {
+                     Integer, Number
+                 })
+        {
+            Function("Abs")
+                .Arg("input", T)
+                .Returns(T)
+                .Templates(new()
+                {
+                    [All] = $"ABS({input})"
+                });
+        }
 
-    public static Ret<Number?> Round(Number? input, Number? step) => new()
-    {
-        [All &~ SqlServer &~ ClickHouse] = $"ROUND({input} / {step}) * {step}", 
-        [SqlServer] = $"ROUND({input} / {step}, 0) * {step}", 
-        [ClickHouse] = $"ROUND(CAST({input} / {step},'Decimal64(6)')) * {step}", 
-    };
-    
-    public static Ret<Number?> Floor(Number? input, Number? step, Number? offset) => new()
-    {
-        [All] = $"FLOOR(({input} - {offset}) / {step}) * {step} + {offset}", 
-    };
-    
-    public static Ret<Number?> Ceil(Number? input, Number? step, Number? offset) => new()
-    {
-        [All & ~Oracle] = $"CEILING(({input} - {offset}) / {step}) * {step} + {offset}", 
-        [Oracle] = $"CEIL(({input} - {offset}) / {step}) * {step} + {offset}", 
-    };
+        Function("Floor")
+            .Arg("input", Number)
+            .Returns(Number)
+            .Template($"FLOOR({input})");
 
-    public static Ret<Number?> Round(Number? input, Number? step, Number? offset) => new()
-    {
-        [All &~ SqlServer &~ ClickHouse] = $"Round(({input} - {offset}) / {step}) * {step} + {offset}", 
-        [SqlServer] = $"Round(({input} - {offset}) / {step}, 0) * {step} + {offset}", 
-        [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}",
-    };
-    
-    
-    public static Ret<Bool?> Even(Integer? input) => new()
-    {
-        [All &~SqlServer] = $"(MOD({input}, 2) = 0)", 
-        [SqlServer] = $"(({input} % 2) = 0)", 
-    };
-    
-    public static Ret<Bool?> Odd(Integer? input) => new()
-    {
-        [All &~SqlServer] = $"(MOD({input}, 2) <> 0)", 
-        [SqlServer] = $"(({input} % 2) <> 0)", 
-    };
-    
-    [Method]
-    public static Ret<Integer?> Sign(Integer? input) => new()
-    {
-        [All] = $"SIGN({input})", 
-    };
-    
-    [Method]
-    public static Ret<Integer?> Sign(Number? input) => new()
-    {
-        [All] = $"SIGN({input})", 
-    };
-    
-    [Method]
-    public static Ret<Bool?> Frac(Number? input) => new()
-    {
-        [All &~SqlServer] = $"MOD({input}, 1)", 
-        [SqlServer] = $"({input} % 1)", 
-    };
+        Function("Ceil")
+            .Arg("input", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"CEIL({input})",
+                [SqlServer] = $"CEILING({input})"
+            });
+
+        Function("Round")
+            .Arg("input", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~ SqlServer & ~ ClickHouse] = $"ROUND({input})",
+                [SqlServer] = $"ROUND(CAST({input} AS NUMERIC),0)",
+                [ClickHouse] = $"ROUND(CAST({input},'Decimal64(6)'),0)"
+            });
+
+        Function("Floor")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All] = $"FLOOR({input} / {step}) * {step}",
+            });
+
+        Function("Ceil")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~Oracle] = $"CEILING({input} / {step}) * {step}",
+                [Oracle] = $"CEIL({input} / {step}) * {step}"
+            });
+
+        Function("Round")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~ SqlServer & ~ ClickHouse] = $"ROUND({input} / {step}) * {step}",
+                [SqlServer] = $"ROUND({input} / {step}, 0) * {step}",
+                [ClickHouse] = $"ROUND(CAST({input} / {step},'Decimal64(6)')) * {step}",
+            });
+
+        Function("Floor")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Arg("offset", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All] = $"FLOOR(({input} - {offset}) / {step}) * {step} + {offset}",
+            });
+
+        Function("Ceil")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Arg("offset", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~Oracle] = $"CEILING(({input} - {offset}) / {step}) * {step} + {offset}",
+                [Oracle] = $"CEIL(({input} - {offset}) / {step}) * {step} + {offset}",
+            });
+
+        Function("Round")
+            .Arg("input", Number)
+            .Arg("step", Number)
+            .Arg("offset", Number)
+            .Returns(Number)
+            .Templates(new()
+            {
+                [All & ~ SqlServer & ~ ClickHouse] = $"Round(({input} - {offset}) / {step}) * {step} + {offset}",
+                [SqlServer] = $"Round(({input} - {offset}) / {step}, 0) * {step} + {offset}",
+                [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}",
+            });
+
+        Function("Even")
+            .Arg("input", Integer)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"(MOD({input}, 2) = 0)",
+                [SqlServer] = $"(({input} % 2) = 0)",
+            });
+
+        Function("Odd")
+            .Arg("input", Integer)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"(MOD({input}, 2) <> 0)",
+                [SqlServer] = $"(({input} % 2) <> 0)",
+            });
+
+        foreach (var T in new[]
+                 {
+                     Integer, Number
+                 })
+        {
+            Method("Sign")
+                .Arg("input", T)
+                .Returns(Integer)
+                .Templates(new()
+                {
+                    [All] = $"SIGN({input})",
+                });
+        }
+
+        Method("Frac")
+            .Arg("input", Number)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [All & ~SqlServer] = $"MOD({input}, 1)",
+                [SqlServer] = $"({input} % 1)",
+            });
+    }
 }

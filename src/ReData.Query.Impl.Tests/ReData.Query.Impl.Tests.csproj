@@ -10,22 +10,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ClickHouse.Client"/>
+<!--        Tests-->
         <PackageReference Include="coverlet.collector"/>
-        <PackageReference Include="FluentAssertions"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="FluentAssertions"/>
+<!--        Databases-->
+        <PackageReference Include="ClickHouse.Client"/>
         <PackageReference Include="MySql.Data"/>
         <PackageReference Include="Npgsql"/>
         <PackageReference Include="Oracle.ManagedDataAccess.Core"/>
         <PackageReference Include="Microsoft.Data.SqlClient"/>
+<!--        TestContainers-->
         <PackageReference Include="Testcontainers"/>
         <PackageReference Include="Testcontainers.ClickHouse"/>
         <PackageReference Include="Testcontainers.MsSql"/>
         <PackageReference Include="Testcontainers.MySql"/>
         <PackageReference Include="Testcontainers.Oracle"/>
         <PackageReference Include="Testcontainers.PostgreSql"/>
-        <PackageReference Include="xunit"/>
-        <PackageReference Include="xunit.runner.visualstudio"/>
+        
     </ItemGroup>
 
     <ItemGroup>

@@ -1,20 +1,20 @@
 ﻿using System.Runtime.Intrinsics.Arm;
 using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Tests.Runners;
+using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Math;
 
 [Collection("Postgres")]
-public class Postgres(PostgresRunner runner) : Сommon(runner);
+public class Postgres(PostgresDatabaseFixture runner) : Сommon(runner);
 
 [Collection("SqlServer")]
-public class SqlServer(SqlServerRunner runner) : Сommon(runner);
+public class SqlServer(SqlServerDatabaseFixture runner) : Сommon(runner);
 
 [Collection("MySql")]
-public class MySql(MySqlRunner runner) : Сommon(runner);
+public class MySql(MySqlDatabaseFixture runner) : Сommon(runner);
 
 [Collection("ClickHouse")]
-public class ClickHouse(ClickHouseRunner runner) : Сommon(runner);
+public class ClickHouse(ClickHouseDatabaseFixture runner) : Сommon(runner);
 
 [Collection("Oracle")]
-public class Oracle(OracleRunner runner) : Сommon(runner);
+public class Oracle(OracleDatabaseFixture runner) : Сommon(runner);

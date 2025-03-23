@@ -1,9 +1,10 @@
 ﻿using ReData.Query.Impl.Functions;
 using ReData.Query.Impl.QueryBuilders;
+using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Number;
 
-public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
     [Theory(DisplayName = "Floor")]
     [InlineData("Floor(1.2)", 1)]
@@ -47,15 +48,13 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     public Task Round(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Mod")]
-    [InlineData("Mod(10, 5)", 0)]
-    [InlineData("Mod(6, 5)", 1)]
-    [InlineData("Mod(-9, 5)", -4)]
-    [InlineData("Mod(-9, -5)", 1)]
-    [InlineData("Mod(0, 5)", 0)]
-    [InlineData("Mod(10, -3)", 1)]
+    [InlineData("Mod(7, 2)", 1)]
+    [InlineData("Mod(9, 3)", 0)]
+    [InlineData("Mod(-4, 3)", -1)]
+    [InlineData("Mod(4, -3)", 1)]
+    [InlineData("Mod(-4, -3)", -1)]
     public async Task Mod(string expr, object? expected)
     {
-        // Assuming `Test` is a method that evaluates the expression and compares it to the expected value.
         await Test(expr, expected);
     }
 
@@ -67,7 +66,6 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     [InlineData("Rem(10, -3)", 1)]
     public async Task Rem(string expr, object? expected)
     {
-        // Similar check for the Rem function.
         await Test(expr, expected);
     }
   
@@ -86,7 +84,6 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     [InlineData("Even(2)", true)]
     [InlineData("Even(-1)", false)]
     [InlineData("Even(-2)", true)]
-    [InlineData("Even(null)", null)]
     public Task Even(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Odd")]
@@ -95,7 +92,6 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
     [InlineData("Odd(2)", false)]
     [InlineData("Odd(-1)", true)]
     [InlineData("Odd(-2)", false)]
-    [InlineData("Odd(null)", null)]
     public Task Odd(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Sign")]

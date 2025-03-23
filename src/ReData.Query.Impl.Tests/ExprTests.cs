@@ -2,16 +2,19 @@
 using System.Globalization;
 using ClickHouse.Client.Numerics;
 using FluentAssertions;
+using ReData.Query.Impl.Runners;
+using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class ExprTests(ISqlRunner runner)
+public abstract class ExprTests(IDatabaseFixture fixture)
 {
-    protected ISqlRunner Runner { get; } = runner;
+    private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
     
     public async Task Test(string expr, object? expected)
     {
+        var runner = await fixture.GetRunnerAsync();
         var input = Expr.Parse(expr);
         if (expected is bool b)
         {
@@ -29,34 +32,34 @@ public abstract class ExprTests(ISqlRunner runner)
                 new Query.Map("test", input),
             ]
         };
-        var sql = Runner.QueryBuilder.Build(query);
-        var result = await Runner.Scalar(sql);
-        if (expected is double exp)
-        {
-            if (result is ClickHouseDecimal cd)
-            {
-                result = cd.ToDecimal(new NumberFormatInfo());
-            }
-            if (result is double dd)
-            {
-                result = (decimal)dd;
-            }
-            if (result is not Decimal dec)
-            {
-                result.Should().BeOfType<Decimal>();
-                throw new UnreachableException();
-            }
-
-            exp = Math.Round(exp, 7);
-            double res = Math.Round((double)dec, 7);
-            res.Should().Be(exp);
-        } else if (expected is null)
-        {
-            result.Should().BeOneOf(DBNull.Value,null);
-        }
-        else
-        {
-            result.Should().Be(expected);
-        }
+        var result = await runner.SingleAsync(query);
+        Compare(result, Mapper.MapField(expected));
     }
+    
+    public void Compare(IValue result, IValue expected)
+    {
+        object? o =(result, expected) switch
+        {
+            (NumberValue(var res), NumberValue(var exp)) => res.Should().BeApproximately(exp, 7),
+            // TODO убрать после рефактора
+            (NumberValue(var res), IntegerValue(var exp)) => res.Should().BeApproximately(exp, 7),
+            (IntegerValue(var res), IntegerValue(var exp)) => res.Should().Be(exp),
+            (IntegerValue(var res), BoolValue(var exp)) => res.Should().Be(exp ? 1 : 0),
+            (BoolValue(var res), BoolValue(var exp)) => res.Should().Be(exp),
+            (TextValue(var res), TextValue(var exp)) => res.Should().Be(exp),
+            (_, NullValue) => result.Should().BeOfType<NullValue>(),
+            (_, _) => result.Should().BeOfType(expected.GetType()),
+        };
+
+    }
+}
+
+file static class QueryRunnerExtensions
+{
+    public async static Task<IValue> SingleAsync(this IQueryRunner runner, Query query)
+    {
+        var data = await runner.RunQueryAsync(query);
+        return data.Single()[0];
+    }
+    
 }

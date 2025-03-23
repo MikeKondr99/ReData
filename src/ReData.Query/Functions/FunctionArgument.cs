@@ -5,6 +5,8 @@ public record FunctionArgument
     public required string Name { get; init; }
 
     public required FunctionArgumentType Type { get; init; }
+    
+    public required bool PropagateNull { get; init; }
 
     public override string ToString()
     {

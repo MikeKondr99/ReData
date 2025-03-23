@@ -1,0 +1,26 @@
+﻿{
+  Name: +,
+  Arguments: [
+    {
+      Value: a,
+      Type: Name
+    },
+    {
+      Name: *,
+      Arguments: [
+        {
+          Value: b,
+          Type: Name
+        },
+        {
+          Value: c,
+          Type: Name
+        }
+      ],
+      Kind: Binary,
+      Type: Func
+    }
+  ],
+  Kind: Binary,
+  Type: Func
+}

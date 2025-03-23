@@ -1,4 +1,5 @@
 ﻿using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using ReData.Query.Functions;
 using ReData.Query.Impl.Functions.Library;
@@ -12,24 +13,32 @@ using static DataType;
 
 public class GlobalFunctionsStorage
 {
+    private static Dictionary<DatabaseTypeFlags, FunctionStorage> storages = new Dictionary<DatabaseTypeFlags, FunctionStorage>();
+        
     public static IReadOnlyList<FunctionDefinition> Functions { get; } =
-        new IEnumerable<FunctionDefinition>[]
+        new FunctionsDescriptor[]
         {
-            FunctionAnalyzer.GetFunctions(typeof(ImplicitConversionFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(StringFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(ConversionFunctions)),
-            new ComparisonFunctions().GetFunctions(),
-            FunctionAnalyzer.GetFunctions(typeof(NumberFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(MathFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(FinancialFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(ConditionalFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(LogicFunctions)),
-            FunctionAnalyzer.GetFunctions(typeof(ReflectionFunctions)),
-        }.SelectMany(f => f).ToArray();
+            new ImplicitConversionFunctions(),
+            new StringFunctions(),
+            new ConversionFunctions(),
+            new ComparisonFunctions(),
+            new NumberFunctions(),
+            new MathFunctions(),
+            new FinancialFunctions(),
+            new ConditionalFunctions(),
+            new LogicFunctions(),
+            new ReflectionFunctions(),
+        }.SelectMany(f => f.GetFunctions()).ToArray();
+    
 
     public static FunctionStorage GetFunctions(DatabaseTypeFlags database)
     {
-        return new FunctionStorage(
+        if (storages.TryGetValue(database, out var storage))
+        {
+            return storage;
+        }
+
+        var newStorage = new FunctionStorage(
             Functions.Select(f => new ReData.Query.Functions.FunctionDefinition()
             {
                 Doc = f.Doc,
@@ -39,7 +48,9 @@ public class GlobalFunctionsStorage
                 ReturnType = f.ReturnType,
                 Kind = f.Kind,
                 ImplicitCast = f.ImplicitCast,
-                NullIf = f.NullIf
+                CustomNullPropagation = f.CustomNullPropagation,
             }));
+        storages[database] = newStorage;
+        return newStorage;
     }
 }

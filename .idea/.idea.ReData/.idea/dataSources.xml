@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="ReData@localhost" uuid="7fcd5672-c4d5-437a-aca7-1dfd3c94deb3">
+    <data-source source="LOCAL" name="pix_bi_test@localhost" uuid="5607ef4d-1e0c-413b-8470-cf7699e7b938">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5433/ReData</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/pix_bi_test</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

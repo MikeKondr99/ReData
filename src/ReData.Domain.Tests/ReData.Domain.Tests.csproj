@@ -26,6 +26,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ReData.Domain\ReData.Domain.csproj" />
+      <ProjectReference Include="..\ReData.Query.Impl\ReData.Query.Impl.csproj" />
     </ItemGroup>
 
 </Project>

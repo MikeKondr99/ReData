@@ -12,7 +12,11 @@ expr
     | expr (EQUAL | NOT_EQUAL) expr #binary
     | expr AND expr #binary
     | expr OR expr #binary
-    | LEFT_PARENTHESIS expr RIGHT_PARENTHESIS #scope
+    | term #term_expr
+	;
+	
+term
+    : LEFT_PARENTHESIS expr RIGHT_PARENTHESIS #scope
 	| string #literal
 	| boolean #literal
 	| null #literal
@@ -20,8 +24,7 @@ expr
 	| func #function
 	| integer #literal
 	| number #literal
-	| expr DOT NAME LEFT_PARENTHESIS (expr (',' expr)*)? RIGHT_PARENTHESIS #objectFunction
-	;
+	| term DOT NAME LEFT_PARENTHESIS (expr (',' expr)*)? RIGHT_PARENTHESIS #objectFunction;
 	
 string: STRING;
 
@@ -60,9 +63,11 @@ NULL: 'null';
 
 NAME: [a-zA-Z_][a-zA-Z_0-9]*;
 
-BLOCKED_NAME: '[' (' ')* [a-z-A-Z_] ([a-zA-Z_0-9] | ' ')* ']';
+BLOCKED_NAME: '[' (ESCAPED_BLOCKED_NAME | ~']')+? ']';
 
-STRING: ['] (~['\r\n])* ['];
+fragment ESCAPED_BLOCKED_NAME: '\\]';
+
+STRING: ['] (~['])* ['];
 
 INTEGER: [0-9]+;
 

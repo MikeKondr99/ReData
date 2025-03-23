@@ -25,7 +25,7 @@ public interface IExpressionBuilder
 
 public sealed class ExpressionBuilder : IExpressionBuilder
 {
-    public required FunctionStorage FunctionStorage { get; init; }
+    public required IFunctionStorage FunctionStorage { get; init; }
     
     public required ILiteralBuilder LiteralBuilder { get; init; }
     

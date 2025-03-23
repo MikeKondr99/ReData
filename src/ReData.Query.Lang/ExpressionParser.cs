@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
+using System.Text.RegularExpressions;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using ReData.Query.Lang.Expressions;
 
@@ -71,7 +73,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
 
     public override IExpr VisitObjectFunction(LangParser.ObjectFunctionContext context)
     {
-        var args = context.children.OfType<LangParser.ExprContext>().Select(a => Visit(a));
+        var args = context.children.OfType<ParserRuleContext>().Select(a => Visit(a));
         return new FuncExpr()
         {
             Name = context.children[2].GetText(),
@@ -88,15 +90,30 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
             name = name[1..^1];
         }
 
-        name = name.Trim();
-
+        name = Regex.Replace(name, @"\\\]", "]");
+        
         return new NameExpr(name);
     }
 
 
     public override IExpr VisitString(LangParser.StringContext context)
     {
-        return new StringLiteral(context.GetText().Trim(['\'']));
+        var value = context.GetText()[1..^1];
+        value = Regex.Replace(value, @"\\(.)", m =>
+        {
+            char escapedChar = m.Groups[1].Value[0];
+
+            return escapedChar switch
+            {
+                'r' => "\r",
+                'n' => "\n",
+                't' => "\t",
+                '\'' => "'",
+                '\\' => "\\",
+                _ => m.Value // If it's not one of the recognized characters, return it unchanged
+            };
+        });
+        return new StringLiteral(value);
     }
 
     public override IExpr VisitInteger(LangParser.IntegerContext context)

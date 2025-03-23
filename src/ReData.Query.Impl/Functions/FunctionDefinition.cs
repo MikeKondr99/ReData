@@ -18,9 +18,8 @@ public record FunctionDefinition
     public required IReadOnlyDictionary<DatabaseTypeFlags, ITemplate> Templates { get; init; }
     
     public ImplicitCastMetadata? ImplicitCast { get; init; }
-    
-    public required  Func<bool[], bool>? NullIf { get; init; }
-    
+
+    public required Func<IEnumerable<bool>, bool> CustomNullPropagation;
 
     public override string ToString()
     {

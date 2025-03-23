@@ -3,7 +3,6 @@
 namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
-using static BinaryOperation;
 using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
@@ -14,7 +13,7 @@ public class AggregationFunctions : FunctionsDescriptor
         {
             Function("ONCE")
                 .Arg("value", T)
-                .Returns(T, _ => true)
+                .Returns(T)
                 .Templates(new()
                 {
                     [All] = $"(CASE WHEN COUNT(DISTINCT {0}) = 1 THEN MAX({0}) ELSE NULL END)"

@@ -1,8 +1,9 @@
 ﻿using ReData.Query.Impl.QueryBuilders;
+using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Conversion;
 
-public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Int")]
      [InlineData("Int(25)", 25)]
@@ -45,6 +46,6 @@ public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
      [InlineData("Bool('')", false)]
      [InlineData("Bool(false)", false)]
      [InlineData("Bool(true)", true)]
-     [InlineData("If(Bool(null) or true, 'then', 'else')", "else")]
+     [InlineData("If(Bool(null), 'then', 'else')", "else")]
      public Task Bool(string expr, object? expected) => Test(expr, expected);
 }

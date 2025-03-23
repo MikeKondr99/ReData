@@ -1,4 +1,6 @@
-﻿namespace ReData.Query.Impl.Tests.QueryTests;
+﻿using ReData.Query.Impl.Tests.Fixtures;
+
+namespace ReData.Query.Impl.Tests.QueryTests;
 
 
 public static class Assets

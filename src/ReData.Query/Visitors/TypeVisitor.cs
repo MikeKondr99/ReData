@@ -65,25 +65,38 @@ public class TypeVisitor : ExprVisitor<ExprType>, ITypeVisitor
         {
             throw new Exception($"function `{sign} not found");
         }
-        var type = res.Function.ReturnType;
-        if (type.CanBeNull)
-        {
-            var nullIf = res.Function.NullIf ?? (args => args.Any(a => a));
-            if (!nullIf([..sign.ArgumentTypes.Select(t => t.CanBeNull)]))
-            {
-                type = type with
-                {
-                    CanBeNull = false,
-                };
-            }
-        }
+        
         return new ExprType()
         {
-            Type = type.DataType,
-            CanBeNull = type.CanBeNull,
+            Type = res.Function.ReturnType.DataType,
+            CanBeNull = PropagatesNull(res.Function, sign),
             IsConstant = types.All(t => t.IsConstant),
         };
     }
+
+    private bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
+    {
+        // Если не может быть null значит не может
+        if (!function.ReturnType.CanBeNull) return false;
+
+        // Если спец спец правило смотрим по нему
+        if (function.CustomNullPropagation is not null)
+        {
+            return function.CustomNullPropagation(sign.ArgumentTypes.Select(a => a.CanBeNull));
+        }
+
+        // Если любой параметре прокидывает null и может быть null.
+        for (int i = 0; i < function.Arguments.Count; i++)
+        {
+            if (function.Arguments[i].PropagateNull && sign.ArgumentTypes[i].CanBeNull)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
 
     public override ExprType Visit(NameExpr name)
     {

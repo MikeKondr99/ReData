@@ -3,80 +3,110 @@
 namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
-using static BinaryOperation;
-using static ConstKey;
+using static DataType;
 
-public static class StringFunctions
+public class StringFunctions : FunctionsDescriptor
 {
-    [Doc("Retrieves a substring from input. The substring starts at a specified character position and continues to the end of the string.")]
-    public static Ret<Text?> Substring(Text? input, Integer? start) => new()
+    protected override void Functions()
     {
-        [PostgreSql | MySql] = $"SUBSTRING({input} FROM {start})",
-        [SqlServer] = $"SUBSTRING({input}, {start}, LEN({input}) - ({start} - 1))",
-        [ClickHouse] = $"SUBSTRING({input}, {start}, LENGTH({input}) - ({start} - 1))",
-        [Oracle] = $"SUBSTR({input}, {start})",
-    };
-    
-    [Doc("Retrieves a substring from `input`. The substring starts at a specified character position and has a specified length.")]
-    public static Ret<Text?> Substring(Text? input, Integer? start, Integer? count) => new()
-    {
-        [PostgreSql | MySql] = $"SUBSTRING({input} FROM {start} FOR {count})",
-        [SqlServer | ClickHouse] = $"SUBSTRING({input}, {start}, {count})",
-        [Oracle] = $"SUBSTR({input}, {start}, {count})"
-    };
+        int input = 0, start = 1, count = 2;
 
-    [Method]
-    public static Ret<Text?> Lower(Text? input) => new()
-    {
-        [All] = $"LOWER({input})",
-    };
-    
-    [Method]
-    public static Ret<Text?> Upper(Text? input) => new()
-    {
-        [All] = $"Upper({input})",
-    };
-    
-    [Method]
-    public static Ret<Text?> Trim(Text? input) => new()
-    {
-        [All] = $"TRIM({input})",
-    };
-    
-    [Method]
-    public static Ret<Text?> TrimLeft(Text? input) => new()
-    {
-        [All] = $"LTRIM({input})",
-    };
-    
-    [Method]
-    public static Ret<Text?> TrimRight(Text? input) => new()
-    {
-        [All] = $"RTRIM({input})",
-    };
-    
-    [Method]
-    public static Ret<Text?> Reverse(Text? input) => new()
-    {
-        [All] = $"REVERSE({input})"
-    };
-    
-    [Binary(Plus)]
-    public static Ret<Text?> Add(Text? left, Text? right) => new()
-    {
-        [SqlServer] = $"({left} + {right})",
-        [PostgreSql] = $"({left} || {right})",
-        [MySql | Oracle | ClickHouse] = $"CONCAT({left}, {right})",
-    };
-    
-    // TODO: NotTested
-    [Method]
-    public static Ret<Text?> EmptyIsNull(Text? input) => new()
-    {
-        [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
-        NullIf = (_) => true,
-    };
-    
-    
-    
+        Method("Substring")
+            .Doc("Retrieves a substring from input. The substring starts at a specified character position and continues to the end of the string.")
+            .Arg("input", Text)
+            .Arg("start", Integer)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [PostgreSql | MySql] = $"SUBSTRING({input} FROM {start})",
+                [SqlServer] = $"SUBSTRING({input}, {start}, LEN({input}) - ({start} - 1))",
+                [ClickHouse] = $"SUBSTRING({input}, {start}, LENGTH({input}) - ({start} - 1))",
+                [Oracle] = $"SUBSTR({input}, {start})",
+            });
+        
+        Method("Substring")
+            .Doc("Retrieves a substring from `input`. The substring starts at a specified character position and has a specified length.")
+            .Arg("input", Text)
+            .Arg("start", Integer)
+            .Arg("count", Integer)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [PostgreSql | MySql] = $"SUBSTRING({input} FROM {start} FOR {count})",
+                [SqlServer | ClickHouse] = $"SUBSTRING({input}, {start}, {count})",
+                [Oracle] = $"SUBSTR({input}, {start}, {count})"
+            });
+
+        Method("Lower")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"LOWER({input})");
+        
+        Method("Upper")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"UPPER({input})");
+        
+        Method("Trim")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"TRIM({input})");
+        
+        Method("TrimLeft")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"LTRIM({input})");
+        
+        Method("TrimRight")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"RTRIM({input})");
+        
+        Method("Reverse")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Template($"REVERSE({input})");
+
+        Binary("+", Text, Text)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [SqlServer] = $"({0} + {1})",
+                [PostgreSql] = $"({0} || {1})",
+                [MySql | Oracle | ClickHouse] = $"CONCAT({0}, {1})",
+            });
+        
+        
+        // TODO: NotTested
+        // TODO: Неверный Null Propagate
+        // NullIf = (_) => true,
+        Method("EmptyIsNull")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
+            });
+        
+        // TODO: NotTested
+        Method("Capitalize")
+            .Arg("input", Text)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [PostgreSql | Oracle | ClickHouse] = $"initCap({input})",
+            });
+        
+        // TODO: NotTested
+        Method("Contains")
+            .Doc("Checks if `input` contains the specified `substring`. Returns true if the substring is found anywhere in the input.")
+            .Arg("input", Text)
+            .Arg("substring", Text)
+            .Returns(Boolean)
+            .Templates(new()
+            {
+                [PostgreSql] = $"({input} LIKE '%' || {1} || '%')",
+            });
+    }
+
 }

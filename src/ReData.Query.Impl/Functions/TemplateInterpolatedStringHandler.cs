@@ -25,9 +25,9 @@ public struct TemplateInterpolatedStringHandler
             return;
         }
 
-        if (t is IArg arg)
+        if (t is string cnst)
         {
-            tokens.Add(new ArgToken(arg.Index));
+            tokens.Add(new ConstToken(cnst));
             return;
         }
         throw new Exception($"Template must only contain Int32 numbers indicating index of function argument, but was {typeof(T)}");

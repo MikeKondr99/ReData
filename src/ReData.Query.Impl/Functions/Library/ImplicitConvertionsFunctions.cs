@@ -1,58 +1,94 @@
-﻿using ReData.Query.Visitors;
+﻿using ReData.Core;
+using ReData.Query.Impl.QueryBuilders;
+using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
+using static DataType;
 
-public static class ImplicitConversionFunctions
+public class ImplicitConversionFunctions : FunctionsDescriptor
 {
-
-    [Implicit(1)]
-    public static Ret<Number?> NumberFromNull(Null? input) => ConversionFunctions.Num(input);
-
-    [Implicit(1)]
-    public static Ret<Integer?> IntegerFromNull(Null? input) => ConversionFunctions.Int(input);
-
-    [Implicit(1)]
-    public static Ret<Bool?> BoolFromNull(Null? input) => ConversionFunctions.Bool(input);
-
-    [Implicit(1)]
-    public static Ret<Text?> TextFromNull(Null? input) => ConversionFunctions.Text(input);
-    
-    [Implicit(1)]
-    public static Ret<Number?> Optional(Number input) => new()
+    private FunctionBuilder Convertion(DataType input, DataType ret, int level)
     {
-        [All] = $"{input}",
-        NullIf = (_) => true,
-    };
-    
-    [Implicit(1)]
-    public static Ret<Integer?> Optional(Integer input) => new()
-    {
-        [All] = $"{input}",
-        NullIf = (_) => true,
-    };
-    
-    [Implicit(1)]
-    public static Ret<Bool?> Optional(Bool input) => new()
-    {
-        [All] = $"{input}",
-        NullIf = (_) => true,
-    };
-    
-    [Implicit(1)]
-    public static Ret<Text?> Optional(Text input) => new()
-    {
-        [All] = $"{input}",
-        NullIf = (_) => true,
-    };
+        var name = ret switch
+        {
+            Unknown => "Unknown",
+            Null => "Null",
+            Number => "Num",
+            Integer => "Int",
+            DataType.Text => "Text",
+            Boolean => "Bool",
+            var any => throw new UnknownEnumValueException<DataType>(any),
+        };
+        return Function(name)
+            .Arg("input", input)
+            .Returns(ret);
+    }
 
-    [Implicit(2)]
-    public static Ret<Number> ToNum(Integer input) => ConversionFunctions.Num(input).Cast<Number>();
+    protected override void Functions()
+    {
+        Function("NumberFromNull")
+            .ImplicitCast(1)
+            .Arg("input", Null)
+            .Returns(Number)
+            .Template($"({0} + 0.0)");
 
-    [Implicit(2)]
-    public static Ret<Number?> ToNum(Integer? input) => ConversionFunctions.Num(input);
+        Function("IntegerFromNull")
+            .ImplicitCast(1)
+            .Arg("input", Null)
+            .Returns(Integer)
+            .Template($"({0} + 0)");
 
-    [Implicit(2)]
-    public static Ret<Number?> ToNum2(Integer input) => ConversionFunctions.Num(input);
+        Function("BoolFromNull")
+            .ImplicitCast(1)
+            .Arg("input", Null)
+            .Returns(Boolean)
+            .Template($"({0} = 0)");
+
+        Function("TextFromNull")
+            .ImplicitCast(1)
+            .Arg("input", Null)
+            .Returns(Text)
+            .Template($"LOWER({0})");
+
+        // TODO Неверный Propagate наверно
+        foreach (var T in new[]
+                 {
+                     Integer, Number, Boolean, Text
+                 })
+        {
+            Function("Optional")
+                .ImplicitCast(1)
+                .ReqArg("input", T)
+                .Returns(T)
+                .CustomNullPropagation(nulls => true)
+                .Template($"{0}");
+        }
+
+        Dictionary<DatabaseTypeFlags, TemplateInterpolatedStringHandler> IntegerToNumbers = new()
+        {
+            [All & ~ClickHouse & ~ Oracle] = $"CAST({0} AS DECIMAL(30,15))",
+            [Oracle] = $"CAST({0} AS NUMERIC)",
+            [ClickHouse] = $"toFloat64({0})"
+        };
+
+        Function("ToNum")
+            .ImplicitCast(2)
+            .ReqArg("input", Integer)
+            .ReturnsNotNull(Number)
+            .Templates(IntegerToNumbers);
+
+        Function("ToNum")
+            .ImplicitCast(2)
+            .Arg("input", Integer)
+            .Returns(Number)
+            .Templates(IntegerToNumbers);
+
+        Function("ToNum2")
+            .ImplicitCast(2)
+            .ReqArg("input", Integer)
+            .Returns(Number)
+            .Templates(IntegerToNumbers);
+    }
 }

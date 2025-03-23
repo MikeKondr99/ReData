@@ -3,7 +3,6 @@
 namespace ReData.Query.Impl.Functions.Library;
 
 using static DatabaseTypeFlags;
-using static BinaryOperation;
 using static DataType;
 
 public class ComparisonFunctions : FunctionsDescriptor

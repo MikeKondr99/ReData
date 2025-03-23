@@ -1,15 +1,13 @@
-﻿using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using ReData.Database.Entities;
+﻿using Microsoft.EntityFrameworkCore;
 using ReData.Database.EntityConfiguration;
 
 namespace ReData.Database;
 
-public sealed class ApplicationDatabaseContext : DbContext, IDatabase
+public sealed class ApplicationDatabaseContext : DbContext, IDatabase 
 {
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+
+    public ApplicationDatabaseContext(DbContextOptions<ApplicationDatabaseContext> options) : base(options)
     {
-        optionsBuilder.UseNpgsql("User ID=postgres;Password=postgres;Host=localhost;Port=5433;Database=ReData");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
