@@ -77,7 +77,7 @@ public record struct ExprType
     {
         return new ExprType()
         {
-            Type = DataType.Boolean,
+            Type = DataType.Bool,
         };
     }
 
@@ -109,6 +109,6 @@ public enum DataType
     Number = 2,
     Integer = 3,
     Text = 4,
-    Boolean = 5,
+    Bool = 5,
     DateTime = 6,
 }

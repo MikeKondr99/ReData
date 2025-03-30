@@ -4,16 +4,16 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Math;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
 {
     [Theory(DisplayName = "Addition")]
     [InlineData("2 + 2", 4)]
     [InlineData("2.5 + 3.5", 6.0)]
     [InlineData("2.5 + 4", 6.5)]
-    [InlineData("Type(3 + 3)", "Integer")]
-    [InlineData("Type(3.0 + If(true,2, null))", "Number?")]
+    [InlineData("Type(3 + 3)", "Int")]
+    [InlineData("Type(3.0 + If(true,2, null))", "Num?")]
     [InlineData("2 + null", null)]
-    [InlineData("Type(2 + null)", "Integer?")]
+    [InlineData("Type(2 + null)", "Int?")]
     public Task Add(string expr, object? expected) => Test(expr, expected);
     
     [Theory(DisplayName = "Substraction")]

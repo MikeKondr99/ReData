@@ -5,8 +5,15 @@
 	
 	
 	
+	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f0c49e70_002D025e_002D466c_002D8672_002Dd6071955aee4/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;Solution /&gt;&#xD;
+  &lt;Not&gt;&#xD;
+    &lt;TestAncestor&gt;&#xD;
+      &lt;TestId&gt;xUnit::41108AB0-0B5D-426F-847D-31F6BFED6B81::net9.0::ReData.Query.Impl.Tests.Functions.Conversion.SqlServer.Date.Date(expr: "Date('2025-03')", expected: "@2025-03-01 00:00Z")&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::41108AB0-0B5D-426F-847D-31F6BFED6B81::net9.0::ReData.Query.Impl.Tests.Functions.Conversion.Oracle.Date.Date(expr: "Date('2025-03')", expected: "@2025-03-01 00:00Z")&lt;/TestId&gt;&#xD;
+      &lt;TestId&gt;xUnit::41108AB0-0B5D-426F-847D-31F6BFED6B81::net9.0::ReData.Query.Impl.Tests.Functions.Conversion.MySql.Date.Date(expr: "Date('2025-03')", expected: "@2025-03-01 00:00Z")&lt;/TestId&gt;&#xD;
+    &lt;/TestAncestor&gt;&#xD;
+  &lt;/Not&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	

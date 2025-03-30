@@ -132,7 +132,7 @@ public class NumberFunctions : FunctionsDescriptor
 
         Function("Even")
             .Arg("input", Integer)
-            .Returns(Boolean)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All & ~SqlServer] = $"(MOD({input}, 2) = 0)",
@@ -141,7 +141,7 @@ public class NumberFunctions : FunctionsDescriptor
 
         Function("Odd")
             .Arg("input", Integer)
-            .Returns(Boolean)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All & ~SqlServer] = $"(MOD({input}, 2) <> 0)",
@@ -164,7 +164,7 @@ public class NumberFunctions : FunctionsDescriptor
 
         Method("Frac")
             .Arg("input", Number)
-            .Returns(Boolean)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All & ~SqlServer] = $"MOD({input}, 1)",

@@ -3,7 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Comparison;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
 {
      [Theory(DisplayName = "Less Than (<)")]
      [InlineData("5 < 10", true)]
@@ -11,9 +11,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.5 < 1.3", false)]
      [InlineData("1.3 < 1.5", true)]
      [InlineData("-4.0 < -2.0", true)]
-     [InlineData("null < 5", Null)] // Edge case: null comparison
-     [InlineData("5 < null", Null)] // Edge case: null comparison
-     [InlineData("null < null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null < 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 < null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null < null)", true)] // Edge case: null comparison
      public Task LessThan(string expr, object? expected) => Test(expr, expected);
      
      
@@ -23,9 +23,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.5 > 1.3", true)]
      [InlineData("1.3 > 1.5", false)]
      [InlineData("-2.0 > -4.0", true)]
-     [InlineData("null > 5", Null)] // Edge case: null comparison
-     [InlineData("5 > null", Null)] // Edge case: null comparison
-     [InlineData("null > null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null > 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 > null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null > null)", true)] // Edge case: null comparison
      public Task GreaterThan(string expr, object? expected) => Test(expr, expected);
      
      
@@ -36,9 +36,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.3 <= 1.5", true)]
      [InlineData("1.5 <= 1.5", true)] // Equal values
      [InlineData("-4.0 <= -2.0", true)]
-     [InlineData("null <= 5", Null)] // Edge case: null comparison
-     [InlineData("5 <= null", Null)] // Edge case: null comparison
-     [InlineData("null <= null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null <= 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 <= null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null <= null)", true)] // Edge case: null comparison
      public Task LessThanOrEqual(string expr, object? expected) => Test(expr, expected);
      
      
@@ -49,9 +49,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.3 >= 1.5", false)]
      [InlineData("1.5 >= 1.5", true)] // Equal values
      [InlineData("-2.0 >= -4.0", true)]
-     [InlineData("null >= 5", Null)] // Edge case: null comparison
-     [InlineData("5 >= null", Null)] // Edge case: null comparison
-     [InlineData("null >= null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null >= 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 >= null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null >= null)", true)] // Edge case: null comparison
      public Task GreaterThanOrEqual(string expr, object? expected) => Test(expr, expected);
      
      
@@ -61,9 +61,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.5 = 1.5", true)]
      [InlineData("1.5 = 1.3", false)]
      [InlineData("-4.0 = -4.0", true)]
-     [InlineData("null = 5", Null)] // Edge case: null comparison
-     [InlineData("5 = null", Null)] // Edge case: null comparison
-     [InlineData("null = null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null = 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 = null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null = null)", true)] // Edge case: null comparison
      public Task EqualTo(string expr, object? expected) => Test(expr, expected);
      
      
@@ -73,9 +73,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("1.5 != 1.3", true)]
      [InlineData("1.5 != 1.5", false)]
      [InlineData("-4.0 != -2.0", true)]
-     [InlineData("null != 5", Null)] // Edge case: null comparison
-     [InlineData("5 != null", Null)] // Edge case: null comparison
-     [InlineData("null != null", Null)] // Edge case: null comparison
+     [InlineData("IsNull(null != 5)", true)] // Edge case: null comparison
+     [InlineData("IsNull(5 != null)", true)] // Edge case: null comparison
+     [InlineData("IsNull(null != null)", true)] // Edge case: null comparison
      public Task NotEqualTo(string expr, object? expected) => Test(expr, expected);
      
      
@@ -108,13 +108,13 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Between(0.9, 1.0, 2.0)", false)] // 0.9 is not between 1.0 and 2.0 (alternate syntax)
 
      // Edge cases with null
-     [InlineData("null.Between(1, 10)", Null)] // null is not comparable
-     [InlineData("5.Between(null, 10)", Null)] // null in lower bound
-     [InlineData("5.Between(1, null)", Null)] // null in upper bound
-     [InlineData("Between(null, 1, 10)", Null)] // null as value (alternate syntax)
-     [InlineData("Between(5, null, 10)", Null)] // null in lower bound (alternate syntax)
-     [InlineData("Between(5, 1, null)", Null)] // null in upper bound (alternate syntax)
-     [InlineData("Between(null, null, null)", Null)] // all nulls
+     [InlineData("IsNull(null.Between(1, 10))",true)] // null is not comparable
+     [InlineData("IsNull(5.Between(null, 10))", true)] // null in lower bound
+     [InlineData("IsNull(5.Between(1, null))", true)] // null in upper bound
+     [InlineData("IsNull(Between(null, 1, 10))", true)] // null as value (alternate syntax)
+     [InlineData("IsNull(Between(5, null, 10))", true)] // null in lower bound (alternate syntax)
+     [InlineData("IsNull(Between(5, 1, null))", true)] // null in upper bound (alternate syntax)
+     [InlineData("IsNull(Between(null, null, null))", true)] // all nulls
 
      // Inclusive bounds
      [InlineData("1.Between(1, 10)", true)] // 1 is equal to lower bound (inclusive)

@@ -1,11 +1,11 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public interface ILiteral : IExpr
+public interface IRawLiteral : IRawExpr
 {
     
 }
 
-public interface ILiteral<out T> : IExpr
+public interface ILiteral<out T> : IRawExpr
 {
     public T Value { get; }
 }

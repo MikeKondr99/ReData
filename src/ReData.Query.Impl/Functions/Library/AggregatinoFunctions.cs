@@ -40,7 +40,7 @@ public class AggregationFunctions : FunctionsDescriptor
         }
         
         Function("COUNT")
-            .Arg("value", Boolean)
+            .Arg("value", Bool)
             .Returns(Integer)
             .Templates(new()
             {
@@ -59,7 +59,7 @@ public class AggregationFunctions : FunctionsDescriptor
         // SUM(price, id > 10)
         Function("SUM")
             .Arg("value", Number)
-            .Arg("condition", Boolean)
+            .Arg("condition", Bool)
             .Returns(Number)
             .Templates(new()
             {

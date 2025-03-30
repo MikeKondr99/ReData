@@ -3,20 +3,22 @@ using System.Globalization;
 using ClickHouse.Client.Numerics;
 using FluentAssertions;
 using ReData.Query.Impl.Runners;
+using ReData.Query.Impl.Runners.Value;
 using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class ExprTests(IDatabaseFixture fixture)
+public abstract class RawExprTests(IDatabaseFixture fixture)
 {
     private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
     
     public async Task Test(string expr, object? expected)
     {
         var runner = await fixture.GetRunnerAsync();
-        var input = Expr.Parse(expr);
+        var input = RawExpr.Parse(expr);
         expected = PrepareBoolTests(expected, ref input);
+        expected = PrepareDateTimeTests(expected);
         Query query = new Query()
         {
             Select =
@@ -28,28 +30,52 @@ public abstract class ExprTests(IDatabaseFixture fixture)
         Compare(result, Mapper.MapField(expected));
     }
 
-    private static object? PrepareBoolTests(object? expected, ref IExpr input)
+    private static object? PrepareDateTimeTests(object? expected)
     {
-        if (expected is bool or Null)
+        if (expected is string s && s.StartsWith("@"))
         {
-            input = new FuncExpr()
-            {
-                Name = "If",
-                Arguments = [input, new IntegerLiteral(1), new IntegerLiteral(0)]
-            };
+            expected = DateTimeOffset.Parse(s[1..]);
         }
-
-        expected = expected switch
-        {
-            bool b => b ? 1 : 0,
-            Null => null,
-            _ => expected
-        };
 
         return expected;
     }
 
-    public void Compare(IValue result, IValue expected)
+    private static object? PrepareBoolTests(object? expected, ref IRawExpr input)
+    {
+        if (expected is bool or NullBool)
+        {
+            if (expected is NullBool)
+            {
+                // Expr.Parse("{input} or true)")
+                input = new FuncRawExpr()
+                {
+                    Name = "or",
+                    Kind = FuncExprKind.Binary,
+                    Arguments =
+                    [
+                        input,
+                        new RawBooleanLiteral(true),
+                    ]
+                };
+            }
+            input = new FuncRawExpr()
+            {
+                Name = "If",
+                Arguments = [input, new RawIntegerLiteral(1), new RawIntegerLiteral(0)]
+            };
+            expected = expected switch
+            {
+                bool b => b ? 1 : 0,
+                NullBool => 0,
+                _ => expected
+            };
+
+        }
+
+        return expected;
+    }
+
+    public static void Compare(IValue result, IValue expected)
     {
         object? o =(result, expected) switch
         {
@@ -60,6 +86,7 @@ public abstract class ExprTests(IDatabaseFixture fixture)
             (IntegerValue(var res), BoolValue(var exp)) => res.Should().Be(exp ? 1 : 0),
             (BoolValue(var res), BoolValue(var exp)) => res.Should().Be(exp),
             (TextValue(var res), TextValue(var exp)) => res.Should().Be(exp),
+            (DateTimeValue(var res), DateTimeValue(var exp)) => res.Should().Be(exp),
             (_, NullValue) => result.Should().BeOfType<NullValue>(),
             (_, _) => result.Should().BeOfType(expected.GetType()),
         };
@@ -68,7 +95,7 @@ public abstract class ExprTests(IDatabaseFixture fixture)
     
     internal readonly struct BoolNull;
 
-    internal const string Null = "εNULLε";
+    internal const string NullBool = "εNULLε";
 }
 
 

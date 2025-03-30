@@ -32,26 +32,39 @@ public class ClickHouseDatabaseFixture: IDatabaseFixture
     }
 
     private string TestTableCreate = """
-                                  CREATE TABLE "TestTable" (
-                                      "id" Int32,
-                                      "Name" String,
-                                      "MaxScore" Decimal(10,2)
-                                  ) Engine = MergeTree() ORDER BY id;
+                                  CREATE TABLE "User" (
+                                      "UserId" Int32,
+                                      "FirstName" String,
+                                      "LastName" String,
+                                      "Age" Int32,
+                                      "Salary" Float64,
+                                      "DateOfBirth" Date,
+                                      "JoinDate" Date,
+                                      "LastLoginDate" Date,
+                                      "Notes" String
+                                  ) ENGINE = MergeTree()
+                                  ORDER BY "UserId";
                                   """;
 
     private string TestTableFill =
                                   """
-                                  INSERT INTO "TestTable" ("id", "Name", "MaxScore") VALUES 
-                                  (1,'George', 22.0),
-                                  (2,'Tom', 17.0),
-                                  (3,'Tim', 18.0),
-                                  (4,'Harry',21.0),
-                                  (5,'Ben',15.0),
-                                  (6,'Bob',18.0),
-                                  (7,'Phoebe',21.0),
-                                  (8,'Max', 14.0),
-                                  (9,'Lary', 17.0),
-                                  (10,'Zach', 15.0)
+                                  INSERT INTO "User" ("UserId", "FirstName", "LastName", "Age", "Salary", "DateOfBirth", "JoinDate", "LastLoginDate", "Notes")
+                                  VALUES
+                                      (1, 'John', 'Doe', 30, 50000.50, '1990-01-15', '2020-05-10', '2023-10-01', 'Regular user'),
+                                      (2, 'Jane', 'Smith', 25, 60000.00, '1995-07-22', '2021-03-15', '2023-09-28', 'Active user'),
+                                      (3, 'John', 'Doe', 30, 55000.75, '1990-01-15', '2022-01-20', '2023-10-02', 'Promoted user'),
+                                      (4, 'Alice', 'Johnson', 40, 75000.00, '1980-11-30', '2019-11-01', '2023-09-30', 'Manager'),
+                                      (5, 'Jane', 'Smith', 25, 62000.50, '1995-07-22', '2021-03-15', '2023-10-03', 'Active user'),
+                                      (6, 'Bob', 'Brown', 35, 45000.00, '1985-05-10', '2020-06-01', '2023-09-25', 'New user'),
+                                      (7, 'Alice', 'Johnson', 40, 80000.00, '1980-11-30', '2019-11-01', '2023-10-04', 'Senior Manager'),
+                                      (8, 'Mike', 'Davis', 28, 48000.00, '1993-02-14', '2021-07-15', '2023-09-29', 'Junior Developer'),
+                                      (9, 'Sarah', 'Wilson', 32, 70000.00, '1989-08-20', '2018-12-01', '2023-10-05', 'Team Lead'),
+                                      (10, 'John', 'Doe', 30, 60000.00, '1990-01-15', '2020-05-10', '2023-10-06', 'Regular user'),
+                                      (11, 'Emily', 'Clark', 27, 52000.00, '1994-03-25', '2022-02-10', '2023-09-27', 'Intern'),
+                                      (12, 'Jane', 'Smith', 25, 65000.00, '1995-07-22', '2021-03-15', '2023-10-07', 'Active user'),
+                                      (13, 'Chris', 'Evans', 38, 90000.00, '1983-09-12', '2017-10-01', '2023-10-08', 'Director'),
+                                      (14, 'Alice', 'Johnson', 40, 85000.00, '1980-11-30', '2019-11-01', '2023-10-09', 'Senior Manager'),
+                                      (15, 'Bob', 'Brown', 35, 47000.00, '1985-05-10', '2020-06-01', '2023-10-10', 'New user');
                                   """;
 
     public async Task DisposeAsync()

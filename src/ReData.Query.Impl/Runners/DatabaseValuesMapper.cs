@@ -1,4 +1,5 @@
 ﻿using ClickHouse.Client.Numerics;
+using ReData.Query.Impl.Runners.Value;
 
 namespace ReData.Query.Impl.Runners;
 
@@ -24,6 +25,10 @@ public class DatabaseValuesMapper
             double v => new NumberValue(v),
             float v => new NumberValue(v),
             decimal v => new NumberValue((double)v),
+            // Datetime
+            DateTime v => new DateTimeValue(v),
+            DateTimeOffset v => new DateTimeValue(DateTime.SpecifyKind(v.DateTime, DateTimeKind.Unspecified)),
+            
             ClickHouseDecimal v => new NumberValue((double)v),
             // text
             string v => new TextValue(v),

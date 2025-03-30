@@ -4,7 +4,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Literals;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
 {
      
     [Theory(DisplayName = "Int")]

@@ -1,17 +1,19 @@
-﻿namespace ReData.Query.Impl.Tests.Queries;
+﻿using ReData.Query.Impl.Tests.Fixtures;
 
-// [Collection("Postgres")]
-// public class Postgres(PostgresRunner runner) : Сommon(runner);
-//
-// [Collection("SqlServer")]
-// public class SqlServer(SqlServerRunner runner) : Сommon(runner);
-//
-// [Collection("MySql")]
-// public class MySql(MySqlRunner runner) : Сommon(runner);
-//
-// [Collection("ClickHouse")]
-// public class ClickHouse(ClickHouseRunner runner) : Сommon(runner);
-//
-// [Collection("Oracle")]
-// public class Oracle(OracleRunner runner) : Сommon(runner);
+namespace ReData.Query.Impl.Tests.Queries;
+
+[Collection("Postgres")]
+public class Postgres(PostgresDatabaseFixture fixture) : Сommon(fixture);
+
+[Collection("SqlServer")]
+public class SqlServer(SqlServerDatabaseFixture fixture) : Сommon(fixture);
+
+[Collection("MySql")]
+public class MySql(MySqlDatabaseFixture fixture) : Сommon(fixture);
+
+[Collection("ClickHouse")]
+public class ClickHouse(ClickHouseDatabaseFixture fixture) : Сommon(fixture);
+
+[Collection("Oracle")]
+public class Oracle(OracleDatabaseFixture fixture) : Сommon(fixture);
 

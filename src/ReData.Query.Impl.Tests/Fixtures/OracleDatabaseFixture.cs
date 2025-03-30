@@ -28,14 +28,14 @@ public class OracleDatabaseFixture : IDatabaseFixture
         Connection = new OracleConnection(ConnectionString);
         await Connection.OpenAsync();
         
-        await using var command = new OracleCommand(TestTableCreate, Connection);
-        await command.ExecuteNonQueryAsync();
+        // await using var command = new OracleCommand(TestTableCreate, Connection);
+        // await command.ExecuteNonQueryAsync();
 
-        foreach (var cmd in TestTableFill)
-        {
-            await using var command2 = new OracleCommand(cmd, Connection);
-            await command2.ExecuteNonQueryAsync();
-        }
+        // foreach (var cmd in TestTableFill)
+        // {
+        //     await using var command2 = new OracleCommand(cmd, Connection);
+        //     await command2.ExecuteNonQueryAsync();
+        // }
         
     }
     
@@ -46,25 +46,31 @@ public class OracleDatabaseFixture : IDatabaseFixture
         await Container.DisposeAsync();
     }
 
-    private string TestTableCreate = """
-                                  CREATE TABLE "TestTable" (
-                                      "id" INTEGER,
-                                      "Name" VARCHAR2(100),
-                                      "MaxScore" NUMBER
-                                  )
-                                  """;
+    // private string TestTableCreate = """
+    //                               CREATE TABLE "Users" (
+    //                                   "UserId" INTEGER,
+    //                                   "FirstName" VARCHAR2(200),
+    //                                   "LastName" VARCHAR2(200),
+    //                                   "Age" NUMBER,
+    //                                   "Salary" NUMBER,
+    //                                   "DateOfBirth" DATE,
+    //                                   "JoinDate" DATE,
+    //                                   "LastLoginDate" DATE,
+    //                                   "Notes" VARCHAR2(200)
+    //                               );
+    //                               """;
     
-    private string[] TestTableFill = [
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (1,'George', 22.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (2,'Tom', 17.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (3,'Tim', 18.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (4,'Harry',21.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (5,'Ben',15.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (6,'Bob',18.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (7,'Phoebe',21.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (8,'Max', 14.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (9,'Lary', 17.0)",
-                                  "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (10,'Zach', 15.0)",
-                                  ];
+    // private string[] TestTableFill = [
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (1,'George', 22.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (2,'Tom', 17.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (3,'Tim', 18.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (4,'Harry',21.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (5,'Ben',15.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (6,'Bob',18.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (7,'Phoebe',21.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (8,'Max', 14.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (9,'Lary', 17.0)",
+    //                               "INSERT INTO \"TestTable\" (\"id\", \"Name\", \"MaxScore\") VALUES (10,'Zach', 15.0)",
+    //                               ];
 
 }

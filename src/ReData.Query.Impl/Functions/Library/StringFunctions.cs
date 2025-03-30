@@ -87,24 +87,62 @@ public class StringFunctions : FunctionsDescriptor
                 [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
             });
         
-        // TODO: NotTested
-        Method("Capitalize")
+        Method("Len")
             .Arg("input", Text)
+            .Returns(Integer)
+            .Templates(new()
+            {
+                [All] = $"LENGTH({input})", // Works in most databases
+                [SqlServer] = $"LEN({input})" // SQL Server uses LEN
+            });
+        
+        Function("Chr")
+            .Arg("code", Integer)
             .Returns(Text)
             .Templates(new()
             {
-                [PostgreSql | Oracle | ClickHouse] = $"initCap({input})",
+                [PostgreSql] = $"CHR({0})",
+                [MySql] = $"CHAR({0})",
+                [SqlServer] = $"CHAR({0})",
+                [Oracle] = $"CHR({0})",
+                [ClickHouse] = $"char({0})"
             });
         
-        // TODO: NotTested
-        Method("Contains")
-            .Doc("Checks if `input` contains the specified `substring`. Returns true if the substring is found anywhere in the input.")
+        Method("Ord")
             .Arg("input", Text)
-            .Arg("substring", Text)
-            .Returns(Boolean)
+            .Returns(Integer)
             .Templates(new()
             {
-                [PostgreSql] = $"({input} LIKE '%' || {1} || '%')",
+                [PostgreSql | MySql] = $"ASCII(SUBSTRING({input}, 1, 1))",
+                [SqlServer] = $"ASCII(SUBSTRING({input}, 1, 1))",
+                [Oracle] = $"ASCII(SUBSTR({input}, 1, 1))",
+                [ClickHouse] = $"ASCII(substring({input}, 1, 1))"
+            });
+        
+        Method("Replace")
+            .Arg("input", Text)
+            .Arg("from", Text)
+            .Arg("to", Text)
+            .Returns(Text)
+            .Templates(new()
+            {
+                // Standard REPLACE (non-regex) for all databases
+                [All] = $"REPLACE({input}, {1}, {2})",
+                // Special case for Oracle to avoid regex interpretation
+                [Oracle] = $"REGEXP_REPLACE({input}, REGEXP_REPLACE({1}, '([][)(}}{{.+*?^$\\])', '\\\\1'), {1}, 1, 0, 'i')"
+                });
+
+        Method("Repeat")
+            .Arg("input", Text)
+            .Arg("count", Integer)
+            .Returns(Text)
+            .Templates(new()
+            {
+                [SqlServer] = $"REPLICATE({input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END)",
+                [MySql] = $"REPEAT({input}, GREATEST({count}, 0))",
+                [PostgreSql] = $"REPEAT({input}, GREATEST({count}, 0))",
+                [Oracle] = $"RPAD('', {count} * LENGTH({input}), {input})",
+                [ClickHouse] = $"repeat({input}, greatest({count}, 0))"
             });
     }
 

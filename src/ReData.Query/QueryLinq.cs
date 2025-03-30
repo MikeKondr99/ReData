@@ -13,12 +13,12 @@ public static class QueryLinq
             {
                 No = query.No + 1,
                 From = query,
-                Where = [Expr.Parse(predicate)]
+                Where = [RawExpr.Parse(predicate)]
             };
         }
         return query with
         {
-            Where = [..query.Where ?? [], Expr.Parse(predicate)]
+            Where = [..query.Where ?? [], RawExpr.Parse(predicate)]
         };
     }
     
@@ -35,12 +35,12 @@ public static class QueryLinq
             {
                 No = query.No + 1,
                 From = query,
-                OrderBy = [new Query.Order(Expr.Parse(expr),type)]
+                OrderBy = [new Query.Order(RawExpr.Parse(expr),type)]
             };
         }
         return query with
         {
-            OrderBy = [new Query.Order(Expr.Parse(expr),type)]
+            OrderBy = [new Query.Order(RawExpr.Parse(expr),type)]
         };
         
     }
@@ -60,7 +60,7 @@ public static class QueryLinq
         {
             return query with
             {
-                OrderBy = [..query.OrderBy,new Query.Order(Expr.Parse(expr),Query.Order.Type.Asc)]
+                OrderBy = [..query.OrderBy,new Query.Order(RawExpr.Parse(expr),Query.Order.Type.Asc)]
             };
         }
         throw new Exception("Can't use ThenBy on query without ordering");
@@ -72,7 +72,7 @@ public static class QueryLinq
         {
             return query with
             {
-                OrderBy = [..query.OrderBy,new Query.Order(Expr.Parse(expr),Query.Order.Type.Desc)]
+                OrderBy = [..query.OrderBy,new Query.Order(RawExpr.Parse(expr),Query.Order.Type.Desc)]
             };
         }
         throw new Exception("Can't use ThenByDescending on query without ordering");
@@ -86,12 +86,12 @@ public static class QueryLinq
             {
                 No = query.No + 1,
                 From = query,
-                Select = select.Select(kv => new Query.Map(kv.Key,Expr.Parse(kv.Value))).ToArray(),
+                Select = select.Select(kv => new Query.Map(kv.Key,RawExpr.Parse(kv.Value))).ToArray(),
             };
         }
         return query with
         {
-            Select = select.Select(kv => new Query.Map(kv.Key,Expr.Parse(kv.Value))).ToArray(),
+            Select = select.Select(kv => new Query.Map(kv.Key,RawExpr.Parse(kv.Value))).ToArray(),
         };
     }
     

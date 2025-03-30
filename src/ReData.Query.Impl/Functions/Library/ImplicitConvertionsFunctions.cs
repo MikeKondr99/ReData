@@ -18,7 +18,7 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             Number => "Num",
             Integer => "Int",
             DataType.Text => "Text",
-            Boolean => "Bool",
+            Bool => "Bool",
             var any => throw new UnknownEnumValueException<DataType>(any),
         };
         return Function(name)
@@ -28,22 +28,25 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
 
     protected override void Functions()
     {
-        Function("NumberFromNull")
-            .ImplicitCast(1)
-            .Arg("input", Null)
-            .Returns(Number)
-            .Template($"SIGN({0})");
-
+        // Здесь возможно важен порядок
         Function("IntegerFromNull")
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Integer)
             .Template($"SIGN({0})");
+        
+        
+        Function("NumberFromNull")
+            .ImplicitCast(2)
+            .Arg("input", Null)
+            .Returns(Number)
+            .Template($"SIGN({0})");
+
 
         Function("BoolFromNull")
             .ImplicitCast(1)
             .Arg("input", Null)
-            .Returns(Boolean)
+            .Returns(Bool)
             .Template($"({0} = 0)");
 
         Function("TextFromNull")
@@ -54,7 +57,7 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
 
         foreach (var T in new[]
                  {
-                     Integer, Number, Boolean, Text
+                     Integer, Number, Bool, Text, DateTime
                  })
         {
             Function("Optional")
@@ -73,19 +76,19 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
         };
 
         Function("ToNum")
-            .ImplicitCast(2)
+            .ImplicitCast(3)
             .ReqArg("input", Integer)
             .ReturnsNotNull(Number)
             .Templates(IntegerToNumbers);
 
         Function("ToNum")
-            .ImplicitCast(2)
+            .ImplicitCast(3)
             .Arg("input", Integer)
             .Returns(Number)
             .Templates(IntegerToNumbers);
 
         Function("ToNum2")
-            .ImplicitCast(2)
+            .ImplicitCast(3)
             .ReqArg("input", Integer)
             .Returns(Number)
             .Templates(IntegerToNumbers);

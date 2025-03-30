@@ -2,11 +2,11 @@
 
 namespace ReData.Query.Lang.Expressions;
 
-public record struct FuncExpr : IExpr
+public record struct FuncRawExpr : IRawExpr
 {
     public required string Name { get; init; }
     
-    public required IReadOnlyList<IExpr> Arguments { get; init; }
+    public required IReadOnlyList<IRawExpr> Arguments { get; init; }
     
     public FuncExprKind Kind { get; init; }
     

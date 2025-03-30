@@ -1,42 +1,74 @@
 ﻿using FluentAssertions;
 using Org.BouncyCastle.Asn1.X509;
+using ReData.Query.Impl.Runners;
+using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Impl.Tests.QueryTests;
+using Record = ReData.Query.Impl.Runners.Record;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
-// public abstract class Сommon(ISqlRunner runner) : ExprTests(runner)
-// {
-//     private IQueryBuilder QueryBuilder => Runner.QueryBuilder;
-//     
-//     [Fact]
-//     public async Task TableQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery;
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players;
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task WhereQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Where("id > 5");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.Where(p => p.id > 5);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
+public abstract class Сommon(IDatabaseFixture fixture) : RawExprTests(fixture)
+{
+    
+    // const int ID = 0;
+    //
+    // private static void CompareTables(IReadOnlyList<Record> result, IReadOnlyList<IValue[]> expected)
+    // {
+    //     for (int i = 0; i < result.Count; i++)
+    //     {
+    //         result[i].values.Should().BeEquivalentTo(expected[i], options =>
+    //         {
+    //             options.WithoutStrictOrdering();
+    //             options.Using<IValue>(ctx => 
+    //             {
+    //                 Compare(ctx.Expectation, ctx.Subject);
+    //             }).WhenTypeIs<IValue>();
+    //             return options;
+    //         });
+    //     }
+    // }
+    //  
+    //  [Fact]
+    //  public async Task TableQuery()
+    //  {
+    //      var runner = await fixture.GetRunnerAsync();
+    //      // Arrange
+    //      Query query = Assets.UsersQuery;
+    //
+    //      // Act
+    //      var result = await runner.RunQueryAsync(query);
+    //
+    //      // Assert
+    //      var expect = Assets.ToData(Assets.RawUsers);
+    //
+    //      CompareTables(result,expect);
+    //  }
+     //
+     // [Fact]
+     // public async Task WhereQuery()
+     // {
+     //     var runner = await fixture.GetRunnerAsync();
+     //     // Arrange
+     //     Query query = Assets.UsersQuery.Where("UserId > 5");
+     //
+     //     // Act
+     //     var result = await runner.RunQueryAsync(query);
+     //
+     //     // Assert
+     //     var expect = Assets.ToData(Assets.RawUsers.Where(u => ((int)u[ID]) > 5));
+     //
+     //     CompareTables(result,expect);
+         // Arrange
+         // Query query = Assets.PlayersQuery.Where("id > 5");
+         // var sql = QueryBuilder.Build(query);
+         //
+         // // Act
+         // List<Player> result = await Runner.QueryAsync(sql);
+         //
+         // // Assert
+         // var expect = Assets.Players.Where(p => p.id > 5);
+         // result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
+     }
 //     
 //     [Fact]
 //     public async Task SelectQuery()

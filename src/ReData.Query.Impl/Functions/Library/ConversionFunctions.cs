@@ -9,7 +9,7 @@ using static DataType;
 
 public class ConversionFunctions : FunctionsDescriptor
 {
-    private FunctionBuilder Convertion(DataType input, DataType ret)
+    private FunctionBuilder Conversion(DataType input, DataType ret)
     {
         var name = ret switch
         {
@@ -17,8 +17,9 @@ public class ConversionFunctions : FunctionsDescriptor
             Null => "Null",
             Number => "Num",
             Integer => "Int",
-            DataType.Text => "Text",
-            Boolean => "Bool",
+            Text => "Text",
+            DateTime => "Date",
+            Bool => "Bool",
             var any => throw new UnknownEnumValueException<DataType>(any),
         };
         return Method(name)
@@ -28,15 +29,16 @@ public class ConversionFunctions : FunctionsDescriptor
     protected override void Functions()
     {
         // Noop Conversions
-        foreach (var T in new DataType[] { Number, Integer, Text, Boolean})
+        foreach (var T in new DataType[] { Number, Integer, Text, Bool, DateTime})
         {
-            Convertion(T,T)
+            Conversion(T,T)
                 .Templates(new()
                 {
                     [All] = $"{0}",
                 });
         }
-        Convertion(Text,Integer)
+        
+        Conversion(Text,Integer)
             .Templates(new()
             {
                 [SqlServer] = $"CAST({0} AS INTEGER)",
@@ -45,13 +47,13 @@ public class ConversionFunctions : FunctionsDescriptor
                 [ClickHouse] = $"CAST({0} AS Int64)",
             });
         
-        Convertion(Boolean,Integer)
+        Conversion(Bool,Integer)
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 1 ELSE 0 END",
             });
         
-        Convertion(Number,Integer)
+        Conversion(Number,Integer)
             .Templates(new()
             {
                 [SqlServer] = $"CAST({0} AS INTEGER)",
@@ -60,13 +62,13 @@ public class ConversionFunctions : FunctionsDescriptor
                 [ClickHouse] = $"CAST({0} AS Int64)"
             });
         
-        Convertion(Null,Integer)
+        Conversion(Null,Integer)
             .Templates(new()
             {
                 [All] = $"({0} + 0)",
             });
         
-        Convertion(Text,Number)
+        Conversion(Text,Number)
             .Templates(new()
             {
                 [All & ~ClickHouse &~Oracle] = $"CAST({0} AS DECIMAL(20,10))",
@@ -74,13 +76,13 @@ public class ConversionFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toDecimal64({0}, 10)"
             });
         
-        Convertion(Boolean,Number)
+        Conversion(Bool,Number)
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 1.0 ELSE 0.0 END"
             });
         
-        Convertion(Integer, Number)
+        Conversion(Integer, Number)
             .Templates(new()
             {
                 [All & ~ClickHouse &~ Oracle] = $"CAST({0} AS DECIMAL(30,15))",
@@ -88,44 +90,44 @@ public class ConversionFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toDecimal64({0}, 10)"
             });
         
-        Convertion(Null, Number)
+        Conversion(Null, Number)
             .Templates(new()
             {
                 [All] = $"({0} + 0.0)",
             });
         
-        Convertion(Text, Boolean)
+        Conversion(Text, Bool)
             .Templates(new()
             {
                 [SqlServer] = $"LEN({0}) > 0",
                 [MySql | PostgreSql | ClickHouse | Oracle] = $"LENGTH({0}) > 0"
             });
         
-        Convertion(Number, Boolean)
+        Conversion(Number, Bool)
             .Templates(new()
             {
                 [All] = $"({0} > 0.0)"
             });
         
-        Convertion(Integer, Boolean)
+        Conversion(Integer, Bool)
             .Templates(new()
             {
                 [All] = $"({0} > 0)"
             });
         
-        Convertion(Null, Boolean)
+        Conversion(Null, Bool)
             .Templates(new()
             {
                 [All] = $"({0} = 0)",
             });
         
-        Convertion(Boolean, Text)
+        Conversion(Bool, Text)
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 'true' ELSE 'false' END"
             });
         
-        Convertion(Number, Text)
+        Conversion(Number, Text)
             .Templates(new()
             {
                 [All & ~ (MySql | Oracle)] = $"CAST({0} AS VARCHAR)",
@@ -133,7 +135,7 @@ public class ConversionFunctions : FunctionsDescriptor
                 [Oracle] = $"REPLACE(TO_CHAR({0}),',','.')"
             });
         
-        Convertion(Integer, Text)
+        Conversion(Integer, Text)
             .Templates(new()
             {
                 [All & ~MySql & ~Oracle] = $"CAST({0} AS VARCHAR)",
@@ -141,10 +143,28 @@ public class ConversionFunctions : FunctionsDescriptor
                 [Oracle] = $"TO_CHAR({0})"
             });
         
-        Convertion(Null, Text)
+        Conversion(DateTime, Text)
+            .Templates(new()
+            {
+                [ClickHouse] = $"formatDateTime({0}, '%Y-%m-%d %H:%i')", // Forces YYYY-MM-DD HH:MM
+                [All & ~ClickHouse] = $"FORMAT({0}, 'yyyy-MM-dd HH:mm')" // Fallback (SQL Server style)
+            });
+        
+        Conversion(Null, Text)
             .Templates(new()
             {
                 [All] = $"LOWER({0})",
+            });
+        
+        
+        Conversion(Text, DateTime)
+            .Templates(new()
+            {
+                [ClickHouse] = $"parseDateTimeBestEffort({0})",
+                [SqlServer] = $"CONVERT(DATETIME, {0}, 120)", // Using ODBC canonical format
+                [MySql] = $"STR_TO_DATE({0}, '%Y-%m-%d %H:%i:%s')",
+                [Oracle] = $"TO_DATE({0}, 'YYYY-MM-DD HH24:MI:SS')",
+                [PostgreSql] = $"TO_TIMESTAMP({0}, 'YYYY-MM-DD HH24:MI:SS')"
             });
     }
 }

@@ -8,16 +8,16 @@ public class ParsingTests
     [Fact]
     public void BinaryOp()
     {
-        var expr = Expr.Parse("number + 3");
+        var expr = RawExpr.Parse("number + 3");
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("number"),
-                new IntegerLiteral(3),
+                new NameRawExpr("number"),
+                new RawIntegerLiteral(3),
             ]
         });
     }
@@ -25,22 +25,22 @@ public class ParsingTests
     [Fact]
     public void ShouldGivePriority()
     {
-        var expr = Expr.Parse("a + b * c");
+        var expr = RawExpr.Parse("a + b * c");
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new FuncExpr()
+                new NameRawExpr("a"),
+                new FuncRawExpr()
                 {
                     Name = "+",
                     Arguments =
                     [
-                        new NameExpr("b"),
-                        new NameExpr("c"),
+                        new NameRawExpr("b"),
+                        new NameRawExpr("c"),
                     ]
                 }
             ]
@@ -51,21 +51,21 @@ public class ParsingTests
     [Fact]
     public void ShouldParseWithoutCapturingBinary()
     {
-        var expr = Expr.Parse("a + c.Call()");
+        var expr = RawExpr.Parse("a + c.Call()");
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new FuncExpr()
+                new NameRawExpr("a"),
+                new FuncRawExpr()
                 {
                     Name = "Call",
                     Arguments = [
-                        new NameExpr("c")
+                        new NameRawExpr("c")
                     ]
                 }
             ]
@@ -76,9 +76,9 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedy()
     {
-        var expr = Expr.Parse("'a' + 'b'");
+        var expr = RawExpr.Parse("'a' + 'b'");
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -94,17 +94,17 @@ public class ParsingTests
     [Fact]
     public void ShouldParseNameNonGreedy()
     {
-        var expr = Expr.Parse("[a] + [b]");
+        var expr = RawExpr.Parse("[a] + [b]");
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new NameExpr("b"),
+                new NameRawExpr("a"),
+                new NameRawExpr("b"),
             ]
         });
     }
@@ -112,26 +112,26 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedyInArguments()
     {
-        var expr = Expr.Parse("If(10 > 5 and null, 'then', 'else')");
+        var expr = RawExpr.Parse("If(10 > 5 and null, 'then', 'else')");
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "If",
             Arguments =
             [
-                new FuncExpr()
+                new FuncRawExpr()
                 {
                     Name = "and",
                     Arguments = [
-                        new FuncExpr()
+                        new FuncRawExpr()
                         {
                             Name = ">",
                             Arguments = [
-                                new IntegerLiteral(10),
-                                new IntegerLiteral(5),
+                                new RawIntegerLiteral(10),
+                                new RawIntegerLiteral(5),
                             ]
                         },
-                        new NullLiteral(),
+                        new RawNullRawLiteral(),
                     ]
                 },
                 new StringLiteral("then"),

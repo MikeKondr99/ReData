@@ -22,8 +22,8 @@ public class LiteralsTest
     [InlineData("[and]","and")]
     public void NameLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr);
-        e.Should().Be(new NameExpr(expected));
+        var e = RawExpr.Parse(expr);
+        e.Should().Be(new NameRawExpr(expected));
     }
     
     [Theory]
@@ -39,7 +39,7 @@ public class LiteralsTest
     // [InlineData(@"' \\n '",@" \n ")]
     public void StringLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr);
+        var e = RawExpr.Parse(expr);
         e.Should().Be(new StringLiteral(expected));
     }
     
@@ -52,21 +52,21 @@ public class LiteralsTest
     [InlineData("0.1234567890", 0.1234567890)]
     public void NumberLiteral(string input, double expected)
     {
-        var expr = Expr.Parse(input);
+        var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new NumberLiteral(expected));
+        expr.Should().Be(new RawNumberLiteral(expected));
     }
     
     [Fact]
     public void ShouldParseUnary()
     {
-        var expr = Expr.Parse("-1");
+        var expr = RawExpr.Parse("-1");
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncRawExpr()
         {
             Name = "-",
-            Arguments = [new IntegerLiteral(1)],
+            Arguments = [new RawIntegerLiteral(1)],
             Kind = FuncExprKind.Unary,
         });
     }
@@ -80,8 +80,8 @@ public class LiteralsTest
     [InlineData("00001", 1)]
     public void IntegerLiteral(string input, long expected)
     {
-        var expr = Expr.Parse(input);
-        expr.Should().Be(new IntegerLiteral(expected));
+        var expr = RawExpr.Parse(input);
+        expr.Should().Be(new RawIntegerLiteral(expected));
     }
 
     [Theory]
@@ -89,18 +89,18 @@ public class LiteralsTest
     [InlineData("false", false)]
     public void BooleanLiteral(string input, bool expected)
     {
-        var expr = Expr.Parse(input);
+        var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new BooleanLiteral(expected));
+        expr.Should().Be(new RawBooleanLiteral(expected));
     }
     
     [Theory]
     [InlineData("null")]
     public void NullLiteral(string input)
     {
-        var expr = Expr.Parse(input);
+        var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new NullLiteral());
+        expr.Should().Be(new RawNullRawLiteral());
     }
     
     [Theory]
@@ -117,7 +117,7 @@ public class LiteralsTest
     // [InlineData("+3", "expected expression",0)]
     public void ShouldNotParse(string input, string message, int index)
     {
-        var action = () => Expr.Parse(input);
+        var action = () => RawExpr.Parse(input);
         action.Should().Throw<ParseException>()
             .WithMessage(message)
             .Where(ex => ex.Column == index);
@@ -128,7 +128,7 @@ public class LiteralsTest
     [InlineData("a % 3")]
     public void ShouldThrowUnexpectedToken(string input)
     {
-        var action = () => Expr.Parse(input);
+        var action = () => RawExpr.Parse(input);
         action.Should().Throw<UnexpectedTokenException>()
             .WithMessage("unexpected token");
     }

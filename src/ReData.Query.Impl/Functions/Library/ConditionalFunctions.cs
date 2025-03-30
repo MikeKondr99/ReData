@@ -9,10 +9,10 @@ public class ConditionalFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var T in new [] { Number, Text, Boolean, Integer })
+        foreach (var T in new [] { Number, Text, Bool, Integer })
         {
             Function("If")
-                .Arg("condition", Boolean, propagateNull: false)
+                .Arg("condition", Bool, propagateNull: false)
                 .Arg("then", T)
                 .Arg("else", T)
                 .Returns(T)
@@ -29,6 +29,22 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Templates(new()
                 {
                     [All] = $"COALESCE({0}, {1})",
+                });
+            
+            Method("IsNull")
+                .Arg("input", T)
+                .ReturnsNotNull(Bool)
+                .Templates(new()
+                {
+                    [All] = $"({0} IS NULL)",
+                });
+            
+            Method("NotNull")
+                .Arg("input", T)
+                .ReturnsNotNull(Bool)
+                .Templates(new()
+                {
+                    [All] = $"({0} IS NOT NULL)",
                 });
         }
     }

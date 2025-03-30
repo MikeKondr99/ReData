@@ -3,7 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Conversion;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
 {
      [Theory(DisplayName = "Int")]
      [InlineData("Int(25)", 25)]
@@ -32,6 +32,8 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Text(false)", "false")]
      [InlineData("Text(true)", "true")]
      [InlineData("Text(null)", null)]
+     [InlineData("Date('2025-03-27 21:19').Text()", "2025-03-27 21:19")]
+     [InlineData("Date('2025-03-27').Text()", "2025-03-27 00:00")]
      public Task Text(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Bool")]
@@ -48,4 +50,10 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Bool(true)", true)]
      [InlineData("If(Bool(null), 'then', 'else')", "else")]
      public Task Bool(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "Date")]
+     [InlineData("Date('2025-03-27 21:19')", "@2025-03-27 21:19Z")]
+     [InlineData("'2025-03-27 21:40'.Date()", "@2025-03-27 21:40Z")]
+     [InlineData("Date('2025-03-27')", "@2025-03-27 00:00Z")]
+     public Task Date(string expr, object? expected) => Test(expr, expected);
 }

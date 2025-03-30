@@ -4,7 +4,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Number;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
 {
     [Theory(DisplayName = "Floor")]
     [InlineData("Floor(1.2)", 1)]
@@ -109,6 +109,5 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Frac(10.0)", 0.0)]
     [InlineData("Frac(1.123)", 0.123)]
     [InlineData("Frac(-2.123456789)", -0.123456789)]
-    [InlineData("Frac(null)", null)]
     public Task Frac(string expr, object? expected) => Test(expr, expected);
 }

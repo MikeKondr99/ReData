@@ -20,6 +20,7 @@ public class GlobalFunctionsStorage
         {
             new ImplicitConversionFunctions(),
             new StringFunctions(),
+            new DateFunctions(),
             new ConversionFunctions(),
             new ComparisonFunctions(),
             new NumberFunctions(),

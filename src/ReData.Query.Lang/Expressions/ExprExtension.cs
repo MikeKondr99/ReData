@@ -5,9 +5,9 @@ using Antlr4.Runtime.Tree.Xpath;
 
 namespace ReData.Query.Lang.Expressions;
 
-public static class Expr
+public static class RawExpr
 {
-    public static IExpr Parse(string s)
+    public static IRawExpr Parse(string s)
     {
         var chars = new AntlrInputStream(s);
         var lexer = new LangLexer(chars);

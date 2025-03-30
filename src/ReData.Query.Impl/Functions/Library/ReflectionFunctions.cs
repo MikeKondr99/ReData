@@ -8,17 +8,28 @@ using static DataType;
 
 public class ReflectionFunctions : FunctionsDescriptor
 {
+    private string TypeMapping(DataType type) => type switch
+    {
+        Text => "Text",
+        Number => "Num",
+        Integer => "Int",
+        Bool => "Bool",
+        DateTime => "Date",
+        Unknown => "Unknown",
+        Null => "Null",
+
+    };
     
     protected override void Functions()
     {
-        foreach (var T in new [] { Text, Number, Integer, Boolean, Null, Unknown })
+        foreach (var T in new [] { Text, Number, Integer, Bool, Null, DateTime, Unknown })
         {
             Method("Type")
                 .Arg("input", T)
                 .ReturnsNotNull(Text)
                 .Templates(new()
                 {
-                    [All] = $"'{T.ToString()}?'",
+                    [All] = $"'{TypeMapping(T)}?'",
                 });
             
             Method("Type")
@@ -26,7 +37,7 @@ public class ReflectionFunctions : FunctionsDescriptor
                 .ReturnsNotNull(Text)
                 .Templates(new()
                 {
-                    [All] = $"'{T.ToString()}'",
+                    [All] = $"'{TypeMapping(T)}'",
                 });
         }
     }

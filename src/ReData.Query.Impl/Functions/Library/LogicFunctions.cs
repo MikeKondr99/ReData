@@ -7,23 +7,23 @@ public class LogicFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        Binary("and", Boolean, Boolean)
-            .Returns(Boolean)
+        Binary("and", Bool, Bool)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All] = $"({0} AND {1})",
             });
 
-        Binary("or", Boolean, Boolean)
-            .Returns(Boolean)
+        Binary("or", Bool, Bool)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All] = $"({0} OR {1})",
             });
 
         Function("Not")
-            .Arg("input", Boolean)
-            .Returns(Boolean)
+            .Arg("input", Bool)
+            .Returns(Bool)
             .Templates(new()
             {
                 [All] = $"(NOT {0})",
