@@ -7,7 +7,7 @@ namespace ReData.Query.Lang.Expressions;
 
 public static class RawExpr
 {
-    public static IRawExpr Parse(string s)
+    public static IExpr Parse(string s)
     {
         var chars = new AntlrInputStream(s);
         var lexer = new LangLexer(chars);

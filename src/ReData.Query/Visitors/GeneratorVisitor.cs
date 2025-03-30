@@ -12,46 +12,46 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
     public required IFunctionStorage FunctionStorage { get; init; }
     public required ILiteralBuilder LiteralBuilder { get; init; }
 
-    public override StringBuilder Visit(IRawExpr rawExpr)
+    public override StringBuilder Visit(IExpr expr)
     {
-        return rawExpr switch
+        return expr switch
         {
             StringLiteral s => LiteralBuilder.String(StringBuilder, s),
-            RawNumberLiteral n => LiteralBuilder.Number(StringBuilder, n),
-            RawIntegerLiteral i => LiteralBuilder.Integer(StringBuilder, i),
-            RawBooleanLiteral b => LiteralBuilder.Boolean(StringBuilder, b),
-            RawNullRawLiteral n => LiteralBuilder.Null(StringBuilder, n),
-            NameRawExpr n => LiteralBuilder.Name(StringBuilder, n),
-            FuncRawExpr f => Visit(f),
-            var unmatched => throw new UnmatchedException<IRawExpr>(unmatched)
+            NumberLiteral n => LiteralBuilder.Number(StringBuilder, n),
+            IntegerLiteral i => LiteralBuilder.Integer(StringBuilder, i),
+            BooleanLiteral b => LiteralBuilder.Boolean(StringBuilder, b),
+            NullLiteral n => LiteralBuilder.Null(StringBuilder, n),
+            NameExpr n => LiteralBuilder.Name(StringBuilder, n),
+            FuncExpr f => Visit(f),
+            var unmatched => throw new UnmatchedException<IExpr>(unmatched)
         };
     }
 
     public override StringBuilder Visit(StringLiteral expr) => LiteralBuilder.String(StringBuilder, expr);
 
-    public override StringBuilder Visit(RawNumberLiteral expr) => LiteralBuilder.Number(StringBuilder, expr);
+    public override StringBuilder Visit(NumberLiteral expr) => LiteralBuilder.Number(StringBuilder, expr);
 
-    public override StringBuilder Visit(RawIntegerLiteral expr) => LiteralBuilder.Integer(StringBuilder, expr);
+    public override StringBuilder Visit(IntegerLiteral expr) => LiteralBuilder.Integer(StringBuilder, expr);
 
-    public override StringBuilder Visit(RawBooleanLiteral expr) => LiteralBuilder.Boolean(StringBuilder, expr);
+    public override StringBuilder Visit(BooleanLiteral expr) => LiteralBuilder.Boolean(StringBuilder, expr);
 
-    public override StringBuilder Visit(NameRawExpr rawExpr) => LiteralBuilder.Name(StringBuilder, rawExpr);
+    public override StringBuilder Visit(NameExpr expr) => LiteralBuilder.Name(StringBuilder, expr);
 
-    public override StringBuilder Visit(RawNullRawLiteral expr) => LiteralBuilder.Null(StringBuilder, expr);
+    public override StringBuilder Visit(NullLiteral expr) => LiteralBuilder.Null(StringBuilder, expr);
 
-    public override StringBuilder Visit(FuncRawExpr rawExpr)
+    public override StringBuilder Visit(FuncExpr expr)
     {
-        ExprType[] types = new ExprType[rawExpr.Arguments.Count];
+        ExprType[] types = new ExprType[expr.Arguments.Count];
 
-        for (int i = 0; i < rawExpr.Arguments.Count; i++)
+        for (int i = 0; i < expr.Arguments.Count; i++)
         {
-            types[i] = TypeVisitor.Visit(rawExpr.Arguments[i]);
+            types[i] = TypeVisitor.Visit(expr.Arguments[i]);
         }
 
         var sign = new FunctionSignature
         {
-            Name = rawExpr.Name,
-            Kind = rawExpr.Kind switch
+            Name = expr.Name,
+            Kind = expr.Kind switch
             {
                 FuncExprKind.Binary => FunctionKind.Binary,
                 FuncExprKind.Method => FunctionKind.Method,
@@ -78,7 +78,7 @@ public sealed class GeneratorVisitor : ExprVisitor<StringBuilder>
             _ = token switch
             {
                 ConstToken(var str) => StringBuilder.Append(str),
-                ArgToken(var idx) => Visit(rawExpr.Arguments[idx]),
+                ArgToken(var idx) => Visit(expr.Arguments[idx]),
                 var unmatched => throw new UnmatchedException<IToken>(unmatched)
             };
 

@@ -10,14 +10,14 @@ public class ParsingTests
     {
         var expr = RawExpr.Parse("number + 3");
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameRawExpr("number"),
-                new RawIntegerLiteral(3),
+                new NameExpr("number"),
+                new IntegerLiteral(3),
             ]
         });
     }
@@ -27,20 +27,20 @@ public class ParsingTests
     {
         var expr = RawExpr.Parse("a + b * c");
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameRawExpr("a"),
-                new FuncRawExpr()
+                new NameExpr("a"),
+                new FuncExpr()
                 {
                     Name = "+",
                     Arguments =
                     [
-                        new NameRawExpr("b"),
-                        new NameRawExpr("c"),
+                        new NameExpr("b"),
+                        new NameExpr("c"),
                     ]
                 }
             ]
@@ -54,18 +54,18 @@ public class ParsingTests
         var expr = RawExpr.Parse("a + c.Call()");
 
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameRawExpr("a"),
-                new FuncRawExpr()
+                new NameExpr("a"),
+                new FuncExpr()
                 {
                     Name = "Call",
                     Arguments = [
-                        new NameRawExpr("c")
+                        new NameExpr("c")
                     ]
                 }
             ]
@@ -78,7 +78,7 @@ public class ParsingTests
     {
         var expr = RawExpr.Parse("'a' + 'b'");
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -97,14 +97,14 @@ public class ParsingTests
         var expr = RawExpr.Parse("[a] + [b]");
 
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameRawExpr("a"),
-                new NameRawExpr("b"),
+                new NameExpr("a"),
+                new NameExpr("b"),
             ]
         });
     }
@@ -114,24 +114,24 @@ public class ParsingTests
     {
         var expr = RawExpr.Parse("If(10 > 5 and null, 'then', 'else')");
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "If",
             Arguments =
             [
-                new FuncRawExpr()
+                new FuncExpr()
                 {
                     Name = "and",
                     Arguments = [
-                        new FuncRawExpr()
+                        new FuncExpr()
                         {
                             Name = ">",
                             Arguments = [
-                                new RawIntegerLiteral(10),
-                                new RawIntegerLiteral(5),
+                                new IntegerLiteral(10),
+                                new IntegerLiteral(5),
                             ]
                         },
-                        new RawNullRawLiteral(),
+                        new NullLiteral(),
                     ]
                 },
                 new StringLiteral("then"),

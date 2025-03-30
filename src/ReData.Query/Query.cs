@@ -11,7 +11,7 @@ public sealed record Query : IQuerySource
 
     public IReadOnlyList<Map>? Select { get; init; }
 
-    public IReadOnlyList<IRawExpr>? Where { get; init; }
+    public IReadOnlyList<IExpr>? Where { get; init; }
 
     public IReadOnlyList<Order>? OrderBy { get; init; }
 
@@ -19,7 +19,7 @@ public sealed record Query : IQuerySource
 
     public uint Offset { get; init; }
 
-    public record struct Order(IRawExpr RawExpr, Order.Type Direction)
+    public record struct Order(IExpr Expr, Order.Type Direction)
     {
         public enum Type
         {
@@ -29,7 +29,7 @@ public sealed record Query : IQuerySource
     }
     
     public record struct Field(string Name, ExprType Type);
-    public record struct Map(string Name, IRawExpr RawExpr);
+    public record struct Map(string Name, IExpr Expr);
 
     public string Name => $"STEP{No}";
 
@@ -46,7 +46,7 @@ public sealed record Query : IQuerySource
         
         if (Select is null) return fields;
 
-        var result = Select.Select(m => new Field(m.Name,typeVisitor.Visit(m.RawExpr)));
+        var result = Select.Select(m => new Field(m.Name,typeVisitor.Visit(m.Expr)));
         return new FieldStorage(result.ToArray());
     }
     

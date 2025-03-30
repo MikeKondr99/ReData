@@ -4,5 +4,5 @@ namespace ReData.Query.Visitors;
 
 public interface IExprVisitor<T>
 {
-    public T Visit(IRawExpr rawExpr);
+    public T Visit(IExpr expr);
 }

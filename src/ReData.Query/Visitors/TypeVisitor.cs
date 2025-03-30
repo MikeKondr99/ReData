@@ -11,42 +11,42 @@ public class TypeVisitor : ExprVisitor<ExprType>, ITypeVisitor
     
     public required IFunctionStorage FunctionTypes { get; init; }
 
-    public override ExprType Visit(IRawExpr rawExpr)
+    public override ExprType Visit(IExpr expr)
     {
-        var result = rawExpr switch
+        var result = expr switch
         {
             StringLiteral s => Visit(s),
-            RawNumberLiteral n => Visit(n),
-            RawIntegerLiteral i => Visit(i),
-            RawBooleanLiteral b => Visit(b),
-            RawNullRawLiteral nl => Visit(nl),
-            NameRawExpr n => FieldTypes.GetType(n.Value),
-            FuncRawExpr f => Visit(f),
-            var unmatched => throw new UnmatchedException<IRawExpr>(unmatched)
+            NumberLiteral n => Visit(n),
+            IntegerLiteral i => Visit(i),
+            BooleanLiteral b => Visit(b),
+            NullLiteral nl => Visit(nl),
+            NameExpr n => FieldTypes.GetType(n.Value),
+            FuncExpr f => Visit(f),
+            var unmatched => throw new UnmatchedException<IExpr>(unmatched)
         };
         return result;
     }
 
     public override ExprType Visit(StringLiteral expr) => ExprType.Text().Const();
-    public override ExprType Visit(RawNumberLiteral expr) => ExprType.Number().Const();
-    public override ExprType Visit(RawIntegerLiteral expr) => ExprType.Integer().Const();
-    public override ExprType Visit(RawBooleanLiteral expr) => ExprType.Boolean().Const();
+    public override ExprType Visit(NumberLiteral expr) => ExprType.Number().Const();
+    public override ExprType Visit(IntegerLiteral expr) => ExprType.Integer().Const();
+    public override ExprType Visit(BooleanLiteral expr) => ExprType.Boolean().Const();
     
-    public override ExprType Visit(RawNullRawLiteral expr) => ExprType.Null();
+    public override ExprType Visit(NullLiteral expr) => ExprType.Null();
     
-    public override ExprType Visit(FuncRawExpr rawExpr)
+    public override ExprType Visit(FuncExpr expr)
     {
-        ExprType[] types = new ExprType[rawExpr.Arguments.Count];
+        ExprType[] types = new ExprType[expr.Arguments.Count];
         
-        for (int i = 0; i < rawExpr.Arguments.Count(); i++)
+        for (int i = 0; i < expr.Arguments.Count(); i++)
         {
-            types[i] = Visit(rawExpr.Arguments[i]);
+            types[i] = Visit(expr.Arguments[i]);
         }
         
         var sign = new FunctionSignature
         {
-            Name = rawExpr.Name,
-            Kind = rawExpr.Kind switch
+            Name = expr.Name,
+            Kind = expr.Kind switch
             {
                 FuncExprKind.Binary => FunctionKind.Binary,
                 FuncExprKind.Method => FunctionKind.Method,
@@ -98,9 +98,9 @@ public class TypeVisitor : ExprVisitor<ExprType>, ITypeVisitor
     }
     
 
-    public override ExprType Visit(NameRawExpr nameRaw)
+    public override ExprType Visit(NameExpr name)
     {
-        return FieldTypes.GetType(nameRaw.Value);
+        return FieldTypes.GetType(name.Value);
     }
     
     

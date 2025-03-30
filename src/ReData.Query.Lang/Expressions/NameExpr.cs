@@ -1,6 +1,6 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public record struct NameRawExpr(string Value) : IRawExpr
+public record struct NameExpr(string Value) : IExpr
 {
     public override string ToString()
     {

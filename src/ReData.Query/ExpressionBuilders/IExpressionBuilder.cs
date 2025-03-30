@@ -11,26 +11,26 @@ namespace ReData.Query;
 
 public interface IExpressionBuilder
 {
-    void Write(StringBuilder res, IRawExpr rawExpr, IFieldStorage fields);
+    void Write(StringBuilder res, IExpr expr, IFieldStorage fields);
     
-    public string Build(IRawExpr rawExpr, IFieldStorage fields)
+    public string Build(IExpr expr, IFieldStorage fields)
     {
         var res = new StringBuilder();
-        Write(res, rawExpr, fields);
+        Write(res, expr, fields);
         return res.ToString();
     }
 
 }
 
 
-public sealed class ExpressionBuilder : IExpressionBuilder
+public sealed class ExpressionCompiler : IExpressionBuilder
 {
     public required IFunctionStorage FunctionStorage { get; init; }
     
     public required ILiteralBuilder LiteralBuilder { get; init; }
     
     
-    public void Write(StringBuilder res, IRawExpr rawExpr, IFieldStorage fields)
+    public void Write(StringBuilder res, IExpr expr, IFieldStorage fields)
     {
         var typeVisitor = new TypeVisitor()
         {
@@ -46,7 +46,7 @@ public sealed class ExpressionBuilder : IExpressionBuilder
             LiteralBuilder = LiteralBuilder
         };
 
-        visitor.Visit(rawExpr);
+        visitor.Visit(expr);
     }
         
         

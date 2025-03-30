@@ -52,7 +52,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             res.Append("WITH\n");
             foreach (var sub in subs)
             {
-                WriteExpression(res, query, new NameRawExpr(sub.Name));
+                WriteExpression(res, query, new NameExpr(sub.Name));
                 res.Append(" AS (\n");
                 WriteQuery(res, sub);
                 res.Append("),\n");
@@ -95,7 +95,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         if (query.From.Name is not null)
         {
             res.Append($"FROM ");
-            ExpressionBuilder.Write(res,new NameRawExpr(query.From.Name),query.From.Fields(FunctionsStorage));
+            ExpressionBuilder.Write(res,new NameExpr(query.From.Name),query.From.Fields(FunctionsStorage));
         }
         res.Append('\n');
     }
@@ -109,13 +109,13 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             var field = query.Select[i];
 
             res.Append("    ");
-            if (!(field.RawExpr is NameRawExpr ne && ne.Value == field.Name))
+            if (!(field.Expr is NameExpr ne && ne.Value == field.Name))
             {
-                ExpressionBuilder.Write(res,field.RawExpr, query.From.Fields(FunctionsStorage));
+                ExpressionBuilder.Write(res,field.Expr, query.From.Fields(FunctionsStorage));
                 res.Append(" AS ");
             }
             
-            WriteExpression(res, query, new NameRawExpr(field.Name));
+            WriteExpression(res, query, new NameExpr(field.Name));
             
             if (i != last)
             {
@@ -125,9 +125,9 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         }
     }
 
-    protected virtual void WriteExpression(StringBuilder res, Query query, IRawExpr rawExpr)
+    protected virtual void WriteExpression(StringBuilder res, Query query, IExpr expr)
     {
-        ExpressionBuilder.Write(res, rawExpr, query.From.Fields(FunctionsStorage));
+        ExpressionBuilder.Write(res, expr, query.From.Fields(FunctionsStorage));
     }
 
     protected virtual void WriteWhere(StringBuilder res, Query query)
@@ -150,7 +150,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         for (var i = 0; i < query.OrderBy.Count; i++)
         {
             var order = query.OrderBy[i];
-            WriteExpression(res, query, order.RawExpr);
+            WriteExpression(res, query, order.Expr);
             res.Append(order.Direction switch
             {
                 Query.Order.Type.Desc => "DESC",

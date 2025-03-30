@@ -23,7 +23,7 @@ public class LiteralsTest
     public void NameLiteral(string expr, string expected)
     {
         var e = RawExpr.Parse(expr);
-        e.Should().Be(new NameRawExpr(expected));
+        e.Should().Be(new NameExpr(expected));
     }
     
     [Theory]
@@ -54,7 +54,7 @@ public class LiteralsTest
     {
         var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new RawNumberLiteral(expected));
+        expr.Should().Be(new NumberLiteral(expected));
     }
     
     [Fact]
@@ -63,10 +63,10 @@ public class LiteralsTest
         var expr = RawExpr.Parse("-1");
 
 
-        expr.Should().BeEquivalentTo(new FuncRawExpr()
+        expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "-",
-            Arguments = [new RawIntegerLiteral(1)],
+            Arguments = [new IntegerLiteral(1)],
             Kind = FuncExprKind.Unary,
         });
     }
@@ -81,7 +81,7 @@ public class LiteralsTest
     public void IntegerLiteral(string input, long expected)
     {
         var expr = RawExpr.Parse(input);
-        expr.Should().Be(new RawIntegerLiteral(expected));
+        expr.Should().Be(new IntegerLiteral(expected));
     }
 
     [Theory]
@@ -91,7 +91,7 @@ public class LiteralsTest
     {
         var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new RawBooleanLiteral(expected));
+        expr.Should().Be(new BooleanLiteral(expected));
     }
     
     [Theory]
@@ -100,7 +100,7 @@ public class LiteralsTest
     {
         var expr = RawExpr.Parse(input);
 
-        expr.Should().Be(new RawNullRawLiteral());
+        expr.Should().Be(new NullLiteral());
     }
     
     [Theory]

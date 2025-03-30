@@ -5,33 +5,33 @@ namespace ReData.Query.Visitors;
 
 public abstract class ExprVisitor<T> : IExprVisitor<T>
 {
-    public virtual T Visit(IRawExpr rawExpr)
+    public virtual T Visit(IExpr expr)
     {
-        return rawExpr switch
+        return expr switch
         {
             StringLiteral s => Visit(s),
-            RawNumberLiteral n => Visit(n),
-            RawIntegerLiteral i => Visit(i),
-            RawBooleanLiteral b => Visit(b),
-            RawNullRawLiteral nl => Visit(nl),
-            NameRawExpr n => Visit(n),
-            FuncRawExpr f => Visit(f),
-            var unmatched => throw new UnmatchedException<IRawExpr>(unmatched)
+            NumberLiteral n => Visit(n),
+            IntegerLiteral i => Visit(i),
+            BooleanLiteral b => Visit(b),
+            NullLiteral nl => Visit(nl),
+            NameExpr n => Visit(n),
+            FuncExpr f => Visit(f),
+            var unmatched => throw new UnmatchedException<IExpr>(unmatched)
         };
     }
 
     public abstract T Visit(StringLiteral expr);
 
-    public abstract T Visit(RawNumberLiteral expr);
+    public abstract T Visit(NumberLiteral expr);
 
-    public abstract T Visit(RawIntegerLiteral expr);
+    public abstract T Visit(IntegerLiteral expr);
 
-    public abstract T Visit(RawBooleanLiteral expr);
+    public abstract T Visit(BooleanLiteral expr);
     
-    public abstract T Visit(NameRawExpr rawExpr);
+    public abstract T Visit(NameExpr expr);
 
-    public abstract T Visit(RawNullRawLiteral expr);
+    public abstract T Visit(NullLiteral expr);
 
-    public abstract T Visit(FuncRawExpr rawExpr);
+    public abstract T Visit(FuncExpr expr);
 
 }

@@ -59,7 +59,7 @@ public class QueryServicesFactory
         };
     }
     
-    public IExpressionBuilder CreateExpressionBuilder(DatabaseType database) => new ExpressionBuilder()
+    public IExpressionBuilder CreateExpressionBuilder(DatabaseType database) => new ExpressionCompiler()
     {
         FunctionStorage = CreateFunctionStorage(database),
         LiteralBuilder = CreateLiteralBuilder(database),

@@ -7,7 +7,7 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
 
-internal class ExpressionParser : LangBaseVisitor<IRawExpr>
+internal class ExpressionParser : LangBaseVisitor<IExpr>
 {
     private Dictionary<string, string> _binaryOperators = new()
     {
@@ -33,16 +33,16 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
 
 
 
-    public override IRawExpr VisitStart(LangParser.StartContext context)
+    public override IExpr VisitStart(LangParser.StartContext context)
     {
         return Visit(context.children[0]);
     }
 
-    public override IRawExpr VisitUnary(LangParser.UnaryContext context)
+    public override IExpr VisitUnary(LangParser.UnaryContext context)
     {
         if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
         {
-            return new FuncRawExpr()
+            return new FuncExpr()
             {
                 Name = op.GetText(),
                 Arguments = [VisitExpr(expr)],
@@ -52,16 +52,16 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
         throw new Exception("Non valid unary expression");
     }
 
-    public override IRawExpr VisitScope(LangParser.ScopeContext context)
+    public override IExpr VisitScope(LangParser.ScopeContext context)
     {
         return Visit(context.children[1]);
     }
 
-    public override IRawExpr VisitBinary(LangParser.BinaryContext context)
+    public override IExpr VisitBinary(LangParser.BinaryContext context)
     {
         if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
         {
-            return new FuncRawExpr()
+            return new FuncExpr()
             {
                 Name = op.GetText(),
                 Arguments = [Visit(left), Visit(right)],
@@ -71,10 +71,10 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
         throw new Exception("Non valid binary expression");
     }
 
-    public override IRawExpr VisitObjectFunction(LangParser.ObjectFunctionContext context)
+    public override IExpr VisitObjectFunction(LangParser.ObjectFunctionContext context)
     {
         var args = context.children.OfType<ParserRuleContext>().Select(a => Visit(a));
-        return new FuncRawExpr()
+        return new FuncExpr()
         {
             Name = context.children[2].GetText(),
             Arguments = args.ToArray(),
@@ -82,7 +82,7 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
         };
     }
 
-    public override IRawExpr VisitName(LangParser.NameContext context)
+    public override IExpr VisitName(LangParser.NameContext context)
     {
         var name = context.GetText();
         if (name[0] is '[' && name[^1] is ']')
@@ -92,11 +92,11 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
 
         name = Regex.Replace(name, @"\\\]", "]");
         
-        return new NameRawExpr(name);
+        return new NameExpr(name);
     }
 
 
-    public override IRawExpr VisitString(LangParser.StringContext context)
+    public override IExpr VisitString(LangParser.StringContext context)
     {
         var value = context.GetText()[1..^1];
         value = Regex.Replace(value, @"\\(.)", m =>
@@ -116,20 +116,20 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
         return new StringLiteral(value);
     }
 
-    public override IRawExpr VisitInteger(LangParser.IntegerContext context)
+    public override IExpr VisitInteger(LangParser.IntegerContext context)
     {
-        return new RawIntegerLiteral(long.Parse(context.GetText()));
+        return new IntegerLiteral(long.Parse(context.GetText()));
     }
 
-    public override IRawExpr VisitNumber(LangParser.NumberContext context)
+    public override IExpr VisitNumber(LangParser.NumberContext context)
     {
-        return new RawNumberLiteral(double.Parse(context.GetText(), CultureInfo.InvariantCulture));
+        return new NumberLiteral(double.Parse(context.GetText(), CultureInfo.InvariantCulture));
     }
 
-    public override IRawExpr VisitFunc(LangParser.FuncContext context)
+    public override IExpr VisitFunc(LangParser.FuncContext context)
     {
         var args = context.children.OfType<LangParser.ExprContext>().Select(a => Visit(a));
-        return new FuncRawExpr()
+        return new FuncExpr()
         {
             Name = context.children[0].GetText(),
             Arguments = args.ToArray(),
@@ -137,13 +137,13 @@ internal class ExpressionParser : LangBaseVisitor<IRawExpr>
         };
     }
 
-    public override IRawExpr VisitBoolean(LangParser.BooleanContext context)
+    public override IExpr VisitBoolean(LangParser.BooleanContext context)
     {
-        return new RawBooleanLiteral(bool.Parse(context.GetText()));
+        return new BooleanLiteral(bool.Parse(context.GetText()));
     }
 
-    public override IRawExpr VisitNull(LangParser.NullContext context)
+    public override IExpr VisitNull(LangParser.NullContext context)
     {
-        return new RawNullRawLiteral();
+        return new NullLiteral();
     }
 }

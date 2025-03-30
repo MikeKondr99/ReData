@@ -1,6 +1,6 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public record struct RawBooleanLiteral(bool Value) : ILiteral<bool>
+public record struct BooleanLiteral(bool Value) : ILiteral<bool>
 {
     public override string ToString()
     {

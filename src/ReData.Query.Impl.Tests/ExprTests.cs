@@ -40,28 +40,28 @@ public abstract class RawExprTests(IDatabaseFixture fixture)
         return expected;
     }
 
-    private static object? PrepareBoolTests(object? expected, ref IRawExpr input)
+    private static object? PrepareBoolTests(object? expected, ref IExpr input)
     {
         if (expected is bool or NullBool)
         {
             if (expected is NullBool)
             {
                 // Expr.Parse("{input} or true)")
-                input = new FuncRawExpr()
+                input = new FuncExpr()
                 {
                     Name = "or",
                     Kind = FuncExprKind.Binary,
                     Arguments =
                     [
                         input,
-                        new RawBooleanLiteral(true),
+                        new BooleanLiteral(true),
                     ]
                 };
             }
-            input = new FuncRawExpr()
+            input = new FuncExpr()
             {
                 Name = "If",
-                Arguments = [input, new RawIntegerLiteral(1), new RawIntegerLiteral(0)]
+                Arguments = [input, new IntegerLiteral(1), new IntegerLiteral(0)]
             };
             expected = expected switch
             {
