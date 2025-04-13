@@ -40,27 +40,28 @@ public static class Assets
     ];
     
 
-    public static IReadOnlyList<IValue[]> ToData(IReadOnlyList<object?[]> input)
-    {
-        return input.Select(u => u 
-                .Select(v => _mapper.MapField(v))
-                .ToArray())
-        .ToArray();
-    }
+    // public static IReadOnlyList<IValue[]> ToData(IReadOnlyList<object?[]> input)
+    // {
+    //     return input.Select(u => u 
+    //             .Select(v => _mapper.MapField(v))
+    //             .ToArray())
+    //     .ToArray();
+    // }
 
     
-    public static Query UsersQuery = new()
-    {
-        From = new Table("User", [
-            new Query.Field("UserId", ExprType.Integer()),
-            new Query.Field("FirstName", ExprType.Text()),
-            new Query.Field("LastName", ExprType.Text()),
-            new Query.Field("Age", ExprType.Integer()),
-            new Query.Field("Salary", ExprType.Number()),
-            new Query.Field("DateOfBirth", ExprType.DateTime()),
-            new Query.Field("JoinDate", ExprType.DateTime()),
-            new Query.Field("LastLoginDate", ExprType.DateTime()),
-            new Query.Field("Notes", ExprType.Text()),
-        ])
-    };
+    // public static Query UsersQuery = new()
+    // {
+    //     // From = new Table("User", [
+    //         // TODO
+    //         // new Query.Field("UserId", ExprType.Integer()),
+    //         // new Query.Field("FirstName", ExprType.Text()),
+    //         // new Query.Field("LastName", ExprType.Text()),
+    //         // new Query.Field("Age", ExprType.Integer()),
+    //         // new Query.Field("Salary", ExprType.Number()),
+    //         // new Query.Field("DateOfBirth", ExprType.DateTime()),
+    //         // new Query.Field("JoinDate", ExprType.DateTime()),
+    //         // new Query.Field("LastLoginDate", ExprType.DateTime()),
+    //         // new Query.Field("Notes", ExprType.Text()),
+    //     // ])
+    // };
 }

@@ -1,14 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using ReData.Query.Lang.Expressions;
+using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.QueryBuilders;
 
 public abstract class SqlQueryCompiler : IQueryCompiler
 {
-    public required IExpressionBuilder ExpressionBuilder { protected get; init; }
-    
-    public required IFunctionStorage FunctionsStorage { protected get; init; }
+    public required IExpressionCompiler ExpressionCompiler { protected get; init; }
 
     public virtual string Compile(Query query)
     {
@@ -52,7 +51,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             res.Append("WITH\n");
             foreach (var sub in subs)
             {
-                WriteExpression(res, query, new NameExpr(sub.Name));
+                WriteExpression(res, query, sub.Name);
                 res.Append(" AS (\n");
                 WriteQuery(res, sub);
                 res.Append("),\n");
@@ -95,7 +94,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         if (query.From.Name is not null)
         {
             res.Append($"FROM ");
-            ExpressionBuilder.Write(res,new NameExpr(query.From.Name),query.From.Fields(FunctionsStorage));
+            ExpressionCompiler.Compile(res, query.From.Name);
         }
         res.Append('\n');
     }
@@ -109,13 +108,13 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             var field = query.Select[i];
 
             res.Append("    ");
-            if (!(field.Expr is NameExpr ne && ne.Value == field.Name))
+            if (!(field.Node.Expression is NameExpr ne && ne.Value == field.Alias))
             {
-                ExpressionBuilder.Write(res,field.Expr, query.From.Fields(FunctionsStorage));
+                ExpressionCompiler.Compile(res, field.Node);
                 res.Append(" AS ");
             }
             
-            WriteExpression(res, query, new NameExpr(field.Name));
+            WriteExpression(res, query, field.Template);
             
             if (i != last)
             {
@@ -125,9 +124,9 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         }
     }
 
-    protected virtual void WriteExpression(StringBuilder res, Query query, IExpr expr)
+    protected virtual void WriteExpression(StringBuilder res, Query query, IResolvedTemplate node)
     {
-        ExpressionBuilder.Write(res, expr, query.From.Fields(FunctionsStorage));
+        ExpressionCompiler.Compile(res, node);
     }
 
     protected virtual void WriteWhere(StringBuilder res, Query query)
@@ -150,7 +149,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         for (var i = 0; i < query.OrderBy.Count; i++)
         {
             var order = query.OrderBy[i];
-            WriteExpression(res, query, order.Expr);
+            WriteExpression(res, query, order.Node);
             res.Append(order.Direction switch
             {
                 Query.Order.Type.Desc => "DESC",

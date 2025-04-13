@@ -17,8 +17,10 @@ public class SqlServerRunner : IQueryRunner
         {
             await Connection.OpenAsync();
         }
+
+        var fields = query.Fields();
         var result = new List<Record>();
-        int len = query.Select?.Count ?? query.Fields(FunctionStorage).Fields.Count;
+        int len = query.Select?.Count ?? query.Fields().Fields.Count;
         var sql = QueryCompiler.Compile(query);
         await using var command = new SqlCommand(sql, Connection);
         await using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -27,7 +29,7 @@ public class SqlServerRunner : IQueryRunner
             var current = new IValue[len];
             for (int i = 0; i < len; i++)
             {
-                current[i] = Mapper.MapField(reader.GetValue(i));
+                current[i] = Mapper.MapField(reader.GetValue(i), fields[i].Type);
             }
             result.Add(new Record(current));
         }

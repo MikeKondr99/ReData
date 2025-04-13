@@ -37,5 +37,13 @@ public struct TemplateInterpolatedStringHandler
     {
         return new Template() { Tokens = this.tokens, };
     }
+
+    public static implicit operator TemplateInterpolatedStringHandler(string text)
+    {
+        return new TemplateInterpolatedStringHandler()
+        {
+            tokens = [new ConstToken(text)]
+        };
+    }
 }
 

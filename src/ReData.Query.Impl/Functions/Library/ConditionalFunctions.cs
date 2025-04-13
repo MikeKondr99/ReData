@@ -9,7 +9,11 @@ public class ConditionalFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var T in new [] { Number, Text, Bool, Integer })
+        int value = 0;
+        foreach (var T in new[]
+                 {
+                     Number, Text, Integer, DateTime
+                 })
         {
             Function("If")
                 .Arg("condition", Bool, propagateNull: false)
@@ -20,7 +24,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                 {
                     [All] = $"CASE WHEN {0} THEN {1} ELSE {2} END",
                 });
-            
+
             Method("Or")
                 .Arg("input", T)
                 .Arg("alt", T)
@@ -32,19 +36,19 @@ public class ConditionalFunctions : FunctionsDescriptor
                 });
             
             Method("IsNull")
-                .Arg("input", T)
+                .Arg("value", T)
                 .ReturnsNotNull(Bool)
                 .Templates(new()
                 {
-                    [All] = $"({0} IS NULL)",
+                    [All] = $"({value} IS NULL)",
                 });
-            
+
             Method("NotNull")
-                .Arg("input", T)
+                .Arg("value", T)
                 .ReturnsNotNull(Bool)
                 .Templates(new()
                 {
-                    [All] = $"({0} IS NOT NULL)",
+                    [All] = $"({value} IS NOT NULL)",
                 });
         }
     }

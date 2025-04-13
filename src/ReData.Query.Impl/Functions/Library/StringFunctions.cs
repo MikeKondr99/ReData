@@ -76,8 +76,6 @@ public class StringFunctions : FunctionsDescriptor
                 [MySql | Oracle | ClickHouse] = $"CONCAT({0}, {1})",
             });
         
-        
-        // NullIf = (_) => true,
         Method("EmptyIsNull")
             .Arg("input", Text)
             .Returns(Text)
@@ -85,38 +83,6 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
-            });
-        
-        Method("Len")
-            .Arg("input", Text)
-            .Returns(Integer)
-            .Templates(new()
-            {
-                [All] = $"LENGTH({input})", // Works in most databases
-                [SqlServer] = $"LEN({input})" // SQL Server uses LEN
-            });
-        
-        Function("Chr")
-            .Arg("code", Integer)
-            .Returns(Text)
-            .Templates(new()
-            {
-                [PostgreSql] = $"CHR({0})",
-                [MySql] = $"CHAR({0})",
-                [SqlServer] = $"CHAR({0})",
-                [Oracle] = $"CHR({0})",
-                [ClickHouse] = $"char({0})"
-            });
-        
-        Method("Ord")
-            .Arg("input", Text)
-            .Returns(Integer)
-            .Templates(new()
-            {
-                [PostgreSql | MySql] = $"ASCII(SUBSTRING({input}, 1, 1))",
-                [SqlServer] = $"ASCII(SUBSTRING({input}, 1, 1))",
-                [Oracle] = $"ASCII(SUBSTR({input}, 1, 1))",
-                [ClickHouse] = $"ASCII(substring({input}, 1, 1))"
             });
         
         Method("Replace")
@@ -128,21 +94,6 @@ public class StringFunctions : FunctionsDescriptor
             {
                 // Standard REPLACE (non-regex) for all databases
                 [All] = $"REPLACE({input}, {1}, {2})",
-                // Special case for Oracle to avoid regex interpretation
-                [Oracle] = $"REGEXP_REPLACE({input}, REGEXP_REPLACE({1}, '([][)(}}{{.+*?^$\\])', '\\\\1'), {1}, 1, 0, 'i')"
-                });
-
-        Method("Repeat")
-            .Arg("input", Text)
-            .Arg("count", Integer)
-            .Returns(Text)
-            .Templates(new()
-            {
-                [SqlServer] = $"REPLICATE({input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END)",
-                [MySql] = $"REPEAT({input}, GREATEST({count}, 0))",
-                [PostgreSql] = $"REPEAT({input}, GREATEST({count}, 0))",
-                [Oracle] = $"RPAD('', {count} * LENGTH({input}), {input})",
-                [ClickHouse] = $"repeat({input}, greatest({count}, 0))"
             });
     }
 

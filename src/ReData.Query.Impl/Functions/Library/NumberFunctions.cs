@@ -164,7 +164,7 @@ public class NumberFunctions : FunctionsDescriptor
 
         Method("Frac")
             .Arg("input", Number)
-            .Returns(Bool)
+            .Returns(Number)
             .Templates(new()
             {
                 [All & ~SqlServer] = $"MOD({input}, 1)",

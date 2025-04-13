@@ -19,7 +19,12 @@ public class OracleDatabaseFixture : IDatabaseFixture
         return Runner ??= _factory.CreateQueryRunner(DatabaseType.Oracle, ConnectionString);
     }
 
-    
+    public DatabaseType GetDatabaseType()
+    {
+        return DatabaseType.Oracle;
+    }
+
+
     public async Task InitializeAsync()
     {
         Container = new OracleBuilder().WithName("Oracle-Tests").Build();

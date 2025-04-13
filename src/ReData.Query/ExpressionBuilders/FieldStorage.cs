@@ -1,26 +1,23 @@
-﻿namespace ReData.Query;
+﻿using ReData.Query.Visitors;
+
+namespace ReData.Query;
+
+
+public record struct Field
+{
+    public required string Alias { get; init; }
+
+    public required FieldType Type { get; init; }
+    
+    public required ITemplate Template { get; init; }
+}
 
 public interface IFieldStorage
 {
-    public IReadOnlyList<Query.Field> Fields { get; }
-    
-    public ExprType GetType(string fieldName)
-    {
-        var results = Fields.Where(x => x.Name == fieldName).ToArray();
-        if (results.Length == 0)
-        {
-            throw new KeyNotFoundException($"Field with name `{fieldName}` not found");
-        }
-        return results[0].Type;
-    }
+    public IReadOnlyList<Field> Fields { get; }
+
+    public Field this[string alias] => Fields.FirstOrDefault(f => f.Alias == alias);
+    public Field this[int index] => Fields[index];
 }
 
-public sealed class FieldStorage(IReadOnlyList<Query.Field> fields) : IFieldStorage
-{
-    public IReadOnlyList<Query.Field> Fields => fields;
-    
-    public override string ToString()
-    {
-        return String.Join(", ", fields.Select(f => $"{f.Name}:{f.Type}"));
-    }
-}
+public sealed record FieldStorage(IReadOnlyList<Field> Fields) : IFieldStorage;

@@ -11,15 +11,15 @@ public sealed record Query : IQuerySource
 
     public IReadOnlyList<Map>? Select { get; init; }
 
-    public IReadOnlyList<IExpr>? Where { get; init; }
+    public IReadOnlyList<Node>? Where { get; init; }
 
     public IReadOnlyList<Order>? OrderBy { get; init; }
 
-    public uint Limit { get; init; }
+    public uint? Limit { get; init; }
 
     public uint Offset { get; init; }
 
-    public record struct Order(IExpr Expr, Order.Type Direction)
+    public record struct Order(Node Node, Order.Type Direction)
     {
         public enum Type
         {
@@ -28,31 +28,24 @@ public sealed record Query : IQuerySource
         }
     }
     
-    public record struct Field(string Name, ExprType Type);
-    public record struct Map(string Name, IExpr Expr);
+    public record struct Map(string Alias, IResolvedTemplate Template,  Node Node);
 
-    public string Name => $"STEP{No}";
+    public required IResolvedTemplate Name { get; init; }
 
-    public int No { get; init; } = 1;
-
-    public IFieldStorage Fields(IFunctionStorage functions)
+    public IFieldStorage Fields()
     {
-        var fields = this.From.Fields(functions);
-        var typeVisitor = new TypeVisitor()
+        if (this.Select is null) return From.Fields();
+        return new FieldStorage(this.Select.Select(m => new Field
         {
-            FieldTypes = fields,
-            FunctionTypes = functions,
-        };
-        
-        if (Select is null) return fields;
-
-        var result = Select.Select(m => new Field(m.Name,typeVisitor.Visit(m.Expr)));
-        return new FieldStorage(result.ToArray());
+            Alias = m.Alias,
+            Type = new FieldType(m.Node.Type.Type, m.Node.Type.CanBeNull),
+            Template = m.Node.Template
+        }).ToArray());
     }
     
     private record struct NoSource() : IQuerySource
     {
-        public string? Name => null;
-        public IFieldStorage Fields(IFunctionStorage functions) => new FieldStorage([]);
+        public IResolvedTemplate? Name => null;
+        public IFieldStorage Fields() => new FieldStorage([]);
     }
 }

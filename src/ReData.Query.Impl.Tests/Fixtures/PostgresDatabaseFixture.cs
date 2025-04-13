@@ -18,7 +18,12 @@ public class PostgresDatabaseFixture : IDatabaseFixture
     {
         return Runner ??= _factory.CreateQueryRunner(DatabaseType.PostgreSql, ConnectionString);
     }
-    
+
+    public DatabaseType GetDatabaseType()
+    {
+        return DatabaseType.PostgreSql;
+    }
+
     #region sql
     
     private string TestTableSql = """

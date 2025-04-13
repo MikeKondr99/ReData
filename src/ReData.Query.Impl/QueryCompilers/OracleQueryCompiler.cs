@@ -24,7 +24,7 @@ public class OracleQueryCompiler : SqlQueryCompiler
         if (query.From.Name is not null)
         {
             res.Append($"FROM ");
-            ExpressionBuilder.Write(res,new NameExpr(query.From.Name),query.From.Fields(FunctionsStorage));
+            ExpressionCompiler.Compile(res, query.From.Name);
         }
         else
         {

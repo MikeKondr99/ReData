@@ -18,7 +18,12 @@ public class MySqlDatabaseFixture : IAsyncLifetime, IDatabaseFixture
     {
         return Runner ??= _factory.CreateQueryRunner(DatabaseType.MySql, ConnectionString);
     }
-    
+
+    public DatabaseType GetDatabaseType()
+    {
+        return DatabaseType.MySql;
+    }
+
     public async Task InitializeAsync()
     {
         Container = new MySqlBuilder().WithName("MySql-Tests").Build();

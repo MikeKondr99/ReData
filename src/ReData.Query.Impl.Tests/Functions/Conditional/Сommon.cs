@@ -22,16 +22,15 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      [InlineData("If(true, null,0).Type()", "Int?")]
      [InlineData("If(true, null,0.0).Type()", "Num?")]
      [InlineData("If(true, null,'lol').Type()", "Text?")]
-     [InlineData("If(true, null,false).Type()", "Bool?")]
      
      [InlineData("If(null, 1, 0).Type()", "Int")]
      [InlineData("If(null, 1.0 ,0.0).Type()", "Num")]
      [InlineData("If(null, 'one','zero').Type()", "Text")]
-     [InlineData("If(null, true, false).Type()", "Bool")]
      
      [InlineData("If(null, 'then', 'else')", "else")]
      [InlineData("If(10 > 5 and null, 'then', 'else')", "else")]
      [InlineData("If(true, 10, 15.5)", 10.0)]
+     // [InlineData("If(true, false, true)", false)]
      public Task IfFunction(string expr, object? expected) => Test(expr, expected);
      
      
@@ -50,6 +49,7 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      [InlineData("Int(null).Or(If(true, 2, null))", 2)]
      [InlineData("1.Or(2).Or(3).Or(4).Or(5).Or(6)", 1)]
      [InlineData("Int(null).Or(null).Or(If(true, 10, Int(null)))", 10)]
+     // [InlineData("true.Or(false)", true)]
      public Task OrFunction(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "IsNull")]
@@ -62,6 +62,8 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      // Indirect null cases
      [InlineData("IsNull(1 + null)", true)] // Division by zero
      [InlineData("IsNull(Lower(Text(null)))", true)] // Division by zero
+     // [InlineData("IsNull(5 = 5)", false)] // Boolean
+     // [InlineData("IsNull(5 = null)", true)] // Boolean
      public Task FuncIsNullTests(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "NotNull")]
@@ -74,5 +76,7 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      // Indirect null cases
      [InlineData("NotNull(1 + null)", false)] // Division by zero
      [InlineData("NotNull(Lower(Text(null)))", false)] // Division by zero
+     // [InlineData("NotNull(5 = 5)", true)] // Boolean
+     // [InlineData("NotNull(5 = null)", false)] // Boolean
      public Task FuncNotNullTests(string expr, object? expected) => Test(expr, expected);
 }

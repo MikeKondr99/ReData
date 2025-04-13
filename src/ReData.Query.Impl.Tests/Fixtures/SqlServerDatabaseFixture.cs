@@ -18,6 +18,11 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
         return Runner ??= _factory.CreateQueryRunner(DatabaseType.SqlServer, ConnectionString);
     }
 
+    public DatabaseType GetDatabaseType()
+    {
+        return DatabaseType.SqlServer;
+    }
+
 
     public async Task InitializeAsync()
     {

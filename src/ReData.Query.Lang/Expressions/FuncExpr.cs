@@ -19,7 +19,6 @@ public record struct FuncExpr : IExpr
             FuncExprKind.Method => $"{Arguments[0]}.{Name}({Arguments.Skip(1).JoinBy(", ")})",
             FuncExprKind.Default => $"{Name}({Arguments.JoinBy(", ")})",
             _ => $"{Name}({Arguments.JoinBy(", ")})",
-
         };
     }
 }

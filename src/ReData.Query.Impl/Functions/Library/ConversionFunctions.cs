@@ -166,5 +166,16 @@ public class ConversionFunctions : FunctionsDescriptor
                 [Oracle] = $"TO_DATE({0}, 'YYYY-MM-DD HH24:MI:SS')",
                 [PostgreSql] = $"TO_TIMESTAMP({0}, 'YYYY-MM-DD HH24:MI:SS')"
             });
+
+
+        Conversion(Unknown, Text)
+            .Templates(new()
+            {
+                [PostgreSql] = $"({0}::text)",
+                [SqlServer] = $"CAST({0} AS NVARCHAR(MAX))",
+                [MySql] = $"CAST({0} AS CHAR)",
+                [Oracle] = $"TO_CHAR({0})",
+                [ClickHouse] = $"toString({0})",
+            });
     }
 }

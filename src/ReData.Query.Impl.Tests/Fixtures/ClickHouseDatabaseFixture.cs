@@ -2,6 +2,7 @@
 using ClickHouse.Client.Utility;
 using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Impl.Runners;
+using ReData.Query.Visitors;
 using Testcontainers.ClickHouse;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
@@ -17,6 +18,11 @@ public class ClickHouseDatabaseFixture: IDatabaseFixture
     public async Task<IQueryRunner> GetRunnerAsync()
     {
         return Runner ??= _factory.CreateQueryRunner(DatabaseType.ClickHouse, ConnectionString);
+    }
+
+    public DatabaseType GetDatabaseType()
+    {
+        return DatabaseType.ClickHouse;
     }
 
     public async Task InitializeAsync()

@@ -1,8 +1,10 @@
-﻿namespace ReData.Query;
+﻿using ReData.Query.Visitors;
+
+namespace ReData.Query;
 
 public interface IQuerySource
 {
-    public string? Name { get; }
+    public IResolvedTemplate? Name { get; }
 
-    public IFieldStorage Fields(IFunctionStorage functions);
+    public IFieldStorage Fields();
 }

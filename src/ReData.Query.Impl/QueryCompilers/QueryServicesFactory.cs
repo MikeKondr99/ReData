@@ -58,23 +58,37 @@ public class QueryServicesFactory
             
         };
     }
-    
-    public IExpressionBuilder CreateExpressionBuilder(DatabaseType database) => new ExpressionCompiler()
-    {
-        FunctionStorage = CreateFunctionStorage(database),
-        LiteralBuilder = CreateLiteralBuilder(database),
-    };
 
-    public ILiteralBuilder CreateLiteralBuilder(DatabaseType database) => database switch
+    public ExpressionResolver CreateExpressionResolver(DatabaseType database)
     {
-        DatabaseType.PostgreSql => new PostgresLiteralBuilder(),
-        DatabaseType.SqlServer => new SqlServerLiteralBuilder(),
-        DatabaseType.MySql => new MySqlLiteralBuilder(),
-        DatabaseType.ClickHouse => new ClickHouseLiteralBuilder(),
-        DatabaseType.Oracle => new OracleLiteralBuilder(),
+        return new ExpressionResolver()
+        {
+            Functions = CreateFunctionStorage(database),
+            LiteralResolver = CreateLiteralResolver(database),
+            NameResolver = CreateNameResolver(database),
+        };
+    }
+
+    public ILiteralResolver CreateLiteralResolver(DatabaseType database) => database switch
+    {
+        DatabaseType.PostgreSql => new PostgresLiteralResolver(),
+        DatabaseType.SqlServer => new SqlServerLiteralResolver(),
+        DatabaseType.MySql => new MySqlLiteralResolver(),
+        DatabaseType.ClickHouse => new ClickHouseLiteralResolver(),
+        DatabaseType.Oracle => new OracleLiteralResolver(),
         _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
     };
-
+    
+    public INameResolver CreateNameResolver(DatabaseType database) => database switch
+    {
+        DatabaseType.PostgreSql => new BasicNameResolver("\"","\""),
+        DatabaseType.SqlServer => new BasicNameResolver("\"","\""),
+        DatabaseType.MySql => new BasicNameResolver("`","`"),
+        DatabaseType.ClickHouse => new BasicNameResolver("\"","\""),
+        DatabaseType.Oracle => new BasicNameResolver("\"","\""),
+        _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
+    };
+    
     public IFunctionStorage CreateFunctionStorage(DatabaseType database)
     {
         if (_functionStorages.TryGetValue(database, out var fs))
@@ -98,35 +112,30 @@ public class QueryServicesFactory
 
     public IQueryCompiler CreateQueryCompiler(DatabaseType database)
     {
-        var expr = CreateExpressionBuilder(database);
+        var expr = new ExpressionCompiler();
         var funcs = CreateFunctionStorage(database);
 
         return database switch
         {
             DatabaseType.PostgreSql => new PostgresQueryCompiler()
             {
-                ExpressionBuilder = expr,
-                FunctionsStorage = funcs
+                ExpressionCompiler = expr,
             },
             DatabaseType.MySql => new MySqlQueryCompiler()
             {
-                ExpressionBuilder = expr,
-                FunctionsStorage = funcs
+                ExpressionCompiler = expr,
             },
             DatabaseType.ClickHouse => new ClickHouseQueryCompiler()
             {
-                ExpressionBuilder = expr,
-                FunctionsStorage = funcs
+                ExpressionCompiler = expr,
             },
             DatabaseType.Oracle => new OracleQueryCompiler()
             {
-                ExpressionBuilder = expr,
-                FunctionsStorage = funcs
+                ExpressionCompiler = expr,
             },
             DatabaseType.SqlServer => new SqlServerQueryCompiler()
             {
-                ExpressionBuilder = expr,
-                FunctionsStorage = funcs
+                ExpressionCompiler = expr,
             },
             _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
         };
