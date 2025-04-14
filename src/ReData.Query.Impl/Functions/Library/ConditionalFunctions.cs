@@ -34,8 +34,12 @@ public class ConditionalFunctions : FunctionsDescriptor
                 {
                     [All] = $"COALESCE({0}, {1})",
                 });
-            
-            Method("IsNull")
+        }
+        foreach (var T in new[]
+                 {
+                     Number, Text, Integer, DateTime, Unknown }) {
+
+        Method("IsNull")
                 .Arg("value", T)
                 .ReturnsNotNull(Bool)
                 .Templates(new()

@@ -26,7 +26,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                 });
         }
         
-        foreach (var T in new [] { Number, Integer })
+        foreach (var T in new [] { Number, Integer, DateTime })
         {
             Binary("<", T, T)
                 .Returns(Bool)

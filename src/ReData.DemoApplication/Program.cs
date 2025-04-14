@@ -1,0 +1,85 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using ReData.DemoApplication;
+using ReData.Query;
+using ReData.Query.Impl.QueryBuilders;
+using ReData.Query.Impl.Runners;
+using ReData.Query.Visitors;
+using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.SerializerOptions.Converters.Add(new ValueConverter());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.WriteIndented = true;
+});
+
+var app = builder.Build();
+
+var factory = new QueryServicesFactory();
+
+var connection = "User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=pix_bi_test;Pooling=true;";
+var applications = QueryBuilder.FromTable(
+    factory.CreateExpressionResolver(DatabaseType.PostgreSql),
+    ["Applications"],
+    [
+        ("Id",new FieldType(DataType.Integer, false)),
+        ("Name",new FieldType(DataType.Text, false)),
+        ("Description",new FieldType(DataType.Text, true)),
+        ("Icon",new FieldType(DataType.Unknown, true)),
+        ("DirectoryId",new FieldType(DataType.Integer, false)),
+        ("OriginalId",new FieldType(DataType.Integer, false)),
+        ("OwnerId",new FieldType(DataType.Text, true)),
+        ("DateCreated",new FieldType(DataType.DateTime, true)),
+        ("DateModified",new FieldType(DataType.DateTime, true)),
+        ("CreatedBy",new FieldType(DataType.Text, true)),
+        ("ModifiedBy",new FieldType(DataType.Text, true)),
+    ]
+);
+var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
+
+app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
+    {
+        string sql = null;
+        try
+        {
+            var query = applications;
+            foreach (var transformation in request.Transformations)
+            {
+                query = transformation.Apply(query);
+            }
+
+            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connection);
+            var q = query.Build();
+            // for demo debug purpose
+            sql = compiler.Compile(q);
+            var data = await runner.RunQueryAsObjectAsync(q);
+            return Results.Ok(new TransformResponse()
+            {
+                Data = data,
+                Query = sql.Split("\n"),
+                Fields = q.Fields().Fields.Select(f => new TransformField()
+                {
+                    Alias = f.Alias,
+                    Type = f.Type.Type,
+                    CanBeNull = f.Type.CanBeNull
+                }).ToList(),
+                Total = data.Count,
+            });
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new
+            {
+                message = ex.Message,
+                query = sql?.Split("\n")?.ToArray()
+            });
+        }
+    })
+    .WithName("TransformData");
+
+app.Run();

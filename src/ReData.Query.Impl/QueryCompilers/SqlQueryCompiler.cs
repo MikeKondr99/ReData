@@ -132,9 +132,11 @@ public abstract class SqlQueryCompiler : IQueryCompiler
     protected virtual void WriteWhere(StringBuilder res, Query query)
     {
         if (query.Where is null) return;
+        var init = "WHERE ";
         foreach (var filter in query.Where)
         {
-            res.Append("WHERE ");
+            res.Append(init);
+            init = "AND ";
             WriteExpression(res, query, filter);
             res.Append('\n');
         }

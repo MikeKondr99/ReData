@@ -32,22 +32,44 @@ public record QueryBuilder
                 {
                     Alias = f.name,
                     Type = f.type,
-                    Template = resolver.NameResolver.ResolveFieldName([f.name], f.type).Template,
                 }).ToArray()
             ),
-        }, resolver).Select(fields.ToDictionary(f => f.name, f => $"[{f.name}]"));
+            Select = fields.Select(f =>
+            {
+                var fieldTemplate = resolver.NameResolver.ResolveFieldName([f.name], f.type);
+                return new Query.Map()
+                {
+                    Alias = f.name,
+                    Template = fieldTemplate,
+                    Node = new Node()
+                    {
+                        Expression = new NameExpr(f.name),
+                        Template = fieldTemplate.Template,
+                        Arguments = null,
+                        Type = new ExprType()
+                        {
+                            Type = f.type.Type,
+                            CanBeNull = f.type.CanBeNull,
+                            IsConstant = false,
+                            Aggregated = false,
+                        },
+                    }
+                };
+            }).ToArray()
+        }, resolver);
     }
 
     public QueryBuilder Select(Dictionary<string, string> select)
     {
+        var qb = this;
         if (Query.Select is not null || Query.Where?.Count > 0 || Query.OrderBy?.Count > 0 )
         {
-            CreateCte();
+            qb = CreateCte();
         }
 
-        return this with
+        return qb with
         {
-            Query = Query with
+            Query = qb.Query with
             {
                 Select = select.Select(m => new Query.Map(m.Key, Resolver.NameResolver.ResolveFieldName([m.Key],new FieldType()), Resolve(m.Value))).ToArray()
             }
@@ -64,7 +86,7 @@ public record QueryBuilder
 
         return qb with
         {
-            Query = Query with
+            Query = qb.Query with
             {
                 Where = [..Query.Where ?? [], Resolve(predicate)]
             }

@@ -35,7 +35,7 @@ public sealed class ExpressionResolver
         return new Node
         {
             Expression = name,
-            Template = field.Template,
+            Template = NameResolver.ResolveFieldName([field.Alias], field.Type).Template,
             Type = new ExprType()
             {
                 Type = field.Type.Type,

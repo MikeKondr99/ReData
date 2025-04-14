@@ -8,8 +8,6 @@ public record struct Field
     public required string Alias { get; init; }
 
     public required FieldType Type { get; init; }
-    
-    public required ITemplate Template { get; init; }
 }
 
 public interface IFieldStorage

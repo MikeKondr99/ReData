@@ -61,7 +61,7 @@ BOOLEAN: 'true' | 'false';
 
 NULL: 'null';
 
-NAME: [a-zA-Z_][a-zA-Z_0-9]*;
+NAME: [a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я_0-9]*;
 
 BLOCKED_NAME: '[' (ESCAPED_BLOCKED_NAME | ~']')+? ']';
 

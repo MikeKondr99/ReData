@@ -39,7 +39,6 @@ public sealed record Query : IQuerySource
         {
             Alias = m.Alias,
             Type = new FieldType(m.Node.Type.Type, m.Node.Type.CanBeNull),
-            Template = m.Node.Template
         }).ToArray());
     }
     

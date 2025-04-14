@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --host=127.0.0.1 --port %PORT% --proxy-config proxy.conf.json",
+    "start": "ng serve --host=127.0.0.1 --proxy-config proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -20,17 +20,16 @@
     "@angular/material": "^18.0.0",
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
-    "@angular/router": "^18.0.0",
     "@angular/platform-server": "^18.0.0",
+    "@angular/router": "^18.0.0",
     "@angular/ssr": "^18.0.0",
-
+    "express": "^4.18.2",
     "keycloak-angular": "^16.1.0",
     "keycloak-js": "^26.0.7",
+    "monaco-editor": "^0.52.2",
     "ng-zorro-antd": "^18.0.0",
-    "tailwindcss": "^3.4.16",
-
-    "express": "^4.18.2",
     "rxjs": "~7.8.0",
+    "tailwindcss": "^3.4.16",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
   },

@@ -46,6 +46,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ReData.Angular", "src\ReDat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Query.Console", "src\ReData.Query.Console\ReData.Query.Console.csproj", "{5DD01836-89C8-4375-A2EA-61BF7D3F53F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApplication", "src\ReData.DemoApplication\ReData.DemoApplication.csproj", "{768DF377-762C-426F-95C5-A45019FEBAFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -110,6 +112,10 @@ Global
 		{5DD01836-89C8-4375-A2EA-61BF7D3F53F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DD01836-89C8-4375-A2EA-61BF7D3F53F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DD01836-89C8-4375-A2EA-61BF7D3F53F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{768DF377-762C-426F-95C5-A45019FEBAFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{768DF377-762C-426F-95C5-A45019FEBAFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{768DF377-762C-426F-95C5-A45019FEBAFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{768DF377-762C-426F-95C5-A45019FEBAFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,5 +137,6 @@ Global
 		{4C9C307C-7CB2-40EE-82EA-638EF529781B} = {FF914111-A991-493D-8BCC-22B2C9F74F35}
 		{A2335225-724F-4A8B-BE31-E78957BD5424} = {4C9C307C-7CB2-40EE-82EA-638EF529781B}
 		{5DD01836-89C8-4375-A2EA-61BF7D3F53F3} = {19AC12A0-0EE2-4BF5-B640-607429F7BEA8}
+		{768DF377-762C-426F-95C5-A45019FEBAFB} = {4C9C307C-7CB2-40EE-82EA-638EF529781B}
 	EndGlobalSection
 EndGlobal
