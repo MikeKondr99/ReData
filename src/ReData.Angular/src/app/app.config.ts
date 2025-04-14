@@ -51,14 +51,16 @@ const KeycloakInitializerProvider: Provider = {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    KeycloakService, // Service for Keycloak
-    KeycloakBearerInterceptorProvider, // Provides Keycloak Bearer Interceptor
-    KeycloakInitializerProvider, // Initializes Keycloak
-    provideHttpClient(withInterceptorsFromDi()), // Provides HttpClient with interceptors
-    provideRouter(routes,withViewTransitions(),withComponentInputBinding()),
     provideAnimationsAsync(),
+    provideHttpClient(),
+    // provideZoneChangeDetection({ eventCoalescing: true }),
+    // provideRouter(routes),
+    // KeycloakService, // Service for Keycloak
+    // KeycloakBearerInterceptorProvider, // Provides Keycloak Bearer Interceptor
+    // KeycloakInitializerProvider, // Initializes Keycloak
+    // provideHttpClient(withInterceptorsFromDi()), // Provides HttpClient with interceptors
+    // provideRouter(routes,withViewTransitions(),withComponentInputBinding()),
+    // provideAnimationsAsync(),
     // provideClientHydration(withEventReplay()), provideAnimationsAsync(),
   ]
 };
