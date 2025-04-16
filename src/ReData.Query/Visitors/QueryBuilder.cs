@@ -93,7 +93,7 @@ public record QueryBuilder
         };
     }
     
-    public QueryBuilder Order(string expr, Query.Order.Type type)
+    public QueryBuilder OrderBy(IReadOnlyList<(string expr, Query.Order.Type type)> exprs)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -104,7 +104,7 @@ public record QueryBuilder
         {
             Query = Query with
             {
-                OrderBy = [new Query.Order(Resolve(expr), type)]
+                OrderBy = exprs.Select(o => new Query.Order(Resolve(o.expr), o.type)).ToArray(),
             }
         };
     }

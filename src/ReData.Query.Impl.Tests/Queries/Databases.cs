@@ -3,17 +3,17 @@
 namespace ReData.Query.Impl.Tests.Queries;
 
 [Collection("Postgres")]
-public class Postgres(PostgresDatabaseFixture fixture) : Сommon(fixture);
+public class Postgres(PostgresDatabaseFixture db, PostgresAssets assets) : Сommon(db, assets);
 
 [Collection("SqlServer")]
-public class SqlServer(SqlServerDatabaseFixture fixture) : Сommon(fixture);
+public class SqlServer(SqlServerDatabaseFixture db, SqlServerAssets assets) : Сommon(db, assets);
 
 [Collection("MySql")]
-public class MySql(MySqlDatabaseFixture fixture) : Сommon(fixture);
+public class MySql(MySqlDatabaseFixture db, MySqlAssets assets) : Сommon(db, assets);
 
 [Collection("ClickHouse")]
-public class ClickHouse(ClickHouseDatabaseFixture fixture) : Сommon(fixture);
+public class ClickHouse(ClickHouseDatabaseFixture db, ClickHouseAssets assets) : Сommon(db, assets);
 
 [Collection("Oracle")]
-public class Oracle(OracleDatabaseFixture fixture) : Сommon(fixture);
+public class Oracle(OracleDatabaseFixture db, OracleAssets assets) : Сommon(db, assets);
 

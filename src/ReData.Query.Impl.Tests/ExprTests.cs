@@ -11,16 +11,16 @@ using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class RawExprTests(IDatabaseFixture fixture)
+public abstract class RawExprTests(IDatabaseFixture db)
 {
     private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
     private static QueryServicesFactory Factory = new QueryServicesFactory();
     
     public async Task Test(string expr, object? expected)
     {
-        var runner = await fixture.GetRunnerAsync();
+        var runner = await db.GetRunnerAsync();
         PrepareBoolTests(ref expected, ref expr);
-        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(fixture.GetDatabaseType()));
+        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()));
         qb = qb.Select(new()
         {
             ["test"] = expr,

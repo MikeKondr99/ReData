@@ -11,6 +11,6 @@ public class OrderByTransformation : ITransformation
 
     public QueryBuilder Apply(QueryBuilder builder)
     {
-        return builder.Order(Expression, Descending ? Query.Query.Order.Type.Desc : Query.Query.Order.Type.Asc);
+        return builder.OrderBy([(Expression, Descending ? Query.Query.Order.Type.Desc : Query.Query.Order.Type.Asc)]);
     }
 }

@@ -59,6 +59,7 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
 
     public override IExpr VisitBinary(LangParser.BinaryContext context)
     {
+        
         if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
         {
             return new FuncExpr()

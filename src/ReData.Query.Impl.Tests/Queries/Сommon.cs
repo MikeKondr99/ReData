@@ -1,235 +1,223 @@
 ﻿using FluentAssertions;
-using Org.BouncyCastle.Asn1.X509;
+using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Impl.Runners;
+using ReData.Query.Impl.Runners.Value;
 using ReData.Query.Impl.Tests.Fixtures;
-using ReData.Query.Impl.Tests.QueryTests;
-using Record = ReData.Query.Impl.Runners.Record;
+using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
-public abstract class Сommon(IDatabaseFixture fixture) : RawExprTests(fixture)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExprTests(db)
 {
-    
-    // const int ID = 0;
-    //
-    // private static void CompareTables(IReadOnlyList<Record> result, IReadOnlyList<IValue[]> expected)
-    // {
-    //     for (int i = 0; i < result.Count; i++)
-    //     {
-    //         result[i].values.Should().BeEquivalentTo(expected[i], options =>
-    //         {
-    //             options.WithoutStrictOrdering();
-    //             options.Using<IValue>(ctx => 
-    //             {
-    //                 Compare(ctx.Expectation, ctx.Subject);
-    //             }).WhenTypeIs<IValue>();
-    //             return options;
-    //         });
-    //     }
-    // }
-    //  
-    //  [Fact]
-    //  public async Task TableQuery()
-    //  {
-    //      var runner = await fixture.GetRunnerAsync();
-    //      // Arrange
-    //      Query query = Assets.UsersQuery;
-    //
-    //      // Act
-    //      var result = await runner.RunQueryAsync(query);
-    //
-    //      // Assert
-    //      var expect = Assets.ToData(Assets.RawUsers);
-    //
-    //      CompareTables(result,expect);
-    //  }
-     //
-     // [Fact]
-     // public async Task WhereQuery()
-     // {
-     //     var runner = await fixture.GetRunnerAsync();
-     //     // Arrange
-     //     Query query = Assets.UsersQuery.Where("UserId > 5");
-     //
-     //     // Act
-     //     var result = await runner.RunQueryAsync(query);
-     //
-     //     // Assert
-     //     var expect = Assets.ToData(Assets.RawUsers.Where(u => ((int)u[ID]) > 5));
-     //
-     //     CompareTables(result,expect);
-         // Arrange
-         // Query query = Assets.PlayersQuery.Where("id > 5");
-         // var sql = QueryBuilder.Build(query);
-         //
-         // // Act
-         // List<Player> result = await Runner.QueryAsync(sql);
-         //
-         // // Assert
-         // var expect = Assets.Players.Where(p => p.id > 5);
-         // result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-     }
-//     
-//     [Fact]
-//     public async Task SelectQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Select(new()
-//         {
-//             ["id"] = "id",
-//             ["Name"] = "Upper(Name)",
-//             ["MaxScore"] = "MaxScore * 2.0"
-//         });
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.Select(p => new Player()
-//         {
-//             id = p.id,
-//             Name = p.Name.ToUpper(),
-//             MaxScore = p.MaxScore * 2,
-//         });
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task OrderByQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.OrderByDescending("MaxScore");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.OrderBy(p => p.MaxScore);
-//         result.Should().BeEquivalentTo(expect);
-//     }
-//     
-//     [Fact]
-//     public async Task OrderByOverride()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.OrderBy("Name").OrderByDescending("Name");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.OrderByDescending(p => p.Name);
-//         result.Should().BeEquivalentTo(expect);
-//     }
-//     
-//     [Fact]
-//     public async Task OrderByMultipleQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.OrderBy("MaxScore").ThenByDescending("Name");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.OrderBy(p => p.MaxScore).ThenByDescending(p => p.Name);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task Limit()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Take(5);
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players.Take(5);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task LimitMoreLimitLess()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Take(5).Take(3);
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players.Take(3);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task LimitLessLimitMore()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Take(3).Take(5);
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players.Take(3);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task LimitThenOrderBy()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Take(5).OrderByDescending("id");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players.Take(5).OrderByDescending(p => p.id);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task LimitThenWhere()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Take(5).Where("Mod(id, 2) = 0");
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players.Take(5).Where(p => p.id % 2 == 0);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     
-//     // [Fact]
-//     // public async Task Offset()
-//     // {
-//     //     // Arrange
-//     //     Query query = Assets.PlayersQuery.Skip(5);
-//     //     var sql = QueryBuilder.Build(query);
-//     //
-//     //     // Act
-//     //     List<Player> result = await Runner.QueryAsync(sql);
-//     //
-//     //     // Assert
-//     //     var expect = Assets.Players.Skip(5);
-//     //     result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     // }
+    [Fact]
+    public async Task TableQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery;
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData;
+
+        result.Should().BeEquivalentTo(expect);
+    }
+
+    [Fact]
+    public async Task WhereQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Where("UserId > 5");
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Where(u => u["UserId"] is IntegerValue(> 5));
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task SelectQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Select(new()
+        {
+            ["id"] = "UserId",
+            ["Name"] = "Upper(FirstName + LastName)",
+            ["DoubleAge"] = "2 * Age",
+            ["Age"] = "Age"
+        });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
+        {
+            ["id"] = u["UserId"],
+            ["Name"] = new TextValue((u.Text("FirstName") + u.Text("LastName")).ToUpper()),
+            ["DoubleAge"] = new IntegerValue(u.Int("Age").Value * 2),
+            ["Age"] = u["Age"]
+        });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task OrderByQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.OrderBy([("Salary", Query.Order.Type.Desc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.OrderByDescending(u => u.Num("Salary"));
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task OrderByOverride()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([("Salary", Query.Order.Type.Desc)])
+            .OrderBy([("FirstName", Query.Order.Type.Asc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.OrderBy(u => u.Text("FirstName"));
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task OrderByMultipleQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([("Notes", Query.Order.Type.Asc)])
+            .OrderBy([("FirstName", Query.Order.Type.Asc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.OrderBy(u => u.Text("Notes")).ThenBy(u => u.Text("FirstName"));
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Limit()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(5);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(5);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task LimitMoreLimitLess()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(5).Take(3);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(3);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task LimitLessLimitMore()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(3).Take(5);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(3);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task LimitThenOrderBy()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", Query.Order.Type.Desc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(5).OrderByDescending(u => u.Int("UserId"));
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task LimitThenWhere()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(5).Where("Mod(UserId,2) = 0");
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(5).Where(u => u.Int("UserId").Value % 2 == 0);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+
+    [Fact]
+    public async Task Offset()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Skip(5);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Skip(5);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
 //     
 //     // [Fact]
 //     // public async Task OrderByThenOffset()
@@ -261,152 +249,154 @@ public abstract class Сommon(IDatabaseFixture fixture) : RawExprTests(fixture)
 //     //     result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
 //     // }
 //     
-//     [Fact]
-//     public async Task LimitOffsetQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery.Skip(5).Take(5);
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.Skip(5).Take(5);
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task SequencialSelect()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery
-//         .Select(new()
-//         {
-//             ["id"] = "id",
-//             ["Name"] = "Name",
-//             ["MaxScore"] = "MaxScore + 1.0"
-//         }).Select(new()
-//         {
-//             ["id"] = "id",
-//             ["Name"] = "Name",
-//             ["MaxScore"] = "MaxScore + 1.0"
-//         }).Select(new()
-//         {
-//             ["id"] = "id",
-//             ["Name"] = "Name",
-//             ["MaxScore"] = "MaxScore + 1.0"
-//         });
-//         
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         var expect = Assets.Players.Select(p => p with
-//         {
-//             MaxScore = p.MaxScore + 3
-//         });
-//         result.Should().BeEquivalentTo(expect);
-//     }
-//     
-//     [Fact]
-//     public async Task SelectFromNothing()
-//     {
-//         // Arrange
-//         Query query = new Query()
-//             .Select(new()
-//             {
-//                 ["id"] = "14",
-//                 ["Name"] = "'Maximus'",
-//                 ["MaxScore"] = "9000.0"
-//             });
-//         
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         // Assert
-//         Player[] expect =
-//         [
-//             new Player()
-//             {
-//                 id = 14,
-//                 Name = "Maximus",
-//                 MaxScore = 9000
-//             }
-//         ];
-//         result.Should().BeEquivalentTo(expect);
-//     }
-//
-//
-//     // SqlServer
-//     [Fact]
-//     public async Task SubqueryWithOrderAndWithoutLimit()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery
-//             .OrderByDescending("id")
-//             .Select(new()
-//             {
-//                 ["id"] = "id",
-//                 ["Name"] = "Upper(Name) + ' admin'",
-//                 ["MaxScore"] = "-MaxScore"
-//             });
-//             
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players
-//             .OrderByDescending(p => p.id)
-//             .Select(p => new Player()
-//             {
-//                 id = p.id,
-//                 Name = p.Name.ToUpper() + " admin",
-//                 MaxScore = -p.MaxScore
-//             });
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-//     [Fact]
-//     public async Task FullQuery()
-//     {
-//         // Arrange
-//         Query query = Assets.PlayersQuery
-//             .OrderByDescending("id")
-//             .Where("MaxScore > 15.0")
-//             .Skip(2)
-//             .Take(5)
-//             .Select(new()
-//             {
-//                 ["id"] = "id",
-//                 ["Name"] = "Upper(Name) + ' admin'",
-//                 ["MaxScore"] = "-MaxScore"
-//             });
-//             
-//         var sql = QueryBuilder.Build(query);
-//
-//         // Act
-//         List<Player> result = await Runner.QueryAsync(sql);
-//
-//         //Assert
-//         var expect = Assets.Players
-//             .OrderByDescending(p => p.id)
-//             .Where(p => p.MaxScore > 15)
-//             .Skip(2)
-//             .Take(5)
-//             .Select(p => new Player()
-//             {
-//                 id = p.id,
-//                 Name = p.Name.ToUpper() + " admin",
-//                 MaxScore = -p.MaxScore
-//             });
-//         result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     }
-//     
-// }
+    [Fact]
+    public async Task LimitOffsetQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Skip(5).Take(5);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Skip(5).Take(5);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task SequencialSelect()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Select(new()
+            {
+                ["id"] = "UserId",
+                ["Name"] = "FirstName",
+                ["Age"] = "Age + 1",
+            })
+            .Select(new()
+            {
+                ["id"] = "id",
+                ["Name"] = "Name",
+                ["Age"] = "Age + 1",
+            })
+            .Select(new()
+            {
+                ["id"] = "id",
+                ["Name"] = "Name",
+                ["Age"] = "Age + 1",
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
+        {
+            ["id"] = u["UserId"],
+            ["Name"] = u["FirstName"],
+            ["Age"] = new IntegerValue(u.Int("Age").Value + 3),
+        });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task SelectFromNothing()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = QueryBuilder.FromDual(new QueryServicesFactory().CreateExpressionResolver(assets.DatabaseType))
+            .Select(new()
+            {
+                ["id"] = "14",
+                ["Name"] = "'Maximus'",
+                ["MaxScore"] = "9000.0",
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        Dictionary<string,IValue>[] expect =
+        [
+            new Dictionary<string, IValue>()
+            {
+                ["id"] = new IntegerValue(14),
+                ["Name"] = new TextValue("Maximus"),
+                ["MaxScore"] = new NumberValue(9000.0)
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+
+     // SqlServer
+     [Fact]
+     public async Task SubqueryWithOrderAndWithoutLimit()
+     {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([("UserId", Query.Order.Type.Desc)])
+            .Select(new()
+        {
+            ["id"] = "UserId",
+            ["Name"] = "Upper(FirstName) + ' admin'",
+            ["AntiSalary"] = "-Salary",
+        });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.OrderByDescending(u => u.Int("UserId")).Select(u => new Dictionary<string, IValue>()
+        {
+            ["id"] = u["UserId"],
+            ["Name"] = new TextValue(u.Text("FirstName").ToUpper() + " admin"),
+            ["AntiSalary"] = new NumberValue(-u.Num("Salary").Value),
+        });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+     }
+    
+    [Fact]
+    public async Task FullQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([("UserId", Query.Order.Type.Desc)])
+            .Where("Salary > 30000.0")
+            .Skip(2)
+            .Take(5)
+            .Select(new()
+        {
+            ["id"] = "UserId",
+            ["Name"] = "Upper(FirstName) + ' admin'",
+            ["AntiSalary"] = "-Salary",
+        });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData
+            .OrderByDescending(u => u.Int("UserId"))
+            .Where(u => u.Num("Salary").Value > 30000.0)
+            .Skip(2)
+            .Take(5)
+            .Select(u => new Dictionary<string, IValue>()
+        {
+            ["id"] = u["UserId"],
+            ["Name"] = new TextValue(u.Text("FirstName").ToUpper() + " admin"),
+            ["AntiSalary"] = new NumberValue(-u.Num("Salary").Value),
+        });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+}
