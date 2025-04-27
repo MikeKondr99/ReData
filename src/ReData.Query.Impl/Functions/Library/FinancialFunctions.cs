@@ -9,6 +9,7 @@ public class FinancialFunctions : FunctionsDescriptor
     {
         int rate = 0, nper = 1, pmt = 2;
         Function("FutureValue")
+            .Doc("Вычисляет будущую стоимость инвестиций на основе постоянной процентной ставки, количества периодов и постоянных платежей")
             .Arg("rate", Number)
             .Arg("nper", Integer)
             .Arg("pmt", Number)

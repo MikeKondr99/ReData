@@ -12,6 +12,7 @@ public class MathFunctions : FunctionsDescriptor
         foreach (var T in new [] { Integer, Number })
         {
             Binary("+", T, T)
+                .Doc("Сложение двух чисел")
                 .Returns(T)
                 .Templates(new()
                 {
@@ -19,6 +20,7 @@ public class MathFunctions : FunctionsDescriptor
                 });
             
             Binary("-", T, T)
+                .Doc("Вычитание двух чисел")
                 .Returns(T)
                 .Templates(new()
                 {
@@ -26,6 +28,7 @@ public class MathFunctions : FunctionsDescriptor
                 });
 
             Unary("-")
+                .Doc("Унарный минус числа")
                 .Arg("value", T)
                 .Returns(T)
                 .Templates(new()
@@ -34,6 +37,7 @@ public class MathFunctions : FunctionsDescriptor
                 });
             
             Binary("*", T, T)
+                .Doc("Умножение двух чисел")
                 .Returns(T)
                 .Templates(new()
                 {
@@ -42,6 +46,7 @@ public class MathFunctions : FunctionsDescriptor
         }
 
         Binary("/", Number, Number)
+            .Doc("Деление чисел с плавающей точкой")
             .Returns(Number)
             .Templates(new()
             {
@@ -49,6 +54,7 @@ public class MathFunctions : FunctionsDescriptor
             });
         
         Binary("/", Integer, Integer)
+            .Doc("Целочисленное деление (с отбрасыванием остатка)")
             .Returns(Integer)
             .Templates(new()
             {
@@ -65,6 +71,7 @@ public class MathFunctions : FunctionsDescriptor
 
        // TODO: Not Tested
         Method("Pow")
+            .Doc("Возведение числа в степень")
             .Arg("left", Number)
             .Arg("right", Number)
             .Returns(Number)
@@ -72,14 +79,17 @@ public class MathFunctions : FunctionsDescriptor
         
        // TODO: Not Tested
        Binary("^", Number, Number)
+            .Doc("Возведение числа в степень (альтернативный синтаксис)")
             .Returns(Number)
             .Templates(powTemplates);
        
        Function("E")
+           .Doc("Возвращает математическую константу e (≈2.71828)")
             .Returns(Number)
             .Template($"2.718281828459045");
        
        Function("Pi")
+           .Doc("Возвращает математическую константу π (≈3.14159)")
             .Returns(Number)
             .Template($"3.141592653589793");
     }

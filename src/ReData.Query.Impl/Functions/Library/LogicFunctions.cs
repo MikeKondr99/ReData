@@ -8,6 +8,7 @@ public class LogicFunctions : FunctionsDescriptor
     protected override void Functions()
     {
         Binary("and", Bool, Bool)
+            .Doc("Логическое И (возвращает true только если оба операнда true)")
             .Returns(Bool)
             .Templates(new()
             {
@@ -15,6 +16,7 @@ public class LogicFunctions : FunctionsDescriptor
             });
 
         Binary("or", Bool, Bool)
+            .Doc("Логическое ИЛИ (возвращает true если хотя бы один операнд true)")
             .Returns(Bool)
             .Templates(new()
             {
@@ -22,6 +24,7 @@ public class LogicFunctions : FunctionsDescriptor
             });
 
         Function("Not")
+            .Doc("Логическое отрицание (возвращает true если входное значение false, и наоборот)")
             .Arg("input", Bool)
             .Returns(Bool)
             .Templates(new()

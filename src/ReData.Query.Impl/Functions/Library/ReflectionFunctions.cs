@@ -25,6 +25,7 @@ public class ReflectionFunctions : FunctionsDescriptor
         foreach (var T in new [] { Text, Number, Integer, Bool, Null, DateTime, Unknown })
         {
             Method("Type")
+                .Doc("Возвращает тип значения в виде строки")
                 .Arg("input", T)
                 .ReturnsNotNull(Text)
                 .Templates(new()
@@ -33,6 +34,7 @@ public class ReflectionFunctions : FunctionsDescriptor
                 });
             
             Method("Type")
+                .Doc("Возвращает тип значения в виде строки")
                 .ReqArg("input", T)
                 .ReturnsNotNull(Text)
                 .Templates(new()

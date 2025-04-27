@@ -12,7 +12,7 @@ public class StringFunctions : FunctionsDescriptor
         int input = 0, start = 1, count = 2;
 
         Method("Substring")
-            .Doc("Retrieves a substring from input. The substring starts at a specified character position and continues to the end of the string.")
+            .Doc("Возвращает подстроку из текста, начиная с указанной позиции")
             .Arg("input", Text)
             .Arg("start", Integer)
             .Returns(Text)
@@ -25,7 +25,7 @@ public class StringFunctions : FunctionsDescriptor
             });
         
         Method("Substring")
-            .Doc("Retrieves a substring from `input`. The substring starts at a specified character position and has a specified length.")
+            .Doc("Возвращает подстроку указанной длины, начиная с заданной позиции")
             .Arg("input", Text)
             .Arg("start", Integer)
             .Arg("count", Integer)
@@ -38,36 +38,43 @@ public class StringFunctions : FunctionsDescriptor
             });
 
         Method("Lower")
+            .Doc("Преобразует текст в нижний регистр")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"LOWER({input})");
         
         Method("Upper")
+            .Doc("Преобразует текст в верхний регистр")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"UPPER({input})");
         
         Method("Trim")
+            .Doc("Удаляет пробелы с обоих концов текста")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"TRIM({input})");
         
         Method("TrimLeft")
+            .Doc("Удаляет пробелы в начале текста")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"LTRIM({input})");
         
         Method("TrimRight")
+            .Doc("Удаляет пробелы в конце текста")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"RTRIM({input})");
         
         Method("Reverse")
+            .Doc("Возвращает текст в обратном порядке")
             .Arg("input", Text)
             .Returns(Text)
             .Template($"REVERSE({input})");
 
         Binary("+", Text, Text)
+            .Doc("Объединяет две строки в одну")
             .Returns(Text)
             .Templates(new()
             {
@@ -77,6 +84,7 @@ public class StringFunctions : FunctionsDescriptor
             });
         
         Method("EmptyIsNull")
+            .Doc("Преобразует пустую строку в NULL")
             .Arg("input", Text)
             .Returns(Text)
             .CustomNullPropagation(nulls => true)
@@ -86,6 +94,7 @@ public class StringFunctions : FunctionsDescriptor
             });
         
         Method("Replace")
+            .Doc("Заменяет все вхождения подстроки на указанное значение")
             .Arg("input", Text)
             .Arg("from", Text)
             .Arg("to", Text)

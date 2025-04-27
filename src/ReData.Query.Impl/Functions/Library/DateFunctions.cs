@@ -11,6 +11,7 @@ public class DateFunctions : FunctionsDescriptor
         int year = 0, month = 1, day = 2;
         
         Method("Date")
+            .Doc("Создает дату по указанному году")
             .Arg("year", Integer)
             .Returns(DateTime)
             .Templates(new()
@@ -23,6 +24,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("Date")
+            .Doc("Создает дату по году и месяцу")
             .Arg("year", Integer)
             .Arg("month", Integer)
             .Returns(DateTime)
@@ -36,6 +38,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("Date")
+            .Doc("Создает дату по году, месяцу и дню")
             .Arg("year", Integer)
             .Arg("month", Integer)
             .Arg("day", Integer)
@@ -50,6 +53,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("Now")
+            .Doc("Возвращает текущие дату и время")
             .Returns(DateTime)
             .Templates(new()
             {
@@ -61,6 +65,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("Today")
+            .Doc("Возвращает текущую дату")
             .Returns(DateTime)
             .Templates(new()
             {
@@ -72,6 +77,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("AddDays")
+            .Doc("Добавляет указанное количество дней к дате")  
             .Arg("input", DateTime)
             .Arg("days", Integer)
             .Returns(DateTime)
@@ -85,6 +91,7 @@ public class DateFunctions : FunctionsDescriptor
             });
 
         Method("AddMonths")
+            .Doc("Добавляет указанное количество месяцев к дате")  
             .Arg("input", DateTime)
             .Arg("months", Integer)
             .Returns(DateTime)
@@ -98,6 +105,7 @@ public class DateFunctions : FunctionsDescriptor
             });
 
         Method("AddYears")
+            .Doc("Добавляет указанное количество лет к дате")  
             .Arg("input", DateTime)
             .Arg("years", Integer)
             .Returns(DateTime)
@@ -113,6 +121,7 @@ public class DateFunctions : FunctionsDescriptor
 
         // Year extraction
         Method("Year")
+            .Doc("Возвращает год из даты")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -124,8 +133,8 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toYear({input})"
             });
 
-        // Month extraction (1-12)
         Method("Month")
+            .Doc("Возвращает месяц из даты (1-12)")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -137,8 +146,8 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toMonth({input})"
             });
 
-        // Day extraction (1-31)
         Method("Day")
+            .Doc("Возвращает день месяца из даты (1-31)")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -150,8 +159,8 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toDayOfMonth({input})"
             });
 
-        // Hour extraction (0-23)
         Method("Hour")
+            .Doc("Возвращает час из даты/времени (0-23)")
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -163,8 +172,8 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toHour({input})"
             });
 
-        // Minute extraction (0-59)
         Method("Minute")
+            .Doc("Возвращает минуты из даты/времени (0-59)") 
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -176,8 +185,8 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toMinute({input})"
             });
 
-        // Second extraction (0-59)
         Method("Second")
+            .Doc("Возвращает секунды из даты/времени (0-59)")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -190,6 +199,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("Quarter")
+            .Doc("Возвращает квартал года (1-4)")
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -202,6 +212,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("YearMonth")
+            .Doc("Возвращает год и месяц в формате 'YYYY-MM'")  
             .Arg("input", DateTime)
             .Returns(Text)
             .Templates(new()
@@ -214,6 +225,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("DateOnly")
+            .Doc("Возвращает только дату (без времени)")
             .Arg("input", DateTime)
             .Returns(DateTime)
             .Templates(new()
@@ -226,6 +238,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("YearQuarter")
+            .Doc("Возвращает год и квартал в формате 'YYYY-Q1'") 
             .Arg("input", DateTime)
             .Returns(Text)
             .Templates(new()
@@ -239,6 +252,7 @@ public class DateFunctions : FunctionsDescriptor
         
         // True ISO Week (YYYY-'W'01 to YYYY-'W'53)
         Method("YearWeek")
+            .Doc("Возвращает год и номер недели в формате 'YYYY-W№'")  
             .Arg("input", DateTime)
             .Returns(Text)
             .Templates(new()
@@ -251,6 +265,7 @@ public class DateFunctions : FunctionsDescriptor
             });
         
         Method("DayOfYear")
+            .Doc("Возвращает день года (1-366)")
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -264,6 +279,7 @@ public class DateFunctions : FunctionsDescriptor
         
         // ISO Standard (Monday=1, Sunday=7)
         Method("DayOfWeek")
+            .Doc("Возвращает день недели (1=Понедельник, 7=Воскресенье)")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()
@@ -277,6 +293,7 @@ public class DateFunctions : FunctionsDescriptor
         
         // ISO Standard (Week 1 contains January 4th)
         Method("Week")
+            .Doc("Возвращает номер недели в году (1-53) считая что первая неделя та которая содержит 4 Января")  
             .Arg("input", DateTime)
             .Returns(Integer)
             .Templates(new()

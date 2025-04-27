@@ -87,7 +87,9 @@ import {FxInputComponent} from './fx-input.component';
                       </button>
                     </div>
                   }
-                  <button nz-button nzType="default" nzShape="circle"><span nz-icon nzType="plus" (click)="addSelectItem(i)"></span></button>
+                  <button nz-button nzType="default" nzShape="circle" (click)="addSelectItem(i)">
+                    <span nz-icon nzType="plus" ></span>
+                  </button>
                 </div>
               }
             </div>
@@ -104,10 +106,10 @@ import {FxInputComponent} from './fx-input.component';
           <span nz-icon nzType="filter"></span>
         </button>
         <button nz-button nzType="primary" (click)="addOrderByTransformation()">
-          <span nz-icon nzType="swap"></span>
+          <span class="rotate-90" nz-icon nzType="swap"></span>
         </button>
         <button nz-button nzType="primary" (click)="addSelectTransformation()">
-          <span nz-icon nzType="plus"></span>
+          <span nz-icon nzType="pic-center" nzTheme="outline"></span>
         </button>
       </nz-button-group>
     </div>

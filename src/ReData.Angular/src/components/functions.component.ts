@@ -28,10 +28,15 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
     <ng-template #suffixIconSearch>
       <span nz-icon nzType="search" ></span>
     </ng-template>
-    <nz-list class="overflow-y-scroll max-h-screen">
+    <nz-list class="overflow-y-scroll max-h-screen w-[1000px]">
       @for (f of data(); track f) {
         <nz-list-item>
-          <nz-card [nzTitle]="displayFunc(f)" >{{ f.doc }}</nz-card>
+          <nz-card nzSize="small" class="w-full" >
+            <nz-card-meta
+              [nzTitle]="displayFunc(f)"
+              [nzDescription]="f.doc"
+            ></nz-card-meta>
+          </nz-card>
         </nz-list-item>
       }
     </nz-list>

@@ -10,6 +10,7 @@ public class NumberFunctions : FunctionsDescriptor
         int input = 0, step = 1, offset = 2;
         int modulus = 1;
         Method("Mod")
+            .Doc("Возвращает остаток от деления (знак результата соответствует знаку делимого)")
             .Arg("input", Integer)
             .ReqArg("modulus", Integer)
             .Returns(Integer)
@@ -20,6 +21,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Method("Rem")
+            .Doc("Возвращает остаток от деления (знак результата соответствует знаку делителя)")
             .Arg("input", Integer)
             .Arg("modulus", Integer)
             .Returns(Integer)
@@ -35,6 +37,7 @@ public class NumberFunctions : FunctionsDescriptor
                  })
         {
             Function("Abs")
+                .Doc("Возвращает абсолютное значение")
                 .Arg("input", T)
                 .Returns(T)
                 .Templates(new()
@@ -44,11 +47,13 @@ public class NumberFunctions : FunctionsDescriptor
         }
 
         Function("Floor")
+            .Doc("Округляет число вниз до ближайшего целого")
             .Arg("input", Number)
             .Returns(Number)
             .Template($"FLOOR({input})");
 
         Function("Ceil")
+            .Doc("Округляет число вверх до ближайшего целого")
             .Arg("input", Number)
             .Returns(Number)
             .Templates(new()
@@ -58,6 +63,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Round")
+            .Doc("Округляет число до ближайшего целого (по правилам математического округления)")
             .Arg("input", Number)
             .Returns(Number)
             .Templates(new()
@@ -68,6 +74,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Floor")
+            .Doc("Округляет число вниз с заданным шагом")
             .Arg("input", Number)
             .Arg("step", Number)
             .Returns(Number)
@@ -77,6 +84,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Ceil")
+            .Doc("Округляет число вверх с заданным шагом")
             .Arg("input", Number)
             .Arg("step", Number)
             .Returns(Number)
@@ -87,6 +95,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Round")
+            .Doc("Округляет число до ближайшего кратного заданному шагу")
             .Arg("input", Number)
             .Arg("step", Number)
             .Returns(Number)
@@ -98,6 +107,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Floor")
+            .Doc("Округляет число вниз с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
             .Arg("offset", Number)
@@ -108,6 +118,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Ceil")
+            .Doc("Округляет число вверх с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
             .Arg("offset", Number)
@@ -119,6 +130,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Round")
+            .Doc("Округляет число с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
             .Arg("offset", Number)
@@ -131,6 +143,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Even")
+            .Doc("Проверяет, является ли число чётным")
             .Arg("input", Integer)
             .Returns(Bool)
             .Templates(new()
@@ -140,6 +153,7 @@ public class NumberFunctions : FunctionsDescriptor
             });
 
         Function("Odd")
+            .Doc("Проверяет, является ли число нечётным")
             .Arg("input", Integer)
             .Returns(Bool)
             .Templates(new()
@@ -154,6 +168,7 @@ public class NumberFunctions : FunctionsDescriptor
                  })
         {
             Method("Sign")
+                .Doc("Возвращает знак числа (-1, 0 или 1)")
                 .Arg("input", T)
                 .Returns(Integer)
                 .Templates(new()
@@ -163,6 +178,7 @@ public class NumberFunctions : FunctionsDescriptor
         }
 
         Method("Frac")
+            .Doc("Возвращает дробную часть числа")
             .Arg("input", Number)
             .Returns(Number)
             .Templates(new()

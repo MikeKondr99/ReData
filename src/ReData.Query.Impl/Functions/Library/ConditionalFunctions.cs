@@ -16,6 +16,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                  })
         {
             Function("If")
+                .Doc("Условное выражение: возвращает then-значение если condition=true, иначе else-значение")
                 .Arg("condition", Bool, propagateNull: false)
                 .Arg("then", T)
                 .Arg("else", T)
@@ -26,6 +27,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                 });
 
             Method("Or")
+                .Doc("Возвращает первое значение, если оно не NULL, иначе возвращает альтернативное значение")
                 .Arg("input", T)
                 .Arg("alt", T)
                 .Returns(T)
@@ -40,6 +42,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                      Number, Text, Integer, DateTime, Unknown }) {
 
         Method("IsNull")
+                .Doc("Проверяет, является ли значение NULL")
                 .Arg("value", T)
                 .ReturnsNotNull(Bool)
                 .Templates(new()
@@ -48,6 +51,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                 });
 
             Method("NotNull")
+                .Doc("Проверяет, что значение не NULL")
                 .Arg("value", T)
                 .ReturnsNotNull(Bool)
                 .Templates(new()

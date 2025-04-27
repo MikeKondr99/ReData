@@ -42,7 +42,7 @@ import {FunctionsComponent} from '../components/functions.component';
           }
           <div class="w-full flex flex-col">
             @if (response(); as apiResponse) {
-              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzFrontPagination]="true">
+              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzFrontPagination]="false" [nzScroll]="{ x: 'scroll', y:'scroll'}" class="max-h-screen">
                 <thead>
                 <tr>
                   @for (field of apiResponse.fields; track field.alias) {
