@@ -1,7 +1,14 @@
 @import "ng-zorro-antd/ng-zorro-antd.min.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Fira Code";
+  src: url("./assets/FiraCode-Light.ttf") format("truetype");
+}
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+

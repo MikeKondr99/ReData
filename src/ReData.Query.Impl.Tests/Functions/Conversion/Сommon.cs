@@ -32,8 +32,8 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      [InlineData("Text(false)", "false")]
      [InlineData("Text(true)", "true")]
      [InlineData("Text(null)", null)]
-     [InlineData("Date('2025-03-27 21:19').Text()", "2025-03-27 21:19")]
-     [InlineData("Date('2025-03-27').Text()", "2025-03-27 00:00")]
+     [InlineData("Date('2025-03-27 21:19').Text()", "2025-03-27 21:19:00")]
+     [InlineData("Date('2025-03-27').Text()", "2025-03-27 00:00:00")]
      public Task Text(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Bool")]

@@ -56,7 +56,7 @@ public abstract class RawExprTests(IDatabaseFixture db)
         int v => new IntegerValue(v),
         bool b => new BoolValue(b),
         double v => new NumberValue(v),
-        string v when v.StartsWith("@") => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeLocal)),
+        string v when v.StartsWith("@") => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeLocal).ToUniversalTime()),
         string v => new TextValue(v),
         null => new NullValue(),
         _ => new UnknownValue(value.GetType().Name),

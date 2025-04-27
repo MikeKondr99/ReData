@@ -146,8 +146,11 @@ public class ConversionFunctions : FunctionsDescriptor
         Conversion(DateTime, Text)
             .Templates(new()
             {
-                [ClickHouse] = $"formatDateTime({0}, '%Y-%m-%d %H:%i')", // Forces YYYY-MM-DD HH:MM
-                [All & ~ClickHouse] = $"FORMAT({0}, 'yyyy-MM-dd HH:mm')" // Fallback (SQL Server style)
+                [SqlServer] = $"CONVERT(NVARCHAR(20), {0}, 120)", // ODBC canonical format
+                [ClickHouse] = $"formatDateTime({0}, '%Y-%m-%d %H:%i:%S')",
+                [MySql] = $"DATE_FORMAT({0}, '%Y-%m-%d %H:%i:%S')",
+                [PostgreSql] = $"TO_CHAR({0}, 'YYYY-MM-DD HH24:MI:SS')",
+                [Oracle] = $"TO_CHAR({0}, 'YYYY-MM-DD HH24:MI:SS')",
             });
         
         Conversion(Null, Text)

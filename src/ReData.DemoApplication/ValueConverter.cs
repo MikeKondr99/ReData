@@ -55,7 +55,10 @@ public class ValueConverter : JsonConverter<IValue>
                 writer.WriteNullValue();
                 break;
             case UnknownValue uv:
-                writer.WriteStringValue(uv.ToString());
+                writer.WriteStartObject();
+                writer.WriteBoolean("unknown", true);
+                writer.WriteString("type", uv.Type);
+                writer.WriteEndObject();
                 break;
             default:
                 throw new JsonException($"Unsupported IValue type: {value.GetType().Name}");

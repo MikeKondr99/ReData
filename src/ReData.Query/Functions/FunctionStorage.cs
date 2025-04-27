@@ -22,25 +22,6 @@ public sealed class FunctionStorage : IFunctionStorage
         );
     }
     
-    public FunctionDefinition GetFunction(FunctionSignature sign)
-    {
-        var resolution = ResolveFunction(sign);
-        var funcs = _lookup[sign.Name];
-        foreach (var func in funcs)
-        {
-            if (func.Arguments.Count != sign.ArgumentTypes.Count) continue;
-            if (!ValidFunctionKind(func.Kind,sign.Kind)) continue; 
-            for (int i = 0; i < func.Arguments.Count; i++)
-            {
-                // можно сократить, но да ладно
-                if(func.Arguments[i].Type.DataType != sign.ArgumentTypes[i].DataType) continue;
-                if(!func.Arguments[i].Type.CanBeNull && sign.ArgumentTypes[i].CanBeNull) continue;
-                return func;
-            }
-        }
-        throw new Exception($"Function {sign} not found");
-    }
-
     private static bool ValidFunctionKind(FunctionKind defined, FunctionKind used)
     {
         return defined == used || (defined is FunctionKind.Method && used is FunctionKind.Default);

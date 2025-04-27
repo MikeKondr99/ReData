@@ -73,4 +73,8 @@ INTEGER: [0-9]+;
 
 NUMBER: ([0-9]* '.' [0-9]+) | ([0-9]+ '.' [0-9]+);
 
+// Comments
+LINE_COMMENT: '//' ~[\r\n]* -> skip;
+BLOCK_COMMENT: '/*' .*? '*/' -> skip;
+
 WS: [ \t\r\n]+ -> skip;

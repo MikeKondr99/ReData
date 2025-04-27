@@ -3,6 +3,8 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using ReData.DemoApplication;
 using ReData.Query;
+using ReData.Query.Functions;
+using ReData.Query.Impl.Functions;
 using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Impl.Runners;
 using ReData.Query.Visitors;
@@ -82,4 +84,35 @@ app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
     })
     .WithName("TransformData");
 
+app.MapGet("/functions", () =>
+{
+    var functions = GlobalFunctionsStorage.Functions
+        .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypeFlags.PostgreSql)))
+        .Where(f => f.ImplicitCast is null);
+
+
+    return functions.Select(f => new FunctionViewModel()
+    {
+        Name = f.Name,
+        Arguments = f.Arguments,
+        Doc = f.Doc,
+        Kind = f.Kind,
+        ReturnType = f.ReturnType,
+    });
+});
+
 app.Run();
+
+
+public sealed record FunctionViewModel
+{
+    public required string Name { get; init; }
+
+    public required string? Doc { get; init; }
+
+    public required IReadOnlyList<FunctionArgument> Arguments { get; init; }
+
+    public required FunctionReturnType ReturnType { get; init; }
+    
+    public required FunctionKind Kind { get; init; }
+}
