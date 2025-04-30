@@ -8,7 +8,7 @@ public class ParsingTests
     [Fact]
     public void BinaryOp()
     {
-        var expr = RawExpr.Parse("number + 3");
+        var expr = Expr.Parse("number + 3").UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
@@ -25,7 +25,7 @@ public class ParsingTests
     [Fact]
     public void ShouldGivePriority()
     {
-        var expr = RawExpr.Parse("a + b * c");
+        var expr = Expr.Parse("a + b * c").UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
@@ -51,7 +51,7 @@ public class ParsingTests
     [Fact]
     public void ShouldParseWithoutCapturingBinary()
     {
-        var expr = RawExpr.Parse("a + c.Call()");
+        var expr = Expr.Parse("a + c.Call()").UnwrapOk().Value;
 
 
         expr.Should().BeEquivalentTo(new FuncExpr()
@@ -76,7 +76,7 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedy()
     {
-        var expr = RawExpr.Parse("'a' + 'b'");
+        var expr = Expr.Parse("'a' + 'b'").UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
@@ -94,7 +94,7 @@ public class ParsingTests
     [Fact]
     public void ShouldParseNameNonGreedy()
     {
-        var expr = RawExpr.Parse("[a] + [b]");
+        var expr = Expr.Parse("[a] + [b]").UnwrapOk().Value;
 
 
         expr.Should().BeEquivalentTo(new FuncExpr()
@@ -112,7 +112,7 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedyInArguments()
     {
-        var expr = RawExpr.Parse("If(10 > 5 and null, 'then', 'else')");
+        var expr = Expr.Parse("If(10 > 5 and null, 'then', 'else')").UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new FuncExpr()
         {

@@ -47,12 +47,26 @@ var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
     {
         string sql = null;
+        int i = -1;
         try
         {
             var query = applications;
             foreach (var transformation in request.Transformations)
             {
-                query = transformation.Apply(query);
+                i++;
+                var res = transformation.Apply(query);
+                if (res.Unwrap(out var ok, out var err))
+                {
+                    query = ok;
+                }
+                else
+                {
+                    return Results.BadRequest(new
+                    {
+                        index = i,
+                        error = err,
+                    });
+                }
             }
 
             await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connection);
@@ -77,6 +91,7 @@ app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
         {
             return Results.BadRequest(new
             {
+                index = i,
                 message = ex.Message,
                 query = sql?.Split("\n")?.ToArray()
             });

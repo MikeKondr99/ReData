@@ -4,7 +4,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Number;
 
-public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
     [Theory(DisplayName = "Floor")]
     [InlineData("Floor(1.2)", 1.0)]

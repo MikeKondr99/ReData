@@ -3,7 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Conditional;
 
-public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Базовая логика")]
      [InlineData("true", true)]
@@ -35,20 +35,20 @@ public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
      
      
      [Theory(DisplayName = "Функция Or")]
-     [InlineData("2.Or(3).Type()", "Int")]
-     [InlineData("Int(null).Or(3).Type()", "Int")]
-     [InlineData("2.Or(Int(null)).Type()", "Int")]
-     [InlineData("Int(null).Or(Int(null)).Type()", "Int?")]
-     [InlineData("1.Or(2).Or(3).Or(4).Or(5).Or(6).Type()", "Int")]
-     [InlineData("Int(null).Or(null).Or(null).Type()", "Int?")]
+     [InlineData("2.Alt(3).Type()", "Int")]
+     [InlineData("Int(null).Alt(3).Type()", "Int")]
+     [InlineData("2.Alt(Int(null)).Type()", "Int")]
+     [InlineData("Int(null).Alt(Int(null)).Type()", "Int?")]
+     [InlineData("1.Alt(2).Alt(3).Alt(4).Alt(5).Alt(6).Type()", "Int")]
+     [InlineData("Int(null).Alt(null).Alt(null).Type()", "Int?")]
      
-     [InlineData("2.Or(3)", 2)]
-     [InlineData("Int(null).Or(3)", 3)]
-     [InlineData("2.Or(Int(null))", 2)]
-     [InlineData("Int(null).Or(Int(null))", null)]
-     [InlineData("Int(null).Or(If(true, 2, null))", 2)]
-     [InlineData("1.Or(2).Or(3).Or(4).Or(5).Or(6)", 1)]
-     [InlineData("Int(null).Or(null).Or(If(true, 10, Int(null)))", 10)]
+     [InlineData("2.Alt(3)", 2)]
+     [InlineData("Int(null).Alt(3)", 3)]
+     [InlineData("2.Alt(Int(null))", 2)]
+     [InlineData("Int(null).Alt(Int(null))", null)]
+     [InlineData("Int(null).Alt(If(true, 2, null))", 2)]
+     [InlineData("1.Alt(2).Alt(3).Alt(4).Alt(5).Alt(6)", 1)]
+     [InlineData("Int(null).Alt(null).Alt(If(true, 10, Int(null)))", 10)]
      // [InlineData("true.Or(false)", true)]
      public Task OrFunction(string expr, object? expected) => Test(expr, expected);
      

@@ -9,30 +9,6 @@ namespace ReData.Query.Lang;
 
 internal class ExpressionParser : LangBaseVisitor<IExpr>
 {
-    private Dictionary<string, string> _binaryOperators = new()
-    {
-        ["+"] = "@add",
-        ["-"] = "@sub",
-        ["*"] = "@mul",
-        ["/"] = "@div",
-        ["and"] = "@and",
-        ["or"] = "@or",
-        ["="] = "@eq",
-        ["!="] = "@neq",
-        ["<"] = "@lt",
-        ["<="] = "@leq",
-        [">"] = "@gt",
-        [">="] = "@geq",
-        ["^"] = "@hat",
-    };
-
-    private Dictionary<string, string> _UnaryOperators = new()
-    {
-        ["-"] = "@un_sub",
-    };
-
-
-
     public override IExpr VisitStart(LangParser.StartContext context)
     {
         return Visit(context.children[0]);

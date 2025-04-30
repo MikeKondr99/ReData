@@ -183,7 +183,7 @@ public class NumberFunctions : FunctionsDescriptor
             .Returns(Number)
             .Templates(new()
             {
-                [All & ~SqlServer] = $"MOD({input}, 1)",
+                [All & ~SqlServer] = $"MOD({input}, 1)", // [ "MOD(", arg0, ", 1)" ]
                 [SqlServer] = $"({input} % 1)",
             });
     }

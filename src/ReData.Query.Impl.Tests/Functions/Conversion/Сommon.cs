@@ -3,7 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Conversion;
 
-public abstract class Сommon(IDatabaseFixture runner) : RawExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Int")]
      [InlineData("Int(25)", 25)]

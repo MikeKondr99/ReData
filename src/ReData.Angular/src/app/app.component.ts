@@ -32,7 +32,7 @@ import {FunctionsComponent} from '../components/functions.component';
   ],
   template: `
     <div class="w-screen h-screen flex flex-row gap-4 overflow-hidden">
-      <app-transformations-list class="basis-1/2"
+      <app-transformations-list [errors]="error()"  class="basis-1/2"
                                 (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
     <div class="max-w-screen-xl max-h-screen">
       <nz-tabset>
@@ -133,7 +133,7 @@ export class AppComponent {
 
   transformations = signal<Transformation[]>([]);
   loading = signal(false);
-  error = signal<string | null>(null);
+  error = signal<{index: number, errors: Record<string,string> } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: [], total:0 });
 
   errorEf = effect(() => {
@@ -151,7 +151,7 @@ export class AppComponent {
         }),
         catchError(err => {
           console.log(err.error.message);
-          this.error.set(err.error.message || 'Failed to load data');
+          this.error.set({ index: err.error.index, errors: err.error.error.errors });
           return of(null);
         })
       ).subscribe(res => {

@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.JavaScript;
+using Pattern.Unions;
 using ReData.Query.Functions;
 using ReData.Query.Visitors;
+using Process = FuzzySharp.Process;
 
 namespace ReData.Query;
 
@@ -10,11 +13,14 @@ public sealed class FunctionStorage : IFunctionStorage
 {
     private ILookup<string, FunctionDefinition> _lookup;
 
+    private string[] _allFunctionNames;
+
     private ILookup<FunctionArgumentType,FunctionDefinition> _implicitCasts;
     
     public FunctionStorage(IEnumerable<FunctionDefinition> functions)
     {
-        functions = functions.Where(f => f.Template is not null);
+        functions = functions.Where(f => f.Template is not null).ToArray();
+        _allFunctionNames = functions.Select(f => f.Name).Distinct().ToArray();
         _lookup = functions.Where(f => f.ImplicitCast is null).ToLookup(f => f.Name, f => f);
         _implicitCasts = functions.Where(f => f.ImplicitCast is not null).ToLookup(
             f => f.Arguments[0].Type,
@@ -27,12 +33,17 @@ public sealed class FunctionStorage : IFunctionStorage
         return defined == used || (defined is FunctionKind.Method && used is FunctionKind.Default);
     }
 
-    private IEnumerable<FunctionDefinition> GetValidFunctions(FunctionSignature sign)
+    private Result<IEnumerable<FunctionDefinition>, FunctionResolutionError> GetValidFunctions(FunctionSignature sign)
     {
+        if (!_lookup.Contains(sign.Name))
+        {
+            var suggest = Process.ExtractOne(sign.Name, _allFunctionNames);
+            return new FunctionResolutionError.FunctionNameNotFound(sign.Name, suggest.Score > 80 ? suggest.Value : null);
+        }
+        
         var temp = _lookup[sign.Name];
-        temp  = temp.Where(f => ValidFunctionKind(f.Kind, sign.Kind));
         temp = temp.Where(f => f.Arguments.Count == sign.ArgumentTypes.Count);
-        return temp;
+        return Result.Ok(temp);
     }
 
 
@@ -76,9 +87,13 @@ public sealed class FunctionStorage : IFunctionStorage
     }
     
 
-    public FunctionResolution? ResolveFunction(FunctionSignature sign)
+    public Result<FunctionResolution,FunctionResolutionError> ResolveFunction(FunctionSignature sign)
     {
-        var functions = GetValidFunctions(sign);
+        var resFunctions = GetValidFunctions(sign);
+        if (!resFunctions.Unwrap(out var functions, out var error))
+        {
+            return error;
+        }
 
         List<FunctionResolution> matches = [];
         foreach (var func in functions)
@@ -91,11 +106,25 @@ public sealed class FunctionStorage : IFunctionStorage
             };
             if (!resolution.Casts.Contains(null))
             {
-                matches.Add(resolution); ;
+                matches.Add(resolution);
             }
         }
-
+        
         var result = matches.MinBy(m => m.Casts.Sum(c => Math.Pow(10,c.ImplicitCast?.Cost ?? 0)));
+        if (result is null)
+        {
+            return new FunctionResolutionError.FunctionSignatureNotFound(sign, matches.Select(m => new FunctionSignature
+            {
+                Name = m.Function.Name,
+                Kind = m.Function.Kind,
+                ArgumentTypes = m.Function.Arguments.Select(a => a.Type).ToArray(),
+            }));
+        }
+
+        if (!ValidFunctionKind(result.Function.Kind, sign.Kind))
+        {
+            return new FunctionResolutionError.FunctionIsNotMethod(sign.Name);
+        }
         return result;
     }
     

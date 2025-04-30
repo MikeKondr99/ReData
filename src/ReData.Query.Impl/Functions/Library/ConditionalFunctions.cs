@@ -26,7 +26,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                     [All] = $"CASE WHEN {0} THEN {1} ELSE {2} END",
                 });
 
-            Method("Or")
+            Method("Alt")
                 .Doc("Возвращает первое значение, если оно не NULL, иначе возвращает альтернативное значение")
                 .Arg("input", T)
                 .Arg("alt", T)

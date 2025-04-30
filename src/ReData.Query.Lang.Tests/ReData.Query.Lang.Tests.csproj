@@ -16,6 +16,7 @@
         <PackageReference Include="xunit"/>
         <PackageReference Include="xunit.runner.visualstudio"/>
         <PackageReference Include="Verify.XUnit"/>
+        <PackageReference Include="Pattern.Unions"/>
     </ItemGroup>
 
     <ItemGroup>

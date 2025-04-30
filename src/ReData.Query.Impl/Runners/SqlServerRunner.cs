@@ -18,7 +18,7 @@ public class SqlServerRunner : IQueryRunner
             await Connection.OpenAsync();
         }
 
-        var fields = query.Fields();
+        var fields = query.Fields().Fields;
         var result = new List<Record>();
         int len = query.Select?.Count ?? query.Fields().Fields.Count;
         var sql = QueryCompiler.Compile(query);

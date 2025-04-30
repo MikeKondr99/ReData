@@ -8,7 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
+        <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
+        <PackageReference Include="Pattern.Unions"/>
+        <PackageReference Include="FuzzySharp"/>
     </ItemGroup>
 
 </Project>

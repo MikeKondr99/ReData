@@ -11,7 +11,7 @@ using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class RawExprTests(IDatabaseFixture db)
+public abstract class ExprTests(IDatabaseFixture db)
 {
     private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
     private static QueryServicesFactory Factory = new QueryServicesFactory();
@@ -24,7 +24,7 @@ public abstract class RawExprTests(IDatabaseFixture db)
         qb = qb.Select(new()
         {
             ["test"] = expr,
-        });
+        }).UnwrapOk().Value;
         var result = await runner.SingleAsync(qb.Build());
         Compare(result,ExpectedValue(expected));
     }

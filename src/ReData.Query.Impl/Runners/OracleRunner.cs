@@ -12,7 +12,7 @@ public class OracleRunner : IQueryRunner
     
     public async Task<IReadOnlyList<Record>> RunQueryAsync(Query query)
     {
-        var fields = query.Fields();
+        var fields = query.Fields().Fields;
         if (Connection.State is not ConnectionState.Open)
         {
             await Connection.OpenAsync();

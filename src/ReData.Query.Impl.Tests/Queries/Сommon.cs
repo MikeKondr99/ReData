@@ -7,7 +7,7 @@ using ReData.Query.Visitors;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExprTests(db)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
     [Fact]
     public async Task TableQuery()
@@ -33,7 +33,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExpr
         var qb = assets.UsersQuery.Where("UserId > 5");
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.Where(u => u["UserId"] is IntegerValue(> 5));
@@ -55,7 +55,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExpr
         });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
@@ -77,7 +77,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExpr
         var qb = assets.UsersQuery.OrderBy([("Salary", Query.Order.Type.Desc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.OrderByDescending(u => u.Num("Salary"));
@@ -95,7 +95,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : RawExpr
             .OrderBy([("FirstName", Query.Order.Type.Asc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap.Build());
 
         // Assert
         var expect = assets.UsersData.OrderBy(u => u.Text("FirstName"));

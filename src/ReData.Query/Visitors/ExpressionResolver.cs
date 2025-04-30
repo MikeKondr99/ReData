@@ -1,4 +1,7 @@
 ﻿using System.Globalization;
+using Dunet;
+using FuzzySharp;
+using Pattern.Unions;
 using ReData.Core;
 using ReData.Query.Functions;
 using ReData.Query.Lang.Expressions;
@@ -11,7 +14,7 @@ public sealed class ExpressionResolver
     public required INameResolver NameResolver { get; init; }
     public required IFunctionStorage Functions { get; init; }
 
-    public Node ResolveExpr(IExpr expr, IFieldStorage fields)
+    public Result<Node, ResolutionError> ResolveExpr(IExpr expr, IFieldStorage fields)
     {
         var result = expr switch
         {
@@ -29,41 +32,61 @@ public sealed class ExpressionResolver
         return LiteralResolver.Resolve(literal);
     }
 
-    public Node ResolveName(NameExpr name, IFieldStorage fields)
+    public Result<Node, ResolutionError> ResolveName(NameExpr name, IFieldStorage fields)
     {
-        var field = fields[name.Value];
-        return new Node
+        var fieldOption = fields[name.Value];
+        if (fieldOption is ISome<Field>(var field))
         {
-            Expression = name,
-            Template = NameResolver.ResolveFieldName([field.Alias], field.Type).Template,
-            Type = new ExprType()
+            return new Node
             {
-                Type = field.Type.Type,
-                CanBeNull = field.Type.CanBeNull,
-                IsConstant = false,
-                Aggregated = false,
-            },
-        };
+                Expression = name,
+                Template = NameResolver.ResolveFieldName([field.Alias], field.Type).Template,
+                Type = new ExprType()
+                {
+                    Type = field.Type.Type,
+                    CanBeNull = field.Type.CanBeNull,
+                    IsConstant = false,
+                    Aggregated = false,
+                },
+            };
+        }
+        
+        var suggest = Process.ExtractOne(name.Value, fields.Fields.Select(f => f.Alias).ToArray());
+        if (suggest.Score > 80)
+        {
+            return new ResolutionError.FieldNotFound(name.Value, suggest.Value);
+        }
+        return new ResolutionError.FieldNotFound(name.Value, null);
     }
 
     
-    public Node ResolveFunction(FuncExpr funcExpr, IFieldStorage fields)
+    public Result<Node, ResolutionError> ResolveFunction(FuncExpr funcExpr, IFieldStorage fields)
     {
-        IEnumerable<Node> arguments = funcExpr.Arguments.Select(a => ResolveExpr(a, fields)).ToArray();
+        var arguments =
+            funcExpr.Arguments.Select(a => ResolveExpr(a, fields)).ToResult();
 
+        if (!arguments.Unwrap(out var args, out var error))
+        {
+            return error;
+        }
+        
         var sign = new FunctionSignature
         {
             Name = funcExpr.Name,
             Kind = MapFunctionKind(funcExpr.Kind),
-            ArgumentTypes = arguments.Select(arg => new FunctionArgumentType()
+            ArgumentTypes = args.Select(arg => new FunctionArgumentType()
             {
                 DataType = arg.Type.Type,
                 CanBeNull = arg.Type.CanBeNull,
             }).ToArray()
         };
-        var definition = Functions.ResolveFunction(sign) ?? throw new Exception($"function `{sign} not found");
+        var def = Functions.ResolveFunction(sign) ?? throw new Exception($"function `{sign} not found");
+        if (!def.Unwrap(out var definition, out var funcResError))
+        {
+            return new ResolutionError.FunctionNotFound(funcResError);
+        }
+        
         var function = definition.Function;
-
 
         return new Node()
         {
@@ -73,9 +96,9 @@ public sealed class ExpressionResolver
             {
                 Type = function.ReturnType.DataType,
                 CanBeNull = PropagatesNull(function, sign),
-                IsConstant = arguments.All(arg => arg.Type.IsConstant),
+                IsConstant = args.All(arg => arg.Type.IsConstant),
             },
-            Arguments = arguments.ToArray()
+            Arguments = args.ToArray()
         };
     }
 
@@ -110,4 +133,12 @@ public sealed class ExpressionResolver
 
         return false;
     }
+}
+
+[Union]
+public partial record ResolutionError
+{
+    public sealed partial record FieldNotFound(string Name, string? Suggestion);
+    public sealed partial record FunctionNotFound(FunctionResolutionError Error);
+    public sealed partial record Parsing(ParsingError Error);
 }
