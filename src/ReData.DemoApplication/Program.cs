@@ -10,6 +10,11 @@ using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+}
+
 builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.Converters.Add(new ValueConverter());
@@ -18,6 +23,8 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.WriteIndented = true;
 });
 
+builder.Services.AddSingleton<ConnectionService>();
+
 var app = builder.Build();
 
 app.UseDefaultFiles();
@@ -25,34 +32,15 @@ app.UseStaticFiles();
 
 var factory = new Factory();
 
-var connection = Environment.GetEnvironmentVariable("CONNECTION_STRING"); //"User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=pix_bi_test;Pooling=true;";
-var applications = QueryBuilder.FromTable(
-    factory.CreateExpressionResolver(DatabaseType.PostgreSql),
-    ["TEST_DATA"],
-    [
-        ("ID",new FieldType(DataType.Integer, false)),
-        ("CUSTOMER_NAME",new FieldType(DataType.Text, true)),
-        ("EMAIL",new FieldType(DataType.Text, true)),
-        ("AGE",new FieldType(DataType.Unknown, true)),
-        ("ACCOUNT_BALANCE",new FieldType(DataType.Number, true)),
-        ("IS_ACTIVE",new FieldType(DataType.Bool, true)),
-        ("SIGNUP_DATE",new FieldType(DataType.DateTime, true)),
-        ("LAST_LOGIN",new FieldType(DataType.DateTime, true)),
-        ("CUSTOMER_CATEGORY",new FieldType(DataType.Text, true)),
-        ("RANDOM_NUMBER",new FieldType(DataType.Integer, true)),
-        ("NOTES",new FieldType(DataType.Text, true)),
-        ("PURCHASE_COUNT",new FieldType(DataType.Integer, true)),
-    ]
-);
 var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
-app.MapPost("api/transform", async ([FromBody] TransformRequest request) =>
+app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromServices] ConnectionService connectionService) =>
     {
         string? sql = null;
         int i = -1;
         try
         {
-            var query = applications;
+            var query = connectionService.GetQuery();
             foreach (var transformation in request.Transformations)
             {
                 i++;
@@ -71,7 +59,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request) =>
                 }
             }
 
-            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connection);
+            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connectionService.Connection);
             var q = query.Build();
             // for demo debug purpose
             sql = compiler.Compile(q);

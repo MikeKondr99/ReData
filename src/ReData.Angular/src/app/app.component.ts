@@ -39,11 +39,11 @@ import {FunctionsComponent} from '../components/functions.component';
         <nz-tab nzTitle="Данные" class="max-h-screen">
           <div class="overflow-s">
             @if (response(); as apiResponse) {
-              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzScroll]="{ y: ' 1000px' }" [nzFrontPagination]="false">
+              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()"  [nzScroll]="{ y: ' 1000px' }" [nzFrontPagination]="true">
                 <thead>
                 <tr>
                   @for (field of apiResponse.fields; track field.alias) {
-                    <th nzWidth="50px">
+                    <th nzWidth="175px">
                       <div class="flex flex-row flex-nowrap gap-2">
                         <div class="text-blue-700">
                           @switch (field.type) {

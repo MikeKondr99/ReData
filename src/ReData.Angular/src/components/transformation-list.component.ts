@@ -146,7 +146,7 @@ export class TransformationListComponent {
 
   getError(index: number, pos: number) {
     if(this.errors()?.index == index) {
-      if(this.errors()?.errors[pos]) {
+      if(this.errors()?.errors) {
         return this.errors()?.errors[pos] ?? undefined;
       }
     }
@@ -155,7 +155,7 @@ export class TransformationListComponent {
 
   constructor() {
     // Debounce the changes
-    this.changesSubject.pipe(debounceTime(300)).subscribe(() => {
+    this.changesSubject.pipe(debounceTime(500)).subscribe(() => {
       this.transformationsChange.emit([...this.transformations]);
     });
   }

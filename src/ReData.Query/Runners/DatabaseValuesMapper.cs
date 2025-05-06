@@ -27,7 +27,7 @@ public class DatabaseValuesMapper
             (IntegerValue(var v), DataType.Bool) => new BoolValue(v != 0),
             (NumberValue(var v), DataType.Integer) => new IntegerValue((long)v),
             (IntegerValue(var v), DataType.Number) => new NumberValue(v),
-            _ => throw new Exception("Ожидался тип")
+            _ => throw new Exception($"Неудалось замапить тип {value} к {expectedType.Type}")
         };
 
     }

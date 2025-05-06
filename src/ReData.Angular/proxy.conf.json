@@ -2,9 +2,6 @@
   "/api/*": {
     "target": "http://localhost:5223",
     "secure": false,
-    "pathRewrite": {
-      "^/api": ""
-    },
     "logLevel": "debug"
   }
 }
