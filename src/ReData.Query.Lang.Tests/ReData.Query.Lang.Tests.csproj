@@ -16,7 +16,6 @@
         <PackageReference Include="xunit"/>
         <PackageReference Include="xunit.runner.visualstudio"/>
         <PackageReference Include="Verify.XUnit"/>
-        <PackageReference Include="Pattern.Unions"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Pattern\Pattern.csproj" />
       <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
       <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
     </ItemGroup>
