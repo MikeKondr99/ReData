@@ -1,12 +1,12 @@
 ﻿using Pattern.Unions;
-using ReData.Query;
-using ReData.Query.Visitors;
+using ReData.Query.Core;
+using ReData.Query.Core.Types;
 
 namespace ReData.DemoApplication;
 
 public class AggInfoTransformation : ITransformation
 {
-    public Result<QueryBuilder,QueryBuilderError> Apply(QueryBuilder builder)
+    public Result<QueryBuilder,IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
         var fields = builder.Build().Fields().Fields;
         Dictionary<string, string> select = new();

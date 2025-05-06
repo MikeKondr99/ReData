@@ -1,12 +1,12 @@
-﻿using ReData.Core;
+﻿using ReData.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
-public record struct FuncExpr : IExpr
+public record FuncExpr : Expr
 {
     public required string Name { get; init; }
     
-    public required IReadOnlyList<IExpr> Arguments { get; init; }
+    public required IReadOnlyList<Expr> Arguments { get; init; }
     
     public FuncExprKind Kind { get; init; }
     

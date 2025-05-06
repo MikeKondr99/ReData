@@ -1,9 +1,8 @@
-﻿using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Tests.Fixtures;
+﻿using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Financial;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
 {
      [Theory(DisplayName = "Финансовые функции")]
      // Google Sheets 786.7220993

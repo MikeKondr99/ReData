@@ -1,20 +1,16 @@
-﻿using System.Diagnostics;
-using System.Globalization;
-using ClickHouse.Client.Numerics;
+﻿using System.Globalization;
 using FluentAssertions;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Runners.Value;
+using ReData.Query.Core;
 using ReData.Query.Impl.Tests.Fixtures;
-using ReData.Query.Lang.Expressions;
-using ReData.Query.Visitors;
+using ReData.Query.Runners;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class ExprTests(IDatabaseFixture db)
+public abstract class ExprExtensionTests(IDatabaseFixture db)
 {
     private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
-    private static QueryServicesFactory Factory = new QueryServicesFactory();
+    private static Factory Factory = new Factory();
     
     public async Task Test(string expr, object? expected)
     {
@@ -68,7 +64,7 @@ public abstract class ExprTests(IDatabaseFixture db)
 
 file static class QueryRunnerExtensions
 {
-    public async static Task<IValue> SingleAsync(this IQueryRunner runner, Query query)
+    public async static Task<IValue> SingleAsync(this IQueryRunner runner, Core.Query query)
     {
         var data = await runner.RunQueryAsync(query);
         return data.Single()[0];

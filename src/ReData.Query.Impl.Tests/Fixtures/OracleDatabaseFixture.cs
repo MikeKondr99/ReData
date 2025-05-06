@@ -1,13 +1,12 @@
 ﻿using Oracle.ManagedDataAccess.Client;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
+using ReData.Query.Runners;
 using Testcontainers.Oracle;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class OracleDatabaseFixture : IDatabaseFixture
 {
-    private QueryServicesFactory _factory = new QueryServicesFactory();
+    private Factory _factory = new Factory();
     private OracleContainer Container { get; set; } = null!;
     private OracleConnection Connection { get; set; } = null!;
     private string ConnectionString { get; set; } = null!;

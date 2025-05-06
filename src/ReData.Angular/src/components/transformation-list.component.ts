@@ -9,13 +9,15 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { debounceTime, Subject } from 'rxjs';
 import {
-  isOrderByTransformation, isSelectTransformation, isWhereTransformation,
+  ExprError, isLimitTransformation,
+  isOrderByTransformation, isSelectTransformation, isWhereTransformation, LimitTransformation,
   OrderByTransformation, SelectTransformation,
   Transformation,
   WhereTransformation,
 } from '../types';
 import {FxInputComponent} from './fx-input.component';
 import {JsonPipe} from '@angular/common';
+import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
 
 @Component({
   selector: 'app-transformations-list',
@@ -29,6 +31,7 @@ import {JsonPipe} from '@angular/common';
     NzSwitchModule,
     NzDividerModule,
     NzIconModule,
+    NzInputNumberModule,
     FxInputComponent,
     JsonPipe
   ],
@@ -44,7 +47,7 @@ import {JsonPipe} from '@angular/common';
                   <div class="flex items-center gap-2">
                     <span>Фильтр</span>
                   </div>
-                  <app-fx-input ngDefaultControl class="min-w-72" [(ngModel)]="item.condition"
+                  <app-fx-input ngDefaultControl class="min-w-72" [(ngModel)]="item.condition" [error]="getError(i,0)"
                                 (ngModelChange)="onTransformationChange()">
                   </app-fx-input>
                 </div>
@@ -57,6 +60,7 @@ import {JsonPipe} from '@angular/common';
                   @for (orderItem of item.items; track orderItem; let idx = $index) {
                     <div class="flex items-center gap-2">
                       <app-fx-input class="min-w-72" ngDefaultControl [(ngModel)]="orderItem.expression"
+                                    [error]="getError(i,idx)"
                                     (ngModelChange)="onTransformationChange()">
                       </app-fx-input>
                       <nz-switch [(ngModel)]="orderItem.descending"></nz-switch>
@@ -85,7 +89,8 @@ import {JsonPipe} from '@angular/common';
                       />
                       <span>=</span>
                       <app-fx-input ngDefaultControl class="flex-grow" [(ngModel)]="selectItem.expression"
-                                    (ngModelChange)="onTransformationChange()">
+                                    (ngModelChange)="onTransformationChange()"
+                        [error]="getError(i,idx)">
                       </app-fx-input>
                       <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeSelectItem(i, idx)">
                         <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -96,6 +101,9 @@ import {JsonPipe} from '@angular/common';
                     <span nz-icon nzType="plus"></span>
                   </button>
                 </div>
+              } @else if(isLimitTransformation(item)) {
+                <nz-input-number [(ngModel)]="item.limit" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                <nz-input-number [(ngModel)]="item.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
               }
             </div>
             <div class="ml-5">
@@ -104,21 +112,24 @@ import {JsonPipe} from '@angular/common';
               </button>
             </div>
           </div>
-          @if (errors()?.index == i) {
-            <pre>{{ errors()?.errors | json }}</pre>
-
-          }
         </div>
       }
       <nz-button-group>
         <button nz-button nzType="primary" (click)="addWhereTransformation()">
+          Фильтровать
           <span nz-icon nzType="filter"></span>
         </button>
         <button nz-button nzType="primary" (click)="addOrderByTransformation()">
+          Сортировать
           <span class="rotate-90" nz-icon nzType="swap"></span>
         </button>
         <button nz-button nzType="primary" (click)="addSelectTransformation()">
+          Преобразовать
           <span nz-icon nzType="pic-center" nzTheme="outline"></span>
+        </button>
+        <button nz-button nzType="primary" (click)="addLimitTransformation()">
+          Ограничить
+          <span nz-icon nzType="vertical-align-bottom" nzTheme="outline"></span>
         </button>
       </nz-button-group>
     </div>
@@ -129,10 +140,18 @@ export class TransformationListComponent {
 
   private changesSubject = new Subject<void>();
 
-  public errors = input<{ index: number, errors: Record<string,string> } | null>(null);
+  public errors = input<{ index: number, errors: (ExprError | null)[] } | null>(null);
 
   @Output() transformationsChange = new EventEmitter<Transformation[]>();
 
+  getError(index: number, pos: number) {
+    if(this.errors()?.index == index) {
+      if(this.errors()?.errors[pos]) {
+        return this.errors()?.errors[pos] ?? undefined;
+      }
+    }
+    return undefined;
+  }
 
   constructor() {
     // Debounce the changes
@@ -195,6 +214,16 @@ export class TransformationListComponent {
     this.onTransformationChange();
   }
 
+  addLimitTransformation() {
+    this.transformations.push(
+      {
+        $type: 'limit',
+        limit: 0,
+        offset: 0,
+      } as LimitTransformation);
+    this.onTransformationChange();
+  }
+
   addSelectItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex];
     if(isSelectTransformation(transformation)) {
@@ -225,7 +254,18 @@ export class TransformationListComponent {
     this.changesSubject.next();
   }
 
+  public displayErrors() {
+    let result = "";
+    for (const [i, e] of (this.errors()?.errors ?? []).entries()) {
+      if(e !== null) {
+        result += `[${i}] ${e.span.column}:${e.span.column + e.span.length} | ${e?.message}\n`;
+      }
+    }
+    return result;
+  }
+
   protected readonly isOrderByTransformation = isOrderByTransformation;
   protected readonly isWhereTransformation = isWhereTransformation;
   protected readonly isSelectTransformation = isSelectTransformation;
+  protected readonly isLimitTransformation = isLimitTransformation;
 }

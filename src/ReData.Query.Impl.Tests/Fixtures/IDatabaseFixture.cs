@@ -1,7 +1,5 @@
-﻿using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Tests.Queries;
-using ReData.Query.Visitors;
+﻿using ReData.Query.Impl.Tests.Queries;
+using ReData.Query.Runners;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 

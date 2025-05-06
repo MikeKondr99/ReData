@@ -12,6 +12,7 @@
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Antlr4.Runtime"/>
+      <PackageReference Include="Dunet" />
       <PackageReference Include="Pattern.Unions" />
     </ItemGroup>
 
@@ -20,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReData.Core\ReData.Core.csproj" />
+      <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
     </ItemGroup>
 
 

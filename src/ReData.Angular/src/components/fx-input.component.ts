@@ -1,12 +1,12 @@
-import {Component, computed, effect, input, model, viewChild} from '@angular/core';
+import {Component, effect, input, model} from '@angular/core';
 import {EditorComponent} from 'ngx-monaco-editor-v2';
 import {FormsModule} from '@angular/forms';
-import {NzButtonComponent, NzButtonModule} from 'ng-zorro-antd/button';
-import {NzIconDirective, NzIconModule} from 'ng-zorro-antd/icon';
-import {editor} from 'monaco-editor';
-import IEditor = editor.IEditor;
-import EditorOption = editor.EditorOption;
-import IEditorOptions = editor.IEditorOptions;
+import {NzButtonModule} from 'ng-zorro-antd/button';
+import {NzIconModule} from 'ng-zorro-antd/icon';
+import {editor, MarkerSeverity} from 'monaco-editor';
+import {ExprError, IEditor, Monaco} from '../types';
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import ITextModel = editor.ITextModel;
 
 @Component({
   selector: 'app-fx-input',
@@ -31,6 +31,8 @@ import IEditorOptions = editor.IEditorOptions;
   `
 })
 export class FxInputComponent {
+
+  error = input<ExprError>();
 
   ngModel = model<string | undefined>('');
 
@@ -59,20 +61,46 @@ export class FxInputComponent {
     automaticLayout: true        // Important for proper resizing
   };
 
+  diag = effect(() => {
+    let error = this.error();
+
+
+    let monaco = (<Monaco>(<any>window).monaco);
+    if(this.model) {
+      if(error) {
+        monaco.editor.setModelMarkers(this.model, 'owner', [
+          {
+            message: error.message,
+            startLineNumber: 1,
+            endLineNumber: 1,
+
+            startColumn: error.span.column + 1,
+            endColumn: error.span.column + error.span.length + 2,
+            severity: MarkerSeverity.Error,
+          }]);
+      } else {
+        monaco.editor.setModelMarkers(this.model, 'owner', []);
+      }
+    }
+  })
 
   onInputChange(newValue: string) {
     const sanitizedValue = newValue.replace(/[\r\n]+/g, '');
     this.ngModel.set(sanitizedValue);
   }
 
-  editorInit($event: any) {
+  model: ITextModel | null = null;
+
+  editorInit(editor: IStandaloneCodeEditor) {
     // Handle Enter key
-    $event.addCommand(3, () => {
+    editor.addCommand(3, () => {
       return null
     }, '');
     // Ignore F1
-    $event.addCommand(59, () => {
+    editor.addCommand(59, () => {
       return null;
     });
+
+    this.model = editor.getModel();
   }
 }

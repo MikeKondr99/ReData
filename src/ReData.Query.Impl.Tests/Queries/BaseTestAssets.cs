@@ -1,7 +1,6 @@
-﻿using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Runners.Value;
-using ReData.Query.Visitors;
+﻿using ReData.Query.Core;
+using ReData.Query.Core.Types;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
@@ -42,7 +41,7 @@ public abstract class BaseTestAssets : ITestAssets
 
     public QueryBuilder UsersQuery =>
         QueryBuilder.FromTable(
-            new QueryServicesFactory().CreateExpressionResolver(DatabaseType),
+            new Factory().CreateExpressionResolver(DatabaseType),
             ["User"],
             [
                 ("UserId", new FieldType(DataType.Integer, false)),

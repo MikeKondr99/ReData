@@ -1,11 +1,11 @@
-﻿namespace ReData.Query.Lang.Expressions;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
-public interface ILiteral : IExpr
+namespace ReData.Query.Lang.Expressions;
+
+public abstract record Literal : Expr
 {
     
 }
 
-public interface ILiteral<out T> : ILiteral
-{
-    public T Value { get; }
-}
+public abstract record Literal<T>(T Value) : Literal;

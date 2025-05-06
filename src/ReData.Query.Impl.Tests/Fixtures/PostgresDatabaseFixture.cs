@@ -1,16 +1,14 @@
 ﻿using Npgsql;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
+using ReData.Query.Runners;
 using Testcontainers.PostgreSql;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class PostgresDatabaseFixture : IDatabaseFixture
 {
-    private QueryServicesFactory _factory = new QueryServicesFactory();
+    private Factory _factory = new Factory();
     private PostgreSqlContainer Container { get; set; } = null!;
     private NpgsqlConnection Connection { get; set; } = null!;
-
     private string ConnectionString { get; set; } = null!;
 
     private IQueryRunner? Runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам

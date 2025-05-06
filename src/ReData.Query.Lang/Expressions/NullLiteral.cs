@@ -1,6 +1,6 @@
 ﻿namespace ReData.Query.Lang.Expressions;
 
-public record struct NullLiteral : ILiteral
+public sealed record NullLiteral : Literal
 {
     public override string ToString()
     {

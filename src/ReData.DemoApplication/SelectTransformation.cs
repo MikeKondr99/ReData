@@ -1,5 +1,5 @@
 ﻿using Pattern.Unions;
-using ReData.Query.Visitors;
+using ReData.Query.Core;
 
 namespace ReData.DemoApplication;
 
@@ -7,7 +7,7 @@ public class SelectTransformation : ITransformation
 {
     public required SelectItem[] Items { get; init; }
 
-    public Result<QueryBuilder,QueryBuilderError> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
         return builder.Select(Items.ToDictionary(a => a.Field, a => a.Expression));
     }

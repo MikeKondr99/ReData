@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Intrinsics.Arm;
-using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Number;

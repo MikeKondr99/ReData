@@ -1,0 +1,248 @@
+﻿using System.Runtime.CompilerServices;
+using Pattern.Unions;
+using ReData.Query.Core.Components;
+using ReData.Query.Core.Components.Implementation;
+using ReData.Query.Core.Template;
+using ReData.Query.Core.Types;
+using ReData.Query.Lang.Expressions;
+
+namespace ReData.Query.Core;
+
+public record QueryBuilder
+{
+    private Query Query { get; init; }
+    private ExpressionResolver Resolver { get; init; }
+    private IFieldStorage Fields => Query.Fields();
+
+    private QueryBuilder(Query query, ExpressionResolver resolver)
+    {
+        Query = query;
+        Resolver = resolver;
+    }
+
+    public static QueryBuilder FromDual(ExpressionResolver resolver)
+    {
+        return new QueryBuilder(new Query()
+        {
+            Name = resolver.NameResolver.ResolveTableName(["Query1"]),
+        }, resolver);
+    }
+    
+    public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, FieldType type)> fields)
+    {
+        return new QueryBuilder(new Query()
+        {
+            Name = resolver.NameResolver.ResolveTableName(["Query1"]),
+            From = new TableQuerySource(resolver.NameResolver.ResolveTableName(path), fields.Select(f => new Field
+                {
+                    Alias = f.name,
+                    Type = f.type,
+                }).ToArray()
+            ),
+            Select = fields.Select(f =>
+            {
+                var fieldTemplate = resolver.NameResolver.ResolveFieldName([f.name], f.type);
+                return new Map()
+                {
+                    Alias = f.name,
+                    Column = fieldTemplate,
+                    ResolvedExpr = new ResolvedExpr()
+                    {
+                        Expression = new NameExpr(f.name),
+                        Template = fieldTemplate.Template,
+                        Arguments = null,
+                        Type = new ExprType()
+                        {
+                            DataType = f.type.Type,
+                            CanBeNull = f.type.CanBeNull,
+                            IsConstant = false,
+                            Aggregated = false,
+                        },
+                    }
+                };
+            }).ToArray()
+        }, resolver);
+    }
+
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Select(Dictionary<string, string> select)
+    {
+        var qb = this;
+        if (Query.Select is not null || Query.Where?.Count > 0 || Query.OrderBy?.Count > 0 )
+        {
+            qb = CreateCte();
+        }
+
+        List<Map> oks = new(select.Count);
+        List<ExprError?> errors = [];
+
+        var res = ResolveMany(select.Select(o => o.Value)).Map(o => o.Zip(select).Select(p => new Map(p.Second.Key, Resolver.NameResolver.ResolveFieldName([p.Second.Key], new FieldType()), p.First)));
+        
+        if (!res.Unwrap(out var ok, out var err))
+        {
+            return Result.Error(err);
+        }
+        
+        return qb with
+        {
+            Query = qb.Query with
+            {
+                Select = ok.ToArray(),
+            }
+        };
+    }
+    
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Where(string condition)
+    {
+        var qb = this;
+        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
+        {
+            qb = CreateCte();
+        }
+
+        var res = ResolveMany([condition]);
+
+        if (!res.Unwrap(out var where, out var err))
+        {
+            return Result.Error(err);
+        }
+
+        return qb with
+        {
+            Query = qb.Query with
+            {
+                Where = [..Query.Where ?? [], where.First()]
+            }
+        };
+    }
+    
+    public Result<QueryBuilder,IEnumerable<ExprError?>> OrderBy(IReadOnlyList<(string expr, Order.Type type)> order)
+    {
+        var qb = this;
+        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
+        {
+            qb = CreateCte();
+        }
+
+        var res = ResolveMany(order.Select(o => o.expr)).Map(o => o.Zip(order).Select(p => new Order(p.First, p.Second.type)));
+        
+        if (!res.Unwrap(out var ord, out var err))
+        {
+            return Result.Error(err);
+        }
+        
+        return qb with
+        {
+            Query = Query with
+            {
+                OrderBy = ord.ToArray()
+            }
+        };
+    }
+
+    private QueryBuilder CreateCte()
+    {
+        return this with
+        {
+            Query = new Core.Query()
+            {
+                Name = CteName(),
+                From = Query,
+            }
+        };
+    }
+
+    private IResolvedTemplate CteName()
+    {
+        var random = $"CTE-{Guid.NewGuid().ToString("N")[..6]}";
+        return Resolver.NameResolver.ResolveTableName([random]);
+    }
+    
+    public QueryBuilder Take(uint take)
+    {
+        if (Query.Limit is not null)
+        {
+            take = Math.Min(Query.Limit.Value, take);
+        }
+        return this with
+        {
+            Query = Query with
+            {
+                Limit = take
+            }
+        };
+    }
+    
+    public QueryBuilder Skip(uint skip)
+    {
+        var offset = skip + Query.Offset;
+        var limit = Query.Limit;
+        if (limit is not null)
+        {
+            limit = Math.Min(limit.Value, skip);
+        }
+        return this with
+        {
+            Query = Query with
+            {
+                Offset = offset,
+                Limit = limit,
+            }
+        };
+    }
+
+    private Result<ResolvedExpr,ExprError> Resolve(string expr)
+    {
+        var resExpr = Expr.Parse(expr);
+        if (!resExpr.Unwrap(out var expression, out var error))
+        {
+            return error;
+        }
+        return Resolver.ResolveExpr(expression, Fields);
+    }
+
+    public Query Build()
+    {
+        return Query;
+    }
+
+    private Result<IReadOnlyCollection<ResolvedExpr>, IEnumerable<ExprError?>> ResolveMany(IEnumerable<string> exprs)
+    {
+        IEnumerable<Result<ResolvedExpr, ExprError>> iter = exprs.Select(expr => Resolve(expr));
+        var res = iter.ToResult();
+        if (res.IsOk(out var ok))
+        {
+            return Result.Ok(ok);
+        }
+        return Result.Error(iter.Select(r => r.IsError(out var err) ? err : null));
+    }
+}
+
+public static class QueryBuilderExtensions 
+{
+    public static Result<QueryBuilder, IEnumerable<ExprError?>> Where(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, string condition)
+    {
+        if (qb.IsOk(out var ok))
+        {
+            return ok.Where(condition);
+        }
+        return qb;
+    }
+    
+    public static Result<QueryBuilder, IEnumerable<ExprError?>> OrderBy(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, IReadOnlyList<(string, Order.Type)> orderings)
+    {
+        if (qb.IsOk(out var ok))
+        {
+            return ok.OrderBy(orderings);
+        }
+        return qb;
+    }
+    
+    public static Result<QueryBuilder, IEnumerable<ExprError?>> Select(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, Dictionary<string, string> select)
+    {
+        if (qb.IsOk(out var ok))
+        {
+            return ok.Select(select);
+        }
+        return qb;
+    }
+}

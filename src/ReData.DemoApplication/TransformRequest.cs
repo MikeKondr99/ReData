@@ -1,7 +1,6 @@
 ﻿using ReData.DemoApplication;
-using ReData.Query;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Visitors;
+using ReData.Query.Core.Types;
+using ReData.Query.Runners.Value;
 
 public class TransformRequest
 {
@@ -16,7 +15,7 @@ public sealed record TransformResponse
     
     public required string[] Query { get; init; }
     
-    public required IReadOnlyList<Dictionary<string,IValue>> Data { get; init; }
+    public required IReadOnlyList<Dictionary<string, IValue>> Data { get; init; }
     
 }
 

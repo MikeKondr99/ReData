@@ -1,13 +1,12 @@
 ﻿using Microsoft.Data.SqlClient;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
+using ReData.Query.Runners;
 using Testcontainers.MsSql;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class SqlServerDatabaseFixture : IDatabaseFixture
 {
-    private QueryServicesFactory _factory = new QueryServicesFactory();
+    private Factory _factory = new Factory();
     private MsSqlContainer Container { get; set; } = null!;
     private SqlConnection Connection { get; set; } = null!;
 

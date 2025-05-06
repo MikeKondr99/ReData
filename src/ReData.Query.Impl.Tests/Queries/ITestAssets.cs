@@ -1,6 +1,5 @@
-﻿using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Visitors;
+﻿using ReData.Query.Core;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 

@@ -1,6 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Pattern.Unions;
-using ReData.Query.Visitors;
+﻿using Pattern.Unions;
+using ReData.Query.Core;
 
 namespace ReData.DemoApplication;
 
@@ -9,7 +8,7 @@ public class LimitOffsetTransformation : ITransformation
     public uint? Take { get; set; }
     public uint? Skip { get; set; }
 
-    public Result<QueryBuilder,QueryBuilderError> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
         if (Skip.HasValue)
         {

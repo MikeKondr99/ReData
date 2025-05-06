@@ -1,15 +1,13 @@
 ﻿using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Visitors;
+using ReData.Query.Runners;
 using Testcontainers.ClickHouse;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class ClickHouseDatabaseFixture: IDatabaseFixture 
 {
-    private QueryServicesFactory _factory = new QueryServicesFactory();
+    private Factory _factory = new Factory();
     private ClickHouseContainer Container { get; set; } = null!;
     private ClickHouseConnection Connection { get; set; } = null!;
 

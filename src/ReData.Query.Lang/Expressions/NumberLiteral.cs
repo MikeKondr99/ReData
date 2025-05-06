@@ -1,11 +1,20 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace ReData.Query.Lang.Expressions;
 
-public record struct NumberLiteral(double Value) : ILiteral<double>
+public sealed record NumberLiteral : Literal<double>
 {
+    [SetsRequiredMembers]
+    public NumberLiteral(double value) : base(value) {}
+
     public override string ToString()
     {
         return Value.ToString();
+    }
+
+    public void Deconstruct(out double value)
+    {
+        value = Value;
     }
 }

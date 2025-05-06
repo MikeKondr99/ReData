@@ -1,7 +1,6 @@
-﻿
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Pattern.Unions;
-using ReData.Query.Visitors;
+using ReData.Query.Core;
 
 namespace ReData.DemoApplication;
 
@@ -11,5 +10,5 @@ namespace ReData.DemoApplication;
 [JsonDerivedType(typeof(LimitOffsetTransformation), typeDiscriminator: "limitOffset")]
 public interface ITransformation
 {
-    Result<QueryBuilder,QueryBuilderError> Apply(QueryBuilder builder);
+    Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder);
 }

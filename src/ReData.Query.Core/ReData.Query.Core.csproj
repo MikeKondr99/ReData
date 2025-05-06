@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <RootNamespace>ReData.Query.Core</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
+        <PackageReference Include="Pattern.Unions"/>
+    </ItemGroup>
+
+</Project>

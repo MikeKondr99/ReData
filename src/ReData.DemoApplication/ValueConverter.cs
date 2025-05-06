@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Runners.Value;
+using ReData.Query.Runners.Value;
 
 namespace ReData.DemoApplication;
 

@@ -1,10 +1,9 @@
 ﻿using System.Runtime.InteropServices;
-using ReData.Query.Impl.QueryBuilders;
 using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Math;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
 {
     [Theory(DisplayName = "Addition")]
     [InlineData("2 + 2", 4)]

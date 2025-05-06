@@ -1,13 +1,12 @@
 ﻿using MySql.Data.MySqlClient;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
+using ReData.Query.Runners;
 using Testcontainers.MySql;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class MySqlDatabaseFixture : IAsyncLifetime, IDatabaseFixture
 {
-    private QueryServicesFactory _factory = new QueryServicesFactory();
+    private Factory _factory = new Factory();
     private MySqlContainer Container { get; set; } = null!;
     private MySqlConnection Connection { get; set; } = null!;
 

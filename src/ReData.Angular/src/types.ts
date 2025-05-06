@@ -1,6 +1,12 @@
 ﻿import {Data} from '@angular/router';
 
-export type TransformationType = 'where' | 'orderBy';
+import * as monaco from 'monaco-editor';
+import * as MonacoModule from 'monaco-editor';
+
+export type IEditor = typeof monaco.editor;
+export type Monaco = typeof MonacoModule;
+
+export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit';
 
 export type WhereTransformation = {
   $type: 'where',
@@ -17,7 +23,13 @@ export type SelectTransformation = {
   items: SelectItem[];
 };
 
-export type Transformation = WhereTransformation | OrderByTransformation | SelectTransformation;
+export type LimitTransformation = {
+  $type: 'limit';
+  limit: number;
+  offset: number;
+};
+
+export type Transformation = WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation;
 
 // Type guards
 export function isWhereTransformation(t: Transformation): t is WhereTransformation {
@@ -30,6 +42,10 @@ export function isOrderByTransformation(t: Transformation): t is OrderByTransfor
 
 export function isSelectTransformation(t: Transformation): t is SelectTransformation {
   return t.$type === 'select';
+}
+
+export function isLimitTransformation(t: Transformation): t is LimitTransformation {
+  return t.$type === 'limit';
 }
 
 export interface Field {
@@ -82,6 +98,18 @@ export interface ReturnType
   dataType: DataType
   canBeNull: boolean
   aggregated: boolean,
+}
+
+export interface ExprError {
+  span: ExprSpan
+  message: string;
+
+}
+
+export interface ExprSpan {
+  line: number;
+  column: number;
+  length: number;
 }
 
 

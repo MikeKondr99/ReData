@@ -4,13 +4,21 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <WarningsAsErrors>Nullable</WarningsAsErrors>
+        <RootNamespace>ReData.Query</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
-        <PackageReference Include="Pattern.Unions"/>
-        <PackageReference Include="FuzzySharp"/>
+      <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
+      <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+<!--        Databases-->
+        <PackageReference Include="ClickHouse.Client"/>
+        <PackageReference Include="MySql.Data"/>
+        <PackageReference Include="Npgsql"/>
+        <PackageReference Include="Oracle.ManagedDataAccess.Core"/>
+        <PackageReference Include="Microsoft.Data.SqlClient"/>
     </ItemGroup>
 
 </Project>

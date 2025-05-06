@@ -1,25 +1,28 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Xml.XPath;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using ReData.Query.Core;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
 
-internal class ExpressionParser : LangBaseVisitor<IExpr>
+internal class ExpressionParser : LangBaseVisitor<Expr>
 {
-    public override IExpr VisitStart(LangParser.StartContext context)
+    public override Expr VisitStart(LangParser.StartContext context)
     {
         return Visit(context.children[0]);
     }
 
-    public override IExpr VisitUnary(LangParser.UnaryContext context)
+    public override Expr VisitUnary(LangParser.UnaryContext context)
     {
         if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
         {
             return new FuncExpr()
-            {
+            { 
+                Span = Span(context),
                 Name = op.GetText(),
                 Arguments = [VisitExpr(expr)],
                 Kind = FuncExprKind.Unary,
@@ -28,18 +31,19 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         throw new Exception("Non valid unary expression");
     }
 
-    public override IExpr VisitScope(LangParser.ScopeContext context)
+    public override Expr VisitScope(LangParser.ScopeContext context)
     {
         return Visit(context.children[1]);
     }
 
-    public override IExpr VisitBinary(LangParser.BinaryContext context)
+    public override Expr VisitBinary(LangParser.BinaryContext context)
     {
         
         if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
         {
             return new FuncExpr()
             {
+                Span = Span(context),
                 Name = op.GetText(),
                 Arguments = [Visit(left), Visit(right)],
                 Kind = FuncExprKind.Binary,
@@ -48,18 +52,19 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         throw new Exception("Non valid binary expression");
     }
 
-    public override IExpr VisitObjectFunction(LangParser.ObjectFunctionContext context)
+    public override Expr VisitObjectFunction(LangParser.ObjectFunctionContext context)
     {
         var args = context.children.OfType<ParserRuleContext>().Select(a => Visit(a));
         return new FuncExpr()
         {
+            Span = Span(context),
             Name = context.children[2].GetText(),
             Arguments = args.ToArray(),
             Kind = FuncExprKind.Method,
         };
     }
 
-    public override IExpr VisitName(LangParser.NameContext context)
+    public override Expr VisitName(LangParser.NameContext context)
     {
         var name = context.GetText();
         if (name[0] is '[' && name[^1] is ']')
@@ -68,12 +73,15 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
         }
 
         name = Regex.Replace(name, @"\\\]", "]");
-        
-        return new NameExpr(name);
+
+        return new NameExpr(name)
+        {
+            Span = Span(context),
+        };
     }
 
 
-    public override IExpr VisitString(LangParser.StringContext context)
+    public override Expr VisitString(LangParser.StringContext context)
     {
         var value = context.GetText()[1..^1];
         value = Regex.Replace(value, @"\\(.)", m =>
@@ -90,37 +98,60 @@ internal class ExpressionParser : LangBaseVisitor<IExpr>
                 _ => m.Value // If it's not one of the recognized characters, return it unchanged
             };
         });
-        return new StringLiteral(value);
+        return new StringLiteral(value)
+        {
+            Span = Span(context),
+        };
     }
 
-    public override IExpr VisitInteger(LangParser.IntegerContext context)
+    public override Expr VisitInteger(LangParser.IntegerContext context)
     {
-        return new IntegerLiteral(long.Parse(context.GetText()));
+        return new IntegerLiteral(long.Parse(context.GetText()))
+        {
+            Span = Span(context),
+        };
     }
 
-    public override IExpr VisitNumber(LangParser.NumberContext context)
+    public override Expr VisitNumber(LangParser.NumberContext context)
     {
-        return new NumberLiteral(double.Parse(context.GetText(), CultureInfo.InvariantCulture));
+        return new NumberLiteral(double.Parse(context.GetText(), CultureInfo.InvariantCulture))
+        {
+            Span = Span(context),
+        };
     }
 
-    public override IExpr VisitFunc(LangParser.FuncContext context)
+    public override Expr VisitFunc(LangParser.FuncContext context)
     {
         var args = context.children.OfType<LangParser.ExprContext>().Select(a => Visit(a));
         return new FuncExpr()
         {
+            Span = Span(context),
             Name = context.children[0].GetText(),
             Arguments = args.ToArray(),
             Kind = FuncExprKind.Default,
         };
     }
 
-    public override IExpr VisitBoolean(LangParser.BooleanContext context)
+    public override Expr VisitBoolean(LangParser.BooleanContext context)
     {
-        return new BooleanLiteral(bool.Parse(context.GetText()));
+        return new BooleanLiteral(bool.Parse(context.GetText()))
+        {
+            Span = Span(context),
+        };
     }
 
-    public override IExpr VisitNull(LangParser.NullContext context)
+
+    public override Expr VisitNull(LangParser.NullContext context)
     {
-        return new NullLiteral();
+        return new NullLiteral()
+        {
+            Span = Span(context)
+        };
     }
+    
+    private static ExprSpan Span(ParserRuleContext context)
+    {
+        return new ExprSpan(context.Start.Line, context.Start.Column, context.Stop.StopIndex - context.Start.StartIndex);
+    }
+    
 }

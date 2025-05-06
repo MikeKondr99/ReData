@@ -1,9 +1,19 @@
-﻿namespace ReData.Query.Lang.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public record struct IntegerLiteral(long Value) : ILiteral<long>
+namespace ReData.Query.Lang.Expressions;
+
+public sealed record IntegerLiteral : Literal<long>
 {
+    [SetsRequiredMembers]
+    public IntegerLiteral(long value) : base(value) {}
+
     public override string ToString()
     {
         return Value.ToString();
+    }
+    
+    public void Deconstruct(out long value)
+    {
+        value = Value;
     }
 }

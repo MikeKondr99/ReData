@@ -8,7 +8,7 @@ import {NzTableModule} from 'ng-zorro-antd/table';
 import {NzIconDirective, NzIconModule} from 'ng-zorro-antd/icon';
 import {NzTabsModule} from 'ng-zorro-antd/tabs';
 import {EditorComponent} from 'ngx-monaco-editor-v2';
-import {ApiResponse, Transformation} from '../types';
+import {ApiResponse, ExprError, Transformation} from '../types';
 import {NzButtonModule} from 'ng-zorro-antd/button';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FunctionsComponent} from '../components/functions.component';
@@ -35,18 +35,15 @@ import {FunctionsComponent} from '../components/functions.component';
       <app-transformations-list [errors]="error()"  class="basis-1/2"
                                 (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
     <div class="max-w-screen-xl max-h-screen">
-      <nz-tabset>
-        <nz-tab nzTitle="Данные" >
-          @if(error()) {
-            <div class="text-red-500">{{ error() }}</div>
-          }
-          <div class="w-full flex flex-col">
+      <nz-tabset class="max-h-screen">
+        <nz-tab nzTitle="Данные" class="max-h-screen">
+          <div class="overflow-s">
             @if (response(); as apiResponse) {
-              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzFrontPagination]="false" [nzScroll]="{ x: 'scroll', y:'scroll'}" class="max-h-screen">
+              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzScroll]="{ y: ' 1000px' }" [nzFrontPagination]="false">
                 <thead>
                 <tr>
                   @for (field of apiResponse.fields; track field.alias) {
-                    <th nzWidth="250px">
+                    <th nzWidth="50px">
                       <div class="flex flex-row flex-nowrap gap-2">
                         <div class="text-blue-700">
                           @switch (field.type) {
@@ -55,6 +52,9 @@ import {FunctionsComponent} from '../components/functions.component';
                             }
                             @case ('Number') {
                               num
+                            }
+                            @case ('Boolean') {
+                              bool
                             }
                             @case ('Integer') {
                               int
@@ -76,7 +76,7 @@ import {FunctionsComponent} from '../components/functions.component';
                   }
                 </tr>
                 </thead>
-                <tbody>
+                <tbody >
                 <tr *ngFor="let data of basicTable.data">
                   @for (field of apiResponse.fields; track field.alias) {
                     <td>
@@ -99,6 +99,7 @@ import {FunctionsComponent} from '../components/functions.component';
               </div>
             }
           </div>
+
         </nz-tab>
         <nz-tab nzTitle="Запрос">
           <ngx-monaco-editor class="sql-editor"
@@ -107,7 +108,8 @@ import {FunctionsComponent} from '../components/functions.component';
                 language: 'SQL',
                 readonly: true,
                 automaticLayout: true,
-                height: '800px'
+                height: '800px',
+                width: '800px'
 
               }"
           >
@@ -133,7 +135,7 @@ export class AppComponent {
 
   transformations = signal<Transformation[]>([]);
   loading = signal(false);
-  error = signal<{index: number, errors: Record<string,string> } | null>(null);
+  error = signal<{index: number, errors: (ExprError | null)[] } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: [], total:0 });
 
   errorEf = effect(() => {
@@ -151,7 +153,7 @@ export class AppComponent {
         }),
         catchError(err => {
           console.log(err.error.message);
-          this.error.set({ index: err.error.index, errors: err.error.error.errors });
+          this.error.set({ index: err.error.index, errors: err.error.errors });
           return of(null);
         })
       ).subscribe(res => {

@@ -7,8 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ReData.Query.Impl\ReData.Query.Impl.csproj" />
+        <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
+        <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
         <PackageReference Include="Pattern.Unions"/>
     </ItemGroup>
 

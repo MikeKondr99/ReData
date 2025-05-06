@@ -1,13 +1,12 @@
 ﻿using FluentAssertions;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Runners.Value;
+using ReData.Query.Core;
+using ReData.Query.Core.Types;
 using ReData.Query.Impl.Tests.Fixtures;
-using ReData.Query.Visitors;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExtensionTests(db)
 {
     [Fact]
     public async Task TableQuery()
@@ -74,7 +73,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = assets.UsersQuery.OrderBy([("Salary", Query.Order.Type.Desc)]);
+        var qb = assets.UsersQuery.OrderBy([("Salary", Order.Type.Desc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
@@ -91,11 +90,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("Salary", Query.Order.Type.Desc)])
-            .OrderBy([("FirstName", Query.Order.Type.Asc)]);
+            .OrderBy([("Salary", Order.Type.Desc)])
+            .OrderBy([("FirstName", Order.Type.Asc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.OrderBy(u => u.Text("FirstName"));
@@ -109,11 +108,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("Notes", Query.Order.Type.Asc)])
-            .OrderBy([("FirstName", Query.Order.Type.Asc)]);
+            .OrderBy([("Notes", Order.Type.Asc)])
+            .OrderBy([("FirstName", Order.Type.Asc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.OrderBy(u => u.Text("Notes")).ThenBy(u => u.Text("FirstName"));
@@ -174,10 +173,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", Query.Order.Type.Desc)]);
+        var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", Order.Type.Desc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.Take(5).OrderByDescending(u => u.Int("UserId"));
@@ -193,7 +192,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var qb = assets.UsersQuery.Take(5).Where("Mod(UserId,2) = 0");
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.Take(5).Where(u => u.Int("UserId").Value % 2 == 0);
@@ -290,7 +289,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
@@ -308,7 +307,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = QueryBuilder.FromDual(new QueryServicesFactory().CreateExpressionResolver(assets.DatabaseType))
+        var qb = QueryBuilder.FromDual(new Factory().CreateExpressionResolver(assets.DatabaseType))
             .Select(new()
             {
                 ["id"] = "14",
@@ -317,7 +316,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().UnwrapOk().Value.Build());
 
         // Assert
         Dictionary<string,IValue>[] expect =
@@ -341,7 +340,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId", Query.Order.Type.Desc)])
+            .OrderBy([("UserId", Order.Type.Desc)])
             .Select(new()
         {
             ["id"] = "UserId",
@@ -350,7 +349,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData.OrderByDescending(u => u.Int("UserId")).Select(u => new Dictionary<string, IValue>()
@@ -369,8 +368,8 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId", Query.Order.Type.Desc)])
-            .Where("Salary > 30000.0")
+            .OrderBy([("UserId", Order.Type.Desc)])
+            .Where("Salary > 30000.0").UnwrapOk().Value
             .Skip(2)
             .Take(5)
             .Select(new()
@@ -381,7 +380,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
         var expect = assets.UsersData

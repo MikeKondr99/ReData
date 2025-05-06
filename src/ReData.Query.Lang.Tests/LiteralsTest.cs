@@ -1,6 +1,5 @@
-using System.Linq.Expressions;
 using FluentAssertions;
-using Pattern.Unions;
+using ReData.Query.Core;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;
@@ -67,6 +66,7 @@ public class LiteralsTest
         expr.Should().BeEquivalentTo(new FuncExpr()
         {
             Name = "-",
+            Span = new ExprSpan(1,1,2),
             Arguments = [new IntegerLiteral(1)],
             Kind = FuncExprKind.Unary,
         });
@@ -129,9 +129,9 @@ public class LiteralsTest
     [InlineData("a % 3")]
     public void ShouldThrowUnexpectedToken(string input)
     {
-        var action = () => Expr.Parse(input);
-        action.Should().Throw<UnexpectedTokenException>()
-            .WithMessage("unexpected token");
+        var action = Expr.Parse(input);
+
+        action.Should().BeNull();
     }
     
     

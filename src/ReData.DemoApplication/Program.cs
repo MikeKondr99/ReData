@@ -3,11 +3,9 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using ReData.DemoApplication;
 using ReData.Query;
-using ReData.Query.Functions;
+using ReData.Query.Core;
+using ReData.Query.Core.Types;
 using ReData.Query.Impl.Functions;
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Runners;
-using ReData.Query.Visitors;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +20,7 @@ builder.Services.Configure<JsonOptions>(options =>
 
 var app = builder.Build();
 
-var factory = new QueryServicesFactory();
+var factory = new Factory();
 
 var connection = "User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=pix_bi_test;Pooling=true;";
 var applications = QueryBuilder.FromTable(
@@ -46,7 +44,7 @@ var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
 app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
     {
-        string sql = null;
+        string? sql = null;
         int i = -1;
         try
         {
@@ -64,7 +62,7 @@ app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
                     return Results.BadRequest(new
                     {
                         index = i,
-                        error = err,
+                        errors = err,
                     });
                 }
             }

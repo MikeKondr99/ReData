@@ -1,6 +1,4 @@
-﻿
-using ReData.Query.Impl.QueryBuilders;
-using ReData.Query.Impl.Tests.Fixtures;
+﻿using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Conversion;
 

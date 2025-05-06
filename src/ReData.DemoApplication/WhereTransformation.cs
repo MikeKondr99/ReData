@@ -1,5 +1,5 @@
 ﻿using Pattern.Unions;
-using ReData.Query.Visitors;
+using ReData.Query.Core;
 
 namespace ReData.DemoApplication;
 
@@ -7,7 +7,7 @@ public class WhereTransformation : ITransformation
 {
     public required string Condition { get; set; }
 
-    public Result<QueryBuilder, QueryBuilderError> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
         return builder.Where(Condition);
     }

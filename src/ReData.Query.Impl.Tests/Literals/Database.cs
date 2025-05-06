@@ -1,5 +1,4 @@
-﻿using ReData.Query.Impl.Runners;
-using ReData.Query.Impl.Tests.Fixtures;
+﻿using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Literals;
 
