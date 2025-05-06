@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;

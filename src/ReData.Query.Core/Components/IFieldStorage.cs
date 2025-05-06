@@ -1,4 +1,5 @@
-﻿using Pattern.Unions;
+﻿using Pattern;
+using Pattern.Unions;
 using ReData.Query.Core.Types;
 
 namespace ReData.Query.Core.Components;

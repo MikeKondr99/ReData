@@ -20,29 +20,33 @@ builder.Services.Configure<JsonOptions>(options =>
 
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 var factory = new Factory();
 
-var connection = "User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=pix_bi_test;Pooling=true;";
+var connection = Environment.GetEnvironmentVariable("CONNECTION_STRING"); //"User ID=postgres;Password=postgres;Host=localhost;Port=5432;Database=pix_bi_test;Pooling=true;";
 var applications = QueryBuilder.FromTable(
     factory.CreateExpressionResolver(DatabaseType.PostgreSql),
-    ["Applications"],
+    ["TEST_DATA"],
     [
-        ("Id",new FieldType(DataType.Integer, false)),
-        ("Name",new FieldType(DataType.Text, false)),
-        ("Description",new FieldType(DataType.Text, true)),
-        ("Icon",new FieldType(DataType.Unknown, true)),
-        ("DirectoryId",new FieldType(DataType.Integer, false)),
-        ("OriginalId",new FieldType(DataType.Integer, false)),
-        ("OwnerId",new FieldType(DataType.Text, true)),
-        ("DateCreated",new FieldType(DataType.DateTime, true)),
-        ("DateModified",new FieldType(DataType.DateTime, true)),
-        ("CreatedBy",new FieldType(DataType.Text, true)),
-        ("ModifiedBy",new FieldType(DataType.Text, true)),
+        ("ID",new FieldType(DataType.Integer, false)),
+        ("CUSTOMER_NAME",new FieldType(DataType.Text, true)),
+        ("EMAIL",new FieldType(DataType.Text, true)),
+        ("AGE",new FieldType(DataType.Unknown, true)),
+        ("ACCOUNT_BALANCE",new FieldType(DataType.Number, true)),
+        ("IS_ACTIVE",new FieldType(DataType.Bool, true)),
+        ("SIGNUP_DATE",new FieldType(DataType.DateTime, true)),
+        ("LAST_LOGIN",new FieldType(DataType.DateTime, true)),
+        ("CUSTOMER_CATEGORY",new FieldType(DataType.Text, true)),
+        ("RANDOM_NUMBER",new FieldType(DataType.Integer, true)),
+        ("NOTES",new FieldType(DataType.Text, true)),
+        ("PURCHASE_COUNT",new FieldType(DataType.Integer, true)),
     ]
 );
 var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
-app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
+app.MapPost("api/transform", async ([FromBody] TransformRequest request) =>
     {
         string? sql = null;
         int i = -1;
@@ -97,7 +101,7 @@ app.MapPost("/transform", async ([FromBody] TransformRequest request) =>
     })
     .WithName("TransformData");
 
-app.MapGet("/functions", () =>
+app.MapGet("api/functions", () =>
 {
     var functions = GlobalFunctionsStorage.Functions
         .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypeFlags.PostgreSql)))

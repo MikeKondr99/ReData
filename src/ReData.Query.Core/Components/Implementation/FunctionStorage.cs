@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;

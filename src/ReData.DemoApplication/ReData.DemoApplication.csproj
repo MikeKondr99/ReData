@@ -10,7 +10,8 @@
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
-        <PackageReference Include="Pattern.Unions"/>
     </ItemGroup>
-
+    <ItemGroup>
+        <None Include="wwwroot\*" />
+    </ItemGroup>
 </Project>

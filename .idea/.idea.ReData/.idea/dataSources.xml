@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/pix_bi_test</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="default_db@213.171.4.10" uuid="97b1e808-932f-4246-9b5e-565e721c4526">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://213.171.4.10:5432/default_db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

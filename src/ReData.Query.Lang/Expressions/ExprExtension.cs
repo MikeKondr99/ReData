@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree.Xpath;
 using Dunet;
-using Pattern.Unions;
+using Pattern;
 using ReData.Query.Core;
 
 namespace ReData.Query.Lang.Expressions;

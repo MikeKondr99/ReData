@@ -1,4 +1,5 @@
 ﻿using Dunet;
+using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core;
 using ReData.Query.Core.Components.Implementation;

@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core;
 

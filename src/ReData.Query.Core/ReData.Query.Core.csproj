@@ -9,9 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
-        <PackageReference Include="Pattern.Unions"/>
     </ItemGroup>
 
 </Project>

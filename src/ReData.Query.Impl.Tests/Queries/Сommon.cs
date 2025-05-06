@@ -32,7 +32,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExt
         var qb = assets.UsersQuery.Where("UserId > 5");
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.Where(u => u["UserId"] is IntegerValue(> 5));
@@ -54,7 +54,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExt
         });
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
@@ -76,7 +76,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExt
         var qb = assets.UsersQuery.OrderBy([("Salary", Order.Type.Desc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.ExpectOk("Valid query").Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
         var expect = assets.UsersData.OrderByDescending(u => u.Num("Salary"));
