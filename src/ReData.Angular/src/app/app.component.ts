@@ -32,79 +32,80 @@ import {FunctionsComponent} from '../components/functions.component';
   ],
   template: `
     <div class="w-screen h-screen flex flex-row gap-4 overflow-hidden">
-      <app-transformations-list [errors]="error()"  class="basis-1/2"
+      <app-transformations-list [errors]="error()" class="basis-1/2"
                                 (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
-    <div class="max-w-screen-xl max-h-screen">
-      <nz-tabset class="max-h-screen">
-        <nz-tab nzTitle="Данные" class="max-h-screen">
-          <div class="overflow-s">
-            @if (response(); as apiResponse) {
-              <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()"  [nzScroll]="{ y: ' 1000px' }" [nzFrontPagination]="true">
-                <thead>
-                <tr>
-                  @for (field of apiResponse.fields; track field.alias) {
-                    <th nzWidth="175px">
-                      <div class="flex flex-row flex-nowrap gap-2">
-                        <div class="text-blue-700">
-                          @switch (field.type) {
-                            @case ('DateTime') {
-                              dat
+      <div class="max-w-screen-xl max-h-screen">
+        <nz-tabset class="max-h-screen">
+          <nz-tab nzTitle="Данные" class="max-h-screen">
+            <div class="overflow-s">
+              @if (response(); as apiResponse) {
+                <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzScroll]="{ y: ' 1000px' }"
+                          [nzFrontPagination]="true">
+                  <thead>
+                  <tr>
+                    @for (field of apiResponse.fields; track field.alias) {
+                      <th nzWidth="175px">
+                        <div class="flex flex-row flex-nowrap gap-2">
+                          <div class="text-blue-700">
+                            @switch (field.type) {
+                              @case ('DateTime') {
+                                dat
+                              }
+                              @case ('Number') {
+                                num
+                              }
+                              @case ('Boolean') {
+                                bool
+                              }
+                              @case ('Integer') {
+                                int
+                              }
+                              @case ('Boolean') {
+                                bl
+                              }
+                              @case ('Text') {
+                                txt
+                              }
+                              @default {
+                                ?
+                              }
                             }
-                            @case ('Number') {
-                              num
-                            }
-                            @case ('Boolean') {
-                              bool
-                            }
-                            @case ('Integer') {
-                              int
-                            }
-                            @case ('Boolean') {
-                              bl
-                            }
-                            @case ('Text') {
-                              txt
-                            }
-                            @default {
-                              ?
-                            }
-                          }
+                          </div>
+                          {{ field.alias }}
                         </div>
-                        {{ field.alias }}
-                      </div>
-                    </th>
-                  }
-                </tr>
-                </thead>
-                <tbody >
-                <tr *ngFor="let data of basicTable.data">
-                  @for (field of apiResponse.fields; track field.alias) {
-                    <td>
-                      @if (data[field.alias]?.type != null) {
-                        <span class="text-gray-400 italic">{{ data[field.alias].type }}</span>
-                      } @else if (data[field.alias] == null) {
-                        <span class="text-gray-400 italic">NULL</span>
-                      } @else if (data[field.alias] === '') {
-                        <span class="text-gray-400 italic">Пустая строка</span>
-                      } @else {
-                        {{ data[field.alias] }}
-                      }
-                    </td>
-                  }
-                </tr>
-                </tbody>
-              </nz-table>
-              <div class="text-sm text-gray-500">
-                Total: {{ apiResponse.total }} records
-              </div>
-            }
-          </div>
+                      </th>
+                    }
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr *ngFor="let data of basicTable.data">
+                    @for (field of apiResponse.fields; track field.alias) {
+                      <td>
+                        @if (data[field.alias]?.type != null) {
+                          <span class="text-gray-400 italic">{{ data[field.alias].type }}</span>
+                        } @else if (data[field.alias] == null) {
+                          <span class="text-gray-400 italic">NULL</span>
+                        } @else if (data[field.alias] === '') {
+                          <span class="text-gray-400 italic">Пустая строка</span>
+                        } @else {
+                          {{ data[field.alias] }}
+                        }
+                      </td>
+                    }
+                  </tr>
+                  </tbody>
+                </nz-table>
+                <div class="text-sm text-gray-500">
+                  Total: {{ apiResponse.total }} records
+                </div>
+              }
+            </div>
 
-        </nz-tab>
-        <nz-tab nzTitle="Запрос">
-          <ngx-monaco-editor class="sql-editor"
-                             [ngModel]="response().query.join('\n')"
-                             [options]="{
+          </nz-tab>
+          <nz-tab nzTitle="Запрос">
+            <ngx-monaco-editor class="sql-editor"
+                               [ngModel]="response().query.join('\n')"
+                               [options]="{
                 language: 'SQL',
                 readonly: true,
                 automaticLayout: true,
@@ -112,15 +113,15 @@ import {FunctionsComponent} from '../components/functions.component';
                 width: '800px'
 
               }"
-          >
-          </ngx-monaco-editor>
+            >
+            </ngx-monaco-editor>
 
-        </nz-tab>
-        <nz-tab nzTitle="Функции">
-          <app-functions class="max-h-screen"></app-functions>
-        </nz-tab>
-      </nz-tabset>
-    </div>
+          </nz-tab>
+          <nz-tab nzTitle="Функции">
+            <app-functions class="max-h-screen"></app-functions>
+          </nz-tab>
+        </nz-tabset>
+      </div>
     </div>
   `,
   styles: `
@@ -135,7 +136,7 @@ export class AppComponent {
 
   transformations = signal<Transformation[]>([]);
   loading = signal(false);
-  error = signal<{index: number, errors: (ExprError | null)[] } | null>(null);
+  error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: [], total:0 });
 
   errorEf = effect(() => {
@@ -153,7 +154,8 @@ export class AppComponent {
         }),
         catchError(err => {
           console.log(err.error.message);
-          this.error.set({ index: err.error.index, errors: err.error.errors });
+          err = err.error;
+          this.error.set(err);
           return of(null);
         })
       ).subscribe(res => {

@@ -33,7 +33,6 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
     NzIconModule,
     NzInputNumberModule,
     FxInputComponent,
-    JsonPipe
   ],
   template: `
     <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans">
@@ -116,6 +115,11 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
           </div>
         </div>
       }
+      @if(errors()?.message) {
+        <pre class="text-red-500 whitespace-pre-line relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg">
+          {{ errors()?.message }}
+        </pre>
+      }
       <nz-button-group>
         <button nz-button nzType="primary" (click)="addWhereTransformation()">
           Фильтровать
@@ -142,14 +146,15 @@ export class TransformationListComponent {
 
   private changesSubject = new Subject<void>();
 
-  public errors = input<{ index: number, errors: (ExprError | null)[] } | null>(null);
+  public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
 
   @Output() transformationsChange = new EventEmitter<Transformation[]>();
 
   getError(index: number, pos: number) {
-    if(this.errors()?.index == index) {
-      if(this.errors()?.errors) {
-        return this.errors()?.errors[pos] ?? undefined;
+    let errors = this.errors();
+    if(errors?.index == index) {
+      if(errors?.errors) {
+        return errors?.errors[pos] ?? undefined;
       }
     }
     return undefined;
