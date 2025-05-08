@@ -5,18 +5,18 @@ namespace ReData.DemoApplication;
 
 public class LimitOffsetTransformation : ITransformation
 {
-    public uint? Take { get; set; }
-    public uint? Skip { get; set; }
+    public uint? Limit { get; set; }
+    public uint? Offset { get; set; }
 
     public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
-        if (Skip.HasValue)
+        if (Offset.HasValue)
         {
-            builder = builder.Skip(Skip.Value);
+            builder = builder.Skip(Offset.Value);
         }
-        if (Take.HasValue)
+        if (Limit.HasValue)
         {
-            builder = builder.Take(Take.Value);
+            builder = builder.Take(Limit.Value);
         }
         return builder;
     }

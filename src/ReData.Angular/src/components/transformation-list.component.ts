@@ -63,7 +63,7 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
                                     [error]="getError(i,idx)"
                                     (ngModelChange)="onTransformationChange()">
                       </app-fx-input>
-                      <nz-switch [(ngModel)]="orderItem.descending"></nz-switch>
+                      <nz-switch [(ngModel)]="orderItem.descending" (ngModelChange)="onTransformationChange()" ></nz-switch>
                       <span>{{ orderItem.descending ? 'DESC' : 'ASC' }}</span>
                       <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeOrderByItem(i, idx)">
                         <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -102,7 +102,9 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
                   </button>
                 </div>
               } @else if(isLimitTransformation(item)) {
+                Лимит
                 <nz-input-number [(ngModel)]="item.limit" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                Смещение
                 <nz-input-number [(ngModel)]="item.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
               }
             </div>
