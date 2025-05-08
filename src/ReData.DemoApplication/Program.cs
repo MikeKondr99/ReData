@@ -38,9 +38,11 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
     {
         string? sql = null;
         int i = -1;
+        var query = connectionService.GetQuery();
+        Query build;
+        // Сбор трансформаций
         try
         {
-            var query = connectionService.GetQuery();
             foreach (var transformation in request.Transformations)
             {
                 i++;
@@ -58,31 +60,59 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
                     });
                 }
             }
-
-            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connectionService.Connection);
-            var q = query.Build();
-            // for demo debug purpose
-            sql = compiler.Compile(q);
-            var data = await runner.RunQueryAsObjectAsync(q);
-            return Results.Ok(new TransformResponse()
-            {
-                Data = data,
-                Query = sql.Split("\n"),
-                Fields = q.Fields().Fields.Select(f => new TransformField()
-                {
-                    Alias = f.Alias,
-                    Type = f.Type.Type,
-                    CanBeNull = f.Type.CanBeNull
-                }).ToList(),
-                Total = data.Count,
-            });
         }
         catch (Exception ex)
         {
-            return Results.BadRequest(new
+            return Results.InternalServerError(new
             {
                 index = i,
-                message = ex.Message,
+                message = $"Непредвиденная ошибка при составлении создании трансформаций:\n{ex.Message}",
+                query = sql?.Split("\n")?.ToArray()
+            });
+        }
+
+        // Создание Sql (Нужно для демо)
+        try
+        {
+            // for demo debug purpose
+            build = query.Build();
+            sql = compiler.Compile(build);
+        }
+        catch (Exception ex)
+        {
+            return Results.InternalServerError(new
+            {
+                index = i,
+                message = $"Непредвиденная ошибка компиляции запроса:\n{ex.Message}",
+                query = sql?.Split("\n")?.ToArray()
+            });
+        }
+
+        // Запуск запроса
+        try
+        {
+            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connectionService.Connection);
+            var data = await runner.RunQueryAsObjectAsync(build);
+            
+            return Results.Ok(new TransformResponse()
+                {
+                    Data = data,
+                    Query = sql.Split("\n"),
+                    Fields = build.Fields().Fields.Select(f => new TransformField()
+                    {
+                        Alias = f.Alias,
+                        Type = f.Type.Type,
+                        CanBeNull = f.Type.CanBeNull
+                    }).ToList(),
+                    Total = data.Count,
+                });
+        }
+        catch (Exception ex)
+        {
+            return Results.InternalServerError(new
+            {
+                index = i,
+                message = $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}",
                 query = sql?.Split("\n")?.ToArray()
             });
         }
