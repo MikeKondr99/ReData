@@ -12,6 +12,8 @@ import {ApiResponse, ExprError, Transformation} from '../types';
 import {NzButtonModule} from 'ng-zorro-antd/button';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FunctionsComponent} from '../components/functions.component';
+import {InstructionComponent} from '../components/instruction.component';
+import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
 
 
 @Component({
@@ -23,24 +25,37 @@ import {FunctionsComponent} from '../components/functions.component';
     NzTableModule,
     NzIconModule,
     NzTabsModule,
+    NzToolTipModule,
     FormsModule,
     EditorComponent,
     NzIconModule,
     NzButtonModule,
     TransformationListComponent,
     FunctionsComponent,
+    InstructionComponent,
   ],
   template: `
-    <div class="w-screen h-screen flex flex-row gap-4 overflow-hidden">
-      <app-transformations-list [errors]="error()" class="basis-1/2"
+    <div class="w-screen h-screen overflow-hidden flex flex-row gap-4">
+      <app-transformations-list [errors]="error()" class="w-[50%]"
                                 (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
-      <div class="max-w-screen-xl max-h-screen">
+      <div class="max-h-screen h-screen w-[50%]">
         <nz-tabset class="max-h-screen">
+          <nz-tab nzTitle="Инструкция" >
+              <app-instruction class="tab-hack overflow-y-scroll"></app-instruction>
+          </nz-tab>
           <nz-tab nzTitle="Данные" class="max-h-screen">
-            <div class="overflow-s">
+            <div class="tab-hack pr-4">
               @if (response(); as apiResponse) {
-                <nz-table #basicTable [nzData]="apiResponse.data" [nzLoading]="loading()" [nzScroll]="{ y: ' 1000px' }"
-                          [nzFrontPagination]="true">
+                <nz-table
+                  #basicTable
+                  [nzBordered]="true"
+                  [nzVirtualItemSize]="55"
+                  [nzVirtualMaxBufferPx]="1300"
+                  [nzVirtualMinBufferPx]="1300"
+                  [nzData]="apiResponse.data"
+                  [nzFrontPagination]="false"
+                  [nzShowPagination]="false"
+                  [nzScroll]="{ y: 'calc(100vh - 160px)' }" >
                   <thead>
                   <tr>
                     @for (field of apiResponse.fields; track field.alias) {
@@ -78,21 +93,23 @@ import {FunctionsComponent} from '../components/functions.component';
                   </tr>
                   </thead>
                   <tbody>
-                  <tr *ngFor="let data of basicTable.data">
-                    @for (field of apiResponse.fields; track field.alias) {
-                      <td>
-                        @if (data[field.alias]?.type != null) {
-                          <span class="text-gray-400 italic">{{ data[field.alias].type }}</span>
-                        } @else if (data[field.alias] == null) {
-                          <span class="text-gray-400 italic">NULL</span>
-                        } @else if (data[field.alias] === '') {
-                          <span class="text-gray-400 italic">Пустая строка</span>
-                        } @else {
-                          {{ data[field.alias] }}
+                    <ng-template nz-virtual-scroll let-data let-index="index">
+                      <tr>
+                        @for (field of apiResponse.fields; track field.alias) {
+                          <td class="text-ellipsis text-nowrap overflow-hidden max-h-14 min-h-14" nz-tooltip [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft">
+                            @if (data[field.alias]?.type != null) {
+                              <span class="text-gray-400 italic">{{ data[field.alias].type }}</span>
+                            } @else if (data[field.alias] == null) {
+                              <span class="text-gray-400 italic">NULL</span>
+                            } @else if (data[field.alias] === '') {
+                              <span class="text-gray-400 italic">Пустая строка</span>
+                            } @else {
+                              {{ data[field.alias] }}
+                            }
+                          </td>
                         }
-                      </td>
-                    }
-                  </tr>
+                      </tr>
+                    </ng-template>
                   </tbody>
                 </nz-table>
                 <div class="text-sm text-gray-500">
@@ -103,22 +120,20 @@ import {FunctionsComponent} from '../components/functions.component';
 
           </nz-tab>
           <nz-tab nzTitle="Запрос">
-            <ngx-monaco-editor class="sql-editor"
+            <ngx-monaco-editor class="tab-hack overflow-y-scroll"
                                [ngModel]="response().query.join('\n')"
                                [options]="{
                 language: 'SQL',
-                readonly: true,
+                readOnly: true,
                 automaticLayout: true,
-                height: '800px',
-                width: '800px'
-
+                minimap: { enabled: false },
               }"
             >
             </ngx-monaco-editor>
 
           </nz-tab>
           <nz-tab nzTitle="Функции">
-            <app-functions class="max-h-screen"></app-functions>
+            <app-functions class="tab-hack overflow-y-hidden"></app-functions>
           </nz-tab>
         </nz-tabset>
       </div>
@@ -129,6 +144,13 @@ import {FunctionsComponent} from '../components/functions.component';
       height: 800px;
       width: 600px;
     }
+
+    .tab-hack  {
+      display: block;
+      max-height: calc(100vh - 50px) !important;
+      height: calc(100vh - 50px) !important;
+    }
+
   `
 })
 export class AppComponent {

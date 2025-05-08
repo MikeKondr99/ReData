@@ -38,7 +38,7 @@ public class NumberFunctions : FunctionsDescriptor
                      Integer, Number
                  })
         {
-            Function("Abs")
+            Method("Abs")
                 .Doc("Возвращает абсолютное значение")
                 .Arg("input", T)
                 .Returns(T)
@@ -48,13 +48,13 @@ public class NumberFunctions : FunctionsDescriptor
                 });
         }
 
-        Function("Floor")
+        Method("Floor")
             .Doc("Округляет число вниз до ближайшего целого")
             .Arg("input", Number)
             .Returns(Number)
             .Template($"FLOOR({input})");
 
-        Function("Ceil")
+        Method("Ceil")
             .Doc("Округляет число вверх до ближайшего целого")
             .Arg("input", Number)
             .Returns(Number)
@@ -64,7 +64,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [SqlServer] = $"CEILING({input})"
             });
 
-        Function("Round")
+        Method("Round")
             .Doc("Округляет число до ближайшего целого (по правилам математического округления)")
             .Arg("input", Number)
             .Returns(Number)
@@ -75,7 +75,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [ClickHouse] = $"ROUND(CAST({input},'Decimal64(6)'),0)"
             });
 
-        Function("Floor")
+        Method("Floor")
             .Doc("Округляет число вниз с заданным шагом")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -85,7 +85,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [All] = $"FLOOR({input} / {step}) * {step}",
             });
 
-        Function("Ceil")
+        Method("Ceil")
             .Doc("Округляет число вверх с заданным шагом")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -96,7 +96,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [Oracle] = $"CEIL({input} / {step}) * {step}"
             });
 
-        Function("Round")
+        Method("Round")
             .Doc("Округляет число до ближайшего кратного заданному шагу")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -108,7 +108,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [ClickHouse] = $"ROUND(CAST({input} / {step},'Decimal64(6)')) * {step}",
             });
 
-        Function("Floor")
+        Method("Floor")
             .Doc("Округляет число вниз с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -119,7 +119,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [All] = $"FLOOR(({input} - {offset}) / {step}) * {step} + {offset}",
             });
 
-        Function("Ceil")
+        Method("Ceil")
             .Doc("Округляет число вверх с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -131,7 +131,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [Oracle] = $"CEIL(({input} - {offset}) / {step}) * {step} + {offset}",
             });
 
-        Function("Round")
+        Method("Round")
             .Doc("Округляет число с заданным шагом и смещением")
             .Arg("input", Number)
             .Arg("step", Number)
@@ -144,7 +144,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}",
             });
 
-        Function("Even")
+        Method("Even")
             .Doc("Проверяет, является ли число чётным")
             .Arg("input", Integer)
             .Returns(Bool)
@@ -154,7 +154,7 @@ public class NumberFunctions : FunctionsDescriptor
                 [SqlServer] = $"(({input} % 2) = 0)",
             });
 
-        Function("Odd")
+        Method("Odd")
             .Doc("Проверяет, является ли число нечётным")
             .Arg("input", Integer)
             .Returns(Bool)
