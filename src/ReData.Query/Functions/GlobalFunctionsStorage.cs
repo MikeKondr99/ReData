@@ -11,7 +11,7 @@ public class GlobalFunctionsStorage
     public static IReadOnlyList<FunctionDefinition> Functions { get; } =
         new FunctionsDescriptor[]
         {
-            new AggregationFunctions(),
+            // new AggregationFunctions(), Можно будет добавить после тестирования и добавления полной поддержки аггрегаций
             new ImplicitConversionFunctions(),
             new StringFunctions(),
             new DateFunctions(),
