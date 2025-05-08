@@ -25,7 +25,7 @@ public class LogicFunctions : FunctionsDescriptor
                 [All] = $"({0} OR {1})",
             });
 
-        Function("Not")
+        Method("Not")
             .Doc("Логическое отрицание (возвращает true если входное значение false, и наоборот)")
             .Arg("input", Bool)
             .Returns(Bool)

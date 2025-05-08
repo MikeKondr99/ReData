@@ -6,7 +6,6 @@ import {FunctionService} from '../services/function.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzCardModule} from 'ng-zorro-antd/card';
 import {DataType, FunctionArgument, FunctionArgumentType, FunctionViewModel} from '../types';
-import {Data} from '@angular/router';
 import {NzInputModule} from 'ng-zorro-antd/input';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 
@@ -28,12 +27,12 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
     <ng-template #suffixIconSearch>
       <span nz-icon nzType="search" ></span>
     </ng-template>
-    <nz-list class="overflow-y-scroll max-h-screen w-[1000px]">
+    <nz-list class="overflow-y-scroll max-h-screen">
       @for (f of data(); track f) {
         <nz-list-item>
           <nz-card nzSize="small" class="w-full" >
             <nz-card-meta
-              [nzTitle]="displayFunc(f)"
+              [nzTitle]="f.sign"
               [nzDescription]="f.doc"
             ></nz-card-meta>
           </nz-card>
@@ -51,9 +50,15 @@ export class FunctionsComponent {
 
   data = computed(() => {
     return this.functions.data()
-      ?.filter(f => f.name.includes(this.search()))
-
+      ?.map(f => ({ sign: this.displayFunc(f), doc: f.doc }))
+      ?.filter(f => f.sign.includes(this.search()) )
   })
+
+  _a = effect(() => {
+    console.log(this.data())
+
+  });
+
 
   displayFunc(func: FunctionViewModel): string {
     if(func.kind == 'Binary') {
@@ -66,7 +71,7 @@ export class FunctionsComponent {
   }
 
   displayArg(arg: FunctionArgument): string {
-   return `${arg.name}:${this.displayArgType(arg.type)}`;
+   return `${arg.name}: ${this.displayArgType(arg.type)}`;
   }
 
   displayArgType(argType: { dataType: DataType, canBeNull: boolean }): string {
