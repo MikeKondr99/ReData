@@ -132,7 +132,7 @@ public record QueryBuilder
         
         return qb with
         {
-            Query = Query with
+            Query = qb.Query with
             {
                 OrderBy = ord.ToArray()
             }
