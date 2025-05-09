@@ -177,19 +177,14 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
   `,
 })
 export class TransformationListComponent {
-  transformations: Transformation[] = [];
+
+  transformations: Transformation[] = JSON.parse(localStorage.getItem('transformations') ?? '[]')
 
   private changesSubject = new Subject<void>();
 
   public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
 
   transformationsChange = output<Transformation[]>();
-
-  transformationsInit = input<Transformation[]>()
-
-  _ = effect(() => {
-    this.transformations = this.transformationsInit() ?? [];
-  })
 
   hasErrors(index: number) {
     let transformations = this.transformations;
@@ -328,6 +323,7 @@ export class TransformationListComponent {
   }
 
   onTransformationChange() {
+    localStorage.setItem('transformations', JSON.stringify(this.transformations));
     this.changesSubject.next();
   }
 

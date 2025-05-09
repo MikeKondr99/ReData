@@ -37,7 +37,6 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
   template: `
     <div class="w-screen h-screen overflow-hidden flex flex-row gap-4">
       <app-transformations-list [errors]="error()" class="w-[50%]"
-                                [transformationsInit]="transformations()"
                                 (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
       <div class="max-h-screen h-screen w-[50%]">
         <nz-tabset class="max-h-screen">
@@ -157,17 +156,11 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
 export class AppComponent {
   private http = inject(HttpClient);
 
-  transformations = signal<Transformation[]>(JSON.parse(localStorage.getItem('ts') ?? '[]'));
+  transformations = signal<Transformation[]>([]);
   loading = signal(false);
   error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: [], total:0 });
 
-  saveLocalStorage = effect(() => {
-    let transformations = this.transformations();
-    console.log(localStorage.getItem('ts'));
-    console.log(transformations);
-    localStorage.setItem('ts', JSON.stringify(transformations));
-  })
 
   api = effect(() => {
     let transformations = this.transformations();
