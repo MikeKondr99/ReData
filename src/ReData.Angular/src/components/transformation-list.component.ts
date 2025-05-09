@@ -1,4 +1,4 @@
-﻿import {Component, EventEmitter, Output, effect, signal, input} from '@angular/core';
+﻿import {Component, EventEmitter, Output, effect, signal, input, output} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzFormModule } from 'ng-zorro-antd/form';
@@ -8,6 +8,7 @@ import { NzSwitchModule } from 'ng-zorro-antd/switch';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { debounceTime, Subject } from 'rxjs';
+import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {
   ExprError, isLimitTransformation,
   isOrderByTransformation, isSelectTransformation, isWhereTransformation, LimitTransformation,
@@ -16,7 +17,6 @@ import {
   WhereTransformation,
 } from '../types';
 import {FxInputComponent} from './fx-input.component';
-import {JsonPipe, NgClass} from '@angular/common';
 import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
 import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 
@@ -35,29 +35,42 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
     NzIconModule,
     NzInputNumberModule,
     FxInputComponent,
-    NgClass,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle
   ],
+  styles: `
+    .cdk-drag-preview {
+      opacity: 0.5;
+    }
+
+    .cdk-drag-placeholder {
+      opacity: 0.3;
+    }
+  `,
   template: `
-    <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans">
+    <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans" cdkDropList (cdkDropListDropped)="drop($event)">
 
       @for (item of transformations; track i; let i = $index) {
-        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg" [class.bg-gray-100]="!item.enabled">
+        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg outline-1 outline-red-400" [class.outline]="hasErrors(i)" [class.bg-slate-100]="!item.enabled"  cdkDrag cdkDragLockAxis="y">
           <div class="flex items-start">
             <div class="flex flex-grow flex-wrap items-baseline gap-x-2 gap-y-1.5">
               @if (isWhereTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
-                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
+                    <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Фильтр</span>
                   </div>
-                  <app-fx-input ngDefaultControl class="min-w-72" [(ngModel)]="item.condition" [error]="getError(i,0)"
+                  <app-fx-input ngDefaultControl class="min-w-72 max-w-72" [(ngModel)]="item.condition" [error]="getError(i,0)"
                                 (ngModelChange)="onTransformationChange()">
                   </app-fx-input>
                 </div>
               } @else if (isOrderByTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
-                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
+                    <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Сортировка</span>
                   </div>
 
@@ -80,7 +93,8 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
               } @else if (isSelectTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
-                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
+                    <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Преобразовать</span>
                   </div>
                   @for (selectItem of item.items; track idx; let idx = $index) {
@@ -93,7 +107,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         placeholder="Field name"
                       />
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="flex-grow" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-80" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                         [error]="getError(i,idx)">
                       </app-fx-input>
@@ -109,7 +123,8 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
               } @else if(isLimitTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
-                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
+                    <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Ограничить</span>
                   </div>
                   <div>
@@ -168,7 +183,30 @@ export class TransformationListComponent {
 
   public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
 
-  @Output() transformationsChange = new EventEmitter<Transformation[]>();
+  transformationsChange = output<Transformation[]>();
+
+  transformationsInit = input<Transformation[]>()
+
+  _ = effect(() => {
+    this.transformations = this.transformationsInit() ?? [];
+  })
+
+  hasErrors(index: number) {
+    let transformations = this.transformations;
+
+    const enabledIndices = transformations
+      .map((t, i) => t.enabled ? i : -1)  // keep original index if enabled, -1 otherwise
+      .filter(i => i !== -1);            // remove disabled ones
+    index = enabledIndices.indexOf(index);
+
+    let errors = this.errors();
+    if(errors?.index == index) {
+      if(errors?.errors) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   getError(index: number, pos: number) {
     let transformations = this.transformations;
@@ -197,7 +235,7 @@ export class TransformationListComponent {
   }
 
   addWhereTransformation() {
-    this.transformations.push({ $type: 'where', condition: '' , enabled: true });
+    this.transformations.push({ $type: 'where', condition: '\'10\' = 10.Text()' , enabled: true });
     this.onTransformationChange();
   }
 
@@ -205,7 +243,7 @@ export class TransformationListComponent {
     this.transformations.push(
       {
         $type: 'orderBy',
-        items: [{ expression: '', descending: false }],
+        items: [{ expression: 'Now()', descending: false }],
         enabled: true
       });
     this.onTransformationChange();
@@ -246,7 +284,7 @@ export class TransformationListComponent {
     this.transformations.push(
       {
         $type: 'select',
-        items: [{ field: '', expression: '' }],
+        items: [{ field: 'Поле1', expression: '100' }],
         enabled: true,
       });
     this.onTransformationChange();
@@ -267,7 +305,7 @@ export class TransformationListComponent {
     let transformation = this.transformations[transformationIndex];
     if(isSelectTransformation(transformation)) {
       transformation.items.push({
-        field: `field${transformation.items.length + 1}`,
+        field: `Поле${transformation.items.length + 1}`,
         expression: '100',
       })
     }
@@ -291,6 +329,13 @@ export class TransformationListComponent {
 
   onTransformationChange() {
     this.changesSubject.next();
+  }
+
+  drop(event: CdkDragDrop<any[]>): void {
+    if(event.previousIndex !== event.currentIndex) {
+      moveItemInArray(this.transformations, event.previousIndex, event.currentIndex);
+      this.onTransformationChange();
+    }
   }
 
   public displayErrors() {
