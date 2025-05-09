@@ -125,11 +125,27 @@ public abstract partial record Result<T, E> :
         else
         {
             ok = default;
-            err = this.UnwrapError();
+            err = UnwrapError();
             return false;
         }
     }
     
+    public bool UnwrapErr([NotNullWhen(true)] out E? err, [NotNullWhen(false)] out T? ok)
+    {
+        if (this is Ok(var okValue))
+        {
+            ok = okValue;
+            err = default;
+            return false;
+        }
+        else
+        {
+            ok = default;
+            err = UnwrapError();
+            return true;
+        }
+    }
+
     public T Unwrap() => this switch
     {
         Ok(var ok) => ok,

@@ -16,8 +16,9 @@ import {
   WhereTransformation,
 } from '../types';
 import {FxInputComponent} from './fx-input.component';
-import {JsonPipe} from '@angular/common';
+import {JsonPipe, NgClass} from '@angular/common';
 import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
+import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 
 @Component({
   selector: 'app-transformations-list',
@@ -26,6 +27,7 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
     FormsModule,
     NzButtonModule,
     NzFormModule,
+    NzCheckboxModule,
     NzInputModule,
     NzSelectModule,
     NzSwitchModule,
@@ -33,17 +35,19 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
     NzIconModule,
     NzInputNumberModule,
     FxInputComponent,
+    NgClass,
   ],
   template: `
     <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans">
 
       @for (item of transformations; track i; let i = $index) {
-        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg">
+        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg" [class.bg-gray-100]="!item.enabled">
           <div class="flex items-start">
             <div class="flex flex-grow flex-wrap items-baseline gap-x-2 gap-y-1.5">
               @if (isWhereTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
                     <span>Фильтр</span>
                   </div>
                   <app-fx-input ngDefaultControl class="min-w-72" [(ngModel)]="item.condition" [error]="getError(i,0)"
@@ -53,6 +57,7 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
               } @else if (isOrderByTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
                     <span>Сортировка</span>
                   </div>
 
@@ -75,6 +80,7 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
               } @else if (isSelectTransformation(item)) {
                 <div class="flex flex-col gap-2 w-full">
                   <div class="flex items-center gap-2">
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
                     <span>Преобразовать</span>
                   </div>
                   @for (selectItem of item.items; track idx; let idx = $index) {
@@ -101,10 +107,24 @@ import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
                   </button>
                 </div>
               } @else if(isLimitTransformation(item)) {
-                Лимит
-                <nz-input-number [(ngModel)]="item.limit" (ngModelChange)="onTransformationChange()"></nz-input-number>
-                Смещение
-                <nz-input-number [(ngModel)]="item.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                <div class="flex flex-col gap-2 w-full">
+                  <div class="flex items-center gap-2">
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="true"></label>
+                    <span>Ограничить</span>
+                  </div>
+                  <div>
+                    Взять только
+                    <nz-input-number [(ngModel)]="item.limit" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                    записей
+                  </div>
+
+                  <div>
+                    Со смещением в
+                    <nz-input-number [(ngModel)]="item.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                    записей
+
+                  </div>
+                </div>
               }
             </div>
             <div class="ml-5">
@@ -151,6 +171,13 @@ export class TransformationListComponent {
   @Output() transformationsChange = new EventEmitter<Transformation[]>();
 
   getError(index: number, pos: number) {
+    let transformations = this.transformations;
+
+    const enabledIndices = transformations
+      .map((t, i) => t.enabled ? i : -1)  // keep original index if enabled, -1 otherwise
+      .filter(i => i !== -1);            // remove disabled ones
+    index = enabledIndices.indexOf(index);
+
     let errors = this.errors();
     if(errors?.index == index) {
       if(errors?.errors) {
@@ -163,12 +190,14 @@ export class TransformationListComponent {
   constructor() {
     // Debounce the changes
     this.changesSubject.pipe(debounceTime(500)).subscribe(() => {
-      this.transformationsChange.emit([...this.transformations]);
+
+      console.log(this.transformations);
+      this.transformationsChange.emit([...this.transformations.filter(t => t.enabled)]);
     });
   }
 
   addWhereTransformation() {
-    this.transformations.push({ $type: 'where', condition: '' } as WhereTransformation);
+    this.transformations.push({ $type: 'where', condition: '' , enabled: true });
     this.onTransformationChange();
   }
 
@@ -176,8 +205,9 @@ export class TransformationListComponent {
     this.transformations.push(
       {
         $type: 'orderBy',
-          items: [{ expression: '', descending: false }]
-      } as OrderByTransformation);
+        items: [{ expression: '', descending: false }],
+        enabled: true
+      });
     this.onTransformationChange();
   }
 
@@ -216,8 +246,9 @@ export class TransformationListComponent {
     this.transformations.push(
       {
         $type: 'select',
-        items: [{ field: '', expression: '' }]
-      } as SelectTransformation);
+        items: [{ field: '', expression: '' }],
+        enabled: true,
+      });
     this.onTransformationChange();
   }
 
@@ -227,7 +258,8 @@ export class TransformationListComponent {
         $type: 'limit',
         limit: 0,
         offset: 0,
-      } as LimitTransformation);
+        enabled: true,
+      });
     this.onTransformationChange();
   }
 
@@ -269,6 +301,11 @@ export class TransformationListComponent {
       }
     }
     return result;
+  }
+
+  toggle(index: number, value: boolean) {
+    this.transformations[index].enabled = value;
+    this.onTransformationChange();
   }
 
   protected readonly isOrderByTransformation = isOrderByTransformation;
