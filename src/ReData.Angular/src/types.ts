@@ -11,25 +11,29 @@ export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit';
 export type WhereTransformation = {
   $type: 'where',
   condition: string,
+  enabled: boolean;
 }
 
 export type OrderByTransformation = {
   $type: 'orderBy';
   items: OrderByItem[];
+  enabled: boolean;
 };
 
 export type SelectTransformation = {
   $type: 'select';
   items: SelectItem[];
+  enabled: boolean;
 };
 
 export type LimitTransformation = {
   $type: 'limit';
   limit?: number;
   offset?: number;
+  enabled: boolean;
 };
 
-export type Transformation = WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation;
+export type Transformation = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation);
 
 // Type guards
 export function isWhereTransformation(t: Transformation): t is WhereTransformation {

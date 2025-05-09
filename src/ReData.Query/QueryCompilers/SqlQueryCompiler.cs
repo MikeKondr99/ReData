@@ -156,6 +156,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         {
             var order = query.OrderBy[i];
             WriteExpression(res, query, order.ResolvedExpr);
+            res.Append(' ');
             res.Append(order.Direction switch
             {
                 Order.Type.Desc => "DESC",
