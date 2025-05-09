@@ -8,11 +8,11 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Core;
 
-public sealed class ExpressionResolver
+public sealed class ExpressionResolver : INameResolver
 {
-    public required ILiteralResolver LiteralResolver { get; init; }
-    public required INameResolver NameResolver { get; init; }
-    public required IFunctionStorage Functions { get; init; }
+    public required ILiteralResolver LiteralResolver { private get; init; }
+    public required INameResolver NameResolver { private get; init; }
+    public required IFunctionStorage Functions { private get; init; }
 
     public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IFieldStorage fields)
     {
@@ -39,7 +39,7 @@ public sealed class ExpressionResolver
             return new ResolvedExpr
             {
                 Expression = name,
-                Template = NameResolver.ResolveFieldName([field.Alias], field.Type).Template,
+                Template = NameResolver.ResolveName([field.Alias]).Template,
                 Type = new ExprType()
                 {
                     DataType = field.Type.Type,
@@ -132,7 +132,12 @@ public sealed class ExpressionResolver
                 return true;
             }
         }
-
         return false;
     }
+
+    public TableTemplate ResolveName(ReadOnlySpan<string> path)
+    {
+        return NameResolver.ResolveName(path);
+    }
+
 }

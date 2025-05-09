@@ -24,32 +24,32 @@ public record QueryBuilder
     {
         return new QueryBuilder(new Query()
         {
-            Name = resolver.NameResolver.ResolveTableName(["Query1"]),
+            Name = resolver.ResolveName(["DualQuery"]),
         }, resolver);
     }
     
     public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, FieldType type)> fields)
     {
+        var queryName = "TableQuery";
         return new QueryBuilder(new Query()
         {
-            Name = resolver.NameResolver.ResolveTableName(["Query1"]),
-            From = new TableQuerySource(resolver.NameResolver.ResolveTableName(path), fields.Select(f => new Field
+            Name = resolver.ResolveName([queryName]),
+            From = new TableQuerySource(resolver.ResolveName(path), fields.Select(f => new Field
                 {
                     Alias = f.name,
                     Type = f.type,
                 }).ToArray()
             ),
-            Select = fields.Select(f =>
+            Select = fields.Select((f,i) =>
             {
-                var fieldTemplate = resolver.NameResolver.ResolveFieldName([f.name], f.type);
                 return new Map()
                 {
                     Alias = f.name,
-                    Column = fieldTemplate,
+                    Column = resolver.ResolveName([f.name]),
                     ResolvedExpr = new ResolvedExpr()
                     {
                         Expression = new NameExpr(f.name),
-                        Template = fieldTemplate.Template,
+                        Template = resolver.ResolveName([f.name]).Template,
                         Arguments = null,
                         Type = new ExprType()
                         {
@@ -75,9 +75,9 @@ public record QueryBuilder
         List<Map> oks = new(select.Count);
         List<ExprError?> errors = [];
 
-        var res = ResolveMany(select.Select(o => o.Value)).Map(o => o.Zip(select).Select(p => new Map(p.Second.Key, Resolver.NameResolver.ResolveFieldName([p.Second.Key], new FieldType()), p.First)));
+        var res = ResolveMany(select.Select(o => o.Value)).Map(o => o.Zip(select).Select(p => new Map(p.Second.Key, Resolver.ResolveName([p.Second.Key]), p.First)));
         
-        if (!res.Unwrap(out var ok, out var err))
+        if (res.UnwrapErr(out var err, out var ok))
         {
             return Result.Error(err);
         }
@@ -154,7 +154,7 @@ public record QueryBuilder
     private IResolvedTemplate CteName()
     {
         var random = $"CTE-{Guid.NewGuid().ToString("N")[..6]}";
-        return Resolver.NameResolver.ResolveTableName([random]);
+        return Resolver.ResolveName([random]);
     }
     
     public QueryBuilder Take(uint take)
