@@ -60,8 +60,7 @@ public sealed class ExpressionResolver : INameResolver
     
     public Result<ResolvedExpr, ExprError> ResolveFunction(FuncExpr funcExpr, IFieldStorage fields)
     {
-        var arguments =
-            funcExpr.Arguments.Select(a => ResolveExpr(a, fields)).ToResult();
+        var arguments = funcExpr.Arguments.Select(a => ResolveExpr(a, fields)).ToResult();
 
         if (!arguments.Unwrap(out var args, out var error))
         {

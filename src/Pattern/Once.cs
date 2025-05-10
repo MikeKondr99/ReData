@@ -2,6 +2,13 @@
 
 namespace Pattern.Core;
 
+public static class Once
+{
+    public static Once<T> From<T>(T item)
+    {
+        return new Once<T>(item);
+    }
+}
 
 public struct Once<T> : IEnumerable<T>
 {
@@ -11,6 +18,7 @@ public struct Once<T> : IEnumerable<T>
     {
         _item = item;
     }
+    
 
     public IEnumerator<T> GetEnumerator()
     {

@@ -1,4 +1,5 @@
 ﻿using Pattern;
+using Pattern.Core;
 using Pattern.Unions;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
@@ -14,7 +15,7 @@ public record QueryBuilder
     private ExpressionResolver Resolver { get; init; }
     private IFieldStorage Fields => Query.Fields();
 
-    private QueryBuilder(Query query, ExpressionResolver resolver)
+    public QueryBuilder(Query query, ExpressionResolver resolver)
     {
         Query = query;
         Resolver = resolver;
@@ -27,6 +28,7 @@ public record QueryBuilder
             Name = resolver.ResolveName(["DualQuery"]),
         }, resolver);
     }
+    
     
     public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, FieldType type)> fields)
     {
@@ -99,18 +101,18 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = ResolveMany([condition]);
+        var res = Resolve(condition).NotAggregated().Bool();
 
-        if (!res.Unwrap(out var where, out var err))
+        if (res.UnwrapErr(out var err, out var where))
         {
-            return Result.Error(err);
+            return Result.Error((IEnumerable<ExprError?>)Once.From(err));
         }
 
         return qb with
         {
             Query = qb.Query with
             {
-                Where = [..Query.Where ?? [], where.First()]
+                Where = [..Query.Where ?? [], where]
             }
         };
     }
@@ -123,9 +125,10 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = ResolveMany(order.Select(o => o.expr)).Map(o => o.Zip(order).Select(p => new Order(p.First, p.Second.type)));
+        var res = ResolveMany(order.Select(o => o.expr), r => r.NotAggregated().NotBool())
+            .Map(o => o.Zip(order).Select(p => new Order(p.First, p.Second.type)));
         
-        if (!res.Unwrap(out var ord, out var err))
+        if (res.UnwrapErr(out var err, out var ord))
         {
             return Result.Error(err);
         }
@@ -205,9 +208,13 @@ public record QueryBuilder
         return Query;
     }
 
-    private Result<IReadOnlyCollection<ResolvedExpr>, IEnumerable<ExprError?>> ResolveMany(IEnumerable<string> exprs)
+    private Result<IReadOnlyCollection<ResolvedExpr>, IEnumerable<ExprError?>> ResolveMany(
+        IEnumerable<string> exprs,
+        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
+        )
     {
-        IEnumerable<Result<ResolvedExpr, ExprError>> iter = exprs.Select(expr => Resolve(expr));
+        condition ??= (r) => r;
+        IEnumerable<Result<ResolvedExpr, ExprError>> iter = exprs.Select(expr => condition(Resolve(expr)));
         var res = iter.ToResult();
         if (res.IsOk(out var ok))
         {
@@ -245,4 +252,53 @@ public static class QueryBuilderExtensions
         }
         return qb;
     }
+
+    public static Result<ResolvedExpr, ExprError> NotBool(this Result<ResolvedExpr, ExprError> result)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (expr.Type.DataType is DataType.Bool)
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение не может быть булевым"
+                };
+            }
+            return expr;
+        });
+    }
+    
+    public static Result<ResolvedExpr, ExprError> Bool(this Result<ResolvedExpr, ExprError> result)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (expr.Type.DataType is not DataType.Bool)
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение должно быть булевым"
+                };
+            }
+            return expr;
+        });
+    }
+    
+    public static Result<ResolvedExpr, ExprError> NotAggregated(this Result<ResolvedExpr, ExprError> result)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (expr.Type.Aggregated)
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение не может быть агрегированным"
+                };
+            }
+            return expr;
+        });
+    }
 }
+

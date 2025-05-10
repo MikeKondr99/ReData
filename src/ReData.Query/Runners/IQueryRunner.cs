@@ -33,4 +33,10 @@ public interface IQueryRunner : IAsyncDisposable
         return result;
     }
     
+    public async Task<IValue> RunQueryAsScalar(Core.Query query)
+    {
+        var data = await RunQueryAsync(query);
+        return data.Single()[0];
+    }
+    
 }

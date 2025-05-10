@@ -97,7 +97,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
             return Results.Ok(new TransformResponse()
                 {
                     Data = data,
-                    Query = sql.Split("\n"),
+                    Query = sql,
                     Fields = build.Fields().Fields.Select(f => new TransformField()
                     {
                         Alias = f.Alias,
@@ -113,7 +113,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
             {
                 index = i,
                 message = $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}",
-                query = sql?.Split("\n")?.ToArray()
+                query = sql
             });
         }
     })
@@ -123,7 +123,8 @@ app.MapGet("api/functions", () =>
 {
     var functions = GlobalFunctionsStorage.Functions
         .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypeFlags.PostgreSql)))
-        .Where(f => f.ImplicitCast is null);
+        .Where(f => f.ImplicitCast is null)
+        .OrderBy(f => f.Name);
 
 
     return functions.Select(f => new FunctionViewModel()

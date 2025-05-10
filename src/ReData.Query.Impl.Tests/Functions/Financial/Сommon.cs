@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Tests.Functions.Financial;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Финансовые функции")]
      // Google Sheets 786.7220993

@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Tests.Functions.Comparison;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Less Than (<)")]
      [InlineData("5 < 10", true)]

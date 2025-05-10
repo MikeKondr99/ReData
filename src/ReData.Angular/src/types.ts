@@ -61,7 +61,7 @@ export interface Field {
 export interface ApiResponse {
   fields: Field[];
   total: number;
-  query: string[];
+  query: string;
   data: any[];
 }
 
