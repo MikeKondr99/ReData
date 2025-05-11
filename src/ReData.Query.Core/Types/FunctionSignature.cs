@@ -1,4 +1,6 @@
-﻿namespace ReData.Query.Core.Types;
+﻿using ReData.Common;
+
+namespace ReData.Query.Core.Types;
 
 public record FunctionSignature
 {
@@ -6,7 +8,8 @@ public record FunctionSignature
     
     public required FunctionKind Kind { get; init; }
 
-    public required IReadOnlyList<FunctionArgumentType> ArgumentTypes { get; init; }
+    public required IReadOnlyList<ExprType> ArgumentTypes { get; init; }
+    
      
     public override string ToString()
     {
@@ -19,11 +22,11 @@ public record FunctionSignature
         } else if (Kind is FunctionKind.Method)
         {
             return $"{ArgumentTypes[0]}.{Name}({
-                String.Join(", ", ArgumentTypes.Skip(1).Select(a => $"{a}"))
+                ArgumentTypes.Skip(1).JoinBy(", ")
             })";
         }
         return $"{Name}({
-            String.Join(", ", ArgumentTypes.Select(a => $"{a}"))
+            ArgumentTypes.JoinBy(", ")
         })";
     }
 }

@@ -18,13 +18,17 @@ public record FunctionDefinition
     public required IReadOnlyDictionary<DatabaseTypeFlags, ITemplate> Templates { get; init; }
     
     public ImplicitCastMetadata? ImplicitCast { get; init; }
-
-    public required Func<IEnumerable<bool>, bool> CustomNullPropagation;
+    
+    public required Func<IEnumerable<bool>, bool> CustomNullPropagation { get; init; }
+    
+    public required ConstPropagation ConstPropagation { get; init; }
 
     public override string ToString()
     {
-        return $"{Name}({
-            String.Join(", ", Arguments.Select(a => $"{a.Name}:{a.Type.DataType}{(a.Type.CanBeNull ? "?" : "")}"))
-        }) -> {ReturnType.DataType}{(ReturnType.CanBeNull ? "?" : "")}";
+        if (Kind is FunctionKind.Binary)
+        {
+            return $"({Arguments[0].Type} {Name} {Arguments[1].Type}) -> {ReturnType}";
+        }
+        return $"{Name}({ String.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
     }
 }

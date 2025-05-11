@@ -134,6 +134,7 @@ app.MapGet("api/functions", () =>
         Doc = f.Doc,
         Kind = f.Kind,
         ReturnType = f.ReturnType,
+        DisplayText = f.ToString(),
     });
 });
 
@@ -151,4 +152,6 @@ public sealed record FunctionViewModel
     public required FunctionReturnType ReturnType { get; init; }
     
     public required FunctionKind Kind { get; init; }
+    
+    public required string DisplayText { get; init; }
 }

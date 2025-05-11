@@ -16,6 +16,13 @@ public abstract class FunctionsDescriptor
         builders.Add(builder);
         return builder;
     }
+    
+    protected FunctionBuilder AggFunction(string name)
+    {
+        var builder = FunctionBuilder.AggFunction(name);
+        builders.Add(builder);
+        return builder;
+    }
 
     protected FunctionBuilder Method(string name)
     {
@@ -90,6 +97,10 @@ public record FunctionBuilder
     private List<FunctionArgument> Arguments { get; set; } = [];
 
     private FunctionReturnType? ReturnType { get; set; }
+    
+    private ConstPropagation ConstPropagation { get; set; }
+
+    private bool IsAggregated { get; set; } = false;
 
     private IReadOnlyDictionary<DatabaseTypeFlags, ITemplate>? _templates { get; set; }
 
@@ -102,6 +113,15 @@ public record FunctionBuilder
         return new FunctionBuilder(name)
         {
             Kind = FunctionKind.Default
+        };
+    }
+    
+    public static FunctionBuilder AggFunction(string name)
+    {
+        return new FunctionBuilder(name)
+        {
+            Kind = FunctionKind.Default,
+            IsAggregated = true,
         };
     }
 
@@ -165,28 +185,30 @@ public record FunctionBuilder
         return this;
     }
     
-    public FunctionBuilder Returns(DataType type)
+    public FunctionBuilder Returns(DataType type, ConstPropagation @const = ConstPropagation.Default)
     {
-        this.ReturnType = new FunctionReturnType()
+        ReturnType = new FunctionReturnType()
         {
             DataType = type,
             CanBeNull = true,
-            Aggregated = false,
+            Aggregated = IsAggregated,
         };
+        ConstPropagation = @const;
         return this;
     }
     
-    public FunctionBuilder ReturnsNotNull(DataType type)
+    public FunctionBuilder ReturnsNotNull(DataType type, ConstPropagation @const = ConstPropagation.Default)
     {
-        this.ReturnType = new FunctionReturnType()
+        ReturnType = new FunctionReturnType()
         {
             DataType = type,
             CanBeNull = false,
-            Aggregated = false,
+            Aggregated = IsAggregated,
         };
+        ConstPropagation = @const;
         return this;
     }
-
+    
     public FunctionBuilder ImplicitCast(uint cost)
     {
         this.ImplicitCastCost = cost;
@@ -230,6 +252,7 @@ public record FunctionBuilder
                 Cost = ImplicitCastCost.Value
             } : null,
             CustomNullPropagation = _customNullPropagation,
+            ConstPropagation = this.ConstPropagation,
         };
 
     }

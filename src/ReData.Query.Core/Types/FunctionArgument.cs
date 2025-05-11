@@ -22,6 +22,6 @@ public record FunctionArgumentType
 
     public override string ToString()
     {
-        return $"{DataType}{(CanBeNull ? "" : "!")}";
+        return $"{DataType.Display()}{(CanBeNull ? "" : "!")}";
     }
 }

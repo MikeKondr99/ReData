@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Template;
+﻿using Dunet;
+using ReData.Query.Core.Template;
 
 namespace ReData.Query.Core.Types;
 
@@ -18,7 +19,9 @@ public sealed record FunctionDefinition
     
     public required ImplicitCastMetadata? ImplicitCast { get; init; }
 
-    public required Func<IEnumerable<bool>, bool>? CustomNullPropagation;
+    public required Func<IEnumerable<bool>, bool>? CustomNullPropagation { get; init; }
+    
+    public required ConstPropagation ConstPropagation { get; init; }
     
     public override string ToString()
     {
@@ -26,8 +29,14 @@ public sealed record FunctionDefinition
         {
             return $"({Arguments[0].Type} {Name} {Arguments[1].Type}) -> {ReturnType}";
         }
-        return $"{Name}({
-            String.Join(", ", Arguments.Select(a => $"{a}"))
-        }) -> {ReturnType}";
+        return $"{Name}({ String.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
     }
+}
+
+
+public enum ConstPropagation
+{
+    Default = 1,
+    AlwaysTrue = 2,
+    AlwaysFalse = 3,
 }

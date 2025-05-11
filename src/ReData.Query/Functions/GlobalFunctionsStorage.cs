@@ -44,6 +44,7 @@ public class GlobalFunctionsStorage
                 Kind = f.Kind,
                 ImplicitCast = f.ImplicitCast,
                 CustomNullPropagation = f.CustomNullPropagation,
+                ConstPropagation = f.ConstPropagation,
             }));
         storages[database] = newStorage;
         return newStorage;

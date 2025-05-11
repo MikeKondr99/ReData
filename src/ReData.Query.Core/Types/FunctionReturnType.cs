@@ -10,6 +10,10 @@ public sealed record FunctionReturnType
 
     public override string ToString()
     {
-        return $"{DataType}{(CanBeNull ? "?" : "")}";
+        if (Aggregated)
+        {
+            return $"Agg<{DataType.Display()}{(CanBeNull ? "" : "!")}>";
+        }
+        return $"{DataType.Display()}{(CanBeNull ? "" : "!")}";
     }
 }

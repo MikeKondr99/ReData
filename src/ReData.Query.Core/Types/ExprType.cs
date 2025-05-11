@@ -112,3 +112,24 @@ public enum DataType
     Bool = 5,
     DateTime = 6,
 }
+
+
+public static class DataTypeExtensions
+{
+    public static string Display(this DataType dataType)
+    {
+        return dataType switch
+        {
+            DataType.Unknown => "unk",
+            DataType.Null => "null",
+            DataType.Number => "num",
+            DataType.Integer => "int",
+            DataType.Text => "text",
+            DataType.Bool => "bool",
+            DataType.DateTime => "date",
+            _ => throw new ArgumentOutOfRangeException(nameof(dataType), dataType, null)
+        };
+
+    }
+    
+}

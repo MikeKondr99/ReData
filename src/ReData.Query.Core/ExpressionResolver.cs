@@ -71,19 +71,15 @@ public sealed class ExpressionResolver : INameResolver
         {
             Name = funcExpr.Name,
             Kind = MapFunctionKind(funcExpr.Kind),
-            ArgumentTypes = args.Select(arg => new FunctionArgumentType()
-            {
-                DataType = arg.Type.DataType,
-                CanBeNull = arg.Type.CanBeNull,
-            }).ToArray()
+            ArgumentTypes = args.Select(arg => arg.Type).ToArray()
         };
         var def = Functions.ResolveFunction(sign);
-        if (def is not ISome<FunctionResolution>(var definition))
+        if (def.UnwrapErr(out var err, out var definition))
         {
             return new ExprError()
             {
                 Span = funcExpr.Span,
-                Message = $"Function {sign} was not found"
+                Message = err.Message,
             };
         }
         
@@ -96,8 +92,9 @@ public sealed class ExpressionResolver : INameResolver
             Type = new ExprType()
             {
                 DataType = function.ReturnType.DataType,
-                CanBeNull = PropagatesNull(function, sign),
-                IsConstant = args.All(arg => arg.Type.IsConstant),
+                CanBeNull = definition.PropagatesNull,
+                IsConstant = definition.ReturnsConst,
+                Aggregated = definition.ReturnsAggregated,
             },
             Arguments = args.ToArray()
         };
@@ -111,29 +108,7 @@ public sealed class ExpressionResolver : INameResolver
         FuncExprKind.Default => FunctionKind.Default,
         var a => (FunctionKind)a,
     };
-
-    private bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
-    {
-        // Если не может быть null значит не может
-        if (!function.ReturnType.CanBeNull) return false;
-
-        // Если спец правило смотрим по нему
-        if (function.CustomNullPropagation is not null)
-        {
-            return function.CustomNullPropagation(sign.ArgumentTypes.Select(a => a.CanBeNull));
-        }
-
-        // Если любой параметр прокидывает null и может быть null.
-        for (int i = 0; i < function.Arguments.Count; i++)
-        {
-            if (function.Arguments[i].PropagateNull && sign.ArgumentTypes[i].CanBeNull)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
     public TableTemplate ResolveName(ReadOnlySpan<string> path)
     {
         return NameResolver.ResolveName(path);

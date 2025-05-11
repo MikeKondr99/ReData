@@ -38,11 +38,13 @@ public class ConditionalFunctions : FunctionsDescriptor
                     [All] = $"COALESCE({0}, {1})",
                 });
         }
+
         foreach (var T in new[]
                  {
-                     Number, Text, Integer, DateTime, Unknown }) {
-
-        Method("IsNull")
+                     Number, Text, Integer, DateTime, Unknown
+                 })
+        {
+            Method("IsNull")
                 .Doc("Проверяет, является ли значение NULL")
                 .Arg("value", T)
                 .ReturnsNotNull(Bool)
@@ -58,6 +60,22 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Templates(new()
                 {
                     [All] = $"({value} IS NOT NULL)",
+                });
+
+            Binary("=", T, Null)
+                .Doc("Проверяет равенство")
+                .ReturnsNotNull(Bool)
+                .Templates(new()
+                {
+                    [All] = $"({value} IS NULL)",
+                });
+
+            Binary("!=", T, Null)
+                .Doc("Проверяет неравенство")
+                .ReturnsNotNull(Bool)
+                .Templates(new()
+                {
+                    [All] = $"({value} IS NULL)",
                 });
         }
     }

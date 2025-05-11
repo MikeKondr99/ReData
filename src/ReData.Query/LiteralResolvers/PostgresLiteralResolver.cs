@@ -22,7 +22,7 @@ public sealed class PostgresLiteralResolver : ILiteralResolver
         {
             Expression = literal,
             Template = Template.Create(temp.template),
-            Type = temp.type,
+            Type = temp.type.Const(),
         };
     }
 }

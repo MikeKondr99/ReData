@@ -9,7 +9,7 @@ public class ComparisonFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var T in new [] { Number, Integer, Bool, Text, DateTime })
+        foreach (var T in Types.AllWithoutBool)
         {
             Binary("=", T, T)
                 .Doc("Проверяет равенство")
@@ -27,6 +27,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                     [All] = $"({0} <> {1})",
                 });
         }
+        
         
         foreach (var T in new [] { Number, Integer, DateTime })
         {

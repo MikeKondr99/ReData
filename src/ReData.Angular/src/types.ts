@@ -82,6 +82,7 @@ export interface FunctionViewModel
   arguments: FunctionArgument[];
   returnType: ReturnType;
   kind: FunctionKind;
+  displayText: string;
 }
 
 export interface FunctionArgument

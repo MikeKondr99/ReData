@@ -11,7 +11,8 @@ public class AggregationFunctions : FunctionsDescriptor
     {
         int value = 0;
         
-        Function("COUNT")
+        AggFunction("COUNT")
+            .Doc("Возвращает общее количество строк в наборе данных (включая NULL-значения)")
             .ReturnsNotNull(Integer)
             .Templates(new()
             {
@@ -21,7 +22,8 @@ public class AggregationFunctions : FunctionsDescriptor
         foreach (var T in Types.AllWithoutBool)
         {
             
-            Function("COUNT")
+            AggFunction("COUNT")
+                .Doc("Подсчитывает количество отличных от NULL значений в столбце @value")
                 .Arg("value", T)
                 .ReturnsNotNull(Integer)
                 .Templates(new()
@@ -30,7 +32,8 @@ public class AggregationFunctions : FunctionsDescriptor
                 });
             
             
-            Function("MIN")
+            AggFunction("MIN")
+                .Doc("Находит минимальное значение среди отличных от NULL значений в столбце @value")
                 .Arg("value", T)
                 .Returns(T)
                 .CustomNullPropagation((_) => true)
@@ -40,7 +43,8 @@ public class AggregationFunctions : FunctionsDescriptor
                     [All] = $"MIN({value})"
                 });
             
-            Function("MAX")
+            AggFunction("MAX")
+                .Doc("Находит максимальное значение среди отличных от NULL значений в столбце x")
                 .Arg("value", T)
                 .Returns(T)
                 .CustomNullPropagation((_) => true)
@@ -53,7 +57,8 @@ public class AggregationFunctions : FunctionsDescriptor
 
         foreach (var T in new [] { Number, Integer, DateTime})
         {
-            Function("COUNT_DISTINCT")
+            AggFunction("COUNT_DISTINCT")
+                .Doc("Подсчитывает количество уникальных отличных от NULL значений в столбце @value")
                 .Arg("value", T)
                 .ReturnsNotNull(Integer)
                 .Templates(new()
@@ -61,7 +66,8 @@ public class AggregationFunctions : FunctionsDescriptor
                     [All] = $"COUNT(DISTINCT {value})"
                 });
             
-            Function("ONLY")
+            AggFunction("ONLY")
+                .Doc("Возвращает значение, если оно уникально в наборе данных, иначе NULL")
                 .Arg("value", T)
                 .Returns(T)
                 .CustomNullPropagation((_) => true)
@@ -71,7 +77,8 @@ public class AggregationFunctions : FunctionsDescriptor
                 });
         }
         
-        Function("COUNT_DISTINCT")
+        AggFunction("COUNT_DISTINCT")
+            .Doc("Подсчитывает количество уникальных отличных от NULL значений в столбце @value (Чувствительно к регистру)")
             .Arg("value", Text)
             .ReturnsNotNull(Integer)
             .Templates(new()
@@ -81,7 +88,8 @@ public class AggregationFunctions : FunctionsDescriptor
                 [All] = $"COUNT(DISTINCT {value})"
             });
         
-        Function("ONLY")
+        AggFunction("ONLY")
+            .Doc("Возвращает значение, если оно уникально в наборе данных, иначе NULL (Чувствительно к регистру)")
             .Arg("value", Text)
             .Returns(Text)
             .CustomNullPropagation((_) => true)
@@ -94,7 +102,8 @@ public class AggregationFunctions : FunctionsDescriptor
 
         foreach (var T in Types.Numbers)
         {
-            Function("SUM")
+            AggFunction("SUM")
+                .Doc("Вычисляет сумму всех отличных от NULL значений в столбце @value")
                 .Arg("value", T)
                 .ReturnsNotNull(T)
                 .Templates(new()
@@ -105,7 +114,8 @@ public class AggregationFunctions : FunctionsDescriptor
 
         foreach (var T in Types.Numbers) 
         {
-            Function("AVG")
+            AggFunction("AVG")
+                .Doc("Вычисляет среднее арифметическое отличных от NULL значений в столбце @value")
                 .Arg("value", T)
                 .Returns(Number)
                 .CustomNullPropagation(_ => true)
@@ -116,7 +126,8 @@ public class AggregationFunctions : FunctionsDescriptor
                 });
         }
         
-        Function("AVG")
+        AggFunction("AVG")
+            .Doc("Вычисляет среднюю дату с точностью в секунду")
             .Arg("value", DateTime)
             .Returns(DateTime)
             .CustomNullPropagation(_ => true)
@@ -131,7 +142,7 @@ public class AggregationFunctions : FunctionsDescriptor
         
         // Sum c условием
         // SUM(price, id > 10)
-        // Function("SUM")
+        // AggFunction("SUM")
         //     .Arg("value", Number)
         //     .Arg("condition", Bool)
         //     .Returns(Number)
