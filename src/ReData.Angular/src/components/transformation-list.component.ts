@@ -52,10 +52,9 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
     <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans" cdkDropList (cdkDropListDropped)="drop($event)">
 
       @for (item of transformations; track i; let i = $index) {
-        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg outline-1 outline-red-400 "
-             [class.outline]="hasErrors(i)"
-             [class.shadow-none]="!item.enabled"
-             [class.bg-neutral-100]="!item.enabled"
+        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg border-l-8 border-blue-500"
+             [class.border-red-400]="hasErrors(i)"
+             [class.border-gray-200]="!item.enabled"
              cdkDrag cdkDragLockAxis="y">
           <div class="flex items-start">
             <div class="flex flex-grow flex-wrap items-baseline gap-x-2 gap-y-1.5">
