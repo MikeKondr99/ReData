@@ -133,6 +133,12 @@ public sealed class FunctionStorage : IFunctionStorage
     }
 
 
+    /// <summary>
+    /// Возвращает что значения можно все агрегировать
+    /// или None если результат не валидный
+    /// </summary>
+    /// <param name="aggs"></param>
+    /// <returns></returns>
     public static Option<bool> AggPropagation(IEnumerable<ExprType> aggs)
     {
         if (aggs.Any(t => t.Aggregated))

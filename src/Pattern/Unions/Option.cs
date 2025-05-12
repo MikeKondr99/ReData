@@ -6,9 +6,9 @@ public readonly record struct None;
 
 public static class Option
 {
-    public static Option<T>.Some Some<T>(T value) => new(value);
+    public static Option<T> Some<T>(T value) => new Option<T>.Some(value);
 
-    public static Option<T>.None None<T>() => new();
+    public static Option<T> None<T>() => new Option<T>.None();
     
     public static None None() => new();
 }

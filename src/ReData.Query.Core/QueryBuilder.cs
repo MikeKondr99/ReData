@@ -77,11 +77,28 @@ public record QueryBuilder
         List<Map> oks = new(select.Count);
         List<ExprError?> errors = [];
 
-        var res = ResolveMany(select.Select(o => o.Value)).Map(o => o.Zip(select).Select(p => new Map(p.Second.Key, Resolver.ResolveName([p.Second.Key]), p.First)));
+        var res = ResolveMany(
+            select.Select(o => o.Value),
+            r => r.NotBool().NotNull()
+        ).Map(o => o.Zip(select)
+            .Select(p => new Map(p.Second.Key, Resolver.ResolveName([p.Second.Key]), p.First)));
+        
         
         if (res.UnwrapErr(out var err, out var ok))
         {
             return Result.Error(err);
+        }
+
+        var agg = FunctionStorage.AggPropagation(ok.Select(m => m.ResolvedExpr.Type));
+
+        if (agg is INone)
+        {
+            return Result.Error(ok.Select(m => (ExprError?)new ExprError
+            {
+                Span = m.ResolvedExpr.Expression.Span,
+                Message = "Все значения в выборке должны быть либо агрегированными либо нет"
+            })!);
+
         }
         
         return qb with
@@ -125,7 +142,7 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = ResolveMany(order.Select(o => o.expr), r => r.NotAggregated().NotBool())
+        var res = ResolveMany(order.Select(o => o.expr), r => r.NotAggregated().NotBool().NotNull())
             .Map(o => o.Zip(order).Select(p => new Order(p.First, p.Second.type)));
         
         if (res.UnwrapErr(out var err, out var ord))
@@ -263,6 +280,22 @@ public static class QueryBuilderExtensions
                 {
                     Span = expr.Expression.Span,
                     Message = "Выражение не может быть булевым"
+                };
+            }
+            return expr;
+        });
+    }
+    
+    public static Result<ResolvedExpr, ExprError> NotNull(this Result<ResolvedExpr, ExprError> result)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (expr.Type.DataType is DataType.Null)
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение не может быть NULL"
                 };
             }
             return expr;
