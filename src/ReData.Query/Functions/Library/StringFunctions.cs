@@ -105,6 +105,63 @@ public class StringFunctions : FunctionsDescriptor
                 // Standard REPLACE (non-regex) for all databases
                 [All] = $"REPLACE({input}, {1}, {2})",
             });
+
+        int substring = 1;
+        Method("Find")
+            .Arg("input", Text)
+            .Arg("substring", Text)
+            .Returns(Integer)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [SqlServer] = $"NULLIF(CHARINDEX({substring}, {input}), 0)",
+                [MySql] = $"NULLIF(LOCATE({substring}, {input}), 0)",
+                [PostgreSql] = $"NULLIF(STRPOS({input}, {substring}), 0)",
+                [Oracle] = $"NULLIF(INSTR({input}, {substring}), 0)",
+                [ClickHouse] = $"nullIf(positionUTF8({input}, {substring}),0)",
+            });
+
+        Method("FindLast")
+            .Arg("input", Text)
+            .Arg("substring", Text)
+            .Returns(Integer)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [Oracle] = $"(LENGTH({input}) - LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input}), REVERSE({substring})), 0))",
+                [SqlServer] = $"(LEN({input}) - LEN({substring}) + 2 - NULLIF(CHARINDEX(REVERSE({substring}), REVERSE({input})), 0))",
+                [ClickHouse] = $"(lengthUTF8({input}) - lengthUTF8({substring}) + 2 - nullIf(positionUTF8(reverseUTF8({input}), reverseUTF8({substring})), 0))",
+                [MySql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input}), REVERSE({substring})), 0))",
+                [PostgreSql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(STRPOS(REVERSE({input}), REVERSE({substring})), 0))",
+            });
+
+
+        Method("Len")
+            .Arg("input", Text)
+            .Returns(Integer)
+            .Templates(new()
+            {
+                [SqlServer] = $"LEN({input} + '.') - 1",
+                [MySql] = $"CHAR_LENGTH({input})",
+                [PostgreSql] = $"CHAR_LENGTH({input})",
+                [Oracle] = $"LENGTH({input})",
+                [ClickHouse] = $"lengthUTF8({input})",
+            });
+
+        int delimiter = 1, position = 2;
+        Method("Split")
+            .Arg("input", Text)
+            .Arg("delimeter", Text)
+            .Arg("position", Integer)
+            .Returns(Text)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [SqlServer] = $"(select value from STRING_SPLIT(REPLACE({input},{delimiter}, 'ඞ'), 'ඞ') order by (select 1) offset {position} - 1 rows fetch next 1 row only)",
+                [PostgreSql] = $"SPLIT_PART({input}, {delimiter}, {position})",
+                [MySql] = $"SUBSTRING_INDEX({input}, {delimiter}, {position})",
+                [ClickHouse] = $"arrayElement(splitByString({delimiter}, {input}), {position})",
+            });
     }
 
 }

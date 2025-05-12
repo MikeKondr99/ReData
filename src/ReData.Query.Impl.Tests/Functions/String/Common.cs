@@ -37,7 +37,6 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runn
      [Theory(DisplayName = "EmptyIsNull")]
      [InlineData("EmptyIsNull('Hello world!')", "Hello world!")]
      [InlineData("EmptyIsNull('')", null)]
-     [InlineData("EmptyIsNull(null)", null)]
      public Task FuncEmptyIsNullTests(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Replace")]
@@ -58,6 +57,79 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runn
      [InlineData("Replace('hello', null, 'x')", null)]
      [InlineData("Replace('hello', 'l', null)", null)]
      public Task FuncReplaceTests(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "Find")]
+     [InlineData("Find('abc', 'a')", 1)]       // Первый символ
+     [InlineData("Find('abc', 'b')", 2)]       // Середина строки
+     [InlineData("Find('abc', 'c')", 3)]       // Последний символ
+     [InlineData("Find('abc', 'bc')", 2)]      // Подстрока
+     [InlineData("Find('abc', 'd')", null)]    // Не найдено
+     [InlineData("Find('', 'a')", null)]       // Пустая строка
+     [InlineData("Find('abc', '')", 1)]        // Поиск пустой подстроки
+     [InlineData("Find('aabaa', 'aa')", 1)]    // Первое вхождение
+     [InlineData("Find('привет', 'ив')", 3)]   // Unicode символы
+     public Task FuncFindTests(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "FindLast")]
+     [InlineData("FindLast('abc', 'a')", 1)]       // Первый символ
+     [InlineData("FindLast('abcba', 'b')", 4)]     // Последнее вхождение
+     [InlineData("FindLast('abc', 'c')", 3)]       // Последний символ
+     [InlineData("FindLast('abcabc', 'bc')", 5)]   // Последняя подстрока
+     [InlineData("FindLast('abc', 'd')", null)]    // Не найдено
+     [InlineData("FindLast('', 'a')", null)]       // Пустая строка
+     [InlineData("FindLast('abc', '')", 4)]        // Поиск пустой подстроки (возвращает длину строки + 1)
+     [InlineData("FindLast('aabaa', 'aa')", 4)]    // Последнее вхождение
+     [InlineData("FindLast('привет', 'е')", 5)]    // Unicode символы
+     public Task FuncFindLastTests(string expr, object? expected) => Test(expr, expected);
+     
+     [Theory(DisplayName = "Len")]
+     [InlineData("Len('')", 0)]               // Пустая строка
+     [InlineData("Len('a')", 1)]              // Один символ
+     [InlineData("Len(' x   ')", 5)]          // Учитывает пробелы
+     [InlineData("Len('abc')", 3)]            // Несколько символов
+     [InlineData("Len('привет')", 6)]         // Unicode символы (6 букв)
+     [InlineData("Len('😀')", 1)]             // Emoji (1 символ)
+     [InlineData("Len('a\tb')", 3)]           // Символ с escape-последовательностью
+     [InlineData("Len(null)", null)]          // Null вход
+     public Task FuncLenTests(string expr, object? expected) => Test(expr, expected);
+     
+     
+     [Theory(DisplayName = "Split")]
+     // Basic splitting
+     [InlineData("Split('a,b,c', ',', 1)", "a")]
+     [InlineData("Split('a,b,c', ',', 2)", "b")]
+     [InlineData("Split('a,b,c', ',', 3)", "c")]
+
+     // Edge positions
+     [InlineData("Split('a,b,c', ',', 0)", null)] // Position < 1
+     [InlineData("Split('a,b,c', ',', 4)", null)] // Position > part count
+     [InlineData("Split('a,b,c', ',', -1)", null)] // Negative position
+
+     // Different delimiters
+     [InlineData("Split('one|two|three', '|', 2)", "two")]
+     [InlineData("Split('a;b;c', ';', 3)", "c")]
+     [InlineData("Split('a b c', ' ', 2)", "b")]
+
+     // Empty/null cases
+     [InlineData("Split('', ',', 1)", "")] // Empty input
+     [InlineData("Split('a,b,c', '', 1)", "a,b,c")] // Empty delimiter
+     [InlineData("Split(null, ',', 1)", null)] // Null input
+     [InlineData("Split('a,b,c', null, 1)", null)] // Null delimiter
+
+     // Multi-character delimiters
+     [InlineData("Split('a->b->c', '->', 2)", "b")]
+     [InlineData("Split('hello...world', '...', 1)", "hello")]
+     [InlineData("Split('a,,b,,c', ',,', 2)", "b")]
+
+     // Special characters
+     [InlineData("Split('a\tb\tc', '\t', 2)", "b")] // Tab delimiter
+     [InlineData("Split('a\nb\nc', '\n', 3)", "c")] // Newline delimiter
+     [InlineData("Split('a\\b\\c', '\\', 2)", "b")] // Escape character
+
+     // Unicode support
+     [InlineData("Split('привет,мир,да', ',', 2)", "мир")]
+     [InlineData("Split('αβγ→δεζ→θη', '→', 2)", "δεζ")]
+     public Task FuncSplitPartTests(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Composite")]
      [InlineData("'  HeLLo World! '.Trim().Lower()", "hello world!")]

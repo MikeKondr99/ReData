@@ -20,7 +20,7 @@ public abstract class ExprExtensionTests(IDatabaseFixture db)
         qb = qb.Select(new()
         {
             ["test"] = expr,
-        }).UnwrapOk().Value;
+        }).Unwrap();
         var result = await runner.SingleAsync(qb.Build());
         Compare(result,ExpectedValue(expected));
     }

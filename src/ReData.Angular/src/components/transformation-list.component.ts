@@ -107,7 +107,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         placeholder="Field name"
                       />
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="min-w-80" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                         [error]="getError(i,idx)">
                       </app-fx-input>
