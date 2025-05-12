@@ -121,7 +121,7 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
           </nz-tab>
           <nz-tab nzTitle="Запрос">
             <ngx-monaco-editor class="tab-hack overflow-y-scroll"
-                               [ngModel]="response().query.join('\n')"
+                               [ngModel]="query()"
                                [options]="{
                 language: 'SQL',
                 readOnly: true,
@@ -159,8 +159,17 @@ export class AppComponent {
   transformations = signal<Transformation[]>([]);
   loading = signal(false);
   error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
-  response = signal<ApiResponse>({ data: [], fields: [], query: [], total:0 });
+  response = signal<ApiResponse>({ data: [], fields: [], query: '', total:0 });
 
+  query = computed(() => {
+    let response = this.response();
+    let error = this.error();
+    console.log(response);
+    console.log(error);
+
+    let q = error?.query ?? response?.query;
+    return q;
+  })
 
   api = effect(() => {
     let transformations = this.transformations();

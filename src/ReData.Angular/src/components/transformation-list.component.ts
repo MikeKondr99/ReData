@@ -52,7 +52,10 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
     <div class="relative flex min-h-screen flex-col gap-3 overflow-hidden bg-gray-50 px-5 py-6 font-sans" cdkDropList (cdkDropListDropped)="drop($event)">
 
       @for (item of transformations; track i; let i = $index) {
-        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg outline-1 outline-red-400" [class.outline]="hasErrors(i)" [class.bg-slate-100]="!item.enabled"  cdkDrag cdkDragLockAxis="y">
+        <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg border-l-8 border-blue-500"
+             [class.border-red-400]="hasErrors(i)"
+             [class.border-gray-200]="!item.enabled"
+             cdkDrag cdkDragLockAxis="y">
           <div class="flex items-start">
             <div class="flex flex-grow flex-wrap items-baseline gap-x-2 gap-y-1.5">
               @if (isWhereTransformation(item)) {
@@ -62,7 +65,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                     <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Фильтр</span>
                   </div>
-                  <app-fx-input ngDefaultControl class="min-w-72 max-w-72" [(ngModel)]="item.condition" [error]="getError(i,0)"
+                  <app-fx-input ngDefaultControl class="min-w-72 max-w-[800px]" [(ngModel)]="item.condition" [error]="getError(i,0)"
                                 (ngModelChange)="onTransformationChange()">
                   </app-fx-input>
                 </div>
@@ -107,7 +110,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         placeholder="Field name"
                       />
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="min-w-80" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                         [error]="getError(i,idx)">
                       </app-fx-input>

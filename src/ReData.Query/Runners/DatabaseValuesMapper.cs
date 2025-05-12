@@ -52,7 +52,7 @@ public class DatabaseValuesMapper
         decimal v => new NumberValue((double)v),
         // Datetime
         DateTime v => new DateTimeValue(v),
-        DateTimeOffset v => new DateTimeValue(DateTime.SpecifyKind(v.DateTime, DateTimeKind.Unspecified)),
+        DateTimeOffset v => new DateTimeValue(DateTime.SpecifyKind(v.DateTime, DateTimeKind.Utc)),
 
         ClickHouseDecimal v => new NumberValue((double)v),
         // text

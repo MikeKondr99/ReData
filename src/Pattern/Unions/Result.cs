@@ -108,10 +108,22 @@ public abstract partial record Result<T, E> :
         _ => throw new InvalidOperationException(message)
     };
     
+    public T Expect(Func<E,string> message) => this switch
+    {
+        Ok(var ok) => ok,
+        Error(var err) => throw new InvalidOperationException(message(err))
+    };
+    
     public E ExpectErr(string message) => this switch
     {
         Error(var err) => err,
         _ => throw new InvalidOperationException(message)
+    };
+    
+    public E ExpectErr(Func<T,string> message) => this switch
+    {
+        Ok(var ok) => throw new InvalidOperationException(message(ok)),
+        Error(var err) => err,
     };
 
     public bool Unwrap([NotNullWhen(true)] out T? ok, [NotNullWhen(false)] out E? err)

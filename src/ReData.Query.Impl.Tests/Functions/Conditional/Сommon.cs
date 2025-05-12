@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Tests.Functions.Conditional;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      [Theory(DisplayName = "Базовая логика")]
      [InlineData("true", true)]

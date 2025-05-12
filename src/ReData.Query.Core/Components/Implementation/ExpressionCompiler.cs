@@ -7,16 +7,16 @@ namespace ReData.Query.Core.Components.Implementation;
 public sealed class ExpressionCompiler : IExpressionCompiler
 {
 
-    public StringBuilder Compile(StringBuilder builder, IResolvedTemplate node)
+    public StringBuilder Compile(StringBuilder builder, IResolvedTemplate res)
     {
         // TODO раскрыть рекурсию
-        var tokens = node.Template.Tokens;
+        var tokens = res.Template.Tokens;
         foreach (var token in tokens)
         {
             _ = token switch
             {
                 ConstToken(var str) => builder.Append(str),
-                ArgToken(var idx) => node.Arguments is not null ? Compile(builder, node.Arguments[idx]) : throw new Exception($"Template Exception in Compilation {node}"),
+                ArgToken(var idx) => res.Arguments is not null ? Compile(builder, res.Arguments[idx]) : throw new Exception($"Template Exception in Compilation {res}"),
             };
         }
         return builder;

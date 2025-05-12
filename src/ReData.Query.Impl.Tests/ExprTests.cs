@@ -7,7 +7,7 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class ExprExtensionTests(IDatabaseFixture db)
+public abstract class ExprTests(IDatabaseFixture db)
 {
     private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
     private static Factory Factory = new Factory();
@@ -21,7 +21,8 @@ public abstract class ExprExtensionTests(IDatabaseFixture db)
         {
             ["test"] = expr,
         }).UnwrapOk().Value;
-        var result = await runner.SingleAsync(qb.Build());
+        var result = await runner.RunQueryAsScalar(qb.Build());
+        var excted = ExpectedValue(expected);
         Compare(result,ExpectedValue(expected));
     }
 
@@ -35,7 +36,7 @@ public abstract class ExprExtensionTests(IDatabaseFixture db)
         }
     }
 
-    private void Compare(IValue result, IValue expected)
+    public static void Compare(IValue result, IValue expected)
     {
         if (result is NumberValue(var res) && expected is NumberValue(var exp))
         {
@@ -52,22 +53,15 @@ public abstract class ExprExtensionTests(IDatabaseFixture db)
         int v => new IntegerValue(v),
         bool b => new BoolValue(b),
         double v => new NumberValue(v),
-        string v when v.StartsWith("@") => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeLocal).ToUniversalTime()),
+        string v when v.StartsWith("@") => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal).ToUniversalTime()),
         string v => new TextValue(v),
         null => new NullValue(),
         _ => new UnknownValue(value.GetType().Name),
     };
-
-    internal readonly struct BoolNull;
 }
 
 
 file static class QueryRunnerExtensions
 {
-    public async static Task<IValue> SingleAsync(this IQueryRunner runner, Core.Query query)
-    {
-        var data = await runner.RunQueryAsync(query);
-        return data.Single()[0];
-    }
     
 }

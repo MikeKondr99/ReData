@@ -1,6 +1,6 @@
 ﻿using ReData.Query.Impl.Tests.Fixtures;
 
-namespace ReData.Query.Impl.Tests.Functions.DateTime;
+namespace ReData.Query.Impl.Tests.Functions.DateTimeFunc;
 
 [Collection("Postgres")]
 public class Postgres(PostgresDatabaseFixture runner) : Сommon(runner);

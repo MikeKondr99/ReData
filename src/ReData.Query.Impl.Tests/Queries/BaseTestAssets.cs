@@ -39,6 +39,8 @@ public abstract class BaseTestAssets : ITestAssets
 
     public abstract DatabaseType DatabaseType { get; }
 
+    public ExpressionResolver ExpressionResolver => new Factory().CreateExpressionResolver(this.DatabaseType);
+
     public QueryBuilder UsersQuery =>
         QueryBuilder.FromTable(
             new Factory().CreateExpressionResolver(DatabaseType),

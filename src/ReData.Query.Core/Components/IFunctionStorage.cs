@@ -9,5 +9,5 @@ namespace ReData.Query.Core.Components;
 
 public interface IFunctionStorage
 {
-    public Option<FunctionResolution> ResolveFunction(FunctionSignature sign);
+    public Result<FunctionResolution, FunctionResolutionError> ResolveFunction(FunctionSignature sign);
 }

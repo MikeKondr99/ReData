@@ -16,7 +16,6 @@ public class ReflectionFunctions : FunctionsDescriptor
         DateTime => "Date",
         Unknown => "Unknown",
         Null => "Null",
-
     };
     
     protected override void Functions()
@@ -26,7 +25,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             Method("Type")
                 .Doc("Возвращает тип значения в виде строки")
                 .Arg("input", T)
-                .ReturnsNotNull(Text)
+                .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
                 .Templates(new()
                 {
                     [All] = $"'{TypeMapping(T)}?'",
@@ -35,7 +34,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             Method("Type")
                 .Doc("Возвращает тип значения в виде строки")
                 .ReqArg("input", T)
-                .ReturnsNotNull(Text)
+                .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
                 .Templates(new()
                 {
                     [All] = $"'{TypeMapping(T)}'",

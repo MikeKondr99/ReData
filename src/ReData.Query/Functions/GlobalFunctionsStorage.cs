@@ -11,7 +11,6 @@ public class GlobalFunctionsStorage
     public static IReadOnlyList<FunctionDefinition> Functions { get; } =
         new FunctionsDescriptor[]
         {
-            // new AggregationFunctions(), Можно будет добавить после тестирования и добавления полной поддержки аггрегаций
             new ImplicitConversionFunctions(),
             new StringFunctions(),
             new DateFunctions(),
@@ -22,6 +21,7 @@ public class GlobalFunctionsStorage
             new FinancialFunctions(),
             new ConditionalFunctions(),
             new LogicFunctions(),
+            new AggregationFunctions(),
             new ReflectionFunctions(),
         }.SelectMany(f => f.GetFunctions()).ToArray();
     
@@ -44,6 +44,7 @@ public class GlobalFunctionsStorage
                 Kind = f.Kind,
                 ImplicitCast = f.ImplicitCast,
                 CustomNullPropagation = f.CustomNullPropagation,
+                ConstPropagation = f.ConstPropagation,
             }));
         storages[database] = newStorage;
         return newStorage;

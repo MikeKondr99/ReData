@@ -61,7 +61,7 @@ export interface Field {
 export interface ApiResponse {
   fields: Field[];
   total: number;
-  query: string[];
+  query: string;
   data: any[];
 }
 
@@ -82,6 +82,7 @@ export interface FunctionViewModel
   arguments: FunctionArgument[];
   returnType: ReturnType;
   kind: FunctionKind;
+  displayText: string;
 }
 
 export interface FunctionArgument

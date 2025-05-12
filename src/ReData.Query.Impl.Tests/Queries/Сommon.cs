@@ -6,7 +6,7 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExtensionTests(db)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
     [Fact]
     public async Task TableQuery()
@@ -397,5 +397,6 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprExt
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
     
 }

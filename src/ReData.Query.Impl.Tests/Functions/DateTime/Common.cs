@@ -1,8 +1,8 @@
 ﻿using ReData.Query.Impl.Tests.Fixtures;
 
-namespace ReData.Query.Impl.Tests.Functions.DateTime;
+namespace ReData.Query.Impl.Tests.Functions.DateTimeFunc;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprExtensionTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
      
     [Theory(DisplayName = "AddDays")]

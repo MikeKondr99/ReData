@@ -50,7 +50,7 @@ export class FunctionsComponent {
 
   data = computed(() => {
     return this.functions.data()
-      ?.map(f => ({ sign: this.displayFunc(f), doc: f.doc }))
+      ?.map(f => ({ sign: f.displayText, doc: f.doc }))
       ?.filter(f => f.sign.includes(this.search()) )
   })
 
