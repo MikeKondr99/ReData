@@ -39,7 +39,7 @@ public sealed class ExpressionResolver : INameResolver
             return new ResolvedExpr
             {
                 Expression = name,
-                Template = NameResolver.ResolveName([field.Alias]).Template,
+                Template = field.Template,
                 Type = new ExprType()
                 {
                     DataType = field.Type.Type,

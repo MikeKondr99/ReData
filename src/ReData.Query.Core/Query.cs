@@ -27,6 +27,7 @@ public sealed record Query : IQuerySource
         return new FieldStorage(this.Select.Select(m => new Field
         {
             Alias = m.Alias,
+            Template = new TableTemplate(Template.Template.Create($"{Name.Template.ToString()}.{m.Column.Template.ToString()}")).Template,
             Type = new FieldType(m.ResolvedExpr.Type.DataType, m.ResolvedExpr.Type.CanBeNull),
         }).ToArray());
     }

@@ -39,6 +39,59 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
+    [Fact]
+    public async Task WhereSelectComboQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .Where("UserId > 5")
+            .Select(new()
+            {
+                ["UserId"] = "UserId * 2"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
+
+        // Assert
+        var expect = assets.UsersData
+            .Where(u => u["UserId"] is IntegerValue(> 5))
+            .Select(u => new Dictionary<string, IValue>()
+            {
+                ["UserId"] = new IntegerValue(u.Int("UserId").Value * 2),
+            });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    
+    [Fact]
+    public async Task OrderBySelectComboQuery()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([("UserId",Order.Type.Asc)])
+            .Select(new()
+            {
+                ["UserId"] = "Mod(UserId, 2)"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
+
+        // Assert
+        var expect = assets.UsersData
+            .OrderBy(u => u.Int("UserId")!.Value)
+            .Select(u => new Dictionary<string, IValue>()
+            {
+                ["UserId"] = new IntegerValue(u.Int("UserId")!.Value % 2),
+            });
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
 
     [Fact]
     public async Task SelectQuery()

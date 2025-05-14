@@ -39,6 +39,7 @@ public record QueryBuilder
             From = new TableQuerySource(resolver.ResolveName(path), fields.Select(f => new Field
                 {
                     Alias = f.name,
+                    Template = resolver.ResolveName([queryName,f.name]).Template,
                     Type = f.type,
                 }).ToArray()
             ),
@@ -69,7 +70,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<ExprError?>> Select(Dictionary<string, string> select)
     {
         var qb = this;
-        if (Query.Select is not null || Query.Where?.Count > 0 || Query.OrderBy?.Count > 0 )
+        if (Query.Select is not null)
         {
             qb = CreateCte();
         }
@@ -81,7 +82,7 @@ public record QueryBuilder
             select.Select(o => o.Value),
             r => r.NotBool().NotNull()
         ).Map(o => o.Zip(select)
-            .Select(p => new Map(p.Second.Key, Resolver.ResolveName([p.Second.Key]), p.First)));
+            .Select((p,i) => new Map(p.Second.Key, Resolver.ResolveName([$"column{i + 1}"]), p.First)));
         
         
         if (res.UnwrapErr(out var err, out var ok))
