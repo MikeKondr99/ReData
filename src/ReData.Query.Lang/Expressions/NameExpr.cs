@@ -8,4 +8,9 @@ public sealed record NameExpr(string Value) : Expr
     {
         return $"[{Value}]";
     }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine("NameExpr", Value);
+    }
 }

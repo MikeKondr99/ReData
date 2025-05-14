@@ -14,4 +14,5 @@ public sealed record BooleanLiteral : Literal<bool>
     {
         value = Value;
     }
+
 }

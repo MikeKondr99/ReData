@@ -1,4 +1,5 @@
-﻿using ReData.Common;
+﻿using Pattern;
+using ReData.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
@@ -20,6 +21,16 @@ public record FuncExpr : Expr
             FuncExprKind.Default => $"{Name}({Arguments.JoinBy(", ")})",
             _ => $"{Name}({Arguments.JoinBy(", ")})",
         };
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = Name.GetHashCode();
+        foreach (var arg in Arguments)
+        {
+            hash = HashCode.Combine(hash, arg.Hash);
+        }
+        return hash;
     }
 }
 

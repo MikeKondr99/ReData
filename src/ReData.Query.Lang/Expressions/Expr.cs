@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System.Text;
+using Antlr4.Runtime;
 using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core;
@@ -7,7 +8,10 @@ namespace ReData.Query.Lang.Expressions;
 
 public abstract record Expr
 {
-    public ExprSpan Span { get; init; }
+   public ExprSpan Span { get; init; }
+
+    private int? _hash;
+    public int Hash => _hash ??= GetHashCode();
     
     public static Result<Expr,ExprError> Parse(string s)
     {
@@ -36,5 +40,40 @@ public abstract record Expr
                 Message = e.Message
             };
         }
+    }
+
+    public override int GetHashCode()
+    {
+        return 17;
+    }
+
+    public bool Equivalent(Expr other)
+    {
+        return this.Hash == other.Hash;
+    }
+    
+    public bool NotEquivalent(Expr other)
+    {
+        return this.Hash != other.Hash;
+    }
+    
+    public Expr Replace(Expr pattern, Expr value)
+    {
+        if (this.Equivalent(pattern))
+        {
+            return value;
+        }
+
+        if (this is FuncExpr f)
+        {
+            return new FuncExpr()
+            {
+                Name = f.Name,
+                Arguments = f.Arguments.Select(a => a.Replace(pattern, value)).ToArray(),
+                Span = f.Span,
+                Kind = f.Kind,
+            };
+        }
+        return this;
     }
 }
