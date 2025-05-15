@@ -1,10 +1,14 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Equivalency;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;
 
 public class ParsingTests
 {
+    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> _options = (options) =>
+        options.Excluding(e => e.Span);
+    
     [Fact]
     public void BinaryOp()
     {
@@ -19,7 +23,7 @@ public class ParsingTests
                 new NameExpr("number"),
                 new IntegerLiteral(3),
             ]
-        });
+        }, _options);
     }
     
     [Fact]
@@ -36,7 +40,7 @@ public class ParsingTests
                 new NameExpr("a"),
                 new FuncExpr()
                 {
-                    Name = "+",
+                    Name = "*",
                     Arguments =
                     [
                         new NameExpr("b"),
@@ -44,7 +48,7 @@ public class ParsingTests
                     ]
                 }
             ]
-        });
+        }, _options);
     }
     
     
@@ -69,7 +73,7 @@ public class ParsingTests
                     ]
                 }
             ]
-        });
+        }, _options);
 
     }
     
@@ -87,7 +91,7 @@ public class ParsingTests
                 new StringLiteral("a"),
                 new StringLiteral("b"),
             ]
-        });
+        }, _options);
 
     }
     
@@ -106,7 +110,7 @@ public class ParsingTests
                 new NameExpr("a"),
                 new NameExpr("b"),
             ]
-        });
+        }, _options);
     }
     
     [Fact]
@@ -137,7 +141,7 @@ public class ParsingTests
                 new StringLiteral("then"),
                 new StringLiteral("else"),
             ]
-        });
+        }, _options);
 
     }
 }

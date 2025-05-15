@@ -36,7 +36,7 @@ public class DateFunctions : FunctionsDescriptor
                 [MySql] = $"STR_TO_DATE(CONCAT({year}, '-', {month}, '-01 00:00:00'), '%Y-%m-%d %H:%i:%s')",
                 [PostgreSql] = $"MAKE_TIMESTAMP({year}, {month}, 1, 0, 0, 0)",
                 [Oracle] = $"TO_DATE({year}||LPAD({month},2,'0')||'01000000','YYYYMMDDHH24MISS')",
-                [ClickHouse] = $"toDateTime(concat(toString({year}), '-', toString({month}), '-01 00:00:00'))"
+                [ClickHouse] = $"toDateTime(concat(toString({year}), '-', leftPad(toString({month}),2,'0'), '-01 00:00:00'))"
             });
         
         Method("Date")
@@ -51,7 +51,7 @@ public class DateFunctions : FunctionsDescriptor
                 [MySql] = $"STR_TO_DATE(CONCAT({year}, '-', {month}, '-', {day}, ' 00:00:00'), '%Y-%m-%d %H:%i:%s')",
                 [PostgreSql] = $"MAKE_TIMESTAMP({year}, {month}, {day}, 0, 0, 0)",
                 [Oracle] = $"TO_DATE({year}||LPAD({month},2,'0')||LPAD({day},2,'0')||'000000','YYYYMMDDHH24MISS')",
-                [ClickHouse] = $"toDateTime(concat(toString({year}), '-', toString({month}), '-', toString({day}), ' 00:00:00'))"
+                [ClickHouse] = $"toDateTime(concat(toString({year}), '-', leftPad(toString({month}), 2, '0'), '-', leftPad(toString({day}), 2, '0'), ' 00:00:00'))"
             });
         
         Method("Now")
@@ -259,11 +259,12 @@ public class DateFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                [SqlServer] = $"FORMAT({input}, 'yyyy') + '-W' + RIGHT('00' + CAST(DATEPART(week, {input}) AS VARCHAR(2)), 2)",
+                [SqlServer] = $"CAST(YEAR(DATEADD(day, 26 - DATEPART(isoww, {input}), {input})) AS VARCHAR(4)) + '-W' + RIGHT('00' + CAST(DATEPART(iso_week, {input}) AS VARCHAR(2)), 2)",
+                // [SqlServer] = $"FORMAT({input}, 'yyyy') + '-W' + RIGHT('00' + CAST(DATEPART(week, {input}) AS VARCHAR(2)), 2)",
                 [MySql] = $"DATE_FORMAT({input}, '%x-W%v')", // ISO week (uses %x for year, %v for week)
                 [PostgreSql] = $"TO_CHAR({input}, 'IYYY-\"W\"IW')", // IYYY=ISO year, IW=ISO week
                 [Oracle] = $"TO_CHAR({input}, 'IYYY-\"W\"IW')",
-                [ClickHouse] = $"formatDateTime({input}, '%Y-W%V')" // %V=ISO week number
+                [ClickHouse] = $"concat(toString(toISOYear({input})), toString(formatDateTime({input}, '-W%V')))",
             });
         
         Method("DayOfYear")
@@ -290,7 +291,7 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toDayOfWeek({input})", // ClickHouse returns Mon=1 to Sun=7
                 [MySql] = $"WEEKDAY({input}) + 1", // MySQL's WEEKDAY(): Mon=0, Sun=6 → +1
                 [SqlServer] = $"(DATEPART(WEEKDAY, {input}) + 5) % 7 + 1", // Converts Sun=1 to Mon=1
-                [Oracle] = $"MOD(TO_NUMBER(TO_CHAR({input}, 'D')) - 2 + 7, 7) + 1" // 'D'=1(Sun) to 7(Sat)
+                [Oracle] = $"MOD(TO_NUMBER(TO_CHAR({input}, 'D')) - 1 + 7, 7) + 1" // 'D'=1(Sun) to 7(Sat)
             });
         
         // ISO Standard (Week 1 contains January 4th)

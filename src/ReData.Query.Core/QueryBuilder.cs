@@ -150,6 +150,9 @@ public record QueryBuilder
         {
             return Result.Error(err);
         }
+
+        // Игнорируем константы
+        ord = ord.Where(e => !e.ResolvedExpr.Type.IsConstant);
         
         return qb with
         {
@@ -180,9 +183,9 @@ public record QueryBuilder
     
     public QueryBuilder Take(uint take)
     {
-        if (Query.Limit is not null)
+        if (Query.Limit > 0)
         {
-            take = Math.Min(Query.Limit.Value, take);
+            take = Math.Min(Query.Limit, take);
         }
         return this with
         {
@@ -197,9 +200,9 @@ public record QueryBuilder
     {
         var offset = skip + Query.Offset;
         var limit = Query.Limit;
-        if (limit is not null)
+        if (limit > 0)
         {
-            limit = Math.Min(limit.Value, skip);
+            limit = Math.Min(limit, skip);
         }
         return this with
         {

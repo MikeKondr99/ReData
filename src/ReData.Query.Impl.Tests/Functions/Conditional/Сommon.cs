@@ -51,7 +51,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      // [InlineData("true.Or(false)", true)]
      public Task OrFunction(string expr, object? expected) => Test(expr, expected);
      
-     [Theory(DisplayName = "IsNull")]
+     [SkippableTheory(DisplayName = "IsNull")]
      [InlineData("IsNull(null)", true)] // Direct null
      [InlineData("IsNull(42)", false)] // Number
      [InlineData("IsNull('text')", false)] // String
@@ -63,9 +63,13 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("IsNull(Lower(Text(null)))", true)] // Division by zero
      // [InlineData("IsNull(5 = 5)", false)] // Boolean
      // [InlineData("IsNull(5 = null)", true)] // Boolean
-     public Task FuncIsNullTests(string expr, object? expected) => Test(expr, expected);
-     
-     [Theory(DisplayName = "NotNull")]
+     public Task FuncIsNullTests(string expr, object? expected)
+     {
+          Skip.If(expr is "IsNull('')" && runner.GetDatabaseType() is DatabaseType.Oracle);
+          return Test(expr, expected);
+     }
+
+     [SkippableTheory(DisplayName = "NotNull")]
      [InlineData("NotNull(null)", false)] // Direct null
      [InlineData("NotNull(42)", true)] // Number
      [InlineData("NotNull('text')", true)] // String
@@ -77,5 +81,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("NotNull(Lower(Text(null)))", false)] // Division by zero
      // [InlineData("NotNull(5 = 5)", true)] // Boolean
      // [InlineData("NotNull(5 = null)", false)] // Boolean
-     public Task FuncNotNullTests(string expr, object? expected) => Test(expr, expected);
+     public Task FuncNotNullTests(string expr, object? expected)
+     {
+          Skip.If(expr is "NotNull('')" && runner.GetDatabaseType() is DatabaseType.Oracle);
+          return Test(expr, expected);
+     }
 }

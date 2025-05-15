@@ -175,6 +175,11 @@ public abstract partial record Result<T, E> :
         Ok(var ok) => ok,
         _ => default,
     };
+    public E UnwrapErr() => this switch
+    {
+        Error(var err) => err,
+        _ => throw new Exception(),
+    };
     
     public E UnwrapErr(E value) => this switch
     {

@@ -96,7 +96,11 @@ public sealed class ExpressionResolver : INameResolver
                 IsConstant = definition.ReturnsConst,
                 Aggregated = definition.ReturnsAggregated,
             },
-            Arguments = args.ToArray()
+            Arguments = args.Zip(definition.Casts).Select(t => t.First with
+            {
+                Template = t.Second.Template,
+                Arguments = [t.First]
+            }).ToArray(),
         };
     }
 

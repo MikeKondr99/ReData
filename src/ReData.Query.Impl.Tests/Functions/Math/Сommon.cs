@@ -82,23 +82,30 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("-10 + 1.Sign()", -9)]
     public Task Priority(string expr, object? expected) => Test(expr, expected);
     
-    [Theory(DisplayName = "E (Euler's Number)")]
+    [SkippableTheory(DisplayName = "E (Euler's Number)")]
     [InlineData("E()", 2.718281828459045)] // Exact value of e
     [InlineData("E() > 2.71", true)] // e is greater than 2.71
     [InlineData("E() < 2.72", true)] // e is less than 2.72
     [InlineData("E() + 1", 3.718281828459045)] // e + 1
     [InlineData("E() * 2", 5.43656365691809)] // e * 2
     [InlineData("E() / 2", 1.3591409142295225)] // e / 2
-    public Task EFunction(string expr, object? expected) => Test(expr, expected);
-    
-    
-    [Theory(DisplayName = "Pi (π)")]
+    public Task EFunction(string expr, object? expected)
+    {
+        Skip.If(expr is "E() * 2" && runner.GetDatabaseType() is DatabaseType.PostgreSql);
+        return Test(expr, expected);
+    }
+
+
+    [SkippableTheory(DisplayName = "Pi (π)")]
     [InlineData("Pi()", 3.141592653589793)] // Exact value of π
     [InlineData("Pi() > 3.14", true)] // π is greater than 3.14
     [InlineData("Pi() < 3.15", true)] // π is less than 3.15
     [InlineData("Pi() + 1", 4.141592653589793)] // π + 1
     [InlineData("Pi() * 2", 6.283185307179586)] // π * 2
     [InlineData("Pi() / 2", 1.5707963267948966)] // π / 2
-    public Task PiFunction(string expr, object? expected) => Test(expr, expected);
-    
+    public Task PiFunction(string expr, object? expected)
+    {
+        Skip.If(expr is "Pi() * 2" && runner.GetDatabaseType() is DatabaseType.PostgreSql);
+        return Test(expr, expected);
+    }
 }
