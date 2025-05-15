@@ -130,7 +130,7 @@ public record QueryBuilder
         {
             Query = qb.Query with
             {
-                Where = [..Query.Where ?? [], where]
+                Where = [..qb.Query.Where ?? [], where]
             }
         };
     }

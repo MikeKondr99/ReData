@@ -328,6 +328,33 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
+    [Fact]
+    public async Task BugWhereLeak()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Where("UserId > 5")
+            .Select(new()
+            {
+                ["Поле"] = "100"
+            })
+            .Where("'10' = 10.Text()");
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("ValidQuery").Build());
+
+        // Assert
+        var expect = assets.UsersData
+            .Where(u => u.Int("UserId")!.Value > 5)
+            .Select(u => new Dictionary<string, IValue>()
+            {
+                ["Поле"] = new IntegerValue(100),
+            })
+            .Where(u => true);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
 
     [Fact]
     public async Task SequencialSelect()
