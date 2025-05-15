@@ -112,12 +112,8 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             var field = query.Select[i];
 
             res.Append("    ");
-            if (!(field.ResolvedExpr.Expression is NameExpr ne && ne.Value == field.Alias))
-            {
-                ExpressionCompiler.Compile(res, field.ResolvedExpr);
-                res.Append(" AS ");
-            }
-            
+            ExpressionCompiler.Compile(res, field.ResolvedExpr);
+            res.Append(" AS ");
             WriteExpression(res, query, field.Column);
             
             if (i != last)

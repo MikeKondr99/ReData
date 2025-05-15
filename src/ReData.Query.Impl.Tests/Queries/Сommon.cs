@@ -172,6 +172,33 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
+    [Theory(DisplayName = "Order by contant values is irrelevant")]
+    [InlineData("-1")]
+    [InlineData("100")]
+    [InlineData("'text'")]
+    // [InlineData("true")] Order сейчас не может содержать бул
+    // [InlineData("NULL")] Order сейчас не может содержать нул
+    [InlineData("UserId.Type()")]
+    [InlineData("JoinDate.Type()")]
+    [InlineData("Now()")]
+    [InlineData("Today()")]
+    public async Task OrderByNegOne(string expr)
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([(expr, Order.Type.Asc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersData;
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
 
     [Fact]
     public async Task Limit()
@@ -185,6 +212,22 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         // Assert
         var expect = assets.UsersData.Take(5);
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    [Fact]
+    public async Task LimitGetOne()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Take(1);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersData.Take(1);
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -269,38 +312,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-
-//     
-//     // [Fact]
-//     // public async Task OrderByThenOffset()
-//     // {
-//     //     // Arrange
-//     //     Query query = Assets.PlayersQuery.OrderBy("Name").Skip(5);
-//     //     var sql = QueryBuilder.Build(query);
-//     //
-//     //     // Act
-//     //     List<Player> result = await Runner.QueryAsync(sql);
-//     //
-//     //     // Assert
-//     //     var expect = Assets.Players.OrderBy(p => p.Name).Skip(5);
-//     //     result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     // }
-//     
-//     // [Fact]
-//     // public async Task OffsetThenOrderBy()
-//     // {
-//     //     // Arrange
-//     //     Query query = Assets.PlayersQuery.Skip(5).OrderBy("MaxScore");
-//     //     var sql = QueryBuilder.Build(query);
-//     //
-//     //     // Act
-//     //     List<Player> result = await Runner.QueryAsync(sql);
-//     //
-//     //     // Assert
-//     //     var expect = Assets.Players.Skip(5).OrderBy(p => p.MaxScore);
-//     //     result.Should().BeEquivalentTo(expect, options => options.WithStrictOrdering());
-//     // }
-//     
+    
     [Fact]
     public async Task LimitOffsetQuery()
     {

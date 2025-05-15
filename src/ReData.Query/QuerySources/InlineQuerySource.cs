@@ -51,7 +51,7 @@ public record struct InlineQuerySource : IQuerySource
 
         _databaseType = databaseType;
         var queryName = resolver.ResolveName(["InlineQuery"]);
-        Name = new NameTemplate(Template.Create($"({data}) AS {queryName}"));
+        Name = new NameTemplate(Template.Create($"({data}) AS {queryName.Template.ToString()}"));
         _fieldStorage = new FieldStorage([
             new Field()
             {

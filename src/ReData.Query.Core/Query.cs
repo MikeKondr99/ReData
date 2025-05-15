@@ -13,7 +13,7 @@ public sealed record Query : IQuerySource
 
     public IReadOnlyList<Order>? OrderBy { get; init; }
 
-    public uint? Limit { get; init; }
+    public uint Limit { get; init; }
 
     public uint Offset { get; init; }
 

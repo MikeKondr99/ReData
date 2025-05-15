@@ -45,7 +45,13 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Bool)
-            .Template($"({0} = 0)");
+            .Templates(new()
+            {
+                // [SqlServer] = $"( <> 0)",
+                [All] = $"({0} = 0)",
+
+            });
+            // .Template($"({0} = 0)");
 
         Function("TextFromNull")
             .ImplicitCast(1)

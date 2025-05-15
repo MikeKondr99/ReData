@@ -43,7 +43,7 @@ public class LiteralsTest
     public void StringLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).UnwrapOk().Value;
-        e.Should().Be(new StringLiteral(expected));
+        e.Should().BeEquivalentTo(new StringLiteral(expected), _options);
     }
     
     [Theory]
@@ -120,10 +120,7 @@ public class LiteralsTest
     // [InlineData("+3", "expected expression",0)]
     public void ShouldNotParse(string input, string message, int index)
     {
-        var action = () => Expr.Parse(input);
-        // action.Should().Throw<ParseException>()
-        //     .WithMessage(message)
-        //     .Where(ex => ex.Column == index);
+        Expr.Parse(input).UnwrapErr();
     }
     
     [Theory]
@@ -131,9 +128,7 @@ public class LiteralsTest
     [InlineData("a % 3")]
     public void ShouldThrowUnexpectedToken(string input)
     {
-        var action = Expr.Parse(input);
-
-        action.Should().BeNull();
+        Expr.Parse(input).UnwrapErr();
     }
     
     

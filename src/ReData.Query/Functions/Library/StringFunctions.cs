@@ -91,7 +91,9 @@ public class StringFunctions : FunctionsDescriptor
             .CustomNullPropagation(nulls => true)
             .Templates(new()
             {
-                [All] = $"CASE WHEN {0} = '' THEN NULL ELSE {0} END", 
+                [Oracle] = $"{0}", // В Oracle пустая строка и null это одно и тоже
+                [ClickHouse] = $"nullIf({0}, '')",
+                [All] = $"NULLIF({0}, '')", 
             });
         
         Method("Replace")
@@ -103,6 +105,7 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 // Standard REPLACE (non-regex) for all databases
+                [Oracle] = $"CASE WHEN {1} IS NULL OR {2} IS NULL THEN NULL ELSE REPLACE({input}, {1}, {2}) END",
                 [All] = $"REPLACE({input}, {1}, {2})",
             });
     }
