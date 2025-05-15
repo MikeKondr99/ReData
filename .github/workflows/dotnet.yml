@@ -11,7 +11,14 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    services:
+      # Start Docker as a service (required for TestContainers)
+      docker:
+        image: docker:dind
+        ports:
+          - 2375:2375
+        options: --privileged
+        
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
