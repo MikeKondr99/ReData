@@ -1,6 +1,6 @@
-﻿using Pattern;
-using Pattern.Core;
+﻿using Pattern.Core;
 using Pattern.Unions;
+using ReData.Query.Common;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
@@ -45,7 +45,7 @@ public record QueryBuilder
             ),
             Select = fields.Select((f,i) =>
             {
-                return new Map()
+                return new SelectItem()
                 {
                     Alias = f.name,
                     Column = resolver.ResolveName([f.name]),
@@ -75,26 +75,21 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        List<Map> oks = new(select.Count);
-        List<ExprError?> errors = [];
-
-        var res = ResolveMany(
-            select.Select(o => o.Value),
+        var res = ResolveManySelectItems(
+            select,
             r => r.NotBool().NotNull()
-        ).Map(o => o.Zip(select)
-            .Select((p,i) => new Map(p.Second.Key, Resolver.ResolveName([$"column{i + 1}"]), p.First)));
-        
-        
-        if (res.UnwrapErr(out var err, out var ok))
-        {
-            return Result.Error(err);
-        }
+        ).GetErrors(out var errors);
 
-        var agg = FunctionStorage.AggPropagation(ok.Select(m => m.ResolvedExpr.Type));
+        if (res.Count is 0)
+        {
+            return Result.Error(errors);
+        }
+        
+        var agg = FunctionStorage.AggPropagation(res.Select(m => m.ResolvedExpr.Type));
 
         if (agg is INone)
         {
-            return Result.Error(ok.Select(m => (ExprError?)new ExprError
+            return Result.Error(res.Select(m => (ExprError?)new ExprError
             {
                 Span = m.ResolvedExpr.Expression.Span,
                 Message = "Все значения в выборке должны быть либо агрегированными либо нет"
@@ -106,7 +101,7 @@ public record QueryBuilder
         {
             Query = qb.Query with
             {
-                Select = ok.ToArray(),
+                Select = res.ToArray(),
             }
         };
     }
@@ -123,7 +118,7 @@ public record QueryBuilder
 
         if (res.UnwrapErr(out var err, out var where))
         {
-            return Result.Error((IEnumerable<ExprError?>)Once.From(err));
+            return Result.Error(Once.From(err).AsEnumerable<ExprError?>());
         }
 
         return qb with
@@ -135,7 +130,7 @@ public record QueryBuilder
         };
     }
     
-    public Result<QueryBuilder,IEnumerable<ExprError?>> OrderBy(IReadOnlyList<(string expr, Order.Type type)> order)
+    public Result<QueryBuilder,IEnumerable<ExprError?>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -143,22 +138,59 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = ResolveMany(order.Select(o => o.expr), r => r.NotAggregated().NotBool().NotNull())
-            .Map(o => o.Zip(order).Select(p => new Order(p.First, p.Second.type)));
+        IEnumerable<OrderItem> res = ResolveMany(
+                order.Select(o => o.expr),
+                r => r.NotAggregated().NotBool().NotNull())
+            .Select((r, i) => r.Map(e => new OrderItem(e, order[i].type)))
+            .GetErrors(out var errors);
         
-        if (res.UnwrapErr(out var err, out var ord))
+        if (!res.Any())
         {
-            return Result.Error(err);
+            return Result.Error(errors);
         }
 
         // Игнорируем константы
-        ord = ord.Where(e => !e.ResolvedExpr.Type.IsConstant);
+        res = res.Where(o => !o.ResolvedExpr.Type.IsConstant);
         
         return qb with
         {
             Query = qb.Query with
             {
-                OrderBy = ord.ToArray()
+                OrderBy = res.ToArray()
+            }
+        };
+    }
+    
+    public Result<QueryBuilder,IEnumerable<ExprError?>> GroupBy(IReadOnlyList<string> groupBy, Dictionary<string, string> select)
+    {
+        var qb = this;
+        if (Query.Select is not null)
+        {
+            qb = CreateCte();
+        }
+        
+        var resGroup = ResolveMany(
+            groupBy,
+            r => r.NotAggregated().NotBool().NotNull().NotConst())
+        .GetErrors(out var errors);
+
+        var res = ResolveManySelectItems(
+            select,
+            r => r.NotBool().NotNull().AggregatedOrGrouped(resGroup)
+        ).GetErrors(out var errors2);
+        
+        if (!resGroup.Any()  || !res.Any())
+        {
+            errors = !errors.Any() ? Enumerable.Repeat<ExprError?>(null, groupBy.Count) : errors;
+            return Result.Error(errors.Concat(errors2)); 
+        }
+        
+        return qb with
+        {
+            Query = qb.Query with
+            {
+                Select = res,
+                GroupBy = resGroup,
             }
         };
     }
@@ -179,6 +211,16 @@ public record QueryBuilder
     {
         var random = $"CTE-{Guid.NewGuid().ToString("N")[..6]}";
         return Resolver.ResolveName([random]);
+    }
+
+    private IResolvedTemplate GetColumnName(string alias, int index)
+    {
+        return Resolver.ResolveName([$"column{index + 1}"]);
+    }
+
+    private SelectItem GetSelectItem(int index, string alias, ResolvedExpr res)
+    {
+        return new SelectItem(alias, GetColumnName(alias, index), res);
     }
     
     public QueryBuilder Take(uint take)
@@ -229,19 +271,32 @@ public record QueryBuilder
         return Query;
     }
 
-    private Result<IReadOnlyCollection<ResolvedExpr>, IEnumerable<ExprError?>> ResolveMany(
+    private IEnumerable<Result<ResolvedExpr, ExprError>> ResolveMany(
         IEnumerable<string> exprs,
         Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
         )
     {
         condition ??= (r) => r;
-        IEnumerable<Result<ResolvedExpr, ExprError>> iter = exprs.Select(expr => condition(Resolve(expr)));
-        var res = iter.ToResult();
-        if (res.IsOk(out var ok))
+        foreach (var expr in exprs)
         {
-            return Result.Ok(ok);
+            Result<ResolvedExpr, ExprError> res = condition(Resolve(expr));
+            yield return res;
         }
-        return Result.Error(iter.Select(r => r.IsError(out var err) ? err : null));
+    }
+    private IEnumerable<Result<SelectItem, ExprError>> ResolveManySelectItems(
+        Dictionary<string,string> select,
+        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
+        )
+    {
+        condition ??= (r) => r;
+        int i = 0;
+        foreach (var kv in select)
+        {
+            Result<SelectItem, ExprError> res = condition(Resolve(kv.Value))
+              .Map(r => new SelectItem(kv.Key, Resolver.ResolveName([$"column{i + 1}"]), r));
+            yield return res;
+            i += 1;
+        }
     }
 }
 
@@ -256,7 +311,7 @@ public static class QueryBuilderExtensions
         return qb;
     }
     
-    public static Result<QueryBuilder, IEnumerable<ExprError?>> OrderBy(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, IReadOnlyList<(string, Order.Type)> orderings)
+    public static Result<QueryBuilder, IEnumerable<ExprError?>> OrderBy(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, IReadOnlyList<(string, OrderItem.Type)> orderings)
     {
         if (qb.IsOk(out var ok))
         {
@@ -284,6 +339,22 @@ public static class QueryBuilderExtensions
                 {
                     Span = expr.Expression.Span,
                     Message = "Выражение не может быть булевым"
+                };
+            }
+            return expr;
+        });
+    }
+    
+    public static Result<ResolvedExpr, ExprError> NotConst(this Result<ResolvedExpr, ExprError> result)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (expr.Type.IsConstant)
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение не может константой"
                 };
             }
             return expr;
@@ -336,6 +407,44 @@ public static class QueryBuilderExtensions
             }
             return expr;
         });
+    }
+    
+    public static Result<ResolvedExpr, ExprError> AggregatedOrGrouped(this Result<ResolvedExpr, ExprError> result, IEnumerable<ResolvedExpr> grouped)
+    {
+        return result.And<ResolvedExpr>(expr =>
+        {
+            if (!expr.Type.Aggregated && !expr.Type.IsConstant && !grouped.Any(g => expr.Expression.Equivalent(g.Expression)))
+            {
+                return new ExprError()
+                {
+                    Span = expr.Expression.Span,
+                    Message = "Выражение должно быть агрегированным или группированным"
+                };
+            }
+            return expr;
+        });
+    }
+    
+    public static IReadOnlyList<T> GetErrors<T,E>(
+        this IEnumerable<Result<T,E>> results,
+        out IEnumerable<E?> errors
+    )
+    {
+        List<T> res = [];
+        foreach (var r in results)
+        {
+            if (r.Unwrap(out var ok, out var err))
+            {
+                res.Add(ok);
+            }
+            else
+            {
+                errors = results.Select(r => r.UnwrapErrOrDefault());
+                return [];
+            }
+        }
+        errors = Array.Empty<E?>();
+        return res;
     }
 }
 

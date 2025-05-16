@@ -1,8 +1,6 @@
-﻿using System.Text;
-using Antlr4.Runtime;
-using Pattern;
+﻿using Antlr4.Runtime;
 using Pattern.Unions;
-using ReData.Query.Core;
+using ReData.Query.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
@@ -49,12 +47,12 @@ public abstract record Expr
 
     public bool Equivalent(Expr other)
     {
-        return this.Hash == other.Hash;
+        return Hash == other.Hash;
     }
     
     public bool NotEquivalent(Expr other)
     {
-        return this.Hash != other.Hash;
+        return Hash != other.Hash;
     }
     
     public Expr Replace(Expr pattern, Expr value)

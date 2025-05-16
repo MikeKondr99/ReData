@@ -193,15 +193,15 @@ public abstract partial record Result<T, E> :
         _ => value(),
     };
     
-    public T UnwrapErrOr(Func<T> value) => this switch
+    public E UnwrapErrOr(Func<E> value) => this switch
     {
-        Ok(var ok) => ok,
+        Error(var err) => err,
         _ => value(),
     };
     
-    public T? UnwrapErrOrDefault() => this switch
+    public E? UnwrapErrOrDefault() => this switch
     {
-        Ok(var ok) => ok,
+        Error(var err) => err,
         _ => default,
     };
     
@@ -257,20 +257,11 @@ public static class Result
         return new ResultOk<T>(value);
     }
     
-    public static Result<T,E> Ok<T, E>(T value)
-    {
-        return new Result<T, E>.Ok(value);
-    }
-    
     public static ResultError<E> Error<E>(E value)
     {
         return new ResultError<E>(value);
     }
     
-    public static Result<T,E> Error<T, E>(E value)
-    {
-        return new Result<T, E>.Error(value);
-    }
     
     
 }

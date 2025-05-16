@@ -8,16 +8,14 @@ namespace ReData.Query.Core;
 public sealed record Query : IQuerySource
 {
     public IQuerySource From { get; init; } = new NoSource();
-    public IReadOnlyList<Map>? Select { get; init; }
+    public IReadOnlyList<SelectItem>? Select { get; init; }
     public IReadOnlyList<ResolvedExpr>? Where { get; init; }
-
-    public IReadOnlyList<Order>? OrderBy { get; init; }
+    public IReadOnlyList<OrderItem>? OrderBy { get; init; }
+    public IReadOnlyList<ResolvedExpr>? GroupBy { get; init; }
 
     public uint Limit { get; init; }
 
     public uint Offset { get; init; }
-
-    
 
     public required IResolvedTemplate Name { get; init; }
 

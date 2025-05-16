@@ -1,4 +1,4 @@
-﻿namespace ReData.Query.Core;
+﻿namespace ReData.Query.Common;
 
 public record ExprError
 {
@@ -6,7 +6,3 @@ public record ExprError
     
     public required string Message { get; init; }
 }
-
-public record struct ExprSpan(int Line, int Column, int Length);
-
-

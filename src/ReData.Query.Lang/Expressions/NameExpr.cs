@@ -1,5 +1,4 @@
-﻿using ReData.Query.Core;
-
+﻿
 namespace ReData.Query.Lang.Expressions;
 
 public sealed record NameExpr(string Value) : Expr

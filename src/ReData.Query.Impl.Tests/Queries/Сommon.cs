@@ -73,7 +73,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId",Order.Type.Asc)])
+            .OrderBy([("UserId",OrderItem.Type.Asc)])
             .Select(new()
             {
                 ["UserId"] = "Mod(UserId, 2)"
@@ -126,7 +126,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = assets.UsersQuery.OrderBy([("Salary", Order.Type.Desc)]);
+        var qb = assets.UsersQuery.OrderBy([("Salary", OrderItem.Type.Desc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
@@ -143,8 +143,8 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("Salary", Order.Type.Desc)])
-            .OrderBy([("FirstName", Order.Type.Asc)]);
+            .OrderBy([("Salary", OrderItem.Type.Desc)])
+            .OrderBy([("FirstName", OrderItem.Type.Asc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
@@ -161,8 +161,8 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("Notes", Order.Type.Asc)])
-            .OrderBy([("FirstName", Order.Type.Asc)]);
+            .OrderBy([("Notes", OrderItem.Type.Asc)])
+            .OrderBy([("FirstName", OrderItem.Type.Asc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
@@ -188,7 +188,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([(expr, Order.Type.Asc)]);
+            .OrderBy([(expr, OrderItem.Type.Asc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
@@ -269,7 +269,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", Order.Type.Desc)]);
+        var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", OrderItem.Type.Desc)]);
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
@@ -432,7 +432,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId", Order.Type.Desc)])
+            .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Select(new()
         {
             ["id"] = "UserId",
@@ -460,7 +460,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId", Order.Type.Desc)])
+            .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Where("Salary > 30000.0").UnwrapOk().Value
             .Skip(2)
             .Take(5)

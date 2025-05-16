@@ -6,7 +6,7 @@ import * as MonacoModule from 'monaco-editor';
 export type IEditor = typeof monaco.editor;
 export type Monaco = typeof MonacoModule;
 
-export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit';
+export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit' | 'groupBy';
 
 export type WhereTransformation = {
   $type: 'where',
@@ -26,6 +26,13 @@ export type SelectTransformation = {
   enabled: boolean;
 };
 
+export type GroupByTransformation = {
+  $type: 'groupBy';
+  groups: SelectItem[];
+  items: SelectItem[];
+  enabled: boolean;
+};
+
 export type LimitTransformation = {
   $type: 'limit';
   limit?: number;
@@ -33,7 +40,7 @@ export type LimitTransformation = {
   enabled: boolean;
 };
 
-export type Transformation = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation);
+export type Transformation = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation | GroupByTransformation);
 
 // Type guards
 export function isWhereTransformation(t: Transformation): t is WhereTransformation {
@@ -46,6 +53,10 @@ export function isOrderByTransformation(t: Transformation): t is OrderByTransfor
 
 export function isSelectTransformation(t: Transformation): t is SelectTransformation {
   return t.$type === 'select';
+}
+
+export function isGroupByTransformation(t: Transformation): t is GroupByTransformation {
+  return t.$type === 'groupBy';
 }
 
 export function isLimitTransformation(t: Transformation): t is LimitTransformation {
