@@ -163,7 +163,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Date('2023-12-31 23:59:59').DayOfYear()", 365)] // Last second
     public Task FuncDayOfYearTests(string expr, object? expected) => Test(expr, expected);
     
-    [Theory(DisplayName = "DayOfWeek (ISO)")]
+    [Theory]
     [InlineData("Date('2023-05-15').DayOfWeek()", 1)] // Monday
     [InlineData("Date('2023-05-16').DayOfWeek()", 2)] // Tuesday
     [InlineData("Date('2023-05-17').DayOfWeek()", 3)] // Wednesday
