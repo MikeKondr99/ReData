@@ -1,6 +1,5 @@
 using FluentAssertions;
 using FluentAssertions.Equivalency;
-using ReData.Query.Core;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;

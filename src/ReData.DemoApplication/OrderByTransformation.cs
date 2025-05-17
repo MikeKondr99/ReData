@@ -1,6 +1,6 @@
 ﻿using Pattern.Unions;
+using ReData.Query.Common;
 using ReData.Query.Core;
-using ReData.Query.Core.Types;
 
 namespace ReData.DemoApplication;
 
@@ -10,18 +10,7 @@ public class OrderByTransformation : ITransformation
 
     public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
-        return builder.OrderBy(Items.Select(i => (i.Expression, i.Descending ? Order.Type.Desc : Order.Type.Asc)).ToArray());
-    }
-}
-
-public class LimitTransformation : ITransformation
-{
-    public uint Limit { get; init; }
-    
-    public uint Offset   { get; init; }
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
-    {
-        return Result.Ok(builder.Take(Limit).Skip(Offset));
+        return builder.OrderBy(Items.Select(i => (i.Expression, i.Descending ? Query.Core.Types.OrderItem.Type.Desc : Query.Core.Types.OrderItem.Type.Asc)).ToArray());
     }
 }
 

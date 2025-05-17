@@ -10,7 +10,7 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { debounceTime, Subject } from 'rxjs';
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {
-  ExprError, isLimitTransformation,
+  ExprError, isGroupByTransformation, isLimitTransformation,
   isOrderByTransformation, isSelectTransformation, isWhereTransformation, LimitTransformation,
   OrderByTransformation, SelectTransformation,
   Transformation,
@@ -85,7 +85,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                       </app-fx-input>
                       <nz-switch [(ngModel)]="orderItem.descending" (ngModelChange)="onTransformationChange()" ></nz-switch>
                       <span>{{ orderItem.descending ? 'DESC' : 'ASC' }}</span>
-                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeOrderByItem(i, idx)">
+                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                         <span nz-icon nzType="close-circle" nzTheme="outline"></span>
                       </button>
                     </div>
@@ -114,7 +114,61 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                                     (ngModelChange)="onTransformationChange()"
                         [error]="getError(i,idx)">
                       </app-fx-input>
-                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeSelectItem(i, idx)">
+                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
+                        <span nz-icon nzType="close-circle" nzTheme="outline"></span>
+                      </button>
+                    </div>
+                  }
+                  <button nz-button nzType="default" nzShape="circle" (click)="addSelectItem(i)">
+                    <span nz-icon nzType="plus"></span>
+                  </button>
+                </div>
+              } @else if (isGroupByTransformation(item)) {
+                <div class="flex flex-col gap-2 w-full">
+                  <div class="flex items-center gap-2">
+                    <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                    <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
+                    <span>Группировка</span>
+                  </div>
+                  Для группы
+                  @for (selectItem of item.groups; track idx; let idx = $index) {
+                    <div class="flex items-center gap-2">
+                      <input
+                        nz-input
+                        class="max-w-44"
+                        [(ngModel)]="selectItem.field"
+                        (ngModelChange)="onTransformationChange()"
+                        placeholder="Field name"
+                      />
+                      <span>=</span>
+                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
+                                    (ngModelChange)="onTransformationChange()"
+                                    [error]="getError(i, idx + item.groups.length) ?? getError(i,idx)">
+                      </app-fx-input>
+                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'groups', idx)">
+                        <span nz-icon nzType="close-circle" nzTheme="outline"></span>
+                      </button>
+                    </div>
+                  }
+                  <button nz-button nzType="default" nzShape="circle" (click)="addGroupItem(i)">
+                    <span nz-icon nzType="plus"></span>
+                  </button>
+                  Расчитать
+                  @for (selectItem of item.items; track idx; let idx = $index) {
+                    <div class="flex items-center gap-2">
+                      <input
+                        nz-input
+                        class="max-w-44"
+                        [(ngModel)]="selectItem.field"
+                        (ngModelChange)="onTransformationChange()"
+                        placeholder="Field name"
+                      />
+                      <span>=</span>
+                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
+                                    (ngModelChange)="onTransformationChange()"
+                                    [error]="getError(i,item.groups.length * 2 + idx)">
+                      </app-fx-input>
+                      <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                         <span nz-icon nzType="close-circle" nzTheme="outline"></span>
                       </button>
                     </div>
@@ -170,6 +224,10 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
         <button nz-button nzType="primary" (click)="addSelectTransformation()">
           Преобразовать
           <span nz-icon nzType="pic-center" nzTheme="outline"></span>
+        </button>
+        <button nz-button nzType="primary" (click)="addGroupByTransformation()">
+          Сгруппировать
+          <span nz-icon nzType="group" nzTheme="outline"></span>
         </button>
         <button nz-button nzType="primary" (click)="addLimitTransformation()">
           Ограничить
@@ -259,19 +317,6 @@ export class TransformationListComponent {
     }
   }
 
-  removeOrderByItem(transformationIndex: number, itemIndex: number) {
-    let transformation = this.transformations[transformationIndex];
-    if(isOrderByTransformation(transformation)) {
-      if(transformation.items.length > itemIndex) {
-        transformation.items.splice(itemIndex, 1);
-        if (transformation.items.length === 0) {
-          this.transformations.splice(transformationIndex, 1);
-        }
-        this.onTransformationChange();
-      }
-    }
-  }
-
   removeTransformation(index: number) {
     this.transformations.splice(index, 1);
     this.onTransformationChange();
@@ -283,6 +328,18 @@ export class TransformationListComponent {
       {
         $type: 'select',
         items: [{ field: 'Поле1', expression: '100' }],
+        enabled: true,
+      });
+    this.onTransformationChange();
+  }
+
+  // Add these methods to the component class
+  addGroupByTransformation() {
+    this.transformations.push(
+      {
+        $type: 'groupBy',
+        groups: [{ field: 'Группа1', expression: "[Поле1]"}],
+        items: [{ field: 'Поле1', expression: 'COUNT(1)' }],
         enabled: true,
       });
     this.onTransformationChange();
@@ -301,7 +358,7 @@ export class TransformationListComponent {
 
   addSelectItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex];
-    if(isSelectTransformation(transformation)) {
+    if(isSelectTransformation(transformation) || isGroupByTransformation(transformation)) {
       transformation.items.push({
         field: `Поле${transformation.items.length + 1}`,
         expression: '100',
@@ -310,20 +367,31 @@ export class TransformationListComponent {
     this.onTransformationChange();
   }
 
-  removeSelectItem(transformationIndex: number, itemIndex: number) {
+  addGroupItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex];
-    if(isSelectTransformation(transformation)) {
-      if(transformation.items.length > itemIndex) {
-        console.log(transformation.items);
-        transformation.items.splice(itemIndex, 1);
+    if(isGroupByTransformation(transformation)) {
+      transformation.groups.push({
+        field: `Группа${transformation.groups.length + 1}`,
+        expression: '[Поле]',
+      })
+    }
+    this.onTransformationChange();
+  }
 
-        if (transformation.items.length === 0) {
-          this.transformations.splice(transformationIndex, 1);
-        }
-        this.onTransformationChange();
+  removeItem(transformationIndex: number, key: string, index: number)
+  {
+    let transformation = this.transformations[transformationIndex];
+    let items = (transformation as any)[key] as never[];
+    if(items.length > index) {
+      items.splice(index, 1);
+
+      if (items.length === 0) {
+        this.transformations.splice(transformationIndex, 1);
       }
+      this.onTransformationChange();
     }
   }
+
 
   onTransformationChange() {
     localStorage.setItem('transformations', JSON.stringify(this.transformations));
@@ -337,16 +405,6 @@ export class TransformationListComponent {
     }
   }
 
-  public displayErrors() {
-    let result = "";
-    for (const [i, e] of (this.errors()?.errors ?? []).entries()) {
-      if(e !== null) {
-        result += `[${i}] ${e.span.column}:${e.span.column + e.span.length} | ${e?.message}\n`;
-      }
-    }
-    return result;
-  }
-
   toggle(index: number, value: boolean) {
     this.transformations[index].enabled = value;
     this.onTransformationChange();
@@ -356,4 +414,5 @@ export class TransformationListComponent {
   protected readonly isWhereTransformation = isWhereTransformation;
   protected readonly isSelectTransformation = isSelectTransformation;
   protected readonly isLimitTransformation = isLimitTransformation;
+  protected readonly isGroupByTransformation = isGroupByTransformation;
 }

@@ -29,7 +29,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         }
         WriteSelect(res, query);
         WriteWhere(res, query);
-        // GroupBy
+        WriteGroupBy(res, query);
         // Having
         WriteOrderBy(res, query);
         WriteLimitOffset(res, query);
@@ -155,11 +155,29 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             res.Append(' ');
             res.Append(order.Direction switch
             {
-                Order.Type.Desc => "DESC",
-                Order.Type.Asc => "ASC",
+                OrderItem.Type.Desc => "DESC",
+                OrderItem.Type.Asc => "ASC",
                 var unknown => throw new Exception($"Unknown enum value {unknown} of type Query.Order.Type")
             });
 
+            if (i != last)
+            {
+                res.Append(", ");
+            }
+        }
+        res.Append('\n');
+    }
+    
+    protected virtual void WriteGroupBy(StringBuilder res, Query query)
+    {
+        if (query.GroupBy?.Count is 0 or null) return;
+        
+        int last = query.GroupBy.Count - 1;
+        res.Append("GROUP BY ");
+        for (var i = 0; i < query.GroupBy.Count; i++)
+        {
+            var group = query.GroupBy[i];
+            WriteExpression(res, query, group);
             if (i != last)
             {
                 res.Append(", ");

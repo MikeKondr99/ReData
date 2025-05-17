@@ -46,7 +46,7 @@ public class FailureQueries
     public void OrderByMustBeNonBoolean()
     {
         var qb = new PostgresAssets().UsersQuery
-            .OrderBy([("10 = 10", Order.Type.Asc)])
+            .OrderBy([("10 = 10", OrderItem.Type.Asc)])
             .ExpectErr("Должен упасть с ошибкой");
     }
     
@@ -54,7 +54,7 @@ public class FailureQueries
     public void OrderByMustBeNonNull()
     {
         var qb = new PostgresAssets().UsersQuery
-            .OrderBy([("null", Order.Type.Asc)])
+            .OrderBy([("null", OrderItem.Type.Asc)])
             .ExpectErr("Должен упасть с ошибкой");
     }
     

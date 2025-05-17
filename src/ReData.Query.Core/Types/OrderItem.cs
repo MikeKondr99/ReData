@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Core.Types;
 
-public record struct Order(ResolvedExpr ResolvedExpr, Order.Type Direction)
+public record struct OrderItem(ResolvedExpr ResolvedExpr, OrderItem.Type Direction)
 {
     public enum Type
     {

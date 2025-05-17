@@ -1,7 +1,7 @@
 ﻿using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core.Components;
-using ReData.Query.Core.Components.Implementation;
+using ReData.Query.Common;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Lang.Expressions;

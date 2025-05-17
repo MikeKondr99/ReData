@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
     </ItemGroup>

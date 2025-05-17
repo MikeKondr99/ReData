@@ -1,4 +1,5 @@
 ﻿using Pattern.Unions;
+using ReData.Query.Common;
 using ReData.Query.Core;
 
 namespace ReData.DemoApplication;

@@ -54,6 +54,9 @@ export class FxInputComponent {
       horizontal: 'hidden',     // Hide horizontal scrollbar
       useShadows: false
     },
+    unicodeHighlight: {
+      ambiguousCharacters: false,
+    },
     renderLineHighlight: 'none', // Disable line highlighting
     autoClosingBrackets: 'never', // Disable auto-closing brackets
     autoClosingQuotes: 'never',   // Disable auto-closing quotes
