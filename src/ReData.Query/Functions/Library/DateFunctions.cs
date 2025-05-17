@@ -291,7 +291,7 @@ public class DateFunctions : FunctionsDescriptor
                 [ClickHouse] = $"toDayOfWeek({input})", // ClickHouse returns Mon=1 to Sun=7
                 [MySql] = $"WEEKDAY({input}) + 1", // MySQL's WEEKDAY(): Mon=0, Sun=6 → +1
                 [SqlServer] = $"(DATEPART(WEEKDAY, {input}) + 5) % 7 + 1", // Converts Sun=1 to Mon=1
-                [Oracle] = $"MOD(TO_NUMBER(TO_CHAR({input}, 'D')) - 1 + 7, 7) + 1" // 'D'=1(Sun) to 7(Sat)
+                [Oracle] = $"TO_NUMBER(TO_CHAR({input}, 'D', 'NLS_DATE_LANGUAGE = Russian'))"
             });
         
         // ISO Standard (Week 1 contains January 4th)
