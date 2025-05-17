@@ -64,26 +64,26 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
                           <div class="text-blue-700">
                             @switch (field.type) {
                               @case ('DateTime') {
-                                dat
+                                date
                               }
                               @case ('Number') {
                                 num
-                              }
-                              @case ('Boolean') {
-                                bool
                               }
                               @case ('Integer') {
                                 int
                               }
                               @case ('Boolean') {
-                                bl
+                                bool
                               }
                               @case ('Text') {
-                                txt
+                                text
                               }
                               @default {
-                                ?
+                                unk
                               }
+                            }
+                            @if(!field.canBeNull) {
+                              !
                             }
                           </div>
                           {{ field.alias }}
@@ -96,7 +96,7 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
                     <ng-template nz-virtual-scroll let-data let-index="index">
                       <tr>
                         @for (field of apiResponse.fields; track field.alias) {
-                          <td class="text-ellipsis text-nowrap overflow-hidden max-h-14 min-h-14" nz-tooltip [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft">
+                          <td class="text-ellipsis text-nowrap overflow-hidden max-h-14 min-h-14" nz-tooltip [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft" [style.text-align]="textAlign(field.type)">
                             @if (data[field.alias]?.type != null) {
                               <span class="text-gray-400 italic">{{ data[field.alias].type }}</span>
                             } @else if (data[field.alias] == null) {
@@ -104,7 +104,11 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
                             } @else if (data[field.alias] === '') {
                               <span class="text-gray-400 italic">Пустая строка</span>
                             } @else {
-                              {{ data[field.alias] }}
+                              @if(field.type == 'DateTime') {
+                                {{ date(data[field.alias]) }}
+                              } @else {
+                                {{ data[field.alias] }}
+                              }
                             }
                           </td>
                         }
@@ -171,6 +175,7 @@ export class AppComponent {
     return q;
   })
 
+
   api = effect(() => {
     let transformations = this.transformations();
     untracked(() => {
@@ -201,5 +206,15 @@ export class AppComponent {
     this.transformations.set([...transformations]);
   }
 
+  textAlign(type: string) {
+    if(type != 'Text') return 'right'
+    return 'left'
+  }
 
+  date(value: string) {
+    return new Date(value).toLocaleString();
+  }
+
+
+  protected readonly Date = Date;
 }

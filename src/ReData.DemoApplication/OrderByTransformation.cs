@@ -14,17 +14,6 @@ public class OrderByTransformation : ITransformation
     }
 }
 
-public class LimitTransformation : ITransformation
-{
-    public uint Limit { get; init; }
-    
-    public uint Offset   { get; init; }
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
-    {
-        return Result.Ok(builder.Take(Limit).Skip(Offset));
-    }
-}
-
 public record struct OrderItem
 {
     public required string Expression { get; init; }

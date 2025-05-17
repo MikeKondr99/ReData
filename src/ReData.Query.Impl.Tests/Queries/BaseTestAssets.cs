@@ -29,7 +29,6 @@ public sealed class SqlServerAssets : BaseTestAssets
     public override DatabaseType DatabaseType { get; } = DatabaseType.SqlServer;
 }
 
-
 public abstract class BaseTestAssets : ITestAssets
 {
     protected static NumberValue Val(double val) => new NumberValue(val);
@@ -57,6 +56,190 @@ public abstract class BaseTestAssets : ITestAssets
                 ("Notes", new FieldType(DataType.Text, false)),
             ]
         );
+
+    public dynamic[] UsersDynamicArray { get; } =
+    [
+        new
+        {
+            UserId = 1,
+            FirstName = "John",
+            LastName = "Doe",
+            Age = 30,
+            Salary = 50000.50,
+            DateOfBirth = DateTime.Parse("1990-01-15"),
+            JoinDate = DateTime.Parse("2020-05-10"),
+            LastLoginDate = DateTime.Parse("2023-10-01"),
+            Notes = "Regular user"
+        },
+        new
+        {
+            UserId = 2,
+            FirstName = "Jane",
+            LastName = "Smith",
+            Age = 25,
+            Salary = 60000.00,
+            DateOfBirth = DateTime.Parse("1995-07-22"),
+            JoinDate = DateTime.Parse("2021-03-15"),
+            LastLoginDate = DateTime.Parse("2023-09-28"),
+            Notes = "Active user"
+        },
+        new
+        {
+            UserId = 3,
+            FirstName = "John",
+            LastName = "Doe",
+            Age = 30,
+            Salary = 55000.75,
+            DateOfBirth = DateTime.Parse("1990-01-15"),
+            JoinDate = DateTime.Parse("2022-01-20"),
+            LastLoginDate = DateTime.Parse("2023-10-02"),
+            Notes = "Promoted user"
+        },
+        new
+        {
+            UserId = 4,
+            FirstName = "Alice",
+            LastName = "Johnson",
+            Age = 40,
+            Salary = 75000.00,
+            DateOfBirth = DateTime.Parse("1980-11-30"),
+            JoinDate = DateTime.Parse("2019-11-01"),
+            LastLoginDate = DateTime.Parse("2023-09-30"),
+            Notes = "Manager"
+        },
+        new
+        {
+            UserId = 5,
+            FirstName = "Jane",
+            LastName = "Smith",
+            Age = 25,
+            Salary = 62000.50,
+            DateOfBirth = DateTime.Parse("1995-07-22"),
+            JoinDate = DateTime.Parse("2021-03-15"),
+            LastLoginDate = DateTime.Parse("2023-10-03"),
+            Notes = "Active user"
+        },
+        new
+        {
+            UserId = 6,
+            FirstName = "Bob",
+            LastName = "Brown",
+            Age = 35,
+            Salary = 45000.00,
+            DateOfBirth = DateTime.Parse("1985-05-10"),
+            JoinDate = DateTime.Parse("2020-06-01"),
+            LastLoginDate = DateTime.Parse("2023-09-25"),
+            Notes = "New user"
+        },
+        new
+        {
+            UserId = 7,
+            FirstName = "Alice",
+            LastName = "Johnson",
+            Age = 40,
+            Salary = 80000.00,
+            DateOfBirth = DateTime.Parse("1980-11-30"),
+            JoinDate = DateTime.Parse("2019-11-01"),
+            LastLoginDate = DateTime.Parse("2023-10-04"),
+            Notes = "Senior Manager"
+        },
+        new
+        {
+            UserId = 8,
+            FirstName = "Mike",
+            LastName = "Davis",
+            Age = 28,
+            Salary = 48000.00,
+            DateOfBirth = DateTime.Parse("1993-02-14"),
+            JoinDate = DateTime.Parse("2021-07-15"),
+            LastLoginDate = DateTime.Parse("2023-09-29"),
+            Notes = "Junior Developer"
+        },
+        new
+        {
+            UserId = 9,
+            FirstName = "Sarah",
+            LastName = "Wilson",
+            Age = 32,
+            Salary = 70000.00,
+            DateOfBirth = DateTime.Parse("1989-08-20"),
+            JoinDate = DateTime.Parse("2018-12-01"),
+            LastLoginDate = DateTime.Parse("2023-10-05"),
+            Notes = "Team Lead"
+        },
+        new
+        {
+            UserId = 10,
+            FirstName = "John",
+            LastName = "Doe",
+            Age = 30,
+            Salary = 60000.00,
+            DateOfBirth = DateTime.Parse("1990-01-15"),
+            JoinDate = DateTime.Parse("2020-05-10"),
+            LastLoginDate = DateTime.Parse("2023-10-06"),
+            Notes = "Regular user"
+        },
+        new
+        {
+            UserId = 11,
+            FirstName = "Emily",
+            LastName = "Clark",
+            Age = 27,
+            Salary = 52000.00,
+            DateOfBirth = DateTime.Parse("1994-03-25"),
+            JoinDate = DateTime.Parse("2022-02-10"),
+            LastLoginDate = DateTime.Parse("2023-09-27"),
+            Notes = "Intern"
+        },
+        new
+        {
+            UserId = 12,
+            FirstName = "Jane",
+            LastName = "Smith",
+            Age = 25,
+            Salary = 65000.00,
+            DateOfBirth = DateTime.Parse("1995-07-22"),
+            JoinDate = DateTime.Parse("2021-03-15"),
+            LastLoginDate = DateTime.Parse("2023-10-07"),
+            Notes = "Active user"
+        },
+        new
+        {
+            UserId = 13,
+            FirstName = "Chris",
+            LastName = "Evans",
+            Age = 38,
+            Salary = 90000.00,
+            DateOfBirth = DateTime.Parse("1983-09-12"),
+            JoinDate = DateTime.Parse("2017-10-01"),
+            LastLoginDate = DateTime.Parse("2023-10-08"),
+            Notes = "Director"
+        },
+        new
+        {
+            UserId = 14,
+            FirstName = "Alice",
+            LastName = "Johnson",
+            Age = 40,
+            Salary = 85000.00,
+            DateOfBirth = DateTime.Parse("1980-11-30"),
+            JoinDate = DateTime.Parse("2019-11-01"),
+            LastLoginDate = DateTime.Parse("2023-10-09"),
+            Notes = "Senior Manager"
+        },
+        new
+        {
+            UserId = 15,
+            FirstName = "Bob",
+            LastName = "Brown",
+            Age = 35,
+            Salary = 47000.00,
+            DateOfBirth = DateTime.Parse("1985-05-10"),
+            JoinDate = DateTime.Parse("2020-06-01"),
+            LastLoginDate = DateTime.Parse("2023-10-10"),
+            Notes = "New user"
+        }
+    ];
 
     public IReadOnlyList<Dictionary<string, IValue>> UsersData { get; } =
     [
@@ -245,7 +428,6 @@ public abstract class BaseTestAssets : ITestAssets
     public Task InitializeAsync()
     {
         return Task.CompletedTask;
-
     }
 
     public Task DisposeAsync()

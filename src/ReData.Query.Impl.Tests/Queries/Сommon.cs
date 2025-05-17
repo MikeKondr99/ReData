@@ -6,6 +6,72 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
+public static class RecordsTestHelper
+{
+    public static IEnumerable<Dictionary<string, IValue>> PrepareRecords(this IEnumerable<dynamic> objects)
+    {
+        return objects.Select(ConvertDynamicToIValueDictionary);
+    }
+    
+    public static Dictionary<string, IValue> ConvertDynamicToIValueDictionary(dynamic dynamicObject)
+    {
+        if (dynamicObject == null)
+            throw new ArgumentNullException(nameof(dynamicObject));
+
+        var dictionary = new Dictionary<string, IValue>();
+    
+        // Handle ExpandoObject which is often used with dynamic
+        if (dynamicObject is IDictionary<string, object> expandoDict)
+        {
+            foreach (var kvp in expandoDict)
+            {
+                dictionary[kvp.Key] = ConvertToIValue(kvp.Value);
+            }
+        }
+        else
+        {
+            // Handle regular objects using reflection
+            var properties = dynamicObject.GetType().GetProperties();
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(dynamicObject);
+                dictionary[property.Name] = ConvertToIValue(value);
+            }
+        }
+    
+        return dictionary;
+    }
+
+    private static IValue ConvertToIValue(object? value)
+    {
+        if (value is null)
+            return new NullValue();
+
+        switch (value)
+        {
+            case string str:
+                return new TextValue(str);
+            case bool b:
+                return new BoolValue(b);
+            case int i:
+                return new IntegerValue(i);
+            case long l:
+                return new IntegerValue(Convert.ToInt32(l)); // or handle as separate case if you have LongValue
+            case double d:
+                return new NumberValue(d);
+            case float f:
+                return new NumberValue(Convert.ToDouble(f));
+            case decimal dec:
+                return new NumberValue(Convert.ToDouble(dec));
+            case DateTime dt:
+                return new DateTimeValue(dt);
+            default:
+                throw new InvalidOperationException($"Unsupported type: {value.GetType().FullName}");
+        }
+    }
+    
+}
+
 public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
     [Fact]
@@ -19,7 +85,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData;
+        var expect = assets.UsersDynamicArray.PrepareRecords();
 
         result.Should().BeEquivalentTo(expect);
     }
@@ -35,11 +101,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
-        var expect = assets.UsersData.Where(u => u["UserId"] is IntegerValue(> 5));
+        var expect = assets.UsersDynamicArray.Where(u => u.UserId > 5).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
     [Fact]
     public async Task WhereSelectComboQuery()
     {
@@ -56,24 +122,25 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
-        var expect = assets.UsersData
-            .Where(u => u["UserId"] is IntegerValue(> 5))
-            .Select(u => new Dictionary<string, IValue>()
+        var expect = assets.UsersDynamicArray
+            .Where(u => u.UserId > 5)
+            .Select(u => new
             {
-                ["UserId"] = new IntegerValue(u.Int("UserId").Value * 2),
-            });
+                UserId = u.UserId * 2
+            })
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
-    
+
+
     [Fact]
     public async Task OrderBySelectComboQuery()
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("UserId",OrderItem.Type.Asc)])
+            .OrderBy([("UserId", OrderItem.Type.Asc)])
             .Select(new()
             {
                 ["UserId"] = "Mod(UserId, 2)"
@@ -83,12 +150,12 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
-        var expect = assets.UsersData
-            .OrderBy(u => u.Int("UserId")!.Value)
-            .Select(u => new Dictionary<string, IValue>()
+        var expect = assets.UsersDynamicArray
+            .OrderBy(u => u.UserId)
+            .Select(u => new
             {
-                ["UserId"] = new IntegerValue(u.Int("UserId")!.Value % 2),
-            });
+                UserId = u.UserId % 2,
+            }).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -110,13 +177,13 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
-        var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
+        var expect = assets.UsersDynamicArray.Select(u => new
         {
-            ["id"] = u["UserId"],
-            ["Name"] = new TextValue((u.Text("FirstName") + u.Text("LastName")).ToUpper()),
-            ["DoubleAge"] = new IntegerValue(u.Int("Age").Value * 2),
-            ["Age"] = u["Age"]
-        });
+            id = u.UserId,
+            Name = (u.FirstName + u.LastName).ToUpper(),
+            DoubleAge = u.Age * 2,
+            u.Age
+        }).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -132,7 +199,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
 
         // Assert
-        var expect = assets.UsersData.OrderByDescending(u => u.Num("Salary"));
+        var expect = assets.UsersDynamicArray.OrderByDescending(u => u.Salary).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -147,10 +214,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             .OrderBy([("FirstName", OrderItem.Type.Asc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
 
         // Assert
-        var expect = assets.UsersData.OrderBy(u => u.Text("FirstName"));
+        var expect = assets.UsersDynamicArray.OrderBy(u => u.FirstName).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -161,18 +228,20 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
-            .OrderBy([("Notes", OrderItem.Type.Asc)])
-            .OrderBy([("FirstName", OrderItem.Type.Asc)]);
+            .OrderBy([
+                ("Notes", OrderItem.Type.Asc),
+                ("FirstName", OrderItem.Type.Asc)
+            ]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
 
         // Assert
-        var expect = assets.UsersData.OrderBy(u => u.Text("Notes")).ThenBy(u => u.Text("FirstName"));
+        var expect = assets.UsersDynamicArray.OrderBy(u => u.Notes).ThenBy(u => u.FirstName).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
     [Theory(DisplayName = "Order by contant values is irrelevant")]
     [InlineData("-1")]
     [InlineData("100")]
@@ -191,14 +260,14 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             .OrderBy([(expr, OrderItem.Type.Asc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
 
         // Assert
-        var expect = assets.UsersData;
+        var expect = assets.UsersDynamicArray.PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
 
     [Fact]
     public async Task Limit()
@@ -211,11 +280,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Take(5);
+        var expect = assets.UsersDynamicArray.Take(5).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
     [Fact]
     public async Task LimitGetOne()
     {
@@ -227,7 +296,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Take(1);
+        var expect = assets.UsersDynamicArray.Take(1).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -243,7 +312,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Take(3);
+        var expect = assets.UsersDynamicArray.Take(3).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -259,7 +328,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Take(3);
+        var expect = assets.UsersDynamicArray.Take(3).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -272,10 +341,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var qb = assets.UsersQuery.Take(5).OrderBy([("UserId", OrderItem.Type.Desc)]);
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
 
         // Assert
-        var expect = assets.UsersData.Take(5).OrderByDescending(u => u.Int("UserId"));
+        var expect = assets.UsersDynamicArray.Take(5).OrderByDescending(u => u.UserId).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -288,10 +357,13 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var qb = assets.UsersQuery.Take(5).Where("Mod(UserId,2) = 0");
 
         // Act
-        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
 
         // Assert
-        var expect = assets.UsersData.Take(5).Where(u => u.Int("UserId").Value % 2 == 0);
+        var expect = assets.UsersDynamicArray
+            .Take(5)
+            .Where(u => u.UserId % 2 == 0)
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -308,11 +380,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Skip(5);
+        var expect = assets.UsersDynamicArray.Skip(5).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
     [Fact]
     public async Task LimitOffsetQuery()
     {
@@ -324,17 +396,18 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Build());
 
         // Assert
-        var expect = assets.UsersData.Skip(5).Take(5);
+        var expect = assets.UsersDynamicArray.Skip(5).Take(5).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
-    
+
     [Fact]
     public async Task BugWhereLeak()
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = assets.UsersQuery.Where("UserId > 5")
+        var qb = assets.UsersQuery
+            .Where("UserId > 5")
             .Select(new()
             {
                 ["Поле"] = "100"
@@ -345,13 +418,13 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.Expect("ValidQuery").Build());
 
         // Assert
-        var expect = assets.UsersData
-            .Where(u => u.Int("UserId")!.Value > 5)
-            .Select(u => new Dictionary<string, IValue>()
+        var expect = assets.UsersDynamicArray
+            .Where(u => u.UserId > 5)
+            .Select(_ => new
             {
-                ["Поле"] = new IntegerValue(100),
+                Поле = 100,
             })
-            .Where(u => true);
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -384,12 +457,14 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
-        var expect = assets.UsersData.Select(u => new Dictionary<string, IValue>()
-        {
-            ["id"] = u["UserId"],
-            ["Name"] = u["FirstName"],
-            ["Age"] = new IntegerValue(u.Int("Age").Value + 3),
-        });
+        var expect = assets.UsersDynamicArray
+            .Select(u => new
+            {
+                id = u.UserId,
+                Name = u.FirstName,
+                Age = u.Age + 3,
+            })
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
@@ -411,49 +486,52 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().UnwrapOk().Value.Build());
 
         // Assert
-        Dictionary<string,IValue>[] expect =
+        dynamic[] expect =
         [
-            new Dictionary<string, IValue>()
+            new 
             {
-                ["id"] = new IntegerValue(14),
-                ["Name"] = new TextValue("Maximus"),
-                ["MaxScore"] = new NumberValue(9000.0)
+                id = 14,
+                Name ="Maximus",
+                MaxScore = 9000.0,
             }
         ];
 
-        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+        result.Should().BeEquivalentTo(expect.PrepareRecords(), o => o.WithStrictOrdering());
     }
 
 
-     // SqlServer
-     [Fact]
-     public async Task SubqueryWithOrderAndWithoutLimit()
-     {
+    // SqlServer
+    [Fact]
+    public async Task SubqueryWithOrderAndWithoutLimit()
+    {
         var runner = await db.GetRunnerAsync();
         // Arrange
         var qb = assets.UsersQuery
             .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Select(new()
-        {
-            ["id"] = "UserId",
-            ["Name"] = "Upper(FirstName) + ' admin'",
-            ["AntiSalary"] = "-Salary",
-        });
+            {
+                ["id"] = "UserId",
+                ["Name"] = "Upper(FirstName) + ' admin'",
+                ["AntiSalary"] = "-Salary",
+            });
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
-        var expect = assets.UsersData.OrderByDescending(u => u.Int("UserId")).Select(u => new Dictionary<string, IValue>()
-        {
-            ["id"] = u["UserId"],
-            ["Name"] = new TextValue(u.Text("FirstName").ToUpper() + " admin"),
-            ["AntiSalary"] = new NumberValue(-u.Num("Salary").Value),
-        });
+        var expect = assets.UsersDynamicArray
+            .OrderByDescending(u => u.UserId)
+            .Select(u => new
+            {
+                id = u.UserId,
+                Name = u.FirstName.ToUpper() + " admin",
+                AntiSalary = -u.Salary,
+            })
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-     }
-    
+    }
+
     [Fact]
     public async Task FullQuery()
     {
@@ -465,30 +543,327 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             .Skip(2)
             .Take(5)
             .Select(new()
-        {
-            ["id"] = "UserId",
-            ["Name"] = "Upper(FirstName) + ' admin'",
-            ["AntiSalary"] = "-Salary",
-        });
+            {
+                ["id"] = "UserId",
+                ["Name"] = "Upper(FirstName) + ' admin'",
+                ["AntiSalary"] = "-Salary",
+            });
 
         // Act
         var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
         // Assert
-        var expect = assets.UsersData
-            .OrderByDescending(u => u.Int("UserId"))
-            .Where(u => u.Num("Salary").Value > 30000.0)
+        var expect = assets.UsersDynamicArray
+            .OrderByDescending(u => u.UserId)
+            .Where(u => u.Salary > 30000.0)
             .Skip(2)
             .Take(5)
-            .Select(u => new Dictionary<string, IValue>()
-        {
-            ["id"] = u["UserId"],
-            ["Name"] = new TextValue(u.Text("FirstName").ToUpper() + " admin"),
-            ["AntiSalary"] = new NumberValue(-u.Num("Salary").Value),
-        });
+            .Select(u => new
+            {
+                id = u.UserId,
+                Name = u.FirstName.ToUpper() + " admin",
+                AntiSalary = -u.Salary,
+            })
+            .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+
+    [Fact]
+    public async Task GroupByWithOnlyGroup()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new()
+            {
+                ["TEST"] = "Notes"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .Select(u => u.Notes)
+            .Distinct()
+            .Select(n => new
+            {
+                TEST = n,
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithAggregations()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new()
+            {
+                ["TEST"] = "Notes",
+                ["Sum"] = "SUM(Salary)",
+                ["Avg"] = "AVG(Salary)",
+                ["Min"] = "MIN(Salary)",
+                ["Max"] = "MAX(Salary)",
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Notes, (k, v) => new
+            {
+                TEST = k,
+                Sum = v.Select(u => (double)u.Salary).Sum(),
+                Avg = v.Select(u => (double)u.Salary).Average(),
+                Min = v.Select(u => u.Salary).Min(),
+                Max = v.Select(u => u.Salary).Max(),
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
     
-    
+    [Fact]
+public async Task GroupByMultipleKeys()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["FirstName", "LastName"], new()
+        {
+            ["FirstName"] = "FirstName",
+            ["LastName"] = "LastName",
+            ["Count"] = "COUNT()",
+            ["TotalSalary"] = "SUM(Salary)"
+        });
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => new { u.FirstName, u.LastName }, (k, v) => new
+        {
+            k.FirstName,
+            k.LastName,
+            Count = v.Count(),
+            TotalSalary = v.Sum(u => (double)u.Salary)
+        })
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithHaving()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["Notes"], new()
+        {
+            ["Note"] = "Notes",
+            ["AvgSalary"] = "AVG(Salary)"
+        })
+        .Where("AvgSalary > 60000");
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.Notes, (k, v) => new
+        {
+            Note = k,
+            AvgSalary = v.Average(u => (double)u.Salary)
+        })
+        .Where(g => g.AvgSalary > 60000)
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithWhereBefore()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .Where("Age > 30")
+        .GroupBy(["Notes"], new()
+        {
+            ["Note"] = "Notes",
+            ["UserCount"] = "COUNT()"
+        });
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .Where(u => u.Age > 30)
+        .GroupBy(u => u.Notes, (k, v) => new
+        {
+            Note = k,
+            UserCount = v.Count()
+        })
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithComplexAggregation()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["FirstName"], new()
+        {
+            ["Name"] = "FirstName",
+            ["MaxMinDiff"] = "MAX(Salary) - MIN(Salary)",
+            ["AvgAge"] = "AVG(Age)",
+            ["TotalUsers"] = "COUNT()"
+        });
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.FirstName, (k, v) => new
+        {
+            Name = k,
+            MaxMinDiff = v.Max(u => u.Salary) - v.Min(u => u.Salary),
+            AvgAge = v.Average(u => u.Age),
+            TotalUsers = v.Count()
+        })
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithOrderBy()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["Notes"], new()
+        {
+            ["Note"] = "Notes",
+            ["UserCount"] = "COUNT()"
+        })
+        .OrderBy([("UserCount", OrderItem.Type.Desc)]);
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.Notes, (k, v) => new
+        {
+            Note = k,
+            UserCount = v.Count()
+        })
+        .OrderByDescending(g => g.UserCount)
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithLimit()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["Notes"], new()
+        {
+            ["Note"] = "Notes",
+            ["UserCount"] = "COUNT()"
+        })
+        .Unwrap()
+        .Take(3);
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.Notes, (k, v) => new
+        {
+            Note = k,
+            UserCount = v.Count()
+        })
+        .Take(3)
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithDatePart()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["Year(JoinDate)"], new()
+        {
+            ["JoinYear"] = "Year(JoinDate)",
+            ["UserCount"] = "COUNT()",
+            ["AvgSalary"] = "AVG(Salary)"
+        });
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.JoinDate.Year, (k, v) => new
+        {
+            JoinYear = k,
+            UserCount = v.Count(),
+            AvgSalary = v.Average(u => (double)u.Salary)
+        })
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
+
+[Fact]
+public async Task GroupByWithCaseExpression()
+{
+    var runner = await db.GetRunnerAsync();
+    // Arrange
+    var qb = assets.UsersQuery
+        .GroupBy(["If(Age > 30,'Senior','Junior')"], new()
+        {
+            ["AgeGroup"] = "If(Age > 30,'Senior','Junior')",
+            ["Count"] = "COUNT()",
+            ["MaxSalary"] = "MAX(Salary)"
+        });
+
+    // Act
+    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+    // Assert
+    var expect = assets.UsersDynamicArray
+        .GroupBy(u => u.Age > 30 ? "Senior" : "Junior", (k, v) => new
+        {
+            AgeGroup = k,
+            Count = v.Count(),
+            MaxSalary = v.Max(u => u.Salary)
+        })
+        .PrepareRecords();
+
+    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+}
 }

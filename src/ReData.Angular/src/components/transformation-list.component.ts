@@ -128,9 +128,9 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                   <div class="flex items-center gap-2">
                     <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                     <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
-                    <span>Преобразовать</span>
+                    <span>Группировка</span>
                   </div>
-                  Группы
+                  Для группы
                   @for (selectItem of item.groups; track idx; let idx = $index) {
                     <div class="flex items-center gap-2">
                       <input
@@ -153,7 +153,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                   <button nz-button nzType="default" nzShape="circle" (click)="addGroupItem(i)">
                     <span nz-icon nzType="plus"></span>
                   </button>
-                  Агрегации
+                  Расчитать
                   @for (selectItem of item.items; track idx; let idx = $index) {
                     <div class="flex items-center gap-2">
                       <input
@@ -227,7 +227,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
         </button>
         <button nz-button nzType="primary" (click)="addGroupByTransformation()">
           Сгруппировать
-          <span nz-icon nzType="pic-center" nzTheme="outline"></span>
+          <span nz-icon nzType="group" nzTheme="outline"></span>
         </button>
         <button nz-button nzType="primary" (click)="addLimitTransformation()">
           Ограничить

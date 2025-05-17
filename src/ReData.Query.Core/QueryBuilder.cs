@@ -328,6 +328,15 @@ public static class QueryBuilderExtensions
         }
         return qb;
     }
+    
+    public static Result<QueryBuilder, IEnumerable<ExprError?>> GroupBy(this Result<QueryBuilder, IEnumerable<ExprError?>> qb, IReadOnlyList<string> groupBy, Dictionary<string, string> select)
+    {
+        if (qb.IsOk(out var ok))
+        {
+            return ok.GroupBy(groupBy,select);
+        }
+        return qb;
+    }
 
     public static Result<ResolvedExpr, ExprError> NotBool(this Result<ResolvedExpr, ExprError> result)
     {

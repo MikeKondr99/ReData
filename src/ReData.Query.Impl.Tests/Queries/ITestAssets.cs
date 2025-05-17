@@ -10,4 +10,7 @@ public interface ITestAssets : IAsyncLifetime
     public DatabaseType DatabaseType { get;  }
     
     public IReadOnlyList<Dictionary<string,IValue>> UsersData { get; }
+    
+    public dynamic[] UsersDynamicArray { get; }
+        
 }
