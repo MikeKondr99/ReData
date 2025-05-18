@@ -187,6 +187,33 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
+    [Fact]
+    public async Task QueryWithInterpolation()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Select(new()
+        {
+            ["FullName"] = "'{FirstName} {LastName}'",
+            ["DoubleAge"] = "2 * Age",
+            ["Age"] = "Age"
+        });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray.Select(u => new
+        {
+            id = u.UserId,
+            Name = (u.FirstName + u.LastName).ToUpper(),
+            DoubleAge = u.Age * 2,
+            u.Age
+        }).PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
 
     [Fact]
     public async Task OrderByQuery()

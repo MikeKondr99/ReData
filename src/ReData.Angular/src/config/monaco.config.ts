@@ -10,82 +10,79 @@ export const monacoConfig: NgxMonacoEditorConfig = {
     let monaco = <Monaco>((<any>window).monaco);
 
 
-    monaco.languages.register({id: "lang"})
+    monaco.languages.register({ id: "lang" });
 
-    monaco.languages.setMonarchTokensProvider('lang', {
-
-      keywords: ['true', 'false', 'null', 'and', 'or'],
-
-      typeKeywords: [
-        'Text', 'Num', 'Int', 'Bool', 'Date',
-      ],
-
-      operators: ['=', '>', '<', '<=', '>=', '!=', '+', '-', '*', '/', '^'],
-
-      // we include these common regular expressions
+    monaco.languages.setMonarchTokensProvider("lang", {
+      keywords: ["true", "false", "null", "and", "or"],
+      typeKeywords: ["Text", "Num", "Int", "Bool", "Date"],
+      operators: ["=", ">", "<", "<=", ">=", "!=", "+", "-", "*", "/", "^"],
       symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
-      // C# style strings
       escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-      // The main tokenizer for our languages
       tokenizer: {
         root: [
-          // identifiers and keywords
+          // Identifiers and keywords
           [/[a-zA-Zа-яА-Я_$][\w$]*/, {
             cases: {
-              '@typeKeywords': 'keyword',
-              '@keywords': 'keyword',
-              '@default': 'identifier'
-            }
+              "@typeKeywords": "keyword",
+              "@keywords": "keyword",
+              "@default": "identifier",
+            },
           }],
-          // whitespace
-          {include: '@whitespace'},
-
-          // delimiters and operators
-          [/[{}()\[\]]/, '@brackets'],
-          [/[<>](?!@symbols)/, '@brackets'],
+          // Whitespace
+          { include: "@whitespace" },
+          // Delimiters and operators
+          [/[{}()\[\]]/, "@brackets"], // <-- Now {} are treated as brackets (default color)
+          [/[<>](?!@symbols)/, "@brackets"],
           [/@symbols/, {
             cases: {
-              '@operators': 'operator',
-              '@default': ''
-            }
+              "@operators": "operator",
+              "@default": "",
+            },
           }],
-
-          // numbers
-          [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-          // [/0[xX][0-9a-fA-F]+/, 'number.hex'],
-          [/\d+/, 'number'],
-
-          // delimiter: after number because of .\d floats
-          [/[,.]/, 'delimiter'],
-
-          // strings
-          [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
-          [/'/, {token: 'string.quote', bracket: '@open', next: '@string'}],
-
-        ],
-
-        comment: [
-          [/[^\/*]+/, 'comment'],
-          [/\/\*/, 'comment', '@push'],    // nested comment
-          ["\\*/", 'comment', '@pop'],
-          [/[\/*]/, 'comment']
+          // Numbers
+          [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+          [/\d+/, "number"],
+          // Delimiters
+          [/[,.]/, "delimiter"],
+          // Strings
+          [/'([^'\\]|\\.)*$/, "string.invalid"], // Unclosed string
+          [/'/, { token: "string.quote", bracket: "@open", next: "@string" }],
         ],
 
         string: [
-          [/[^\\']+/, 'string'],
-          [/@escapes/, 'string.escape'],
-          [/\\./, 'string.escape.invalid'],
-          [/'/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+          // Regular string content (not `{`, `}`, or `\`)
+          [/[^\\'{]+/, "string"],
+          // Escapes
+          [/@escapes/, "string.escape"],
+          [/\\./, "string.escape.invalid"],
+          // Start interpolation (`{` is a bracket, not a string)
+          [/\{/, { token: "@brackets", bracket: "@open", next: "@interpolate" }],
+          // Close string
+          [/'/, { token: "string.quote", bracket: "@close", next: "@pop" }],
+        ],
+
+        // Inside `{expression}`
+        interpolate: [
+          // End interpolation (`}` is a bracket, not a string)
+          [/\}/, { token: "@brackets", bracket: "@close", next: "@pop" }],
+          // Tokenize the expression inside `{}` like normal code
+          { include: "root" },
+        ],
+
+        comment: [
+          [/[^\/*]+/, "comment"],
+          [/\/\*/, "comment", "@push"], // Nested comment
+          ["\\*/", "comment", "@pop"],
+          [/[\/*]/, "comment"],
         ],
 
         whitespace: [
-          [/[ \t\r\n]+/, 'white'],
-          [/\/\*/,       'comment', '@comment' ],
-          [/\/\/.*$/,    'comment'],
+          [/[ \t\r\n]+/, "white"],
+          [/\/\*/, "comment", "@comment"],
+          [/\/\/.*$/, "comment"],
         ],
-      }
+      },
     });
 
   }

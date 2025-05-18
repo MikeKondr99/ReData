@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -7,7 +8,7 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
 
-internal class ExpressionParser : LangBaseVisitor<Expr>
+internal class ExpressionParser : LangParserBaseVisitor<Expr>
 {
     public override Expr VisitStart(LangParser.StartContext context)
     {
@@ -81,25 +82,72 @@ internal class ExpressionParser : LangBaseVisitor<Expr>
 
     public override Expr VisitString(LangParser.StringContext context)
     {
-        var value = context.GetText()[1..^1];
-        value = Regex.Replace(value, @"\\(.)", m =>
+        List<Expr> exprs = new();
+        foreach (var part in context.stringContents())
         {
-            char escapedChar = m.Groups[1].Value[0];
+            var expr = part.children.OfType<LangParser.ExprContext>().FirstOrDefault();
 
-            return escapedChar switch
+            void Append(Expr expr)
             {
-                'r' => "\r",
-                'n' => "\n",
-                't' => "\t",
-                '\'' => "'",
-                '\\' => "\\",
-                _ => m.Value // If it's not one of the recognized characters, return it unchanged
-            };
-        });
-        return new StringLiteral(value)
+                if (exprs.LastOrDefault() is StringLiteral last && expr is StringLiteral nw)
+                {
+                    exprs[^1] = new StringLiteral(last.Value + nw.Value, Span(part));
+                } 
+                else
+                {
+                    exprs.Add(expr);
+                }
+            }
+            
+            if (expr is not null)
+            {
+                var e = Visit(expr);
+                Append(new FuncExpr
+                    {
+                        Name = "Text",
+                        Arguments = [e],
+                        Kind = FuncExprKind.Default,
+                        Span = e.Span,
+                    }
+                );
+            }
+            else if(part.TEXT() is not null)
+            {
+                Append(new StringLiteral(part.GetText(), Span(part)));
+            } 
+            else if (part.ESCAPE_SEQUENCE() is not null)
+            {
+                 var chr = part.GetText()[1];
+                 var value = chr switch
+                 {
+                     'r' => "\r",
+                     'n' => "\n",
+                     't' => "\t",
+                     '\'' => "'",
+                     '\\' => "\\",
+                     _ => chr.ToString()
+                 };
+                 Append(new StringLiteral(value, Span(part)));
+            }
+            else
+            {
+                throw new Exception("else");
+            }
+        }
+
+        if (exprs.Count is 0)
         {
+            return new StringLiteral("");
+        }
+
+        var result = exprs.Aggregate((a, b) => new FuncExpr
+        {
+            Name = "+",
+            Kind = FuncExprKind.Binary,
+            Arguments = [a, b],
             Span = Span(context),
-        };
+        });
+        return result;
     }
 
     public override Expr VisitInteger(LangParser.IntegerContext context)
