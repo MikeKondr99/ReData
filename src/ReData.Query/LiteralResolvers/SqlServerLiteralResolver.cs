@@ -12,7 +12,7 @@ public sealed class SqlServerLiteralResolver : ILiteralResolver
     {
         (TemplateInterpolatedStringHandler template, ExprType type) temp = literal switch
         {
-            StringLiteral(var v) => ($"'{v}'", ExprType.Text()),
+            StringLiteral(var v) => ($"N'{v}'", ExprType.Text()),
             NumberLiteral(var v) => (v.ToString("0.0###############", CultureInfo.InvariantCulture), ExprType.Number()),
             IntegerLiteral(var v) => (v.ToString(), ExprType.Integer()),
             BooleanLiteral(var v) => (v ? "0 = 0" : "0 <> 0", ExprType.Boolean()),

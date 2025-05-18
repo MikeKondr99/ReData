@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using FluentAssertions;
+using ReData.Common;
 using ReData.Query.Core;
 using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Runners;
@@ -20,7 +21,7 @@ public abstract class ExprTests(IDatabaseFixture db)
         qb = qb.Select(new()
         {
             ["test"] = expr,
-        }).UnwrapOk().Value;
+        }).Expect(e => e.JoinBy("\n"));
         var result = await runner.RunQueryAsScalar(qb.Build());
         var excted = ExpectedValue(expected);
         Compare(result,ExpectedValue(expected));
