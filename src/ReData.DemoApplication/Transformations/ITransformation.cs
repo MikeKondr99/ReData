@@ -12,5 +12,6 @@ namespace ReData.DemoApplication;
 [JsonDerivedType(typeof(GroupByTransformation), typeDiscriminator: "groupBy")]
 public interface ITransformation
 {
-    Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder);
+    // Нужно делать вместо IServiceProvider TransformatinoContext
+    Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder, IServiceProvider services);
 }

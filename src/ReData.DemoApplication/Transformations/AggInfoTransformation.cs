@@ -7,7 +7,7 @@ namespace ReData.DemoApplication;
 
 public class AggInfoTransformation : ITransformation
 {
-    public Result<QueryBuilder,IEnumerable<ExprError?>> Apply(QueryBuilder builder)
+    public Result<QueryBuilder,IEnumerable<ExprError?>> Apply(QueryBuilder builder, IServiceProvider services)
     {
         var fields = builder.Build().Fields().Fields;
         Dictionary<string, string> select = new();

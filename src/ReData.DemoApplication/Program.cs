@@ -1,7 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ReData.Database;
 using ReData.DemoApplication;
+using ReData.DemoApplication.Extensions;
 using ReData.Query;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
@@ -15,6 +18,9 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 }
 
+builder.Services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING")));
+
+
 builder.Services.Configure<JsonOptions>(options =>
 {
     options.SerializerOptions.Converters.Add(new ValueConverter());
@@ -27,6 +33,8 @@ builder.Services.AddSingleton<ConnectionService>();
 
 var app = builder.Build();
 
+app.Migrate<ApplicationDatabaseContext>();
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
@@ -34,11 +42,63 @@ var factory = new Factory();
 
 var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
-app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromServices] ConnectionService connectionService) =>
+app.MapPost("api/dataset", async (
+    [FromServices] DataSetsService datasets
+) =>
+{
+    await datasets.CreateDataSetAsync(new DataSet()
+    {
+        Id = Guid.NewGuid(),
+        Name = $"Набор {Guid.NewGuid().ToString("N")[..6]}",
+        Transformations =
+        [
+            new ExtractTransformation(),
+        ]
+    });
+});
+
+app.MapPut("api/dataset", async (
+    DataSet dataSet,
+    [FromServices] DataSetsService datasets,
+    CancellationToken cancellationToken
+) =>
+{
+    return await datasets.UpdateDataSetAsync(dataSet, cancellationToken);
+});
+
+app.MapDelete("api/dataset/:id", async (
+    [FromQuery] Guid id,
+    [FromServices] DataSetsService datasets,
+    CancellationToken cancellationToken
+) =>
+{
+    await datasets.DeleteDataSetAsync(id);
+});
+
+app.MapGet("api/dataset", async (
+    [FromServices] DataSetsService datasets,
+    CancellationToken cancellationToken
+) =>
+{
+    return await datasets.GetAllDataSetsAsync(cancellationToken);
+});
+
+app.MapGet("api/dataset/:id", async (
+    [FromQuery] Guid id,
+    [FromServices] DataSetsService datasets,
+    CancellationToken cancellationToken
+) =>
+{
+    return await datasets.GetDataSetAsync(id);
+});
+
+app.MapPost("api/dataset/preview", async ([FromBody] TransformRequest request, 
+        [FromServices] IServiceProvider services,
+        [FromServices] ConnectionService connectionService) =>
     {
         string? sql = null;
         int i = -1;
-        var query = connectionService.GetQuery();
+        QueryBuilder query = null!;
         Query build;
         // Сбор трансформаций
         try
@@ -46,7 +106,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
             foreach (var transformation in request.Transformations)
             {
                 i++;
-                var res = transformation.Apply(query);
+                var res = transformation.Apply(query, services);
                 if (res.Unwrap(out var ok, out var err))
                 {
                     query = ok;

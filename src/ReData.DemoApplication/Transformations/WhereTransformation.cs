@@ -8,7 +8,7 @@ public class WhereTransformation : ITransformation
 {
     public required string Condition { get; set; }
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder, IServiceProvider services)
     {
         return builder.Where(Condition);
     }
