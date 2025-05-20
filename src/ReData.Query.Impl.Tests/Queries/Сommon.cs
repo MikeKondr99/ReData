@@ -206,8 +206,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         // Assert
         var expect = assets.UsersDynamicArray.Select(u => new
         {
-            id = u.UserId,
-            Name = (u.FirstName + u.LastName).ToUpper(),
+            FullName = (u.FirstName + " " + u.LastName).ToUpper(),
             DoubleAge = u.Age * 2,
             u.Age
         }).PrepareRecords();

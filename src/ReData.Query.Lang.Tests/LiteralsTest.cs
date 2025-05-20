@@ -37,11 +37,11 @@ public class LiteralsTest
     // [InlineData(@"'tab\r'","tab\r")]
     // [InlineData(@"'tab\''","tab'")]
     // [InlineData(@"'ta\' '","ta'")]
-    [InlineData(@"'tab\'",@"tab\")]
+    [InlineData(@"'tab\''",@"tab'")]
     // [InlineData(@"' \\n '",@" \n ")]
     public void StringLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr).UnwrapOk().Value;
+        var e = Expr.Parse(expr).Unwrap();
         e.Should().BeEquivalentTo(new StringLiteral(expected), _options);
     }
     
