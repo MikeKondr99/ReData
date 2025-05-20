@@ -1279,4 +1279,183 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     #endregion
+    
+    #region CONCAT(value)
+    
+    [Fact]
+    public async Task Concat_Basic()
+    {
+        // Arrange
+        string[] arr = ["a", "b", "c"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("abc")); // Simple concatenation
+    }
+
+    [Fact]
+    public async Task Concat_WithNulls()
+    {
+        // Arrange
+        string?[] arr = ["a", null, "c"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("ac")); // Nulls should be skipped
+    }
+
+    [Fact]
+    public async Task Concat_Empty()
+    {
+        // Arrange
+        string[] arr = ["1","2"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x)", ToExpressions(arr), "false");
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NullValue()); // Empty string for empty input
+    }
+    
+    [Fact]
+    public async Task Concat_AllNulls()
+    {
+        // Arrange
+        string?[] arr = ["",null, null, null];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x)", ToExpressions(arr), "x.IsNull()");
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NullValue()); // Empty string for all nulls
+    }
+
+    
+    #endregion
+    
+    #region CONCAT(value, delimiter)
+    
+    [Fact]
+    public async Task Concat_WithDelimiter()
+    {
+        // Arrange
+        string[] arr = ["a", "b", "c"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, ',')", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("a,b,c")); // Comma-separated
+    }
+
+    [Fact]
+    public async Task Concat_WithDelimiterAndNulls()
+    {
+        // Arrange
+        string?[] arr = ["a", null, "c"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, '|')", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("a|c")); // Nulls skipped
+    }
+
+    [Fact]
+    public async Task Concat_WithEmptyDelimiter()
+    {
+        // Arrange
+        string[] arr = ["a", "b", "c"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, '')", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("abc")); // Same as basic concat
+    }
+    
+    [Fact]
+    public async Task Concat_SingleItem()
+    {
+        // Arrange
+        string[] arr = ["single"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, ',')", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("single")); // No delimiter for single item
+    }
+
+    [Fact]
+    public async Task Concat_Unicode()
+    {
+        // Arrange
+        string[] arr = ["привет", "мир"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, ' ')", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("привет мир")); // Unicode handling
+    }
+    
+    #endregion
+
+    #region CONCAT(value, delimiter, sort)
+
+    [Fact]
+    public async Task Concat_WithDelimiterAndSort()
+    {
+        // Arrange
+        string?[] arr = ["10", "2", "1",];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, '|', Int(x))", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("1|2|10")); // Nulls skipped
+    }
+    
+    [Fact]
+    public async Task ConcatNulls_WithDelimiterAndSort()
+    {
+        // Arrange
+        string?[] arr = ["10", "2", "1", null, null];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("CONCAT(x, '|', Reverse(x))", ToExpressions(arr), "x.IsNull()");
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NullValue());
+    }
+    
+
+    #endregion
 }
