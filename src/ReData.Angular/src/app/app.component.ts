@@ -8,7 +8,7 @@ import {NzTableModule} from 'ng-zorro-antd/table';
 import {NzIconDirective, NzIconModule} from 'ng-zorro-antd/icon';
 import {NzTabsModule} from 'ng-zorro-antd/tabs';
 import {EditorComponent} from 'ngx-monaco-editor-v2';
-import {ApiResponse, ExprError, Transformation} from '../types';
+import {ApiResponse, ExprError, Field, Transformation} from '../types';
 import {NzButtonModule} from 'ng-zorro-antd/button';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FunctionsComponent} from '../components/functions.component';
@@ -86,7 +86,9 @@ import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
                               !
                             }
                           </div>
-                          {{ field.alias }}
+                          <span class="whitespace-pre">
+                            {{ displayFieldAlias(field) }}
+                          </span>
                         </div>
                       </th>
                     }
@@ -213,6 +215,13 @@ export class AppComponent {
 
   date(value: string) {
     return new Date(value).toLocaleString();
+  }
+
+  displayFieldAlias(field: Field) {
+    const regex = /^[a-zA-Zа-яА-Я][a-zA-Zа-яА-Я0-9]*$/;
+    if(regex.test(field.alias))
+      return field.alias;
+    return `[${field.alias}]`
   }
 
 
