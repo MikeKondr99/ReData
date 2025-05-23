@@ -23,7 +23,6 @@ public abstract class ExprTests(IDatabaseFixture db)
             ["test"] = expr,
         }).Expect(e => e.JoinBy("\n"));
         var result = await runner.RunQueryAsScalar(qb.Build());
-        var excted = ExpectedValue(expected);
         Compare(result,ExpectedValue(expected));
     }
 

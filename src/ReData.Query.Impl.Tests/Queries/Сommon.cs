@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using ReData.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using ReData.Query.Impl.Tests.Fixtures;
@@ -12,14 +13,14 @@ public static class RecordsTestHelper
     {
         return objects.Select(ConvertDynamicToIValueDictionary);
     }
-    
+
     public static Dictionary<string, IValue> ConvertDynamicToIValueDictionary(dynamic dynamicObject)
     {
         if (dynamicObject == null)
             throw new ArgumentNullException(nameof(dynamicObject));
 
         var dictionary = new Dictionary<string, IValue>();
-    
+
         // Handle ExpandoObject which is often used with dynamic
         if (dynamicObject is IDictionary<string, object> expandoDict)
         {
@@ -38,7 +39,7 @@ public static class RecordsTestHelper
                 dictionary[property.Name] = ConvertToIValue(value);
             }
         }
-    
+
         return dictionary;
     }
 
@@ -69,7 +70,6 @@ public static class RecordsTestHelper
                 throw new InvalidOperationException($"Unsupported type: {value.GetType().FullName}");
         }
     }
-    
 }
 
 public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
@@ -181,6 +181,32 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         {
             id = u.UserId,
             Name = (u.FirstName + u.LastName).ToUpper(),
+            DoubleAge = u.Age * 2,
+            u.Age
+        }).PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    [Fact]
+    public async Task QueryWithInterpolation()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery.Select(new()
+        {
+            ["FullName"] = "'{FirstName} {LastName}'",
+            ["DoubleAge"] = "2 * Age",
+            ["Age"] = "Age"
+        });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Expect("Valid query").Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray.Select(u => new
+        {
+            FullName = (u.FirstName + " " + u.LastName).ToUpper(),
             DoubleAge = u.Age * 2,
             u.Age
         }).PrepareRecords();
@@ -488,10 +514,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         // Assert
         dynamic[] expect =
         [
-            new 
+            new
             {
                 id = 14,
-                Name ="Maximus",
+                Name = "Maximus",
                 MaxScore = 9000.0,
             }
         ];
@@ -629,242 +655,292 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
+
+    [Fact]
+    public async Task GroupByMultipleKeys()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["FirstName", "LastName"], new()
+            {
+                ["FirstName"] = "FirstName",
+                ["LastName"] = "LastName",
+                ["Count"] = "COUNT()",
+                ["TotalSalary"] = "SUM(Salary)"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => new
+            {
+                u.FirstName,
+                u.LastName
+            }, (k, v) => new
+            {
+                k.FirstName,
+                k.LastName,
+                Count = v.Count(),
+                TotalSalary = v.Sum(u => (double)u.Salary)
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithHaving()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new()
+            {
+                ["Note"] = "Notes",
+                ["AvgSalary"] = "AVG(Salary)"
+            })
+            .Where("AvgSalary > 60000");
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Notes, (k, v) => new
+            {
+                Note = k,
+                AvgSalary = v.Average(u => (double)u.Salary)
+            })
+            .Where(g => g.AvgSalary > 60000)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithWhereBefore()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .Where("Age > 30")
+            .GroupBy(["Notes"], new()
+            {
+                ["Note"] = "Notes",
+                ["UserCount"] = "COUNT()"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .Where(u => u.Age > 30)
+            .GroupBy(u => u.Notes, (k, v) => new
+            {
+                Note = k,
+                UserCount = v.Count()
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithComplexAggregation()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["FirstName"], new()
+            {
+                ["Name"] = "FirstName",
+                ["MaxMinDiff"] = "MAX(Salary) - MIN(Salary)",
+                ["AvgAge"] = "AVG(Age)",
+                ["TotalUsers"] = "COUNT()"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.FirstName, (k, v) => new
+            {
+                Name = k,
+                MaxMinDiff = v.Max(u => u.Salary) - v.Min(u => u.Salary),
+                AvgAge = v.Average(u => u.Age),
+                TotalUsers = v.Count()
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithOrderBy()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new()
+            {
+                ["Note"] = "Notes",
+                ["UserCount"] = "COUNT()"
+            })
+            .OrderBy([("UserCount", OrderItem.Type.Desc)]);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Notes, (k, v) => new
+            {
+                Note = k,
+                UserCount = v.Count()
+            })
+            .OrderByDescending(g => g.UserCount)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [SkippableFact]
+    public async Task GroupByWithLimit()
+    {
+        var runner = await db.GetRunnerAsync();
+        Skip.If(assets.DatabaseType == DatabaseType.Oracle, "TODO починить позже");
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new()
+            {
+                ["Note"] = "Notes",
+                ["UserCount"] = "COUNT()"
+            })
+            .Unwrap()
+            .Take(3);
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Notes, (k, v) => new
+            {
+                Note = k,
+                UserCount = v.Count()
+            })
+            .Take(3)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithDatePart()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Year(JoinDate)"], new()
+            {
+                ["JoinYear"] = "Year(JoinDate)",
+                ["UserCount"] = "COUNT()",
+                ["AvgSalary"] = "AVG(Salary)"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.JoinDate.Year, (k, v) => new
+            {
+                JoinYear = k,
+                UserCount = v.Count(),
+                AvgSalary = v.Average(u => (double)u.Salary)
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task GroupByWithCaseExpression()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["If(Age > 30,'Senior','Junior')"], new()
+            {
+                ["AgeGroup"] = "If(Age > 30,'Senior','Junior')",
+                ["Count"] = "COUNT()",
+                ["MaxSalary"] = "MAX(Salary)"
+            });
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Age > 30 ? "Senior" : "Junior", (k, v) => new
+            {
+                AgeGroup = k,
+                Count = v.Count(),
+                MaxSalary = v.Max(u => u.Salary)
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
     
     [Fact]
-public async Task GroupByMultipleKeys()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["FirstName", "LastName"], new()
-        {
-            ["FirstName"] = "FirstName",
-            ["LastName"] = "LastName",
-            ["Count"] = "COUNT()",
-            ["TotalSalary"] = "SUM(Salary)"
-        });
+    public async Task ConcatWithOrder()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .Select(new ()
+            {
+               ["concat"] = "CONCAT(FirstName,', ', Age)"
+            });
 
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => new { u.FirstName, u.LastName }, (k, v) => new
-        {
-            k.FirstName,
-            k.LastName,
-            Count = v.Count(),
-            TotalSalary = v.Sum(u => (double)u.Salary)
-        })
-        .PrepareRecords();
+        // Assert
+        dynamic[] data = [ new { concat = assets.UsersDynamicArray.Select(u => u.FirstName).JoinBy(", ") }];
+        var expect = data.PrepareRecords();
 
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    [Fact]
+    public async Task GroupByWithConcatWithOrder()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Notes"], new ()
+            {
+               ["concat"] = "CONCAT(FirstName,', ', Age)"
+            });
 
-[Fact]
-public async Task GroupByWithHaving()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["Notes"], new()
-        {
-            ["Note"] = "Notes",
-            ["AvgSalary"] = "AVG(Salary)"
-        })
-        .Where("AvgSalary > 60000");
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
 
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .GroupBy(u => u.Notes, (_, v) => new
+            {
+                concat = v.OrderBy(u => u.Age).Select(u => (string)u.FirstName).JoinBy(", ")
+            })
+            .PrepareRecords();
 
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.Notes, (k, v) => new
-        {
-            Note = k,
-            AvgSalary = v.Average(u => (double)u.Salary)
-        })
-        .Where(g => g.AvgSalary > 60000)
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[Fact]
-public async Task GroupByWithWhereBefore()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .Where("Age > 30")
-        .GroupBy(["Notes"], new()
-        {
-            ["Note"] = "Notes",
-            ["UserCount"] = "COUNT()"
-        });
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .Where(u => u.Age > 30)
-        .GroupBy(u => u.Notes, (k, v) => new
-        {
-            Note = k,
-            UserCount = v.Count()
-        })
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[Fact]
-public async Task GroupByWithComplexAggregation()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["FirstName"], new()
-        {
-            ["Name"] = "FirstName",
-            ["MaxMinDiff"] = "MAX(Salary) - MIN(Salary)",
-            ["AvgAge"] = "AVG(Age)",
-            ["TotalUsers"] = "COUNT()"
-        });
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.Unwrap().Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.FirstName, (k, v) => new
-        {
-            Name = k,
-            MaxMinDiff = v.Max(u => u.Salary) - v.Min(u => u.Salary),
-            AvgAge = v.Average(u => u.Age),
-            TotalUsers = v.Count()
-        })
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[Fact]
-public async Task GroupByWithOrderBy()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["Notes"], new()
-        {
-            ["Note"] = "Notes",
-            ["UserCount"] = "COUNT()"
-        })
-        .OrderBy([("UserCount", OrderItem.Type.Desc)]);
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.Notes, (k, v) => new
-        {
-            Note = k,
-            UserCount = v.Count()
-        })
-        .OrderByDescending(g => g.UserCount)
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[SkippableFact]
-public async Task GroupByWithLimit()
-{
-    var runner = await db.GetRunnerAsync();
-    Skip.If(assets.DatabaseType == DatabaseType.Oracle, "TODO починить позже");
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["Notes"], new()
-        {
-            ["Note"] = "Notes",
-            ["UserCount"] = "COUNT()"
-        })
-        .Unwrap()
-        .Take(3);
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.Notes, (k, v) => new
-        {
-            Note = k,
-            UserCount = v.Count()
-        })
-        .Take(3)
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[Fact]
-public async Task GroupByWithDatePart()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["Year(JoinDate)"], new()
-        {
-            ["JoinYear"] = "Year(JoinDate)",
-            ["UserCount"] = "COUNT()",
-            ["AvgSalary"] = "AVG(Salary)"
-        });
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.JoinDate.Year, (k, v) => new
-        {
-            JoinYear = k,
-            UserCount = v.Count(),
-            AvgSalary = v.Average(u => (double)u.Salary)
-        })
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
-
-[Fact]
-public async Task GroupByWithCaseExpression()
-{
-    var runner = await db.GetRunnerAsync();
-    // Arrange
-    var qb = assets.UsersQuery
-        .GroupBy(["If(Age > 30,'Senior','Junior')"], new()
-        {
-            ["AgeGroup"] = "If(Age > 30,'Senior','Junior')",
-            ["Count"] = "COUNT()",
-            ["MaxSalary"] = "MAX(Salary)"
-        });
-
-    // Act
-    var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
-
-    // Assert
-    var expect = assets.UsersDynamicArray
-        .GroupBy(u => u.Age > 30 ? "Senior" : "Junior", (k, v) => new
-        {
-            AgeGroup = k,
-            Count = v.Count(),
-            MaxSalary = v.Max(u => u.Salary)
-        })
-        .PrepareRecords();
-
-    result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
-}
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
 }

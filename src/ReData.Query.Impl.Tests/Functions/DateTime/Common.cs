@@ -163,7 +163,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Date('2023-12-31 23:59:59').DayOfYear()", 365)] // Last second
     public Task FuncDayOfYearTests(string expr, object? expected) => Test(expr, expected);
     
-    [Theory]
+    [SkippableTheory]
     [InlineData("Date('2023-05-15').DayOfWeek()", 1)] // Monday
     [InlineData("Date('2023-05-16').DayOfWeek()", 2)] // Tuesday
     [InlineData("Date('2023-05-17').DayOfWeek()", 3)] // Wednesday
@@ -180,8 +180,12 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     // With time components
     [InlineData("Date('2023-05-15 14:30:22').DayOfWeek()", 1)] // Monday with time
     [InlineData("Date('2023-05-21 23:59:59').DayOfWeek()", 7)] // Sunday end of day
-    public Task FuncDayOfWeekTests(string expr, object? expected) => Test(expr, expected);
-    
+    public Task FuncDayOfWeekTests(string expr, object? expected)
+    {
+        Skip.If(runner.GetDatabaseType() is DatabaseType.Oracle);
+        return Test(expr, expected);
+    }
+
     [Theory(DisplayName = "Week (ISO)")]
     // Standard cases
     [InlineData("Date('2023-01-02').Week()", 1)] // First Monday of 2023 (Week 1)

@@ -138,18 +138,70 @@ public class AggregationFunctions : FunctionsDescriptor
                 [MySql] = $"FROM_UNIXTIME(AVG(UNIX_TIMESTAMP({value})))",
                 [ClickHouse] = $"fromUnixTimestamp(CASE WHEN isNaN(AVG(toUnixTimestamp({value}))) THEN NULL ELSE toInt64(AVG(toUnixTimestamp({value}))) END)",
             });
+
+        int delimiter = 1, sort = 2;
+        AggFunction("CONCAT")
+            .Doc("Aggregates all non-NULL values into a single string without delimiter")
+            .Arg("value", Text)
+            .Returns(Text)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [SqlServer] = $"STRING_AGG({value}, '')",
+                [MySql] = $"GROUP_CONCAT({value} SEPARATOR '')",
+                [PostgreSql] = $"STRING_AGG({value}, '')",
+                [Oracle] = $"LISTAGG({value}, '') WITHIN GROUP (ORDER BY 1)",
+                [ClickHouse] = $"if(empty(groupArray({value})), NULL, arrayStringConcat(groupArray({value}), ''))",
+            });
         
-        
-        // Sum c условием
-        // SUM(price, id > 10)
-        // AggFunction("SUM")
-        //     .Arg("value", Number)
-        //     .Arg("condition", Bool)
-        //     .Returns(Number)
-        //     .Templates(new()
-        //     {
-        //         [All] = $"SUM(CASE WHEN {1} THEN {0} ELSE NULL)",
-        //     });
+        AggFunction("CONCAT")
+            .Doc("Aggregates all non-NULL values into a single string with delimiter")
+            .Arg("value", Text)
+            .Arg("delimiter", Text)
+            .Returns(Text)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [SqlServer] = $"STRING_AGG({value}, {delimiter})",
+                [MySql] = $"GROUP_CONCAT({value} SEPARATOR {delimiter})",
+                [PostgreSql] = $"STRING_AGG({value}, {delimiter})",
+                [Oracle] = $"LISTAGG({value}, {delimiter}) WITHIN GROUP (ORDER BY 1)",
+                [ClickHouse] = $"if(empty(groupArray({value})), NULL, arrayStringConcat(groupArray({value}), {delimiter}))",
+            });
+
+        foreach (var T in Types.AllWithoutBool)
+        {
+            AggFunction("CONCAT")
+                .Doc("Aggregates values into a string with delimiter after sorting by specified column")
+                .Arg("value", Text)
+                .Arg("delimiter", Text)
+                .Arg("sort", T) // Sorting column (can be different from value)
+                .Returns(Text)
+                .CustomNullPropagation(_ => true)
+                .Templates(new()
+                {
+                    [SqlServer] = $"STRING_AGG({value}, {delimiter}) WITHIN GROUP (ORDER BY {sort})",
+                    [MySql] = $"GROUP_CONCAT({value} ORDER BY {sort} SEPARATOR {delimiter})",
+                    [PostgreSql] = $"STRING_AGG({value}, {delimiter} ORDER BY {sort})",
+                    [Oracle] = $"LISTAGG({value}, {delimiter}) WITHIN GROUP (ORDER BY {sort})",
+                    [ClickHouse] = $"""
+                                     if(empty(groupArray({value})), NULL,
+                                     arrayStringConcat(
+                                         arrayMap(
+                                             x -> x.1,
+                                             arraySort(
+                                                 x -> x.2,
+                                                 groupArray(({value}, {sort}))
+                                             )
+                                         ),
+                                         {delimiter}
+                                     ))
+                                     """,
+                    
+                });
+        }
+
+
 
     }
 }

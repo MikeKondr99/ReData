@@ -16,13 +16,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Lang.g4" />
+      <Content Include="LangParser.g4" />
+      <Content Include="LangLexer.g4" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Pattern\Pattern.csproj" />
       <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
       <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="LangLexer.g4" />
+      <None Include="LangParser.g4" />
     </ItemGroup>
 
 
