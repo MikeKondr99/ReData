@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Types;
+﻿using ReData.Query.Core.Template;
+using ReData.Query.Core.Types;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Functions.Library;
@@ -67,12 +68,16 @@ public class StringFunctions : FunctionsDescriptor
             .Arg("input", Text)
             .Returns(Text)
             .Template($"RTRIM({input})");
-        
+
         Method("Reverse")
             .Doc("Возвращает текст в обратном порядке")
             .Arg("input", Text)
             .Returns(Text)
-            .Template($"REVERSE({input})");
+            .Templates(new()
+            {
+                [ClickHouse] = $"reverseUTF8({input})",
+                [PostgreSql | SqlServer | MySql | Oracle] = $"REVERSE({input})",
+            });
 
         Binary("+", Text, Text)
             .Doc("Объединяет две строки в одну")
@@ -104,11 +109,9 @@ public class StringFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                // Standard REPLACE (non-regex) for all databases
                 [Oracle] = $"CASE WHEN {1} IS NULL OR {2} IS NULL THEN NULL ELSE REPLACE({input}, {1}, {2}) END",
                 [All] = $"REPLACE({input}, {1}, {2})",
             });
-        
         
          int substring = 1;
         Method("Index")
@@ -118,9 +121,9 @@ public class StringFunctions : FunctionsDescriptor
             .CustomNullPropagation(_ => true)
             .Templates(new()
             {
-                [SqlServer] = $"NULLIF(CHARINDEX({input}, {substring}), 0)",
-                [MySql] = $"NULLIF(LOCATE({substring}, {input}), 0)",
-                [PostgreSql] = $"NULLIF(STRPOS({substring}, {input}), 0)",
+                [SqlServer] = $"CASE WHEN {substring} <> '' THEN NULLIF(CHARINDEX({substring} COLLATE Latin1_General_100_CS_AS, {input}  COLLATE Latin1_General_100_CS_AS), 0) ELSE 1 END",
+                [MySql] = $"NULLIF(LOCATE({substring} COLLATE utf8mb4_bin, {input} COLLATE utf8mb4_bin), 0)",
+                [PostgreSql] = $"NULLIF(STRPOS({input}, {substring}), 0)",
                 [Oracle] = $"NULLIF(INSTR({input}, {substring}), 0)",
                 [ClickHouse] = $"nullIf(positionUTF8({input}, {substring}),0)",
             });
@@ -133,9 +136,9 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 [Oracle] = $"(LENGTH({input}) - LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input}), REVERSE({substring})), 0))",
-                [SqlServer] = $"(LEN({input}) - LEN({substring}) + 2 - NULLIF(CHARINDEX(REVERSE({substring}), REVERSE({input})), 0))",
+                [SqlServer] = $"CASE WHEN {substring} <> '' THEN (LEN({input} COLLATE Latin1_General_100_CS_AS) - LEN({substring} COLLATE Latin1_General_100_CS_AS) + 2 - NULLIF(CHARINDEX(REVERSE({substring} COLLATE Latin1_General_100_CS_AS), REVERSE({input} COLLATE Latin1_General_100_CS_AS)), 0)) ELSE LEN({input}) + 1 END",
                 [ClickHouse] = $"(lengthUTF8({input}) - lengthUTF8({substring}) + 2 - nullIf(positionUTF8(reverseUTF8({input}), reverseUTF8({substring})), 0))",
-                [MySql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input}), REVERSE({substring})), 0))",
+                [MySql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input} COLLATE utf8mb4_bin), REVERSE({substring} COLLATE utf8mb4_bin)), 0))",
                 [PostgreSql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(STRPOS(REVERSE({input}), REVERSE({substring})), 0))",
             });
 
@@ -152,31 +155,31 @@ public class StringFunctions : FunctionsDescriptor
                 [ClickHouse] = $"lengthUTF8({input})",
             });
 
-        int delimiter = 1, position = 2;
-        Method("Split")
-            .Arg("input", Text)
-            .Arg("delimeter", Text)
-            .Arg("position", Integer)
-            .Returns(Text)
-            .CustomNullPropagation(_ => true)
-            .Templates(new()
-            {
-                [SqlServer] = $"(select value from STRING_SPLIT(REPLACE({input},{delimiter}, 'ඞ'), 'ඞ') order by (select 1) offset {position} - 1 rows fetch next 1 row only)",
-                [PostgreSql] = $"SPLIT_PART({input}, {delimiter}, {position})",
-                [MySql] = $"""
-                           REPLACE(
-                                    SUBSTRING(
-                                         SUBSTRING_INDEX({input}, {delimiter}, {position}),
-                                         CHAR_LENGTH(
-                                              SUBSTRING_INDEX({input}, {delimiter}, {position} - 1)
-                                         ) + 1
-                                    ),
-                                    {delimiter},
-                                    ''
-                               )
-                           """,
-                [ClickHouse] = $"arrayElement(splitByString({delimiter}, {input}), {position})",
-            });
+        // int delimiter = 1, position = 2;
+//         Method("Split")
+//             .Arg("input", Text)
+//             .Arg("delimeter", Text)
+//             .Arg("position", Integer)
+//             .Returns(Text)
+//             .CustomNullPropagation(_ => true)
+//             .Templates(new()
+//             {
+//                 [SqlServer] = $"(select value from STRING_SPLIT(REPLACE({input},{delimiter}, 'ඞ'), 'ඞ') order by (select 1) offset {position} - 1 rows fetch next 1 row only)",
+//                 [PostgreSql] = $"SPLIT_PART({input}, {delimiter}, {position})",
+//                 [MySql] = $"""
+//                            REPLACE(
+//                                     SUBSTRING(
+//                                          SUBSTRING_INDEX({input}, {delimiter}, {position}),
+//                                          CHAR_LENGTH(
+//                                               SUBSTRING_INDEX({input}, {delimiter}, {position} - 1)
+//                                          ) + 1
+//                                     ),
+//                                     {delimiter},
+//                                     ''
+//                                )
+//                            """,
+//                 [ClickHouse] = $"arrayElement(splitByString({delimiter}, {input}), {position})",
+//             });
     }
 
 }
