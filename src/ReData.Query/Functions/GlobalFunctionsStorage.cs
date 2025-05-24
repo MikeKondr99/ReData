@@ -23,6 +23,7 @@ public class GlobalFunctionsStorage
             new LogicFunctions(),
             new AggregationFunctions(),
             new ReflectionFunctions(),
+            new TrigonometryFunctions()
         }.SelectMany(f => f.GetFunctions()).ToArray();
     
 
