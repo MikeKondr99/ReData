@@ -21,9 +21,7 @@ public abstract class ExprTests(IDatabaseFixture db)
         qb = qb.Select(new()
         {
             ["test"] = expr,
-        })
-        .Expect(e => e.JoinBy(", "));
-        
+        }).Expect(e => e.JoinBy("\n"));
         var result = await runner.RunQueryAsScalar(qb.Build());
         Compare(result,ExpectedValue(expected));
     }
