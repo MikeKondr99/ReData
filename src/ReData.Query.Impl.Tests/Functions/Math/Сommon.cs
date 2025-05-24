@@ -95,7 +95,6 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         return Test(expr, expected);
     }
 
-
     [SkippableTheory(DisplayName = "Pi (π)")]
     [InlineData("Pi()", 3.141592653589793)] // Exact value of π
     [InlineData("Pi() > 3.14", true)] // π is greater than 3.14
@@ -108,4 +107,134 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         Skip.If(expr is "Pi() * 2" && runner.GetDatabaseType() is DatabaseType.PostgreSql);
         return Test(expr, expected);
     }
+    
+    [Theory(DisplayName = "Cos (Radians)")]
+    [InlineData("Cos(0)", 1.0)]
+    [InlineData("Cos(1.0471975511965976)", 0.5)]  // ~60°
+    [InlineData("Cos(1.5707963267948966)", 0.0)] // ~90°
+    public Task Cos(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Sin (Radians)")]
+    [InlineData("Sin(0)", 0.0)]
+    [InlineData("Sin(0.5235987755982988)", 0.5)]  // ~30°
+    [InlineData("Sin(1.5707963267948966)", 1.0)]  // ~90°
+    public Task Sin(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Tan (Radians)")]
+    [InlineData("Tan(0)", 0.0)]
+    [InlineData("Tan(0.7853981633974483)", 1.0)]  // ~45°
+    public Task Tan(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Acos(Inverse Cos)")]
+    [InlineData("Acos(1)", 0.0)]
+    [InlineData("Acos(-0.5)", 1.0471975511965976)]
+    [InlineData("Acos(0.5)", 1.0471975511965976)]  // ~60°
+    // Недопустимые значения
+    [InlineData("Acos(1.1)", null)]   // >1
+    [InlineData("Acos(999)", null)]   // Далеко за пределами
+    public Task Acos(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Asin(Inverse Sin)")]
+    [InlineData("Asin(0)", 0.0)]
+    [InlineData("Asin(-0.5)", -0.5235987755982988)]
+    [InlineData("Asin(0.5)", 0.5235987755982988)]  // ~30°
+    [InlineData("Asin(-1.0)", -1.5707963267948966)]
+    // Недопустимые значения
+    [InlineData("Asin(-1.1)", null)]  // <-1
+    [InlineData("Asin(999)", null)]   // Далеко за пределами
+    public Task Asin(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Atan(Inverse Tangent)")]
+    [InlineData("Atan(0)", 0.0)]
+    [InlineData("Atan(1)", 0.7853981633974483)]  // ~45°
+    public Task Atan(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Atan2")]
+    [InlineData("Atan2(1, 1)", 0.7853981633974483)]    // ~45°
+    [InlineData("Atan2(-1, -1)", -2.356194490192345)]  // ~-135°
+    public Task Atan2(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Atanh")]
+    [InlineData("Atanh(0.5)", 0.5493061443340548)]  
+    [InlineData("Atanh(-0.99)", -2.6466524123622457)] 
+    [InlineData("Atanh(1.0)", null)]  
+    [InlineData("Atanh(-1.0)", null)] 
+    [InlineData("Atanh(1.1)", null)] 
+    public Task AtanhRangeValidation(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Valid Non-Range Functions")]
+    // Функции без ограничений по входу
+    [InlineData("Cos(999)", -0.8537530939092378)]  // Любое число
+    [InlineData("Sin(-123.456)", -0.267690548907)] // Любое число
+    [InlineData("Tan(3.1415926535897931)", 0.0)]  // π (почти 0)
+    public Task NonRangeTrigFunctions(string expr, object? expected) => Test(expr, expected);
+    
+    [Theory(DisplayName = "Radians (Degrees to Radians)")]
+[InlineData("Rad(0)", 0.0)]
+[InlineData("Rad(180)", System.Math.PI)]
+[InlineData("Rad(360)", 2 * System.Math.PI)]
+[InlineData("Rad(90)", System.Math.PI / 2)]
+public Task Radians(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Degrees (Radians to Degrees)")]
+[InlineData("Deg(0)", 0.0)]
+[InlineData("Deg(3.1415926535897931)", 180.0)] // π → 180°
+[InlineData("Deg(6.2831853071795862)", 360.0)] // 2π → 360°
+[InlineData("Deg(1.5707963267948966)", 90.0)] // π/2 → 90°
+public Task Degrees(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Cosh (Hyperbolic Cos)")]
+[InlineData("Cosh(0)", 1.0)]
+[InlineData("Cosh(1)", 1.5430806348152437)]
+[InlineData("Cosh(-1)", 1.5430806348152437)] // Cosh(-x) = Cosh(x)
+public Task Cosh(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Sinh (Hyperbolic Sin)")]
+[InlineData("Sinh(0)", 0.0)]
+[InlineData("Sinh(1)", 1.1752011936438014)]
+[InlineData("Sinh(-1)", -1.1752011936438014)] // Sinh(-x) = -Sinh(x)
+public Task Sinh(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Tanh (Hyperbolic Tan)")]
+[InlineData("Tanh(0)", 0.0)]
+[InlineData("Tanh(1)", 0.7615941559557649)]
+[InlineData("Tanh(-1)", -0.7615941559557649)] // Tanh(-x) = -Tanh(x)
+[InlineData("Tanh(100)", 1.0)] // При больших значениях стремится к 1
+public Task Tanh(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Acosh (Inverse Hyperbolic Cos)")]
+[InlineData("Acosh(1)", 0.0)]
+[InlineData("Acosh(2)", 1.3169578969248166)]
+// Недопустимые значения
+[InlineData("Acosh(0.5)", null)] // x должен быть >= 1
+[InlineData("Acosh(-1)", null)]
+public Task Acosh(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Asinh (Inverse Hyperbolic Sin)")]
+[InlineData("Asinh(0)", 0.0)]
+[InlineData("Asinh(1)", 0.881373587019543)]
+[InlineData("Asinh(-1)", -0.881373587019543)] // Asinh(-x) = -Asinh(x)
+// Нет ограничений по входу
+[InlineData("Asinh(999)", 7.30686074806869)]
+[InlineData("Asinh(-999)", -7.30686074806869)]
+public Task Asinh(string expr, object? expected) => Test(expr, expected);
+
+[Theory(DisplayName = "Edge Cases for All Functions")]
+[InlineData("Cos(null)", null)]
+[InlineData("Sin(null)", null)]
+[InlineData("Tan(null)", null)]
+[InlineData("Acos(null)", null)]
+[InlineData("Asin(null)", null)]
+[InlineData("Atan(null)", null)]
+[InlineData("Atan2(null, 1)", null)]
+[InlineData("Atan2(1, null)", null)]
+[InlineData("Cosh(null)", null)]
+[InlineData("Sinh(null)", null)]
+[InlineData("Tanh(null)", null)]
+[InlineData("Acosh(null)", null)]
+[InlineData("Asinh(null)", null)]
+[InlineData("Atanh(null)", null)]
+[InlineData("Rad(null)", null)]
+[InlineData("Deg(null)", null)]
+public Task NullInputTests(string expr, object? expected) => Test(expr, expected);
 }
