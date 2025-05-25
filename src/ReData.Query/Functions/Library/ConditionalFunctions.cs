@@ -18,7 +18,7 @@ public class ConditionalFunctions : FunctionsDescriptor
         {
             Function("If")
                 .Doc("Условное выражение: возвращает then-значение если condition=true, иначе else-значение")
-                .Arg("condition", Bool, propagateNull: false)
+                .Arg("condition", Bool, FunctionArgumentOptions.NotPropagateNull)
                 .Arg("then", T)
                 .Arg("else", T)
                 .Returns(T)

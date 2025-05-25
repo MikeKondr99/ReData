@@ -42,7 +42,7 @@ public sealed class FunctionStorage : IFunctionStorage
 
     private FunctionDefinition? GetImplicit(FunctionArgumentType from, FunctionArgumentType to)
     {
-        if (from == to)
+        if (from.DataType == to.DataType && from.CanBeNull == to.CanBeNull) 
             return new FunctionDefinition
             {
                 Name = "",
@@ -53,7 +53,7 @@ public sealed class FunctionStorage : IFunctionStorage
                     {
                         Name = "input",
                         Type = from,
-                        PropagateNull = true,
+                        Options = FunctionArgumentOptions.None,
                     }
                 ],
                 ReturnType = new FunctionReturnType()
@@ -82,7 +82,6 @@ public sealed class FunctionStorage : IFunctionStorage
 
     public Result<FunctionResolution, FunctionResolutionError> ResolveFunction(FunctionSignature sign)
     {
-        var cons = ConstPropagation(sign.ArgumentTypes);
         var agg = AggPropagation(sign.ArgumentTypes);
 
         if (agg is not Option<bool>.Some(var aggr))
@@ -108,12 +107,7 @@ public sealed class FunctionStorage : IFunctionStorage
             {
                 Function = func,
                 PropagatesNull = PropagatesNull(func, sign),
-                ReturnsConst = func.ConstPropagation switch
-                {
-                    Types.ConstPropagation.Default => cons,
-                    Types.ConstPropagation.AlwaysTrue => true,
-                    Types.ConstPropagation.AlwaysFalse => false,
-                },
+                ReturnsConst = PropagatesConst(func, sign),
                 ReturnsAggregated = func.ReturnType.Aggregated || aggr,
                 Casts = (args as IEnumerable<FunctionDefinition>).ToArray()
             };
@@ -129,6 +123,17 @@ public sealed class FunctionStorage : IFunctionStorage
             return new FunctionResolutionError($"Функция {sign} не была найдена");
         }
 
+        for (int i = 0; i < result.Function.Arguments.Count; i++)
+        {
+            var s = sign.ArgumentTypes[i];
+            var a = result.Function.Arguments[i];
+
+            if (a.Options.AllowsOnlyConst() && !s.IsConstant)
+            {
+                return new FunctionResolutionError($"Функция {result.Function} требует константный аргумент");
+            }
+
+        }
         return result;
     }
 
@@ -152,12 +157,14 @@ public sealed class FunctionStorage : IFunctionStorage
         return false;
     }
 
-    public static bool ConstPropagation(IEnumerable<ExprType> types)
+    private static bool PropagatesConst(FunctionDefinition function, FunctionSignature sign) => function.ConstPropagation switch
     {
-        return types.All(at => at.IsConstant);
-    }
+        Types.ConstPropagation.Default => sign.ArgumentTypes.All(at => at.IsConstant),
+        Types.ConstPropagation.AlwaysTrue => true,
+        Types.ConstPropagation.AlwaysFalse => false,
+    };
 
-    
+
     private bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
     {
         // Если не может быть null значит не может
@@ -172,7 +179,7 @@ public sealed class FunctionStorage : IFunctionStorage
         // Если любой параметр прокидывает null и может быть null.
         for (int i = 0; i < function.Arguments.Count; i++)
         {
-            if (function.Arguments[i].PropagateNull && sign.ArgumentTypes[i].CanBeNull)
+            if (function.Arguments[i].Options.PropagatesNull() && sign.ArgumentTypes[i].CanBeNull)
             {
                 return true;
             }

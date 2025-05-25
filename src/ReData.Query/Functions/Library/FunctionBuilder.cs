@@ -155,9 +155,9 @@ public record FunctionBuilder
         return this;
     }
 
-    public FunctionBuilder Arg(string name, DataType type, bool propagateNull = true)
+    public FunctionBuilder Arg(string name, DataType type, FunctionArgumentOptions options = FunctionArgumentOptions.None)
     {
-        this.Arguments.Add(new FunctionArgument()
+        Arguments.Add(new FunctionArgument()
         {
             Name = name,
             Type = new ()
@@ -165,14 +165,14 @@ public record FunctionBuilder
                 DataType = type,
                 CanBeNull = true,
             },
-            PropagateNull = propagateNull,
+            Options = options,
         });
         return this;
     }
     
-    public FunctionBuilder ReqArg(string name, DataType type)
+    public FunctionBuilder ReqArg(string name, DataType type, FunctionArgumentOptions options = FunctionArgumentOptions.None)
     {
-        this.Arguments.Add(new FunctionArgument()
+        Arguments.Add(new FunctionArgument()
         {
             Name = name,
             Type = new ()
@@ -180,7 +180,7 @@ public record FunctionBuilder
                 DataType = type,
                 CanBeNull = false,
             },
-            PropagateNull = false,
+            Options = options,
         });
         return this;
     }

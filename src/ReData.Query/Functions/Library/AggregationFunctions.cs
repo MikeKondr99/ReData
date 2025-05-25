@@ -200,8 +200,18 @@ public class AggregationFunctions : FunctionsDescriptor
                     
                 });
         }
-
-
-
+        
+        foreach (var T in Types.AllWithoutBool)
+        {
+            AggFunction("PERCENTILE")
+                .ReqArg("level", Number, FunctionArgumentOptions.ConstOnly)
+                .Arg("value", T)
+                .Returns(T)
+                .CustomNullPropagation(_ => true)
+                .Templates(new()
+                {
+                    [PostgreSql] = $"PERCENTILE_DISC({0}) WITHIN GROUP (ORDER BY {1})"
+                });
+        }
     }
 }
