@@ -2,11 +2,7 @@
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\Mike\.nuget\packages\antlr4.runtime\4.6.6\lib\netstandard1.1\Antlr4.Runtime.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=034a4946_002D5c8c_002D4986_002Da580_002D7ac1e9e59533/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="Testoviy" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::772FAFC6-A1AD-4D7A-AA8B-7A8241442BD8::net9.0::ReData.Query.Lang.Tests.StringInterpolationTests.Testoviy&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String>
+	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=9da90dfe_002Db72b_002D40ae_002D86ca_002Dfefb54b9c1d7/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from &amp;lt;src&amp;gt;" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Project Location="C:\Users\Mike\dev\ReData" Presentation="&amp;lt;src&amp;gt;" /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>

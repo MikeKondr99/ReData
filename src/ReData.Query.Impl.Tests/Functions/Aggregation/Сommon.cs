@@ -1458,4 +1458,178 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     
 
     #endregion
+    
+    [Fact]
+    public async Task Percentile_75_Integer()
+    {
+        // Arrange
+        int?[] arr = [23, 47, 94, 24, 58, 12, 0, 78];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.75, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new IntegerValue(58));
+    } 
+    
+    [Fact]
+    public async Task Percentile_25_Integer()
+    {
+        // Arrange
+        int?[] arr = [23, 47, 94, 24, 58, 12, 0, 78];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new IntegerValue(12));
+    } 
+    
+    [Fact]
+    public async Task Percentile_75_Text()
+    {
+        // Arrange
+        string?[] arr = [ "student", "spy", "inhibition", "translate", "sick", "float", "breeze", "increase", "stable", "harmony"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.75, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("stable"));
+    } 
+    
+    [Fact]
+    public async Task Percentile_25_Text()
+    {
+        // Arrange
+        string?[] arr = [ "student", "spy", "inhibition", "translate", "sick", "float", "breeze", "increase", "stable", "harmony"];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new TextValue("harmony"));
+    } 
+    
+    [Fact]
+    public async Task Percentile_75_Number()
+    {
+        // Arrange
+        double?[] arr = [ 0.37, 0.09, 0.96, 0.34, 0.93, 0.20, 0.55, 0.23, 0.29, 0.41, ];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.75, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NumberValue(0.55));
+    } 
+    
+    [Fact]
+    public async Task Percentile_25_Number()
+    {
+        // Arrange
+        double?[] arr = [ 0.37, 0.09, 0.96, 0.34, 0.93, 0.20, 0.55, 0.23, 0.29, 0.41, ];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NumberValue(0.23));
+    } 
+    
+    [Fact]
+    public async Task Percentile_75_Date()
+    {
+        // Arrange
+        DateTime?[] arr =
+        [
+            new DateTime(2025, 06, 04),
+            new DateTime(2025, 06, 05),
+            new DateTime(2025, 06, 27),
+            new DateTime(2025, 06, 30),
+            new DateTime(2025, 07, 25),
+            new DateTime(2025, 08, 06),
+            new DateTime(2025, 08, 07),
+            new DateTime(2025, 08, 21),
+            new DateTime(2025, 08, 27),
+            new DateTime(2025, 08, 29),
+        ];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.75, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new DateTimeValue(new DateTime(2025, 08, 21)));
+    } 
+    
+    [Fact]
+    public async Task Percentile_25_Date()
+    {
+        // Arrange
+        DateTime?[] arr =
+        [
+            new DateTime(2025, 06, 04),
+            new DateTime(2025, 06, 05),
+            new DateTime(2025, 06, 27),
+            new DateTime(2025, 06, 30),
+            new DateTime(2025, 07, 25),
+            new DateTime(2025, 08, 06),
+            new DateTime(2025, 08, 07),
+            new DateTime(2025, 08, 21),
+            new DateTime(2025, 08, 27),
+            new DateTime(2025, 08, 29),
+        ];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new DateTimeValue(new DateTime(2025, 06, 27)));
+    } 
+    
+    [Fact]
+    public async Task PercentileIgnoreNulls()
+    {
+        // Arrange
+        double?[] arr = [ 0.37, 0.09, null, 0.96, 0.34, null, 0.93, 0.20, null, null, 0.55, 0.23, 0.29, 0.41, ];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr));
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NumberValue(0.23));
+    } 
+    
+    [Fact]
+    public async Task PercentileNullsIsNull()
+    {
+        // Arrange
+        double?[] arr = [ 0.5, null, null];
+        var runner = await db.GetRunnerAsync();
+        var qb = GetInline("PERCENTILE(0.25, x)", ToExpressions(arr), "x.IsNull()");
+
+        // Act
+        var result = await runner.RunQueryAsScalar(qb.Build());
+
+        // Assert
+        Compare(result, new NullValue());
+    } 
 }

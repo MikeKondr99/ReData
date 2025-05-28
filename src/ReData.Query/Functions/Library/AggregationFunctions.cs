@@ -210,7 +210,10 @@ public class AggregationFunctions : FunctionsDescriptor
                 .CustomNullPropagation(_ => true)
                 .Templates(new()
                 {
-                    [PostgreSql] = $"PERCENTILE_DISC({0}) WITHIN GROUP (ORDER BY {1})"
+                    [PostgreSql] = $"PERCENTILE_DISC({0}) WITHIN GROUP (ORDER BY {1})",
+                    [SqlServer] = $"MIN(PERCENTILE_DISC({0}) WITHIN GROUP (ORDER BY {1}) OVER ())",
+                    // [Oracle] = $"PERCENTILE_DISC({0}) WITHIN GROUP (ORDER BY {1} DESC)",
+                    [ClickHouse] = $"quantileExactExclusive({0})({1})"
                 });
         }
     }
