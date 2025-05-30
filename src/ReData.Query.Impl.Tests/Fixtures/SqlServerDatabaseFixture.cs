@@ -12,9 +12,9 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
 
     private string ConnectionString { get; set; } = null!;
     private IQueryRunner?  Runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
-    public async Task<IQueryRunner> GetRunnerAsync()
+    public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Runner ??= _factory.CreateQueryRunner(DatabaseType.SqlServer, ConnectionString);
+        return Task.FromResult(Runner ??= _factory.CreateQueryRunner(DatabaseType.SqlServer, ConnectionString));
     }
 
     public DatabaseType GetDatabaseType()
@@ -69,7 +69,10 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
     
     public async Task DisposeAsync()
     {
-        await Runner.DisposeAsync();
+        if (Runner is not null)
+        {
+            await Runner.DisposeAsync();
+        }
         await Container.StopAsync();
         await Container.DisposeAsync();
     }

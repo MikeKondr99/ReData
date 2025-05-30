@@ -5,8 +5,18 @@
         <LangVersion>latest</LangVersion>
         <TargetFramework>net9.0</TargetFramework>
         <DebugType>embedded</DebugType>
-        <NoWarn>$(NoWarn);1701;1702;1591;CS3021</NoWarn>
+        <NoWarn>$(NoWarn);1701;1702;
+            
+            <!-- отсутствует док комментарий на публичное -->
+            1591;
+            <!-- Cls complient -->
+            CS3021;
+            <!-- не полный switch -->
+            CS8509; CS8524;
+            <!-- что-то про конструктор -->
+            CS9107;
+        </NoWarn>
         <NuGetAudit>false</NuGetAudit>
-<!--        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 </Project>

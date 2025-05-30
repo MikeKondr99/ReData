@@ -32,10 +32,6 @@ public class PostgresRunner : IQueryRunner
             for (int i = 0; i < len; i++)
             {
                 var val = reader.GetValue(i);
-                if (val is byte[])
-                {
-                    int a = 5;
-                }
                 current[i] = Mapper.MapField(reader.GetValue(i), fields[i].Type);
             }
             result.Add(new Record(current));

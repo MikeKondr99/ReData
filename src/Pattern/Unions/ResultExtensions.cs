@@ -74,7 +74,7 @@ public static class OptionExtensions
         return None();
     }
 
-    public static Option<T> Get<TKey, T>(this Dictionary<TKey, T> dict, TKey key)
+    public static Option<T> Get<TKey, T>(this Dictionary<TKey, T> dict, TKey key) where TKey : notnull
     {
         if(dict.TryGetValue(key, out var res))
         {

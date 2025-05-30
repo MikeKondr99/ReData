@@ -12,7 +12,7 @@ public sealed record IntegerLiteral : Literal<long>
         return Value.ToString();
     }
     
-    public void Deconstruct(out long value)
+    public new void Deconstruct(out long value)
     {
         value = Value;
     }

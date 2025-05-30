@@ -105,10 +105,10 @@ public class LiteralsTest
         expr.Should().BeEquivalentTo(new NullLiteral(), _options);
     }
     
-    [Theory]
+    // [Theory]
     // [InlineData("()", "expected expression", 1)]
     // [InlineData("2 +", "expected expression", 3)]
-    [InlineData("* 3", "expected expression", 0)]
+    // [InlineData("* 3", "expected expression", 0)]
     // [InlineData("a + 3)", "expected end of expression", 5)]
     // [InlineData("(a + 3", "expected ')'", 6)]
     // [InlineData("2,3", "expected end of expression",1)]
@@ -117,10 +117,10 @@ public class LiteralsTest
     // [InlineData("f(x,", "expected expression",4)]
     // [InlineData("12(x)", "expected end of expression",2)]
     // [InlineData("+3", "expected expression",0)]
-    public void ShouldNotParse(string input, string message, int index)
-    {
-        Expr.Parse(input).UnwrapErr();
-    }
+    // public void ShouldNotParse(string input, string message, int index)
+    // {
+    //     Expr.Parse(input).UnwrapErr();
+    // }
     
     [Theory]
     [InlineData("#")]

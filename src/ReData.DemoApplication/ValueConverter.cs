@@ -22,7 +22,7 @@ public class ValueConverter : JsonConverter<IValue>
             JsonTokenType.String when DateTime.TryParse(reader.GetString(), out var dateVal)
                 => new DateTimeValue(dateVal),
             JsonTokenType.String
-                => new TextValue(reader.GetString()),
+                => new TextValue(reader.GetString()!),
             JsonTokenType.True 
                 => new BoolValue(true),
             JsonTokenType.False

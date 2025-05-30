@@ -13,7 +13,7 @@ public sealed record NumberLiteral : Literal<double>
         return Value.ToString();
     }
 
-    public void Deconstruct(out double value)
+    public new void Deconstruct(out double value)
     {
         value = Value;
     }

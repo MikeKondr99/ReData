@@ -13,6 +13,7 @@ public static class Once
 public struct Once<T> : IEnumerable<T>
 {
     private readonly T _item;
+    
 
     public Once(T item)
     {
@@ -43,7 +44,7 @@ public struct Once<T> : IEnumerable<T>
 
         public T Current => _collection._item;
 
-        object IEnumerator.Current => Current;
+        object? IEnumerator.Current => Current;
 
         public bool MoveNext()
         {

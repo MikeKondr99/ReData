@@ -40,14 +40,14 @@ public abstract partial record Result<T, E> :
 
     public bool IsOk() => this is Ok;
 
-    public bool IsOk([NotNullWhen(true)] out T? value)
+    public bool IsOk(out T value)
     {
         if (this is Ok(var ok))
         {
             value = ok;
             return true;
         }
-        value = default;
+        value = default!;
         return false;
     }
     
@@ -59,14 +59,14 @@ public abstract partial record Result<T, E> :
 
     public bool IsError() => this is Error;
     
-    public bool IsError([NotNullWhen(true)] out E? value)
+    public bool IsError(out E value)
     {
         if (this is Error(var err))
         {
             value = err;
             return true;
         }
-        value = default;
+        value = default!;
         return false;
     }
     
@@ -126,33 +126,33 @@ public abstract partial record Result<T, E> :
         Error(var err) => err,
     };
 
-    public bool Unwrap([NotNullWhen(true)] out T? ok, [NotNullWhen(false)] out E? err)
+    public bool Unwrap(out T ok, out E err)
     {
         if (this is Ok(var okValue))
         {
             ok = okValue;
-            err = default;
+            err = default!;
             return true;
         }
         else
         {
-            ok = default;
+            ok = default!;
             err = UnwrapError();
             return false;
         }
     }
     
-    public bool UnwrapErr([NotNullWhen(true)] out E? err, [NotNullWhen(false)] out T? ok)
+    public bool UnwrapErr(out E err, out T ok)
     {
         if (this is Ok(var okValue))
         {
             ok = okValue;
-            err = default;
+            err = default!;
             return false;
         }
         else
         {
-            ok = default;
+            ok = default!;
             err = UnwrapError();
             return true;
         }

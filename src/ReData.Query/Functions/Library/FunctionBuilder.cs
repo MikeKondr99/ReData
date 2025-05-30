@@ -106,7 +106,7 @@ public record FunctionBuilder
 
     private uint? ImplicitCastCost { get; set; }
 
-    private Func<IEnumerable<bool>, bool> _customNullPropagation;
+    private Func<IEnumerable<bool>, bool>? _customNullPropagation;
 
     public static FunctionBuilder Function(string name)
     {

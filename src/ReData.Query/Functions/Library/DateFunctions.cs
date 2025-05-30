@@ -9,7 +9,7 @@ public class DateFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        int input = 0, start = 1, count = 2;
+        int input = 0;
         int year = 0, month = 1, day = 2;
         
         Method("Date")

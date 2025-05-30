@@ -19,7 +19,7 @@ public record FunctionDefinition
     
     public ImplicitCastMetadata? ImplicitCast { get; init; }
     
-    public required Func<IEnumerable<bool>, bool> CustomNullPropagation { get; init; }
+    public required Func<IEnumerable<bool>, bool>? CustomNullPropagation { get; init; }
     
     public required ConstPropagation ConstPropagation { get; init; }
 

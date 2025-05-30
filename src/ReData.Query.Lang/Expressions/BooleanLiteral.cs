@@ -10,7 +10,7 @@ public sealed record BooleanLiteral : Literal<bool>
         return Value ? "true" : "false";
     }
     
-    public void Deconstruct(out bool value)
+    public new void Deconstruct(out bool value)
     {
         value = Value;
     }

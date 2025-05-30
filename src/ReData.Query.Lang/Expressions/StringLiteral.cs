@@ -18,7 +18,7 @@ public sealed record StringLiteral : Literal<string>
         return $"'{Value}'";
     }
     
-    public void Deconstruct(out string value)
+    public new void Deconstruct(out string value)
     {
         value = Value;
     }
