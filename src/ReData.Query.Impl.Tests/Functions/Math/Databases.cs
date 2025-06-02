@@ -3,6 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Math;
 
+#pragma warning disable SA1402
 [Collection("Postgres")]
 public class Postgres(PostgresDatabaseFixture runner) : Сommon(runner);
 
@@ -17,3 +18,5 @@ public class ClickHouse(ClickHouseDatabaseFixture runner) : Сommon(runner);
 
 [Collection("Oracle")]
 public class Oracle(OracleDatabaseFixture runner) : Сommon(runner);
+
+#pragma warning restore SA1402

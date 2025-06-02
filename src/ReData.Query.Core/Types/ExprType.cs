@@ -57,7 +57,7 @@ public record struct ExprType
         };
     }
     
-    public static ExprType Integer()
+    public static ExprType Int()
     {
         return new ExprType()
         {

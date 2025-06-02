@@ -10,8 +10,6 @@ namespace ReData.Query.Impl.Tests;
 
 public abstract class ExprTests(IDatabaseFixture db)
 {
-    private static DatabaseValuesMapper Mapper = new DatabaseValuesMapper();
-    private static Factory Factory = new Factory();
     
     public async Task Test(string expr, object? expected)
     {
@@ -23,7 +21,7 @@ public abstract class ExprTests(IDatabaseFixture db)
             ["test"] = expr,
         }).Expect(e => e.JoinBy("\n"));
         var result = await runner.RunQueryAsScalar(qb.Build());
-        Compare(result,ExpectedValue(expected));
+        Compare(result, ExpectedValue(expected));
     }
 
     private static void PrepareBoolTests(ref object? expected, ref string input)
@@ -48,20 +46,14 @@ public abstract class ExprTests(IDatabaseFixture db)
         }
     }
 
-    protected IValue ExpectedValue(object? value) => value switch
+    protected static IValue ExpectedValue(object? value) => value switch
     {
         int v => new IntegerValue(v),
         bool b => new BoolValue(b),
         double v => new NumberValue(v),
-        string v when v.StartsWith("@") => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal).ToUniversalTime()),
+        string v when v.StartsWith('@') => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal).ToUniversalTime()),
         string v => new TextValue(v),
-        null => new NullValue(),
+        null => default(NullValue),
         _ => new UnknownValue(value.GetType().Name),
     };
-}
-
-
-file static class QueryRunnerExtensions
-{
-    
 }

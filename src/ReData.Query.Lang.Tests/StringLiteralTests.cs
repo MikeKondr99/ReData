@@ -7,7 +7,7 @@ namespace ReData.Query.Lang.Tests;
 public class StringLiteralTests
 {
 
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> _options = (options) =>
+    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
         options.Excluding(e => e.Span);
     
     [Theory]
@@ -45,6 +45,6 @@ public class StringLiteralTests
     {
         var e = Expr.Parse(expr).Unwrap();
         var expect = new StringLiteral(expected);
-        e.Should().BeEquivalentTo(new StringLiteral(expected), _options);
+        e.Should().BeEquivalentTo(new StringLiteral(expected), options);
     }
 }

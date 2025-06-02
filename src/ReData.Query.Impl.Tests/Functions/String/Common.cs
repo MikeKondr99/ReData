@@ -35,7 +35,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Reverse('Привет мир!')", "!рим тевирП")]
      public Task FuncReverseTests(string expr, object? expected)
      {
-          Skip.If(expr.Contains("П") && runner.GetDatabaseType() is DatabaseType.Oracle);
+          Skip.If(expr.Contains('П') && runner.GetDatabaseType() is DatabaseType.Oracle);
           return Test(expr, expected);
      }
 

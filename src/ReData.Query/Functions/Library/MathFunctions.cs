@@ -3,26 +3,26 @@ using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class MathFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var T in new [] { Integer, Number })
+        foreach (var type in new [] { Integer, Number })
         {
-            Binary("+", T, T)
+            Binary("+", type, type)
                 .Doc("Сложение двух чисел")
-                .Returns(T)
+                .Returns(type)
                 .Templates(new()
                 {
                     [All] = $"({0} + {1})",
                 });
             
-            Binary("-", T, T)
+            Binary("-", type, type)
                 .Doc("Вычитание двух чисел")
-                .Returns(T)
+                .Returns(type)
                 .Templates(new()
                 {
                     [All] = $"({0} - {1})",
@@ -30,16 +30,16 @@ public class MathFunctions : FunctionsDescriptor
 
             Unary("-")
                 .Doc("Унарный минус числа")
-                .Arg("value", T)
-                .Returns(T)
+                .Arg("value", type)
+                .Returns(type)
                 .Templates(new()
                 {
                     [All] = $"(-{0})",
                 });
             
-            Binary("*", T, T)
+            Binary("*", type, type)
                 .Doc("Умножение двух чисел")
-                .Returns(T)
+                .Returns(type)
                 .Templates(new()
                 {
                     [All] = $"({0} * {1})", 
@@ -65,7 +65,7 @@ public class MathFunctions : FunctionsDescriptor
                 [ClickHouse] = $"intDiv({0}, {1})" 
             });
 
-        Dictionary<DatabaseTypeFlags, TemplateInterpolatedStringHandler> powTemplates = new()
+        Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> powTemplates = new()
         {
             [All] = $"POWER({0}, {1})",
         };

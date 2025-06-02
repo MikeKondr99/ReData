@@ -5,18 +5,30 @@
         <LangVersion>latest</LangVersion>
         <TargetFramework>net9.0</TargetFramework>
         <DebugType>embedded</DebugType>
-        <NoWarn>$(NoWarn);1701;1702;
-            
-            <!-- отсутствует док комментарий на публичное -->
-            1591;
-            <!-- Cls complient -->
-            CS3021;
-            <!-- не полный switch -->
-            CS8509; CS8524;
-            <!-- что-то про конструктор -->
-            CS9107;
-        </NoWarn>
+<!--        <NoWarn>$(NoWarn);1701;1702;-->
+<!--            -->
+<!--            &lt;!&ndash; отсутствует док комментарий на публичное &ndash;&gt;-->
+<!--            1591;-->
+<!--            &lt;!&ndash; Cls complient &ndash;&gt;-->
+<!--            CS3021;-->
+<!--            &lt;!&ndash; не полный switch &ndash;&gt;-->
+<!--            CS8509; CS8524;-->
+<!--            &lt;!&ndash; что-то про конструктор &ndash;&gt;-->
+<!--            CS9107;-->
+<!--            &lt;!&ndash; параметер начинается с маленькой (срабатывает в record конструкторах) &ndash;&gt;-->
+<!--            SA1313;-->
+<!--            &lt;!&ndash; файл должне содержать заголовок (копирайт итд) &ndash;&gt;-->
+<!--            SA1633;-->
+<!--            &lt;!&ndash; required public &ndash;&gt;-->
+<!--            SA1206;-->
+<!--            &lt;!&ndash; невидимый стилистический бред &ndash;&gt;-->
+<!--            SA1002; SA1028;-->
+<!--            -->
+<!--            &lt;!&ndash; везде должна быть документация можно позже включить &ndash;&gt;-->
+<!--            SA1600-->
+<!--            -->
+<!--        </NoWarn>-->
         <NuGetAudit>false</NuGetAudit>
-        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
+
 </Project>

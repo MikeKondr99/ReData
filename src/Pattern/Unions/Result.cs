@@ -193,7 +193,7 @@ public abstract partial record Result<T, E> :
         _ => value(),
     };
     
-    public E UnwrapErrOr(Func<E> value) => this switch
+    public E UnwrapErrorOr(Func<E> value) => this switch
     {
         Error(var err) => err,
         _ => value(),

@@ -10,12 +10,12 @@ public record struct TableQuerySource : IQuerySource
     public TableQuerySource(IResolvedTemplate name, IReadOnlyList<Field> fields)
     {
         this.Name = name;
-        _fields = new FieldStorage(fields);
+        this.fields = new FieldStorage(fields);
     }
 
     public IResolvedTemplate Name { get; set; }
     
-    private readonly IFieldStorage _fields;
-    public IFieldStorage Fields() => _fields;
+    private readonly IFieldStorage fields;
+    public IFieldStorage Fields() => fields;
 
 }

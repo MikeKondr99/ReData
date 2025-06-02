@@ -13,12 +13,11 @@ using ReData.Query.Runners;
 
 namespace ReData.Query;
 
-public class Factory
+public static class Factory
 {
-    private static readonly IDictionary<DatabaseType, FunctionStorage> _functionStorages =
-        new Dictionary<DatabaseType, FunctionStorage>();
+    private static readonly Dictionary<DatabaseType, FunctionStorage> FunctionStorages = new();
 
-    public IQueryRunner CreateQueryRunner(DatabaseType database, string connectionString)
+    public static IQueryRunner CreateQueryRunner(DatabaseType database, string connectionString)
     {
         return database switch
         {
@@ -58,11 +57,10 @@ public class Factory
                 FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
-            
         };
     }
 
-    public ExpressionResolver CreateExpressionResolver(DatabaseType database)
+    public static ExpressionResolver CreateExpressionResolver(DatabaseType database)
     {
         return new ExpressionResolver()
         {
@@ -72,7 +70,7 @@ public class Factory
         };
     }
 
-    public ILiteralResolver CreateLiteralResolver(DatabaseType database) => database switch
+    public static ILiteralResolver CreateLiteralResolver(DatabaseType database) => database switch
     {
         DatabaseType.PostgreSql => new PostgresLiteralResolver(),
         DatabaseType.SqlServer => new SqlServerLiteralResolver(),
@@ -82,7 +80,7 @@ public class Factory
         _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
     };
     
-    public INameResolver CreateNameResolver(DatabaseType database) => database switch
+    public static INameResolver CreateNameResolver(DatabaseType database) => database switch
     {
         DatabaseType.PostgreSql => new BasicNameResolver("\"","\""),
         DatabaseType.SqlServer => new BasicNameResolver("\"","\""),
@@ -92,28 +90,28 @@ public class Factory
         _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
     };
     
-    public IFunctionStorage CreateFunctionStorage(DatabaseType database)
+    public static IFunctionStorage CreateFunctionStorage(DatabaseType database)
     {
-        if (_functionStorages.TryGetValue(database, out var fs))
+        if (FunctionStorages.TryGetValue(database, out var fs))
         {
             return fs;
         }
 
         var newFs = database switch
         {
-            DatabaseType.PostgreSql => GlobalFunctionsStorage.GetFunctions(DatabaseTypeFlags.PostgreSql),
-            DatabaseType.SqlServer => GlobalFunctionsStorage.GetFunctions(DatabaseTypeFlags.SqlServer),
-            DatabaseType.MySql => GlobalFunctionsStorage.GetFunctions(DatabaseTypeFlags.MySql),
-            DatabaseType.ClickHouse => GlobalFunctionsStorage.GetFunctions(DatabaseTypeFlags.ClickHouse),
-            DatabaseType.Oracle => GlobalFunctionsStorage.GetFunctions(DatabaseTypeFlags.Oracle),
+            DatabaseType.PostgreSql => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.PostgreSql),
+            DatabaseType.SqlServer => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.SqlServer),
+            DatabaseType.MySql => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.MySql),
+            DatabaseType.ClickHouse => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.ClickHouse),
+            DatabaseType.Oracle => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.Oracle),
         };
-        _functionStorages[database] = newFs;
+        FunctionStorages[database] = newFs;
         return newFs;
 
     }
 
 
-    public IQueryCompiler CreateQueryCompiler(DatabaseType database)
+    public static IQueryCompiler CreateQueryCompiler(DatabaseType database)
     {
         var expr = new ExpressionCompiler();
         var funcs = CreateFunctionStorage(database);

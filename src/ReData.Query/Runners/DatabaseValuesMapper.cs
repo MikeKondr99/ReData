@@ -6,7 +6,7 @@ namespace ReData.Query.Runners;
 
 public class DatabaseValuesMapper
 {
-    public IValue MapField(object? obj, FieldType expectedType)
+    public static IValue MapField(object? obj, FieldType expectedType)
     {
         var value = MapFromObject(obj);
 
@@ -32,7 +32,7 @@ public class DatabaseValuesMapper
 
     }
 
-    private IValue MapFromObject(object? value) => value switch
+    private static IValue MapFromObject(object? value) => value switch
     {
         // int
         sbyte v => new IntegerValue(v),
@@ -59,8 +59,8 @@ public class DatabaseValuesMapper
         string v => new TextValue(v),
 
         // null
-        DBNull => new NullValue(),
-        null => new NullValue(),
+        DBNull => default(NullValue),
+        null => default(NullValue),
         // unknown
         _ => new UnknownValue(value.GetType().Name),
     };

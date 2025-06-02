@@ -5,5 +5,5 @@ namespace ReData.Query.Core.Components;
 
 public interface INameResolver
 {
-    public TableTemplate ResolveName(ReadOnlySpan<string> path);
+    public ResolvedTemplate ResolveName(ReadOnlySpan<string> path);
 }

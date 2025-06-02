@@ -6,9 +6,13 @@ namespace ReData.Query.Lang.Expressions;
 public sealed record StringLiteral : Literal<string>
 {
     [SetsRequiredMembers]
-    public StringLiteral(string value) : base(value) {}
+    public StringLiteral(string value)
+        : base(value)
+    {
+    }
 
-    public StringLiteral(string value, ExprSpan span) : base(value)
+    public StringLiteral(string value, ExprSpan span)
+        : base(value)
     {
         Span = span;
     }

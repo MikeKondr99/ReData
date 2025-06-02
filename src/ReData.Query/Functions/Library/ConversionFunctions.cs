@@ -1,9 +1,8 @@
-﻿
-using ReData.Query.Core.Types;
+﻿using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class ConversionFunctions : FunctionsDescriptor
@@ -24,20 +23,24 @@ public class ConversionFunctions : FunctionsDescriptor
             .Arg("input", input)
             .Returns(ret);
     }
+
     protected override void Functions()
     {
         // Noop Conversions
-        foreach (var T in new DataType[] { Number, Integer, Text, Bool, DateTime})
+        foreach (var type in new DataType[]
+                 {
+                     Number, Integer, Text, Bool, DateTime
+                 })
         {
-            Conversion(T,T)
+            Conversion(type, type)
                 .Doc("Не производит никаких действий")
                 .Templates(new()
                 {
                     [All] = $"{0}",
                 });
         }
-        
-        Conversion(Text,Integer)
+
+        Conversion(Text, Integer)
             .Doc("Преобразует текст в целое число")
             .Templates(new()
             {
@@ -46,15 +49,15 @@ public class ConversionFunctions : FunctionsDescriptor
                 [PostgreSql | Oracle] = $"CAST({0} AS INTEGER)",
                 [ClickHouse] = $"CAST({0} AS Int64)",
             });
-        
-        Conversion(Bool,Integer)
+
+        Conversion(Bool, Integer)
             .Doc("Преобразует логическое значение в целое число (Истина → 1, Ложь → 0)")
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 1 ELSE 0 END",
             });
-        
-        Conversion(Number,Integer)
+
+        Conversion(Number, Integer)
             .Doc("Преобразует число в целое число (отбрасывает дробную часть)")
             .Templates(new()
             {
@@ -63,86 +66,86 @@ public class ConversionFunctions : FunctionsDescriptor
                 [MySql] = $"CAST(FLOOR({0}) AS SIGNED)",
                 [ClickHouse] = $"CAST({0} AS Int64)"
             });
-        
+
         Conversion(Null, Integer)
             .Templates(new()
             {
                 [All] = $"({0} + 0)",
             });
-        
+
         Conversion(Text, Number)
             .Doc("Преобразует текст в число с плавающей точкой")
             .Templates(new()
             {
-                [All & ~ClickHouse &~Oracle] = $"CAST({0} AS DECIMAL(20,10))",
+                [All & ~ClickHouse & ~Oracle] = $"CAST({0} AS DECIMAL(20,10))",
                 [Oracle] = $"TO_NUMBER({0})",
                 [ClickHouse] = $"toDecimal64({0}, 10)"
             });
-        
+
         Conversion(Bool, Number)
             .Doc("Преобразует логическое значение в число (true → 1.0, false → 0.0)")
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 1.0 ELSE 0.0 END"
             });
-        
+
         Conversion(Integer, Number)
             .Doc("Преобразует целое число в число с плавающей точкой (добавляет .0)")
             .Templates(new()
             {
-                [All & ~ClickHouse &~ Oracle] = $"CAST({0} AS DECIMAL(30,15))",
+                [All & ~ClickHouse & ~Oracle] = $"CAST({0} AS DECIMAL(30,15))",
                 [Oracle] = $"CAST({0} AS NUMERIC)",
                 [ClickHouse] = $"toDecimal64({0}, 10)"
             });
-        
+
         Conversion(Null, Number)
             .Templates(new()
             {
                 [All] = $"({0} + 0.0)",
             });
-        
+
         Conversion(Text, Bool)
             .Templates(new()
             {
                 [SqlServer] = $"LEN({0}) > 0",
                 [MySql | PostgreSql | ClickHouse | Oracle] = $"LENGTH({0}) > 0"
             });
-        
-        
+
+
         Conversion(Number, Bool)
             .Templates(new()
             {
                 [All] = $"({0} > 0.0)"
             });
-        
+
         Conversion(Integer, Bool)
             .Templates(new()
             {
                 [All] = $"({0} > 0)"
             });
-        
+
         Conversion(Null, Bool)
             .Templates(new()
             {
                 [All] = $"({0} = 0)",
             });
-        
+
         Conversion(Bool, Text)
             .Doc("Преобразует логическое значение в текст ('true' или 'false')")
             .Templates(new()
             {
                 [All] = $"CASE WHEN {0} THEN 'true' ELSE 'false' END"
             });
-        
+
         Conversion(Number, Text)
             .Doc("Преобразует число в текстовое представление (например, 3.14 → '3.14')")
             .Templates(new()
             {
-                [All & ~ (MySql | Oracle)] = $"CAST({0} AS VARCHAR)",
+                [All & ~(MySql | Oracle)] = $"CAST({0} AS VARCHAR)",
                 [MySql] = $"CAST({0} AS CHAR)",
                 [Oracle] = $"REPLACE(TO_CHAR({0}),',','.')"
             });
-        
+
         Conversion(Integer, Text)
             .Doc("Преобразует целое число в текстовое представление (например, 42 → '42')")
             .Templates(new()
@@ -151,7 +154,7 @@ public class ConversionFunctions : FunctionsDescriptor
                 [MySql] = $"CAST({0} AS CHAR)",
                 [Oracle] = $"TO_CHAR({0})"
             });
-        
+
         Conversion(DateTime, Text)
             .Doc("Преобразует дату в текстовое представление в формате ISO")
             .Templates(new()
@@ -162,14 +165,14 @@ public class ConversionFunctions : FunctionsDescriptor
                 [PostgreSql] = $"TO_CHAR({0}, 'YYYY-MM-DD HH24:MI:SS')",
                 [Oracle] = $"TO_CHAR({0}, 'YYYY-MM-DD HH24:MI:SS')",
             });
-        
+
         Conversion(Null, Text)
             .Templates(new()
             {
                 [All] = $"LOWER({0})",
             });
-        
-        
+
+
         Conversion(Text, DateTime)
             .Doc("Парсит строку как дату (формат ISO)")
             .Templates(new()

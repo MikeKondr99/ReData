@@ -3,11 +3,11 @@ using ReData.Query.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
-public sealed class TokenErrorListener : IAntlrErrorListener<int>
+public sealed class ErrorListener : IAntlrErrorListener<IToken>
 {
     public void SyntaxError(
         IRecognizer recognizer,
-        int offendingSymbol,
+        IToken offendingSymbol,
         int line,
         int charPositionInLine,
         string msg,
@@ -17,7 +17,10 @@ public sealed class TokenErrorListener : IAntlrErrorListener<int>
         {
             Error = new ExprError()
             {
-                Span = new ExprSpan(line, charPositionInLine, 1),
+                Span = new ExprSpan(
+                    line,
+                    charPositionInLine,
+                    offendingSymbol.StopIndex + 1 - offendingSymbol.StopIndex),
                 Message = msg,
             }
         };

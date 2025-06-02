@@ -8,7 +8,7 @@ public class OracleQueryCompiler : SqlQueryCompiler
 {
     protected override void WriteLimitOffset(StringBuilder res, Query query)
     {
-        //OFFSET 50 ROWS FETCH NEXT 100 ROWS ONLY;
+        // OFFSET 50 ROWS FETCH NEXT 100 ROWS ONLY;
         if (query.Offset > 0 || query.Limit > 0)
         {
             res.Append($"OFFSET {query.Offset} ROWS\n");

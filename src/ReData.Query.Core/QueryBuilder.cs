@@ -207,13 +207,13 @@ public record QueryBuilder
         };
     }
 
-    private IResolvedTemplate CteName()
+    private ResolvedTemplate CteName()
     {
         var random = $"CTE-{Guid.NewGuid().ToString("N")[..6]}";
         return Resolver.ResolveName([random]);
     }
 
-    private IResolvedTemplate GetColumnName(string alias, int index)
+    private ResolvedTemplate GetColumnName(string alias, int index)
     {
         return Resolver.ResolveName([$"column{index + 1}"]);
     }

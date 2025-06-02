@@ -6,15 +6,14 @@ namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class PostgresDatabaseFixture : IDatabaseFixture
 {
-    private Factory _factory = new Factory();
     private PostgreSqlContainer Container { get; set; } = null!;
     private NpgsqlConnection Connection { get; set; } = null!;
     private string ConnectionString { get; set; } = null!;
 
-    private IQueryRunner? Runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(Runner ??= _factory.CreateQueryRunner(DatabaseType.PostgreSql, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.PostgreSql, ConnectionString));
     }
 
     public DatabaseType GetDatabaseType()
@@ -22,9 +21,7 @@ public class PostgresDatabaseFixture : IDatabaseFixture
         return DatabaseType.PostgreSql;
     }
 
-    #region sql
-    
-    private string TestTableSql = """
+    private string testTableSql = """
                                   CREATE TABLE "User" (
                                       "UserId" SERIAL PRIMARY KEY,
                                       "FirstName" TEXT,
@@ -55,7 +52,6 @@ public class PostgresDatabaseFixture : IDatabaseFixture
                                       ('Alice', 'Johnson', 40, 85000.00, '1980-11-30', '2019-11-01', '2023-10-09', 'Senior Manager'),
                                       ('Bob', 'Brown', 35, 47000.00, '1985-05-10', '2020-06-01', '2023-10-10', 'New user');
                                   """;
-    #endregion
 
     public async Task InitializeAsync()
     {
@@ -65,16 +61,16 @@ public class PostgresDatabaseFixture : IDatabaseFixture
         Connection = new NpgsqlConnection(ConnectionString);
         await Connection.OpenAsync();
         
-        await using var command = new NpgsqlCommand(TestTableSql, Connection);
+        await using var command = new NpgsqlCommand(testTableSql, Connection);
         await command.ExecuteNonQueryAsync();
     }
 
 
     public async Task DisposeAsync()
     {
-        if (Runner is not null)
+        if (runner is not null)
         {
-            await Runner.DisposeAsync();
+            await runner.DisposeAsync();
         }
         await Container.StopAsync();
         await Container.DisposeAsync();

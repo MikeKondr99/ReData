@@ -24,22 +24,22 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         return qb;
     }
 
-    private string[] ToExpressions(int?[] values)
+    private static string[] ToExpressions(int?[] values)
     {
         return values.Select(v => v.HasValue ? $"{v.Value}" : "null").ToArray();
     }
 
-    private string[] ToExpressions(double?[] values)
+    private static string[] ToExpressions(double?[] values)
     {
         return values.Select(v => v.HasValue ? v.Value.ToString(CultureInfo.InvariantCulture) : "null").ToArray();
     }
 
-    private string[] ToExpressions(string?[] values)
+    private static string[] ToExpressions(string?[] values)
     {
         return values.Select(v => v is not null ? $"'{v}'" : "null").ToArray();
     }
 
-    private string[] ToExpressions(System.DateTime?[] values)
+    private static string[] ToExpressions(System.DateTime?[] values)
     {
         return values.Select(v => v is not null ? $"Date('{v.Value:yyyy-M-dd HH:mm:ss}')" : "null").ToArray();
     }
@@ -182,7 +182,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -197,7 +197,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -315,7 +315,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // Or whatever your default is
+        Compare(result, default(NullValue)); // Or whatever your default is
     }
 
     [Fact]
@@ -330,7 +330,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // Or whatever your default is
+        Compare(result, default(NullValue)); // Or whatever your default is
     }
 
     #endregion
@@ -379,7 +379,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -394,7 +394,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -508,7 +508,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -588,7 +588,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     #endregion
@@ -1091,7 +1091,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -1121,7 +1121,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -1136,7 +1136,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // No non-null values
+        Compare(result, default(NullValue)); // No non-null values
     }
 
     [Fact]
@@ -1166,7 +1166,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -1200,7 +1200,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -1230,7 +1230,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
 
     [Fact]
@@ -1245,7 +1245,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // Different values due to case
+        Compare(result, default(NullValue)); // Different values due to case
     }
 
     [Fact]
@@ -1324,7 +1324,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // Empty string for empty input
+        Compare(result, default(NullValue)); // Empty string for empty input
     }
     
     [Fact]
@@ -1339,7 +1339,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue()); // Empty string for all nulls
+        Compare(result, default(NullValue)); // Empty string for all nulls
     }
 
     
@@ -1453,7 +1453,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         var result = await runner.RunQueryAsScalar(qb.Build());
 
         // Assert
-        Compare(result, new NullValue());
+        Compare(result, default(NullValue));
     }
     
 

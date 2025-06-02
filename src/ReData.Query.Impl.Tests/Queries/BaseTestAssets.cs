@@ -38,13 +38,13 @@ public abstract class BaseTestAssets : ITestAssets
 
     public abstract DatabaseType DatabaseType { get; }
 
-    public ExpressionResolver ExpressionResolver => new Factory().CreateExpressionResolver(this.DatabaseType);
+    public ExpressionResolver ExpressionResolver => Factory.CreateExpressionResolver(this.DatabaseType);
 
-    public QueryBuilder UsersQuery =>
-        QueryBuilder.FromTable(
-            new Factory().CreateExpressionResolver(DatabaseType),
-            ["User"],
-            [
+    public QueryBuilder UsersQuery
+    {
+        get
+        {
+            IReadOnlyList<(string name, FieldType type)> fields = [
                 ("UserId", new FieldType(DataType.Integer, false)),
                 ("FirstName", new FieldType(DataType.Text, false)),
                 ("LastName", new FieldType(DataType.Text, false)),
@@ -54,8 +54,15 @@ public abstract class BaseTestAssets : ITestAssets
                 ("JoinDate", new FieldType(DataType.DateTime, false)),
                 ("LastLoginDate", new FieldType(DataType.DateTime, false)),
                 ("Notes", new FieldType(DataType.Text, false)),
-            ]
-        );
+            ];
+            
+            return QueryBuilder.FromTable(
+                Factory.CreateExpressionResolver(DatabaseType),
+                ["User"],
+                fields
+            );
+        }
+    }
 
     public dynamic[] UsersDynamicArray { get; } =
     [

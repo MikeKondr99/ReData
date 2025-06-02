@@ -30,7 +30,7 @@ public class SqlServerRunner : IQueryRunner
             var current = new IValue[len];
             for (int i = 0; i < len; i++)
             {
-                current[i] = Mapper.MapField(reader.GetValue(i), fields[i].Type);
+                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields[i].Type);
             }
             result.Add(new Record(current));
         }

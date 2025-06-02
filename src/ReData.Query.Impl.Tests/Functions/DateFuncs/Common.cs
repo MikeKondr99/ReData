@@ -1,6 +1,6 @@
 ﻿using ReData.Query.Impl.Tests.Fixtures;
 
-namespace ReData.Query.Impl.Tests.Functions.DateTimeFunc;
+namespace ReData.Query.Impl.Tests.Functions.DateFuncs;
 
 public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {

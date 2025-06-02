@@ -6,7 +6,7 @@ namespace ReData.Query.Lang.Tests;
 
 public class ParsingTests
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> _options = (options) =>
+    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
         options.Excluding(e => e.Span);
     
     [Fact]
@@ -14,7 +14,8 @@ public class ParsingTests
     {
         var expr = Expr.Parse("number + 3").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(
+            new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -23,7 +24,7 @@ public class ParsingTests
                 new NameExpr("number"),
                 new IntegerLiteral(3),
             ]
-        }, _options);
+        }, options);
     }
     
     [Fact]
@@ -48,7 +49,7 @@ public class ParsingTests
                     ]
                 }
             ]
-        }, _options);
+        }, options);
     }
     
     
@@ -73,7 +74,7 @@ public class ParsingTests
                     ]
                 }
             ]
-        }, _options);
+        }, options);
 
     }
     
@@ -91,7 +92,7 @@ public class ParsingTests
                 new StringLiteral("a"),
                 new StringLiteral("b"),
             ]
-        }, _options);
+        }, options);
 
     }
     
@@ -110,7 +111,7 @@ public class ParsingTests
                 new NameExpr("a"),
                 new NameExpr("b"),
             ]
-        }, _options);
+        }, options);
     }
     
     [Fact]
@@ -141,7 +142,7 @@ public class ParsingTests
                 new StringLiteral("then"),
                 new StringLiteral("else"),
             ]
-        }, _options);
+        }, options);
 
     }
 }

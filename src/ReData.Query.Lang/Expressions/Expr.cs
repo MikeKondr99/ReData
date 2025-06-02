@@ -8,10 +8,10 @@ public abstract record Expr
 {
    public ExprSpan Span { get; init; }
 
-    private int? _hash;
-    public int Hash => _hash ??= GetHashCode();
+    private int? hash;
+    public int Hash => hash ??= GetHashCode();
     
-    public static Result<Expr,ExprError> Parse(string s)
+    public static Result<Expr, ExprError> Parse(string s)
     {
         try
         {
@@ -20,7 +20,6 @@ public abstract record Expr
             lexer.AddErrorListener(new TokenErrorListener());
             var tokens = new CommonTokenStream(lexer);
             tokens.Fill();
-            var test = tokens.GetTokens();
             var parser = new LangParser(tokens);
             parser.AddErrorListener(new ErrorListener());
             Expr expr = new ExpressionParser().VisitStart(parser.start());

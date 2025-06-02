@@ -1,7 +1,7 @@
 ﻿using Pattern;
 using Pattern.Unions;
-using ReData.Query.Core.Components;
 using ReData.Query.Common;
+using ReData.Query.Core.Components;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Lang.Expressions;
@@ -26,12 +26,13 @@ public sealed class ExpressionResolver : INameResolver
     }
 
 
+    // ReSharper disable once MemberCanBePrivate.Global
     public ResolvedExpr ResolveLiteral(Literal literal)
     {
         return LiteralResolver.Resolve(literal);
     }
 
-    public Result<ResolvedExpr, ExprError> ResolveName(NameExpr name, IFieldStorage fields)
+    public static Result<ResolvedExpr, ExprError> ResolveName(NameExpr name, IFieldStorage fields)
     {
         var fieldOption = fields[name.Value];
         if (fieldOption is ISome<Field>(var field))
@@ -104,7 +105,7 @@ public sealed class ExpressionResolver : INameResolver
         };
     }
 
-    private FunctionKind MapFunctionKind(FuncExprKind kind) => kind switch
+    private static FunctionKind MapFunctionKind(FuncExprKind kind) => kind switch
     {
         FuncExprKind.Binary => FunctionKind.Binary,
         FuncExprKind.Method => FunctionKind.Method,
@@ -113,7 +114,7 @@ public sealed class ExpressionResolver : INameResolver
         var a => (FunctionKind)a,
     };
     
-    public TableTemplate ResolveName(ReadOnlySpan<string> path)
+    public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
         return NameResolver.ResolveName(path);
     }

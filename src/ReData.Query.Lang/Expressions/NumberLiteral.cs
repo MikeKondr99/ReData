@@ -6,7 +6,10 @@ namespace ReData.Query.Lang.Expressions;
 public sealed record NumberLiteral : Literal<double>
 {
     [SetsRequiredMembers]
-    public NumberLiteral(double value) : base(value) {}
+    public NumberLiteral(double value)
+        : base(value)
+    {
+    }
 
     public override string ToString()
     {

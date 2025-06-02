@@ -5,7 +5,7 @@ namespace ReData.Query.Core.Components.Implementation;
 
 public sealed class BasicNameResolver(string open, string close) : INameResolver
 {
-    public TableTemplate ResolveName(ReadOnlySpan<string> path)
+    public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
         List<IToken> tokens = new List<IToken>();
         foreach (var p in path)
@@ -16,7 +16,7 @@ public sealed class BasicNameResolver(string open, string close) : INameResolver
             tokens.Add(new ConstToken("."));
         }
         tokens.RemoveAt(tokens.Count - 1);
-        return new TableTemplate(new Template.Template
+        return new ResolvedTemplate(new Template.Template
         {
             Tokens = tokens
         });

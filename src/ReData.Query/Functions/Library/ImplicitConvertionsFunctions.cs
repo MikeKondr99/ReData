@@ -3,7 +3,7 @@ using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class ImplicitConversionFunctions : FunctionsDescriptor
@@ -59,20 +59,20 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .Returns(Text)
             .Template($"LOWER({0})");
 
-        foreach (var T in new[]
+        foreach (var type in new[]
                  {
                      Integer, Number, Bool, Text, DateTime
                  })
         {
             Function("Optional")
                 .ImplicitCast(1)
-                .ReqArg("input", T)
-                .Returns(T)
+                .ReqArg("input", type)
+                .Returns(type)
                 .CustomNullPropagation(nulls => true)
                 .Template($"{0}");
         }
 
-        Dictionary<DatabaseTypeFlags, TemplateInterpolatedStringHandler> IntegerToNumbers = new()
+        Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> integerToNumbers = new()
         {
             [All & ~ClickHouse & ~ Oracle] = $"CAST({0} AS DECIMAL(30,15))",
             [Oracle] = $"CAST({0} AS NUMERIC)",
@@ -83,18 +83,18 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .ImplicitCast(3)
             .ReqArg("input", Integer)
             .ReturnsNotNull(Number)
-            .Templates(IntegerToNumbers);
+            .Templates(integerToNumbers);
 
         Function("ToNum")
             .ImplicitCast(3)
             .Arg("input", Integer)
             .Returns(Number)
-            .Templates(IntegerToNumbers);
+            .Templates(integerToNumbers);
 
         Function("ToNum2")
             .ImplicitCast(3)
             .ReqArg("input", Integer)
             .Returns(Number)
-            .Templates(IntegerToNumbers);
+            .Templates(integerToNumbers);
     }
 }

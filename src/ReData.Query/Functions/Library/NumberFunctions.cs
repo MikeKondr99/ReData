@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class NumberFunctions : FunctionsDescriptor
@@ -33,15 +33,15 @@ public class NumberFunctions : FunctionsDescriptor
                 [SqlServer] = $"ABS({input} % {modulus})"
             });
 
-        foreach (var T in new[]
+        foreach (var type in new[]
                  {
                      Integer, Number
                  })
         {
             Method("Abs")
                 .Doc("Возвращает абсолютное значение")
-                .Arg("input", T)
-                .Returns(T)
+                .Arg("input", type)
+                .Returns(type)
                 .Templates(new()
                 {
                     [All] = $"ABS({input})"
@@ -70,7 +70,7 @@ public class NumberFunctions : FunctionsDescriptor
             .Returns(Number)
             .Templates(new()
             {
-                [All & ~ SqlServer & ~ ClickHouse] = $"ROUND({input})",
+                [All & ~SqlServer & ~ClickHouse] = $"ROUND({input})",
                 [SqlServer] = $"ROUND(CAST({input} AS NUMERIC),0)",
                 [ClickHouse] = $"ROUND(CAST({input},'Decimal64(6)'),0)"
             });
@@ -139,7 +139,7 @@ public class NumberFunctions : FunctionsDescriptor
             .Returns(Number)
             .Templates(new()
             {
-                [All & ~ SqlServer & ~ ClickHouse] = $"Round(({input} - {offset}) / {step}) * {step} + {offset}",
+                [All & ~SqlServer & ~ClickHouse] = $"Round(({input} - {offset}) / {step}) * {step} + {offset}",
                 [SqlServer] = $"Round(({input} - {offset}) / {step}, 0) * {step} + {offset}",
                 [ClickHouse] = $"Round(CAST(({input} - {offset}) / {step},'Decimal64(6)')) * {step} + {offset}",
             });
@@ -164,14 +164,14 @@ public class NumberFunctions : FunctionsDescriptor
                 [SqlServer] = $"(({input} % 2) <> 0)",
             });
 
-        foreach (var T in new[]
+        foreach (var type in new[]
                  {
                      Integer, Number
                  })
         {
             Method("Sign")
                 .Doc("Возвращает знак числа (-1, 0 или 1)")
-                .Arg("input", T)
+                .Arg("input", type)
                 .Returns(Integer)
                 .Templates(new()
                 {

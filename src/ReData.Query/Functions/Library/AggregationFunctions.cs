@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
@@ -19,12 +19,12 @@ public class AggregationFunctions : FunctionsDescriptor
                 [All] = $"COUNT(*)"
             });
         
-        foreach (var T in Types.AllWithoutBool)
+        foreach (var type in Types.AllWithoutBool)
         {
             
             AggFunction("COUNT")
                 .Doc("Подсчитывает количество отличных от NULL значений в столбце @value")
-                .Arg("value", T)
+                .Arg("value", type)
                 .ReturnsNotNull(Integer)
                 .Templates(new()
                 {
@@ -34,8 +34,8 @@ public class AggregationFunctions : FunctionsDescriptor
             
             AggFunction("MIN")
                 .Doc("Находит минимальное значение среди отличных от NULL значений в столбце @value")
-                .Arg("value", T)
-                .Returns(T)
+                .Arg("value", type)
+                .Returns(type)
                 .CustomNullPropagation((_) => true)
                 .Templates(new()
                 {
@@ -45,8 +45,8 @@ public class AggregationFunctions : FunctionsDescriptor
             
             AggFunction("MAX")
                 .Doc("Находит максимальное значение среди отличных от NULL значений в столбце x")
-                .Arg("value", T)
-                .Returns(T)
+                .Arg("value", type)
+                .Returns(type)
                 .CustomNullPropagation((_) => true)
                 .Templates(new()
                 {
@@ -55,11 +55,11 @@ public class AggregationFunctions : FunctionsDescriptor
                 });
         }
 
-        foreach (var T in new [] { Number, Integer, DateTime})
+        foreach (var type in new [] { Number, Integer, DateTime})
         {
             AggFunction("COUNT_DISTINCT")
                 .Doc("Подсчитывает количество уникальных отличных от NULL значений в столбце @value")
-                .Arg("value", T)
+                .Arg("value", type)
                 .ReturnsNotNull(Integer)
                 .Templates(new()
                 {
@@ -68,8 +68,8 @@ public class AggregationFunctions : FunctionsDescriptor
             
             AggFunction("ONLY")
                 .Doc("Возвращает значение, если оно уникально в наборе данных, иначе NULL")
-                .Arg("value", T)
-                .Returns(T)
+                .Arg("value", type)
+                .Returns(type)
                 .CustomNullPropagation((_) => true)
                 .Templates(new()
                 {
@@ -100,23 +100,23 @@ public class AggregationFunctions : FunctionsDescriptor
                 [All] = $"(CASE WHEN COUNT(DISTINCT {value}) = 1 THEN MAX({value}) ELSE NULL END)"
             });
 
-        foreach (var T in Types.Numbers)
+        foreach (var type in Types.Numbers)
         {
             AggFunction("SUM")
                 .Doc("Вычисляет сумму всех отличных от NULL значений в столбце @value")
-                .Arg("value", T)
-                .ReturnsNotNull(T)
+                .Arg("value", type)
+                .ReturnsNotNull(type)
                 .Templates(new()
                 {
                     [All] = $"COALESCE(SUM({value}), 0)"
                 });
         }
 
-        foreach (var T in Types.Numbers) 
+        foreach (var type in Types.Numbers) 
         {
             AggFunction("AVG")
                 .Doc("Вычисляет среднее арифметическое отличных от NULL значений в столбце @value")
-                .Arg("value", T)
+                .Arg("value", type)
                 .Returns(Number)
                 .CustomNullPropagation(_ => true)
                 .Templates(new()
@@ -169,13 +169,13 @@ public class AggregationFunctions : FunctionsDescriptor
                 [ClickHouse] = $"if(empty(groupArray({value})), NULL, arrayStringConcat(groupArray({value}), {delimiter}))",
             });
 
-        foreach (var T in Types.AllWithoutBool)
+        foreach (var type in Types.AllWithoutBool)
         {
             AggFunction("CONCAT")
                 .Doc("Aggregates values into a string with delimiter after sorting by specified column")
                 .Arg("value", Text)
                 .Arg("delimiter", Text)
-                .Arg("sort", T) // Sorting column (can be different from value)
+                .Arg("sort", type) // Sorting column (can be different from value)
                 .Returns(Text)
                 .CustomNullPropagation(_ => true)
                 .Templates(new()

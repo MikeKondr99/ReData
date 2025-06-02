@@ -6,16 +6,15 @@ namespace ReData.Query.Impl.Tests.Fixtures;
 
 public class OracleDatabaseFixture : IDatabaseFixture
 {
-    private Factory _factory = new Factory();
     private OracleContainer Container { get; set; } = null!;
     private OracleConnection Connection { get; set; } = null!;
     private string ConnectionString { get; set; } = null!;
     
-    private IQueryRunner? Runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
     
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(Runner ??= _factory.CreateQueryRunner(DatabaseType.Oracle, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.Oracle, ConnectionString));
     }
 
     public DatabaseType GetDatabaseType()
@@ -32,10 +31,10 @@ public class OracleDatabaseFixture : IDatabaseFixture
         Connection = new OracleConnection(ConnectionString);
         await Connection.OpenAsync();
         
-        await using var command = new OracleCommand(TestTableCreate, Connection);
+        await using var command = new OracleCommand(testTableCreate, Connection);
         await command.ExecuteNonQueryAsync();
 
-        foreach (var cmd in TestTableFill)
+        foreach (var cmd in testTableFill)
         {
             await using var command2 = new OracleCommand(cmd, Connection);
             await command2.ExecuteNonQueryAsync();
@@ -45,15 +44,15 @@ public class OracleDatabaseFixture : IDatabaseFixture
     
     public async Task DisposeAsync()
     {
-        if (Runner is not null)
+        if (runner is not null)
         {
-            await Runner.DisposeAsync();
+            await runner.DisposeAsync();
         }
         await Container.StopAsync();
         await Container.DisposeAsync();
     }
 
-    private string TestTableCreate = """
+    private string testTableCreate = """
                                   CREATE TABLE "User" (
                                       "UserId" INTEGER,
                                       "FirstName" VARCHAR2(200),
@@ -66,7 +65,7 @@ public class OracleDatabaseFixture : IDatabaseFixture
                                       "Notes" VARCHAR2(200)
                                   )
                                   """;
-    private string[] TestTableFill = [
+    private readonly string[] testTableFill = [
     """INSERT INTO "User" ("UserId", "FirstName", "LastName", "Age", "Salary", "DateOfBirth", "JoinDate", "LastLoginDate", "Notes") VALUES (1, 'John', 'Doe', 30, 50000.50, TO_DATE('1990-01-15', 'YYYY-MM-DD'), TO_DATE('2020-05-10', 'YYYY-MM-DD'), TO_DATE('2023-10-01', 'YYYY-MM-DD'), 'Regular user')""",
     """INSERT INTO "User" ("UserId", "FirstName", "LastName", "Age", "Salary", "DateOfBirth", "JoinDate", "LastLoginDate", "Notes") VALUES (2, 'Jane', 'Smith', 25, 60000.00, TO_DATE('1995-07-22', 'YYYY-MM-DD'), TO_DATE('2021-03-15', 'YYYY-MM-DD'), TO_DATE('2023-09-28', 'YYYY-MM-DD'), 'Active user')""",
     """INSERT INTO "User" ("UserId", "FirstName", "LastName", "Age", "Salary", "DateOfBirth", "JoinDate", "LastLoginDate", "Notes") VALUES (3, 'John', 'Doe', 30, 55000.75, TO_DATE('1990-01-15', 'YYYY-MM-DD'), TO_DATE('2022-01-20', 'YYYY-MM-DD'), TO_DATE('2023-10-02', 'YYYY-MM-DD'), 'Promoted user')""",

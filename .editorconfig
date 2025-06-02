@@ -1,0 +1,118 @@
+﻿[*.cs]
+# Global severity levels
+dotnet_analyzer_diagnostic.severity = error # Default level for all analyzers
+
+# StyleCop-specific overrides
+
+# dotnet_diagnostic.SA1633.severity = error # Disable file header requirement
+# dotnet_diagnostic.SA1600.severity = suggestion # Make docs optional but suggested
+# 
+# # Microsoft analyzer overrides
+# dotnet_diagnostic.CA1822.severity = warning # Mark static methods as warning
+# dotnet_diagnostic.CA1304.severity = error # CultureInfo as error
+
+# file header
+dotnet_diagnostic.SA1633.severity = none
+# Нельзя называть тип Option
+dotnet_diagnostic.CA1716.severity = none
+# параметр должен быть с маленькой буквы (не работает с record)
+dotnet_diagnostic.SA1313.severity = none
+# required public (чегооо)
+dotnet_diagnostic.SA1206.severity = none
+# using внутри namespace
+dotnet_diagnostic.SA1200.severity = none
+# this.
+dotnet_diagnostic.SA1101.severity = none
+#
+dotnet_diagnostic.SA1106.severity = none
+#
+dotnet_diagnostic.CA1720.severity = none
+
+
+### Документация -----------------------------
+
+# Должна быть документация
+dotnet_diagnostic.CS1591.severity = warning
+dotnet_diagnostic.SA1600.severity = warning
+dotnet_diagnostic.SA1602.severity = warning
+dotnet_diagnostic.SA1601.severity = warning
+dotnet_diagnostic.SA1623.severity = none # неработает с русским языком
+dotnet_diagnostic.SA1652.severity = none # doc output
+
+
+
+### Корректность --------------------------------
+# не полный switch (можно позже включить как error)
+dotnet_diagnostic.CS8509.severity = none
+# Не использовать просто Exception (сменить на error)
+dotnet_diagnostic.CA2201.severity = warning
+# Страшно я не понял GC
+dotnet_diagnostic.CA1816.severity = warning
+# Оптмизация
+dotnet_diagnostic.CA1859.severity = warning
+# Строки
+dotnet_diagnostic.CA1305.severity = warning
+dotnet_diagnostic.CA1310.severity = warning
+
+
+
+### Спорные стили
+
+dotnet_diagnostic.SA1128.severity = warning
+dotnet_diagnostic.SA1122.severity = warning
+dotnet_diagnostic.SA1201.severity = error
+dotnet_diagnostic.SA1118.severity = warning # autofix?
+dotnet_diagnostic.SA1402.severity = warning # autofix?
+
+# Generic начинается с T
+dotnet_diagnostic.CA1715.severity = none
+
+# Чисто на автоформат
+dotnet_diagnostic.SA1210.severity = suggestion # autofix?
+
+# Порядок
+dotnet_diagnostic.SA1201.severity = suggestion # autofix?
+dotnet_diagnostic.SA1202.severity = suggestion # autofix?
+dotnet_diagnostic.SA1203.severity = suggestion # autofix?
+dotnet_diagnostic.SA1204.severity = suggestion # autofix?
+dotnet_diagnostic.SA1214.severity = suggestion # autofix?
+dotnet_diagnostic.CA1707.severity = warning # autofix?
+
+
+
+# Всякая невидимая пробельная дичь
+# Сделать бы это всё автоформатом
+dotnet_diagnostic.SA1002.severity = none
+dotnet_diagnostic.SA1028.severity = suggestion # autofix?
+dotnet_diagnostic.SA1003.severity = warning # autofix?
+dotnet_diagnostic.SA1507.severity = suggestion # autofix?
+dotnet_diagnostic.SA1513.severity = suggestion # autofix?
+dotnet_diagnostic.SA1000.severity = suggestion # autofix?
+dotnet_diagnostic.SA1010.severity = suggestion # autofix?
+dotnet_diagnostic.SA1009.severity = suggestion # autofix?
+dotnet_diagnostic.SA1012.severity = suggestion # autofix?
+dotnet_diagnostic.SA1013.severity = suggestion # autofix?
+dotnet_diagnostic.SA1001.severity = suggestion # autofix?
+dotnet_diagnostic.SA1124.severity = suggestion # autofix?
+dotnet_diagnostic.SA1505.severity = suggestion # autofix?
+dotnet_diagnostic.SA1508.severity = suggestion # autofix?
+dotnet_diagnostic.SA1517.severity = suggestion # autofix?
+dotnet_diagnostic.SA1516.severity = suggestion # autofix?
+dotnet_diagnostic.SA1111.severity = suggestion # autofix?
+dotnet_diagnostic.SA1116.severity = suggestion # autofix?
+dotnet_diagnostic.SA1518.severity = suggestion # autofix?
+dotnet_diagnostic.SA1025.severity = suggestion # autofix?
+dotnet_diagnostic.SA1026.severity = suggestion # autofix?
+dotnet_diagnostic.SA1008.severity = suggestion # autofix?
+
+
+dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA1512.severity = none
+dotnet_diagnostic.SA12.severity = none
+
+
+
+# Formatting rules
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using ReData.DemoApplication;
 using ReData.Query;
 using ReData.Query.Core;
-using ReData.Query.Core.Types;
 using ReData.Query.Impl.Functions;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
@@ -30,9 +29,7 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-var factory = new Factory();
-
-var compiler = factory.CreateQueryCompiler(DatabaseType.PostgreSql);
+var compiler = Factory.CreateQueryCompiler(ReData.Query.DatabaseType.PostgreSql);
 
 app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromServices] ConnectionService connectionService) =>
     {
@@ -91,7 +88,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
         // Запуск запроса
         try
         {
-            await using var runner = factory.CreateQueryRunner(DatabaseType.PostgreSql, connectionService.Connection);
+            await using var runner = Factory.CreateQueryRunner(ReData.Query.DatabaseType.PostgreSql, connectionService.Connection);
             var data = await runner.RunQueryAsObjectAsync(build);
             
             return Results.Ok(new TransformResponse()
@@ -122,7 +119,7 @@ app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromSe
 app.MapGet("api/functions", () =>
 {
     var functions = GlobalFunctionsStorage.Functions
-        .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypeFlags.PostgreSql)))
+        .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypes.PostgreSql)))
         .Where(f => f.ImplicitCast is null)
         .OrderBy(f => f.Name);
 
@@ -139,19 +136,3 @@ app.MapGet("api/functions", () =>
 });
 
 app.Run();
-
-
-public sealed record FunctionViewModel
-{
-    public required string Name { get; init; }
-
-    public required string? Doc { get; init; }
-
-    public required IReadOnlyList<FunctionArgument> Arguments { get; init; }
-
-    public required FunctionReturnType ReturnType { get; init; }
-    
-    public required FunctionKind Kind { get; init; }
-    
-    public required string DisplayText { get; init; }
-}

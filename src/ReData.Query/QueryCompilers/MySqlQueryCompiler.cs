@@ -6,7 +6,7 @@ public class MySqlQueryCompiler : SqlQueryCompiler
 {
     protected override void WriteLimitOffset(StringBuilder res, Core.Query query)
     {
-        var _ = (query.Limit, query.Offset) switch
+        _ = (query.Limit, query.Offset) switch
         {
             (> 0, > 0) => res.Append($"LIMIT {query.Limit}\n OFFSET {query.Offset}\n"),
             (> 0, _) => res.Append($"LIMIT {query.Limit}\n"),

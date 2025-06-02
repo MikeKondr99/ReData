@@ -6,7 +6,7 @@ namespace ReData.Query.Impl.Functions;
 
 public class GlobalFunctionsStorage
 {
-    private static Dictionary<DatabaseTypeFlags, FunctionStorage> storages = new Dictionary<DatabaseTypeFlags, FunctionStorage>();
+    private static Dictionary<DatabaseTypes, FunctionStorage> storages = new Dictionary<DatabaseTypes, FunctionStorage>();
         
     public static IReadOnlyList<FunctionDefinition> Functions { get; } =
         new FunctionsDescriptor[]
@@ -27,7 +27,7 @@ public class GlobalFunctionsStorage
         }.SelectMany(f => f.GetFunctions()).ToArray();
     
 
-    public static FunctionStorage GetFunctions(DatabaseTypeFlags database)
+    public static FunctionStorage GetFunctions(DatabaseTypes database)
     {
         if (storages.TryGetValue(database, out var storage))
         {

@@ -3,7 +3,7 @@ using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public abstract class FunctionsDescriptor
@@ -66,11 +66,13 @@ public abstract class FunctionsDescriptor
     protected abstract void Functions();
 
 
-    public DataTypes Types { get; } = new DataTypes();
+    public DataTypes Types { get; }
 
     public struct DataTypes
     {
-        public DataTypes() { }
+        public DataTypes()
+        {
+        }
         
         public DataType[] All { get; } = [Number, Integer, Text, Bool, DateTime];
         
@@ -92,7 +94,7 @@ public record FunctionBuilder
     private string Name { get; init; }
     private FunctionKind Kind { get; set; }
 
-    private string? _doc;
+    private string? doc;
 
     private List<FunctionArgument> Arguments { get; set; } = [];
 
@@ -100,13 +102,13 @@ public record FunctionBuilder
     
     private ConstPropagation ConstPropagation { get; set; }
 
-    private bool IsAggregated { get; set; } = false;
+    private bool IsAggregated { get; set; }
 
-    private IReadOnlyDictionary<DatabaseTypeFlags, ITemplate>? _templates { get; set; }
+    private IReadOnlyDictionary<DatabaseTypes, ITemplate>? templates;
 
     private uint? ImplicitCastCost { get; set; }
 
-    private Func<IEnumerable<bool>, bool>? _customNullPropagation;
+    private Func<IEnumerable<bool>, bool>? customNullPropagation;
 
     public static FunctionBuilder Function(string name)
     {
@@ -151,7 +153,7 @@ public record FunctionBuilder
     
     public FunctionBuilder Doc(string doc)
     {
-        this._doc = doc;
+        this.doc = doc;
         return this;
     }
 
@@ -215,9 +217,9 @@ public record FunctionBuilder
         return this;
     }
     
-    public FunctionBuilder Templates(Dictionary<DatabaseTypeFlags, TemplateInterpolatedStringHandler> templates)
+    public FunctionBuilder Templates(Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> templates)
     {
-        this._templates = templates.ToDictionary(kv => kv.Key, kv => (ITemplate) new Template() { Tokens = kv.Value.tokens });
+        this.templates = templates.ToDictionary(kv => kv.Key, kv => (ITemplate) new Template() { Tokens = kv.Value.Tokens });
         return this;
     }
     
@@ -231,27 +233,28 @@ public record FunctionBuilder
     
     public FunctionBuilder CustomNullPropagation(Func<IEnumerable<bool>, bool> func)
     {
-        _customNullPropagation = func;
+        customNullPropagation = func;
         return this;
     }
 
     public FunctionDefinition Build()
     {
         ArgumentNullException.ThrowIfNull(ReturnType);
-        ArgumentNullException.ThrowIfNull(_templates);
+        ArgumentNullException.ThrowIfNull(templates);
         return new FunctionDefinition
         {
-            Name = this.Name,
-            Doc = this._doc,
-            Arguments = this.Arguments,
-            ReturnType = this.ReturnType,
-            Kind = this.Kind,
-            Templates = this._templates,
+            Name = Name,
+            Doc = doc,
+            Arguments = Arguments,
+            ReturnType = ReturnType,
+            Kind = Kind,
+            Templates = templates,
             ImplicitCast = ImplicitCastCost is not null ? new ImplicitCastMetadata()
             {
                 Cost = ImplicitCastCost.Value
-            } : null,
-            CustomNullPropagation = _customNullPropagation,
+            }
+            : null,
+            CustomNullPropagation = customNullPropagation,
             ConstPropagation = this.ConstPropagation,
         };
 

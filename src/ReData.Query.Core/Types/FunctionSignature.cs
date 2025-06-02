@@ -16,15 +16,18 @@ public record FunctionSignature
         if (Kind is FunctionKind.Binary)
         {
             return $"({ArgumentTypes[0]} {Name} {ArgumentTypes[1]})";
-        } else if (Kind is FunctionKind.Unary)
+        }
+        if (Kind is FunctionKind.Unary)
         {
             return $"({Name} {ArgumentTypes[1]})";
-        } else if (Kind is FunctionKind.Method)
+        }
+        if (Kind is FunctionKind.Method)
         {
             return $"{ArgumentTypes[0]}.{Name}({
                 ArgumentTypes.Skip(1).JoinBy(", ")
             })";
         }
+
         return $"{Name}({
             ArgumentTypes.JoinBy(", ")
         })";

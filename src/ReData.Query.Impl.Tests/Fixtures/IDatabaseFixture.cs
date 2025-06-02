@@ -11,5 +11,7 @@ public interface IDatabaseFixture : IAsyncLifetime
 }
 
 [CollectionDefinition("Runners")]
+#pragma warning disable CA1711
 public class RunnersCollection : ICollectionFixture<IDatabaseFixture>, ICollectionFixture<ITestAssets>;
+#pragma warning restore CA1711
 

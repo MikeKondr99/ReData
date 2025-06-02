@@ -29,7 +29,7 @@ public sealed record FunctionDefinition
         {
             return $"({Arguments[0].Type} {Name} {Arguments[1].Type}) -> {ReturnType}";
         }
-        return $"{Name}({ String.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
+        return $"{Name}({ string.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
     }
 }
 

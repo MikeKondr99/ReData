@@ -15,7 +15,7 @@ public sealed class MySqlLiteralResolver : ILiteralResolver
         {
             StringLiteral(var v) => ($"'{v}'", ExprType.Text()),
             NumberLiteral(var v) => (v.ToString("0.0###############", CultureInfo.InvariantCulture), ExprType.Number()),
-            IntegerLiteral(var v) => (v.ToString(), ExprType.Integer()),
+            IntegerLiteral(var v) => (v.ToString(), ExprType.Int()),
             BooleanLiteral(var v) => (v ? "0 = 0" : "0 <> 0", ExprType.Boolean()),
             NullLiteral => ("NULL", ExprType.Null())
         };

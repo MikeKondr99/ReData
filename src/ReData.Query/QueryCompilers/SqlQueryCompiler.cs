@@ -60,7 +60,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
                 WriteQuery(res, sub);
                 res.Append("),\n");
             }
-            res.Length-=2;
+            res.Length -= 2;
             res.Append('\n');
         }
     }
@@ -131,7 +131,11 @@ public abstract class SqlQueryCompiler : IQueryCompiler
 
     protected virtual void WriteWhere(StringBuilder res, Query query)
     {
-        if (query.Where is null) return;
+        if (query.Where is null)
+        {
+            return;
+        }
+
         var init = "WHERE ";
         foreach (var filter in query.Where)
         {
@@ -144,8 +148,11 @@ public abstract class SqlQueryCompiler : IQueryCompiler
     
     protected virtual void WriteOrderBy(StringBuilder res, Query query)
     {
-        if (query.OrderBy?.Count is 0 or null) return;
-        
+        if (query.OrderBy?.Count is 0 or null)
+        {
+            return;
+        }
+
         int last = query.OrderBy.Count - 1;
         res.Append("ORDER BY ");
         for (var i = 0; i < query.OrderBy.Count; i++)
@@ -170,8 +177,11 @@ public abstract class SqlQueryCompiler : IQueryCompiler
     
     protected virtual void WriteGroupBy(StringBuilder res, Query query)
     {
-        if (query.GroupBy?.Count is 0 or null) return;
-        
+        if (query.GroupBy?.Count is 0 or null)
+        {
+            return;
+        }
+
         int last = query.GroupBy.Count - 1;
         res.Append("GROUP BY ");
         for (var i = 0; i < query.GroupBy.Count; i++)

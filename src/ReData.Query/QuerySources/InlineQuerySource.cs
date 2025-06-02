@@ -13,10 +13,10 @@ public record struct InlineQuerySource : IQuerySource
 {
     public IResolvedTemplate Name { get; init; }
 
-    private readonly IFieldStorage _fieldStorage;
+    private readonly IFieldStorage fieldStorage;
 
-    private readonly DatabaseType _databaseType;
-    public IFieldStorage Fields() => _fieldStorage;
+    private readonly DatabaseType databaseType;
+    public IFieldStorage Fields() => fieldStorage;
     
     public InlineQuerySource(string columnName, string[] dataExpressions, DatabaseType databaseType)
     {
@@ -25,8 +25,7 @@ public record struct InlineQuerySource : IQuerySource
             throw new Exception("Создание запроса из списка значений не поддерживается для Oracle");
         }
         
-        var ft = new Factory();
-        var resolver= ft.CreateExpressionResolver(databaseType);
+        var resolver = Factory.CreateExpressionResolver(databaseType);
         IExpressionCompiler compiler = new ExpressionCompiler();
         var fields = new FieldStorage([]);
 
@@ -49,10 +48,10 @@ public record struct InlineQuerySource : IQuerySource
                 .JoinBy("UNION ALL\n");
         }
 
-        _databaseType = databaseType;
+        this.databaseType = databaseType;
         var queryName = resolver.ResolveName(["InlineQuery"]);
         Name = new NameTemplate(Template.Create($"({data}) AS {queryName.Template.ToString()}"));
-        _fieldStorage = new FieldStorage([
+        fieldStorage = new FieldStorage([
             new Field()
             {
                 Alias = columnName,
@@ -79,7 +78,7 @@ public record struct InlineQuerySource : IQuerySource
     
     public QueryBuilder ToQueryBuilder()
     {
-        var resolver= new Factory().CreateExpressionResolver(_databaseType);
+        var resolver = Factory.CreateExpressionResolver(databaseType);
         return new QueryBuilder(new Core.Query()
         {
             Name = resolver.ResolveName(["InlineQuery"]),

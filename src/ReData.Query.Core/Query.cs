@@ -7,7 +7,7 @@ namespace ReData.Query.Core;
 
 public sealed record Query : IQuerySource
 {
-    public IQuerySource From { get; init; } = new NoSource();
+    public IQuerySource From { get; init; } = default(NoSource);
     public IReadOnlyList<SelectItem>? Select { get; init; }
     public IReadOnlyList<ResolvedExpr>? Where { get; init; }
     public IReadOnlyList<OrderItem>? OrderBy { get; init; }
@@ -21,17 +21,25 @@ public sealed record Query : IQuerySource
 
     public IFieldStorage Fields()
     {
-        if (this.Select is null) return From.Fields();
-        return new FieldStorage(this.Select.Select(m => new Field
+        if (Select is null)
+        {
+            return From.Fields();
+        }
+
+        return new FieldStorage(Select.Select(m => new Field
         {
             Alias = m.Alias,
-            Template = new TableTemplate(Template.Template.Create($"{Name.Template.ToString()}.{m.Column.Template.ToString()}")).Template,
+            Template = new ResolvedTemplate(Template.Template.Create($"{Name.Template.ToString()}.{m.Column.Template.ToString()}")).Template,
             Type = new FieldType(m.ResolvedExpr.Type.DataType, m.ResolvedExpr.Type.CanBeNull),
         }).ToArray());
     }
     
-    private record struct NoSource() : IQuerySource
+    private record struct NoSource : IQuerySource
     {
+        public NoSource()
+        {
+        }
+
         public IResolvedTemplate? Name => null;
         public IFieldStorage Fields() => new FieldStorage([]);
     }

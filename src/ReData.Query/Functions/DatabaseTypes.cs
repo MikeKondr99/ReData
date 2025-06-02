@@ -1,7 +1,7 @@
 ﻿namespace ReData.Query.Impl.Functions;
 
 [Flags]
-public enum DatabaseTypeFlags
+public enum DatabaseTypes
 {
     PostgreSql = 1,
     SqlServer = 2,

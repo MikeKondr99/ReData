@@ -1,33 +1,73 @@
-﻿
-name: .NET
+﻿name: .NET CI Pipeline
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOCKER_HOST: tcp://localhost:2375
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    
+    outputs:
+      build_successful: ${{ steps.build_step.outputs.success }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        id: build_step
+        run: dotnet build --configuration Release --no-restore --verbosity normal
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: |
+            **/bin/Release/**/*
+            !**/bin/Release/**/*.pdb
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    
     services:
-      # Start Docker as a service (required for TestContainers)
       docker:
         image: docker:dind
         ports:
           - 2375:2375
         options: --privileged
-        
+    
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --no-restore
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: **/TestResults/**/*

@@ -8,18 +8,18 @@ namespace ReData.Query.Core.Components.Implementation;
 
 public sealed class FunctionStorage : IFunctionStorage
 {
-    private ILookup<string, FunctionDefinition> _lookup;
+    private ILookup<string, FunctionDefinition> lookup;
 
-    private string[] _allFunctionNames;
+    private string[] allFunctionNames;
 
-    private ILookup<FunctionArgumentType, FunctionDefinition> _implicitCasts;
+    private ILookup<FunctionArgumentType, FunctionDefinition> implicitCasts;
 
     public FunctionStorage(IEnumerable<FunctionDefinition> functions)
     {
         functions = functions.Where(f => f.Template is not null).ToArray();
-        _allFunctionNames = functions.Select(f => f.Name).Distinct().ToArray();
-        _lookup = functions.Where(f => f.ImplicitCast is null).ToLookup(f => f.Name, f => f);
-        _implicitCasts = functions.Where(f => f.ImplicitCast is not null).ToLookup(
+        allFunctionNames = functions.Select(f => f.Name).Distinct().ToArray();
+        lookup = functions.Where(f => f.ImplicitCast is null).ToLookup(f => f.Name, f => f);
+        implicitCasts = functions.Where(f => f.ImplicitCast is not null).ToLookup(
             f => f.Arguments[0].Type,
             f => f
         );
@@ -32,7 +32,7 @@ public sealed class FunctionStorage : IFunctionStorage
 
     private IEnumerable<FunctionDefinition> GetValidFunctions(FunctionSignature sign)
     {
-        var temp = _lookup[sign.Name];
+        var temp = lookup[sign.Name];
         temp = temp
             .Where(f => f.Arguments.Count == sign.ArgumentTypes.Count)
             .Where(f => ValidFunctionKind(f.Kind, sign.Kind));
@@ -43,6 +43,7 @@ public sealed class FunctionStorage : IFunctionStorage
     private FunctionDefinition? GetImplicit(FunctionArgumentType from, FunctionArgumentType to)
     {
         if (from == to)
+        {
             return new FunctionDefinition
             {
                 Name = "",
@@ -74,8 +75,9 @@ public sealed class FunctionStorage : IFunctionStorage
                 ConstPropagation = Types.ConstPropagation.Default,
                 CustomNullPropagation = null,
             };
+        }
 
-        return _implicitCasts[from].FirstOrDefault(f =>
+        return implicitCasts[from].FirstOrDefault(f =>
             f.ReturnType.DataType == to.DataType && f.ReturnType.CanBeNull == to.CanBeNull);
     }
 
@@ -137,13 +139,17 @@ public sealed class FunctionStorage : IFunctionStorage
     /// Возвращает что значения можно все агрегировать
     /// или None если результат не валидный
     /// </summary>
-    /// <param name="aggs"></param>
-    /// <returns></returns>
-    public static Option<bool> AggPropagation(IEnumerable<ExprType> aggs)
+    /// <param name="exprs"> Типы выражений</param>
+    /// <returns>
+    ///     true - если аггрегация
+    ///     false - если не агрегация
+    ///     none - если не валидно
+    /// </returns>
+    public static Option<bool> AggPropagation(IEnumerable<ExprType> exprs)
     {
-        if (aggs.Any(t => t.Aggregated))
+        if (exprs.Any(t => t.Aggregated))
         {
-            if (aggs.All(t => t.Aggregated || t.IsConstant))
+            if (exprs.All(t => t.Aggregated || t.IsConstant))
             {
                 return true;
             }
@@ -158,10 +164,13 @@ public sealed class FunctionStorage : IFunctionStorage
     }
 
     
-    private bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
+    private static bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
     {
         // Если не может быть null значит не может
-        if (!function.ReturnType.CanBeNull) return false;
+        if (!function.ReturnType.CanBeNull)
+        {
+            return false;
+        }
 
         // Если спец правило смотрим по нему
         if (function.CustomNullPropagation is not null)

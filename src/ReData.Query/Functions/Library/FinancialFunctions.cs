@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class FinancialFunctions : FunctionsDescriptor

@@ -2,16 +2,16 @@
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class ComparisonFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var T in Types.AllWithoutBool)
+        foreach (var t in Types.AllWithoutBool)
         {
-            Binary("=", T, T)
+            Binary("=", t, t)
                 .Doc("Проверяет равенство")
                 .Returns(Bool)
                 .Templates(new()
@@ -19,7 +19,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                     [All] = $"({0} = {1})",
                 });
             
-            Binary("!=", T, T)
+            Binary("!=", t, t)
                 .Doc("Проверяет неравенство")
                 .Returns(Bool)
                 .Templates(new()
@@ -29,9 +29,9 @@ public class ComparisonFunctions : FunctionsDescriptor
         }
         
         
-        foreach (var T in new [] { Number, Integer, DateTime })
+        foreach (var t in new [] { Number, Integer, DateTime })
         {
-            Binary("<", T, T)
+            Binary("<", t, t)
                 .Doc("Проверяет, что первое значение строго меньше второго")
                 .Returns(Bool)
                 .Templates(new()
@@ -39,7 +39,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                     [All] = $"({0} < {1})",
                 });
             
-            Binary(">", T, T)
+            Binary(">", t, t)
                 .Doc("Проверяет, что первое значение строго больше второго")
                 .Returns(Bool)
                 .Templates(new()
@@ -47,7 +47,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                     [All] = $"({0} > {1})",
                 });
             
-            Binary("<=", T, T)
+            Binary("<=", t, t)
                 .Doc("Проверяет, что первое значение меньше или равно второму")
                 .Returns(Bool)
                 .Templates(new()
@@ -55,7 +55,7 @@ public class ComparisonFunctions : FunctionsDescriptor
                     [All] = $"({0} <= {1})",
                 });
             
-            Binary(">=", T, T)
+            Binary(">=", t, t)
                 .Doc("Проверяет, что первое значение больше или равно второму")
                 .Returns(Bool)
                 .Templates(new()
@@ -65,9 +65,9 @@ public class ComparisonFunctions : FunctionsDescriptor
 
             Method("Between")
                 .Doc("Проверяет, что значение находится в диапазоне [min, max] включительно")
-                .Arg("input", T)
-                .Arg("min", T)
-                .Arg("max", T)
+                .Arg("input", t)
+                .Arg("min", t)
+                .Arg("max", t)
                 .Returns(Bool)
                 .Templates(new()
                 {

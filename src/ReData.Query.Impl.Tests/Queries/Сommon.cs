@@ -17,7 +17,9 @@ public static class RecordsTestHelper
     public static Dictionary<string, IValue> ConvertDynamicToIValueDictionary(dynamic dynamicObject)
     {
         if (dynamicObject == null)
+        {
             throw new ArgumentNullException(nameof(dynamicObject));
+        }
 
         var dictionary = new Dictionary<string, IValue>();
 
@@ -46,7 +48,9 @@ public static class RecordsTestHelper
     private static IValue ConvertToIValue(object? value)
     {
         if (value is null)
-            return new NullValue();
+        {
+            return default(NullValue);
+        }
 
         switch (value)
         {
@@ -500,7 +504,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         var runner = await db.GetRunnerAsync();
         // Arrange
-        var qb = QueryBuilder.FromDual(new Factory().CreateExpressionResolver(assets.DatabaseType))
+        var qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(assets.DatabaseType))
             .Select(new()
             {
                 ["id"] = "14",

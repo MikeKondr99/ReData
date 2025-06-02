@@ -2,12 +2,12 @@
 
 namespace ReData.Query.Impl.Functions.Library;
 
-using static DatabaseTypeFlags;
+using static DatabaseTypes;
 using static DataType;
 
 public class ReflectionFunctions : FunctionsDescriptor
 {
-    private string TypeMapping(DataType type) => type switch
+    private static string TypeMapping(DataType type) => type switch
     {
         Text => "Text",
         Number => "Num",
@@ -20,24 +20,24 @@ public class ReflectionFunctions : FunctionsDescriptor
     
     protected override void Functions()
     {
-        foreach (var T in new [] { Text, Number, Integer, Bool, Null, DateTime, Unknown })
+        foreach (var type in new [] { Text, Number, Integer, Bool, Null, DateTime, Unknown })
         {
             Method("Type")
                 .Doc("Возвращает тип значения в виде строки")
-                .Arg("input", T)
+                .Arg("input", type)
                 .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
                 .Templates(new()
                 {
-                    [All] = $"'{TypeMapping(T)}?'",
+                    [All] = $"'{TypeMapping(type)}?'",
                 });
             
             Method("Type")
                 .Doc("Возвращает тип значения в виде строки")
-                .ReqArg("input", T)
+                .ReqArg("input", type)
                 .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
                 .Templates(new()
                 {
-                    [All] = $"'{TypeMapping(T)}'",
+                    [All] = $"'{TypeMapping(type)}'",
                 });
         }
 

@@ -6,7 +6,7 @@ namespace ReData.Query.Lang.Tests;
 
 public class LiteralsTest
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> _options = (options) =>
+    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
         options.Excluding(e => e.Span);
 
     [Theory]
@@ -25,7 +25,7 @@ public class LiteralsTest
     public void NameLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
-        e.Should().BeEquivalentTo(new NameExpr(expected), _options);
+        e.Should().BeEquivalentTo(new NameExpr(expected), options);
     }
     
     [Theory]
@@ -42,7 +42,7 @@ public class LiteralsTest
     public void StringLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
-        e.Should().BeEquivalentTo(new StringLiteral(expected), _options);
+        e.Should().BeEquivalentTo(new StringLiteral(expected), options);
     }
     
     [Theory]
@@ -56,7 +56,7 @@ public class LiteralsTest
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new NumberLiteral(expected), _options);
+        expr.Should().BeEquivalentTo(new NumberLiteral(expected), options);
     }
     
     [Fact]
@@ -70,7 +70,7 @@ public class LiteralsTest
             Name = "-",
             Arguments = [new IntegerLiteral(1)],
             Kind = FuncExprKind.Unary,
-        }, _options);
+        }, options);
     }
     
     [Theory]
@@ -83,7 +83,7 @@ public class LiteralsTest
     public void IntegerLiteral(string input, long expected)
     {
         var expr = Expr.Parse(input).Unwrap();
-        expr.Should().BeEquivalentTo(new IntegerLiteral(expected), _options);
+        expr.Should().BeEquivalentTo(new IntegerLiteral(expected), options);
     }
 
     [Theory]
@@ -93,7 +93,7 @@ public class LiteralsTest
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new BooleanLiteral(expected), _options);
+        expr.Should().BeEquivalentTo(new BooleanLiteral(expected), options);
     }
     
     [Theory]
@@ -102,7 +102,7 @@ public class LiteralsTest
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new NullLiteral(), _options);
+        expr.Should().BeEquivalentTo(new NullLiteral(), options);
     }
     
     // [Theory]

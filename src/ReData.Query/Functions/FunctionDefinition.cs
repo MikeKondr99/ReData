@@ -15,7 +15,7 @@ public record FunctionDefinition
     
     public required FunctionKind Kind { get; init; }
     
-    public required IReadOnlyDictionary<DatabaseTypeFlags, ITemplate> Templates { get; init; }
+    public required IReadOnlyDictionary<DatabaseTypes, ITemplate> Templates { get; init; }
     
     public ImplicitCastMetadata? ImplicitCast { get; init; }
     
@@ -29,6 +29,6 @@ public record FunctionDefinition
         {
             return $"({Arguments[0].Type} {Name} {Arguments[1].Type}) -> {ReturnType}";
         }
-        return $"{Name}({ String.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
+        return $"{Name}({ string.Join(", ", Arguments.Select(a => $"{a}")) }) -> {ReturnType}";
     }
 }

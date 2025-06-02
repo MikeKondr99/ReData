@@ -8,7 +8,7 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
 
-internal class ExpressionParser : LangParserBaseVisitor<Expr>
+internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 {
     public override Expr VisitStart(LangParser.StartContext context)
     {
@@ -71,7 +71,7 @@ internal class ExpressionParser : LangParserBaseVisitor<Expr>
             name = name[1..^1];
         }
 
-        name = Regex.Replace(name, @"\\\]", "]");
+        name = EscapeRegex().Replace(name, "]");
 
         return new NameExpr(name)
         {
@@ -108,8 +108,7 @@ internal class ExpressionParser : LangParserBaseVisitor<Expr>
                         Arguments = [e],
                         Kind = FuncExprKind.Default,
                         Span = e.Span,
-                    }
-                );
+                    });
             }
             else if(part.TEXT() is not null)
             {
@@ -199,5 +198,7 @@ internal class ExpressionParser : LangParserBaseVisitor<Expr>
     {
         return new ExprSpan(context.Start.Line, context.Start.Column, context.Stop.StopIndex - context.Start.StartIndex);
     }
-    
+
+    [GeneratedRegex(@"\\\]")]
+    private static partial Regex EscapeRegex();
 }

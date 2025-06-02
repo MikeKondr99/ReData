@@ -32,7 +32,7 @@ public class PostgresRunner : IQueryRunner
             for (int i = 0; i < len; i++)
             {
                 var val = reader.GetValue(i);
-                current[i] = Mapper.MapField(reader.GetValue(i), fields[i].Type);
+                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields[i].Type);
             }
             result.Add(new Record(current));
         }

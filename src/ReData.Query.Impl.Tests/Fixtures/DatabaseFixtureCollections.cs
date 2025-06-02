@@ -2,6 +2,9 @@
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
+#pragma warning disable CA1711
+#pragma warning disable SA1402
+
 [CollectionDefinition("Postgres")]
 public class PostgreRunnerCollection : ICollectionFixture<PostgresDatabaseFixture>, ICollectionFixture<PostgresAssets>;
 
@@ -18,3 +21,6 @@ public class ClickHouseRunnerCollection : ICollectionFixture<ClickHouseDatabaseF
 
 [CollectionDefinition("Oracle")]
 public class OracleRunnerCollection : ICollectionFixture<OracleDatabaseFixture>, ICollectionFixture<OracleAssets>;
+
+#pragma warning restore CA1711 SA1401
+#pragma warning restore SA1402
