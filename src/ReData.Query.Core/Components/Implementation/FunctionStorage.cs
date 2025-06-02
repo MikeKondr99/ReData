@@ -6,6 +6,8 @@ using ReData.Query.Core.Types;
 
 namespace ReData.Query.Core.Components.Implementation;
 
+// ТЕСТ
+
 public sealed class FunctionStorage : IFunctionStorage
 {
     private ILookup<string, FunctionDefinition> lookup;

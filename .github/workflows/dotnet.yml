@@ -1,4 +1,4 @@
-﻿name: .NET CI Pipeline
+﻿name: .NET PR Quality Gate
 
 on:
   pull_request:
@@ -7,13 +7,30 @@ on:
 env:
   DOTNET_VERSION: '9.0.x'
   DOCKER_HOST: tcp://localhost:2375
+  FAIL_ON_WARNINGS: 'false' # Set to 'true' to fail build on warnings
 
 jobs:
-  build:
+  analyze_changes:
     runs-on: ubuntu-latest
-    
     outputs:
-      build_successful: ${{ steps.build_step.outputs.success }}
+      changed_files: ${{ steps.get_changed_files.outputs.files }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for git diff
+
+      - name: Get changed files
+        id: get_changed_files
+        run: |
+          # Get list of changed C# files
+          FILES=$(git diff --name-only --diff-filter=AMR origin/main...HEAD | grep '\.cs$' | tr '\n' ' ')
+          echo "files=${FILES}" >> $GITHUB_OUTPUT
+          echo "Changed files: ${FILES}"
+
+  build:
+    needs: analyze_changes
+    runs-on: ubuntu-latest
     
     steps:
       - uses: actions/checkout@v4
@@ -26,20 +43,84 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build solution
+      - name: Build with warnings analysis
         id: build_step
-        run: dotnet build --configuration Release --no-restore --verbosity normal
+        run: |
+          # Build and capture warnings from changed files
+          dotnet build --configuration Release --no-restore --verbosity normal > build.log
+          
+          # Filter warnings only from changed files
+          CHANGED_FILES=${{ needs.analyze_changes.outputs.changed_files }}
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files to analyze"
+            exit 0
+          fi
+          
+          WARNINGS=$(grep -i "warning" build.log | grep -f <(echo "$CHANGED_FILES" | tr ' ' '\n') || true)
+          WARNING_COUNT=$(echo "$WARNINGS" | grep -c . || true)
+          
+          echo "warning_count=${WARNING_COUNT}" >> $GITHUB_OUTPUT
+          echo "warnings<<EOF" >> $GITHUB_OUTPUT
+          echo "$WARNINGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          if [ "$FAIL_ON_WARNINGS" = "true" ] && [ "$WARNING_COUNT" -gt 0 ]; then
+            echo "Failing build due to ${WARNING_COUNT} warnings in changed files"
+            exit 1
+          fi
 
-      - name: Upload build artifacts
+      - name: Upload build warnings report
         uses: actions/upload-artifact@v3
+        if: always() && steps.build_step.outputs.warning_count != '0'
         with:
-          name: build-output
-          path: |
-            **/bin/Release/**/*
-            !**/bin/Release/**/*.pdb
+          name: build-warnings
+          path: build.log
+
+  comment_warnings:
+    needs: [analyze_changes, build]
+    if: always() && needs.build.outputs.warning_count != '0'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create warning comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number
+            });
+            
+            // Delete previous warning comments from this bot
+            for (const comment of comments) {
+              if (comment.user.login === 'github-actions[bot]' && comment.body.includes('## Build Warnings Report')) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: comment.id
+                });
+              }
+            }
+            
+            // Create new warning comment
+            const warnings = `${{ needs.build.outputs.warnings }}`;
+            const warningCount = `${{ needs.build.outputs.warning_count }}`;
+            
+            if (warningCount > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `## Build Warnings Report (${warningCount} warnings in changed files)\n\n` +
+                      '```\n' + warnings + '\n```\n\n' +
+                      '_Please review these warnings before merging._'
+              });
+            }
 
   test:
     needs: build
+    if: needs.build.result == 'success'
     runs-on: ubuntu-latest
     
     services:
@@ -56,11 +137,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-output
 
       - name: Run tests
         run: dotnet test --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
