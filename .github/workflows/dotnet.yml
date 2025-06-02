@@ -25,7 +25,7 @@ jobs:
       - name: Build solution
         id: build
         run: |
-          dotnet build --configuration Release --no-restore
+          dotnet build --configuration Release
           echo "success=true" >> $GITHUB_OUTPUT
 
   analyze_warnings:
