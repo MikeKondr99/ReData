@@ -1,6 +1,6 @@
-﻿using ReData.DemoApplication;
+﻿using ReData.DemoApplication.Transformations;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Requests;
 
 public class TransformRequest
 {

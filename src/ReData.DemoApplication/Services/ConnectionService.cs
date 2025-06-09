@@ -2,7 +2,7 @@
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Services;
 
 public class ConnectionService
 {

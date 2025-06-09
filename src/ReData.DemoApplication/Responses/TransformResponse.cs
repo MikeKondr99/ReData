@@ -1,10 +1,10 @@
 ﻿using ReData.Query.Runners.Value;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Responses;
 
 public sealed record TransformResponse
 {
-    public required IReadOnlyList<TransformField> Fields { get; init; }
+    public required IReadOnlyList<TransformFieldViewModel> Fields { get; init; }
     
     public required int Total { get; init; }
     

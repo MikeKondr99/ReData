@@ -3,7 +3,7 @@ using ReData.Query.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Transformations;
 
 public class AggInfoTransformation : ITransformation
 {

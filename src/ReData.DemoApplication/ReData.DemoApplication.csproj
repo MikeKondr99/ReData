@@ -7,10 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
+
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
     </ItemGroup>
     <ItemGroup>
         <None Include="wwwroot\*" />

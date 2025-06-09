@@ -2,7 +2,7 @@
 using ReData.Query.Common;
 using ReData.Query.Core;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Transformations;
 
 public class GroupByTransformation : ITransformation
 {

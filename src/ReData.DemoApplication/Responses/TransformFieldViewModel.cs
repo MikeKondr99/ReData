@@ -1,8 +1,8 @@
 ﻿using ReData.Query.Core.Types;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Responses;
 
-public sealed record TransformField
+public sealed record TransformFieldViewModel
 {
     public required string Alias { get; init; }
 

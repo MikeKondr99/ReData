@@ -3,7 +3,7 @@ using Pattern.Unions;
 using ReData.Query.Common;
 using ReData.Query.Core;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Transformations;
 
 [JsonDerivedType(typeof(SelectTransformation), typeDiscriminator: "select")]
 [JsonDerivedType(typeof(WhereTransformation), typeDiscriminator: "where")]

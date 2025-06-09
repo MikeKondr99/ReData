@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using ReData.Query.Runners.Value;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Converters;
 
 public class ValueConverter : JsonConverter<IValue>
 {

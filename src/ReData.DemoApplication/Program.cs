@@ -1,138 +1,47 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ReData.DemoApplication;
+using ReData.DemoApplication.Converters;
+using ReData.DemoApplication.Database;
+using ReData.DemoApplication.Extensions;
+using ReData.DemoApplication.Requests;
+using ReData.DemoApplication.Responses;
+using ReData.DemoApplication.Services;
 using ReData.Query;
 using ReData.Query.Core;
 using ReData.Query.Impl.Functions;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
 
 if (builder.Environment.IsDevelopment())
 {
     builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 }
 
-builder.Services.Configure<JsonOptions>(options =>
+services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+services.AddControllers().AddJsonOptions(options =>
 {
-    options.SerializerOptions.Converters.Add(new ValueConverter());
-    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    options.SerializerOptions.WriteIndented = true;
+    options.JsonSerializerOptions.Converters.Add(new ValueConverter());
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.WriteIndented = true;
+
 });
 
-builder.Services.AddSingleton<ConnectionService>();
+services.AddSingleton<ConnectionService>();
 
 var app = builder.Build();
 
+app.Migrate<ApplicationDatabaseContext>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-var compiler = Factory.CreateQueryCompiler(ReData.Query.DatabaseType.PostgreSql);
 
-app.MapPost("api/transform", async ([FromBody] TransformRequest request, [FromServices] ConnectionService connectionService) =>
-    {
-        string? sql = null;
-        int i = -1;
-        var query = connectionService.GetQuery();
-        Query build;
-        // Сбор трансформаций
-        try
-        {
-            foreach (var transformation in request.Transformations)
-            {
-                i++;
-                var res = transformation.Apply(query);
-                if (res.Unwrap(out var ok, out var err))
-                {
-                    query = ok;
-                }
-                else
-                {
-                    return Results.BadRequest(new
-                    {
-                        index = i,
-                        errors = err,
-                    });
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            return Results.InternalServerError(new
-            {
-                index = i,
-                message = $"Непредвиденная ошибка при составлении создании трансформаций:\n{ex.Message}",
-                query = sql?.Split("\n")?.ToArray()
-            });
-        }
-
-        // Создание Sql (Нужно для демо)
-        try
-        {
-            // for demo debug purpose
-            build = query.Build();
-            sql = compiler.Compile(build);
-        }
-        catch (Exception ex)
-        {
-            return Results.InternalServerError(new
-            {
-                index = i,
-                message = $"Непредвиденная ошибка компиляции запроса:\n{ex.Message}",
-                query = sql?.Split("\n")?.ToArray()
-            });
-        }
-
-        // Запуск запроса
-        try
-        {
-            await using var runner = Factory.CreateQueryRunner(ReData.Query.DatabaseType.PostgreSql, connectionService.Connection);
-            var data = await runner.RunQueryAsObjectAsync(build);
-            
-            return Results.Ok(new TransformResponse()
-                {
-                    Data = data,
-                    Query = sql,
-                    Fields = build.Fields().Fields.Select(f => new TransformField()
-                    {
-                        Alias = f.Alias,
-                        Type = f.Type.Type,
-                        CanBeNull = f.Type.CanBeNull
-                    }).ToList(),
-                    Total = data.Count,
-                });
-        }
-        catch (Exception ex)
-        {
-            return Results.InternalServerError(new
-            {
-                index = i,
-                message = $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}",
-                query = sql
-            });
-        }
-    })
-    .WithName("TransformData");
-
-app.MapGet("api/functions", () =>
-{
-    var functions = GlobalFunctionsStorage.Functions
-        .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypes.PostgreSql)))
-        .Where(f => f.ImplicitCast is null)
-        .OrderBy(f => f.Name);
-
-
-    return functions.Select(f => new FunctionViewModel()
-    {
-        Name = f.Name,
-        Arguments = f.Arguments,
-        Doc = f.Doc,
-        Kind = f.Kind,
-        ReturnType = f.ReturnType,
-        DisplayText = f.ToString(),
-    });
-});
+app.MapControllers();
 
 app.Run();

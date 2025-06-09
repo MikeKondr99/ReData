@@ -1,6 +1,6 @@
 ﻿using ReData.Query.Core.Types;
 
-namespace ReData.DemoApplication;
+namespace ReData.DemoApplication.Responses;
 
 public sealed record FunctionViewModel
 {

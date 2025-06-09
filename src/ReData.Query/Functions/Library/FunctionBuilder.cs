@@ -8,7 +8,7 @@ using static DataType;
 
 public abstract class FunctionsDescriptor
 {
-    private List<FunctionBuilder> builders = new ();
+    private List<FunctionBuilder> builders = new();
 
     protected FunctionBuilder Function(string name)
     {
@@ -16,7 +16,7 @@ public abstract class FunctionsDescriptor
         builders.Add(builder);
         return builder;
     }
-    
+
     protected FunctionBuilder AggFunction(string name)
     {
         var builder = FunctionBuilder.AggFunction(name);
@@ -29,7 +29,6 @@ public abstract class FunctionsDescriptor
         var builder = FunctionBuilder.Method(name);
         builders.Add(builder);
         return builder;
-
     }
 
     protected FunctionBuilder Binary(string name)
@@ -45,7 +44,7 @@ public abstract class FunctionsDescriptor
         builders.Add(builder);
         return builder;
     }
-    
+
     protected FunctionBuilder Unary(string name)
     {
         var builder = FunctionBuilder.Unary(name);
@@ -66,20 +65,22 @@ public abstract class FunctionsDescriptor
     protected abstract void Functions();
 
 
-    public DataTypes Types { get; }
+#pragma warning disable SA1129
+    public DataTypes Types { get; } = new DataTypes();
+#pragma warning restore SA1129
 
     public struct DataTypes
     {
         public DataTypes()
         {
         }
-        
+
         public DataType[] All { get; } = [Number, Integer, Text, Bool, DateTime];
-        
+
         public DataType[] AllWithoutBool { get; } = [Number, Integer, Text, DateTime];
-        
+
         public DataType[] Numbers { get; } = [Number, Integer];
-        
+
         public DataType[] NumbersAndDate { get; } = [Number, Integer, DateTime];
     }
 }
@@ -99,7 +100,7 @@ public record FunctionBuilder
     private List<FunctionArgument> Arguments { get; set; } = [];
 
     private FunctionReturnType? ReturnType { get; set; }
-    
+
     private ConstPropagation ConstPropagation { get; set; }
 
     private bool IsAggregated { get; set; }
@@ -117,7 +118,7 @@ public record FunctionBuilder
             Kind = FunctionKind.Default
         };
     }
-    
+
     public static FunctionBuilder AggFunction(string name)
     {
         return new FunctionBuilder(name)
@@ -134,7 +135,7 @@ public record FunctionBuilder
             Kind = FunctionKind.Method
         };
     }
-    
+
     public static FunctionBuilder Binary(string name)
     {
         return new FunctionBuilder(name)
@@ -142,7 +143,7 @@ public record FunctionBuilder
             Kind = FunctionKind.Binary
         };
     }
-    
+
     public static FunctionBuilder Unary(string name)
     {
         return new FunctionBuilder(name)
@@ -150,7 +151,7 @@ public record FunctionBuilder
             Kind = FunctionKind.Unary
         };
     }
-    
+
     public FunctionBuilder Doc(string doc)
     {
         this.doc = doc;
@@ -162,7 +163,7 @@ public record FunctionBuilder
         this.Arguments.Add(new FunctionArgument()
         {
             Name = name,
-            Type = new ()
+            Type = new()
             {
                 DataType = type,
                 CanBeNull = true,
@@ -171,13 +172,13 @@ public record FunctionBuilder
         });
         return this;
     }
-    
+
     public FunctionBuilder ReqArg(string name, DataType type)
     {
         this.Arguments.Add(new FunctionArgument()
         {
             Name = name,
-            Type = new ()
+            Type = new()
             {
                 DataType = type,
                 CanBeNull = false,
@@ -186,7 +187,7 @@ public record FunctionBuilder
         });
         return this;
     }
-    
+
     public FunctionBuilder Returns(DataType type, ConstPropagation @const = ConstPropagation.Default)
     {
         ReturnType = new FunctionReturnType()
@@ -198,7 +199,7 @@ public record FunctionBuilder
         ConstPropagation = @const;
         return this;
     }
-    
+
     public FunctionBuilder ReturnsNotNull(DataType type, ConstPropagation @const = ConstPropagation.Default)
     {
         ReturnType = new FunctionReturnType()
@@ -210,19 +211,22 @@ public record FunctionBuilder
         ConstPropagation = @const;
         return this;
     }
-    
+
     public FunctionBuilder ImplicitCast(uint cost)
     {
         this.ImplicitCastCost = cost;
         return this;
     }
-    
+
     public FunctionBuilder Templates(Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> templates)
     {
-        this.templates = templates.ToDictionary(kv => kv.Key, kv => (ITemplate) new Template() { Tokens = kv.Value.Tokens });
+        this.templates = templates.ToDictionary(kv => kv.Key, kv => (ITemplate)new Template()
+        {
+            Tokens = kv.Value.Tokens
+        });
         return this;
     }
-    
+
     public FunctionBuilder Template(TemplateInterpolatedStringHandler template)
     {
         return Templates(new()
@@ -230,7 +234,7 @@ public record FunctionBuilder
             [All] = template
         });
     }
-    
+
     public FunctionBuilder CustomNullPropagation(Func<IEnumerable<bool>, bool> func)
     {
         customNullPropagation = func;
@@ -249,14 +253,14 @@ public record FunctionBuilder
             ReturnType = ReturnType,
             Kind = Kind,
             Templates = templates,
-            ImplicitCast = ImplicitCastCost is not null ? new ImplicitCastMetadata()
-            {
-                Cost = ImplicitCastCost.Value
-            }
-            : null,
+            ImplicitCast = ImplicitCastCost is not null
+                ? new ImplicitCastMetadata()
+                {
+                    Cost = ImplicitCastCost.Value
+                }
+                : null,
             CustomNullPropagation = customNullPropagation,
             ConstPropagation = this.ConstPropagation,
         };
-
     }
 }
