@@ -65,7 +65,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                     <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                     <span>Фильтр</span>
                   </div>
-                  <app-fx-input ngDefaultControl class="min-w-72 max-w-[800px]" [(ngModel)]="item.condition" [error]="getError(i,0)"
+                  <app-fx-input ngDefaultControl class="min-w-72 max-w-[25rem]" [(ngModel)]="item.condition" [error]="getError(i,0)"
                                 (ngModelChange)="onTransformationChange()">
                   </app-fx-input>
                 </div>
@@ -111,7 +111,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         />
                       </span>
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-[25rem]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                         [error]="getError(i,idx)">
                       </app-fx-input>
@@ -143,7 +143,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         />
                       </span>
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-[25rem]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                                     [error]="getError(i, idx + item.groups.length) ?? getError(i,idx)">
                       </app-fx-input>
@@ -166,7 +166,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                         placeholder="Field name"
                       />
                       <span>=</span>
-                      <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
+                      <app-fx-input ngDefaultControl class="min-w-[25rem] max-w-[25rem]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
                                     [error]="getError(i,item.groups.length * 2 + idx)">
                       </app-fx-input>
