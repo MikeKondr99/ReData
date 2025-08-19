@@ -22,13 +22,7 @@ WORKDIR /app
 # Create src directory structure
 RUN mkdir -p src
 
-COPY src/ReData.DemoApplication/*.csproj ./src/ReData.DemoApplication/
-COPY src/Pattern/*.csproj ./src/Pattern/
-COPY src/ReData.Common/*.csproj ./src/ReData.Common/
-COPY src/ReData.Query.Common/*.csproj ./src/ReData.Query.Common/
-COPY src/ReData.Query/*.csproj ./src/ReData.Query/
-COPY src/ReData.Query.Core/*.csproj ./src/ReData.Query.Core/
-COPY src/ReData.Query.Lang/*.csproj ./src/ReData.Query.Lang/
+COPY src ./src
 
 RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
 # Copy all remaining source code
