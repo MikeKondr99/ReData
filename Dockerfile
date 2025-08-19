@@ -20,11 +20,11 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-build
 WORKDIR /app
 
 # Create src directory structure
-RUN mkdir -p src
+# RUN mkdir -p src
 
-COPY src ./src
+# COPY src ./src
 
-RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
+# RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
 # Copy all remaining source code
 COPY src/ .
 
