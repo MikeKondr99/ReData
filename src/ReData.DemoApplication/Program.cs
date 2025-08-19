@@ -37,7 +37,7 @@ services.AddSingleton<ConnectionService>();
 
 var app = builder.Build();
 
-app.Migrate<ApplicationDatabaseContext>();
+// app.Migrate<ApplicationDatabaseContext>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 

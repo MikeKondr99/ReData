@@ -10,7 +10,7 @@ public class ConnectionService
 
     public ConnectionService(IConfiguration configuration)
     {
-        Connection = configuration["CONNECTION_STRING"] ?? "";
+        Connection = configuration["DemoDbConnection"] ?? string.Empty;
     }
 
     public QueryBuilder GetQuery()
