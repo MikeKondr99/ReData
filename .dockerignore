@@ -3,3 +3,13 @@
 **/obj
 **/.git
 **/.vscode
+**/.vs
+**/Dockerfile*
+**/.env
+**/npm-debug.log
+**/yarn-error.log
+**/.npm
+**/.angular
+**/docs
+**/.github
+**/.idea
