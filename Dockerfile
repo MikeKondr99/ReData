@@ -26,12 +26,15 @@ WORKDIR /app
 
 # RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
 # Copy all remaining source code
-COPY src/ .
+COPY src/ ./src
+
+RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
 
 # Build and publish the main project
 
-RUN dotnet publish ReData.DemoApplication/ReData.DemoApplication.csproj \
+RUN dotnet publish src/ReData.DemoApplication/ReData.DemoApplication.csproj \
     -c Release \
+    --no-restore \
     -o out \
     -p:WebRootPath=wwwroot
 
