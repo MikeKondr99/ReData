@@ -102,13 +102,14 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                   </div>
                   @for (selectItem of item.items; track idx; let idx = $index) {
                     <div class="flex items-center gap-2">
-                      <input
-                        nz-input
-                        class="max-w-44"
-                        [(ngModel)]="selectItem.field"
-                        (ngModelChange)="onTransformationChange()"
-                        placeholder="Field name"
-                      />
+                      <span class="max-w-44 min-w-32">
+                        <input
+                          nz-input
+                          [(ngModel)]="selectItem.field"
+                          (ngModelChange)="onTransformationChange()"
+                          placeholder="Field name"
+                        />
+                      </span>
                       <span>=</span>
                       <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
@@ -133,13 +134,14 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                   Для группы
                   @for (selectItem of item.groups; track idx; let idx = $index) {
                     <div class="flex items-center gap-2">
-                      <input
-                        nz-input
-                        class="max-w-44"
-                        [(ngModel)]="selectItem.field"
-                        (ngModelChange)="onTransformationChange()"
-                        placeholder="Field name"
-                      />
+                      <span class="max-w-44 min-w-32">
+                        <input
+                          nz-input
+                          [(ngModel)]="selectItem.field"
+                          (ngModelChange)="onTransformationChange()"
+                          placeholder="Field name"
+                        />
+                      </span>
                       <span>=</span>
                       <app-fx-input ngDefaultControl class="min-w-[800px]" [(ngModel)]="selectItem.expression"
                                     (ngModelChange)="onTransformationChange()"
