@@ -79,9 +79,11 @@ public abstract class Repository<T, TEntity> : IRepository<T>
         return save.Map(_ => FromEntity(entity));
     }
 
-    Task<Result<IEnumerable<T>, string>> IRepository<T, Guid>.GetAsync(Func<T, bool>? filter, CancellationToken ct)
+    async Task<Result<IEnumerable<T>, string>> IRepository<T, Guid>.GetAsync(Func<T, bool>? filter, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var list =  await Query(Database.Set<TEntity>()).ToListAsync(ct);
+
+        return Result.Ok(list.Select(FromEntity));
     }
 
     public async Task<Result<int, string>> SaveChangesAsync(CancellationToken ct)

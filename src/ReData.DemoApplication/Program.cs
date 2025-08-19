@@ -6,6 +6,7 @@ using ReData.DemoApplication;
 using ReData.DemoApplication.Converters;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Extensions;
+using ReData.DemoApplication.Repositories;
 using ReData.DemoApplication.Requests;
 using ReData.DemoApplication.Responses;
 using ReData.DemoApplication.Services;
@@ -34,6 +35,7 @@ services.AddControllers().AddJsonOptions(options =>
 });
 
 services.AddSingleton<ConnectionService>();
+services.AddScoped<IRepository<DataSet>, DataSetRepository>();
 
 var app = builder.Build();
 
