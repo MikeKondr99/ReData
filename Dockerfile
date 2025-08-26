@@ -13,7 +13,8 @@ RUN npm install
 COPY src/ReData.Angular .
 
 # Build Angular for production
-RUN npm run build -- --configuration=production
+# RUN npm run build -- --configuration=production
+RUN node --max_old_space_size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production
 
 # Stage 2: Build .NET application
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-build
