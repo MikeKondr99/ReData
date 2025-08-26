@@ -4,9 +4,9 @@ namespace ReData.DemoApplication.Database.Entities;
 
 public record DataSetEntity : IEntity
 {
-    public required Guid Id { get; init; }
+    public required Guid Id { get; set; }
     
-    public required string Name { get; init; }
+    public required string Name { get; set; }
 
-    public required ICollection<TransformationEntity> Transformations { get; init; }
+    public required List<TransformationEntity> Transformations { get; set; }
 }

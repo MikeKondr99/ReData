@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Pattern.Unions;
+using ReData.DemoApplication.Database;
+using ReData.DemoApplication.Database.Entities;
+using ReData.DemoApplication.Mappers;
 using ReData.DemoApplication.Repositories;
+using ReData.DemoApplication.Requests;
 
 namespace ReData.DemoApplication.Controllers;
 
@@ -9,10 +14,12 @@ namespace ReData.DemoApplication.Controllers;
 public class DataSetController : ControllerBase
 {
     private readonly IRepository<DataSet> repository;
+    private readonly ApplicationDatabaseContext context;
 
-    public DataSetController(IRepository<DataSet> repository)
+    public DataSetController(IRepository<DataSet> repository, ApplicationDatabaseContext context)
     {
         this.repository = repository;
+        this.context = context;
     }
 
     // GET: api/datasets
@@ -22,8 +29,8 @@ public class DataSetController : ControllerBase
         var result = await repository.GetAsync(ct: ct);
 
         return result.Match(
-            datasets => Ok(datasets),
-            error => Problem(detail: error, statusCode: StatusCodes.Status500InternalServerError)
+            datasets => Ok(datasets.Value),
+            error => Problem(detail: error.Value, statusCode: StatusCodes.Status500InternalServerError)
         );
     }
 
@@ -43,8 +50,15 @@ public class DataSetController : ControllerBase
 
     // POST: api/datasets
     [HttpPost]
-    public async Task<ActionResult<DataSet>> Create([FromBody] DataSet dataset, CancellationToken ct = default)
+    public async Task<ActionResult<DataSet>> Create([FromBody] CreateDataSetRequest request, CancellationToken ct = default)
     {
+        var dataset = new DataSet()
+        {
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Transformations = request.Transformations,
+        };
+            
         var result = await repository.CreateAsync(dataset, ct);
 
         if (result.Unwrap(out var ok, out var err))
@@ -59,7 +73,7 @@ public class DataSetController : ControllerBase
         return BadRequest(err);
     }
 
-    // PUT: api/datasets/{id}
+// PUT: api/datasets/{id}
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<DataSet>> Update(Guid id, [FromBody] DataSet dataset, CancellationToken ct = default)
     {
@@ -68,16 +82,38 @@ public class DataSetController : ControllerBase
             return BadRequest("ID mismatch");
         }
 
-        var result = await repository.UpdateAsync(dataset, ct);
+        var entity = await context.DataSets
+            .Include(ds => ds.Transformations)
+            .FirstOrDefaultAsync(ds => ds.Id == id, ct);
 
-        if (result.Unwrap(out var ok, out var err))
+        if (entity is null)
         {
-            return Ok(ok);
+            return NotFound();
         }
 
-        return BadRequest(err);
-    }
+        // Update simple properties
+        entity.Name = dataset.Name;
+        
+        // Remove existing transformations from context tracking FIRST
+        context.Set<TransformationEntity>().RemoveRange(entity.Transformations);
+    
+        // Clear existing transformations and add new ones
+        entity.Transformations.Clear();
+        for (int i = 0; i < dataset.Transformations.Count; i++)
+        {
+            entity.Transformations.Add(new TransformationEntity
+            {
+                Enabled = dataset.Transformations[i].Enabled,
+                DataSetId = dataset.Id,
+                Order = (uint)i,
+                Data = dataset.Transformations[i].Data,
+            });
+        }
 
+        await context.SaveChangesAsync(ct);
+    
+        return dataset;
+    }
     // DELETE: api/datasets/{id}
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct = default)

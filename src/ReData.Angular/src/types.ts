@@ -11,55 +11,57 @@ export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit' | 'gro
 export type WhereTransformation = {
   $type: 'where',
   condition: string,
-  enabled: boolean;
 }
 
 export type OrderByTransformation = {
   $type: 'orderBy';
   items: OrderByItem[];
-  enabled: boolean;
 };
 
 export type SelectTransformation = {
   $type: 'select';
   items: SelectItem[];
-  enabled: boolean;
 };
 
 export type GroupByTransformation = {
   $type: 'groupBy';
   groups: SelectItem[];
   items: SelectItem[];
-  enabled: boolean;
 };
 
 export type LimitTransformation = {
   $type: 'limit';
   limit?: number;
   offset?: number;
-  enabled: boolean;
 };
 
-export type Transformation = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation | GroupByTransformation);
+export interface Transformation
+{
+  enabled: boolean;
+  data: TransformationData
+
+}
+
+export type TransformationData = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation | GroupByTransformation);
 
 // Type guards
-export function isWhereTransformation(t: Transformation): t is WhereTransformation {
+export function isWhereTransformation(t: TransformationData): t is WhereTransformation {
   return t.$type === 'where';
 }
 
-export function isOrderByTransformation(t: Transformation): t is OrderByTransformation {
+export function isOrderByTransformation(t: TransformationData): t is OrderByTransformation {
   return t.$type === 'orderBy';
 }
 
-export function isSelectTransformation(t: Transformation): t is SelectTransformation {
+export function isSelectTransformation(t: TransformationData): t is SelectTransformation {
   return t.$type === 'select';
 }
 
-export function isGroupByTransformation(t: Transformation): t is GroupByTransformation {
+export function isGroupByTransformation(t: TransformationData): t is GroupByTransformation {
   return t.$type === 'groupBy';
 }
 
-export function isLimitTransformation(t: Transformation): t is LimitTransformation {
+export function isLimitTransformation(t: TransformationData): t is LimitTransformation {
   return t.$type === 'limit';
 }
 
@@ -128,9 +130,8 @@ export interface ExprSpan {
   length: number;
 }
 
-
-
 export type FunctionKind = 'Default' | 'Method' | 'Binary' | 'Unary';
+
 export type DataType =
   'Unknown' |
   'Null' |
@@ -139,3 +140,16 @@ export type DataType =
   'Text' |
   'Bool' |
   'DateTime';
+
+export interface Breadcrumb {
+  label: string;
+  url?: string;
+  icon?: string;
+}
+
+export interface DataSetViewModel
+{
+  id: string;
+  name: string;
+  transformations: Transformation[];
+}

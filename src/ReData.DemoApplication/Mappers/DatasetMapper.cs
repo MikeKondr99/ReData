@@ -1,23 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ReData.DemoApplication.Database;
-using ReData.DemoApplication.Database.Entities;
+﻿using ReData.DemoApplication.Database.Entities;
+using ReData.DemoApplication.Repositories;
 using ReData.DemoApplication.Transformations;
 
-namespace ReData.DemoApplication.Repositories;
+namespace ReData.DemoApplication.Mappers;
 
-public sealed class DataSetRepository : Repository<DataSet, DataSetEntity>
+public static class DatasetMapper
 {
-    public DataSetRepository(ApplicationDatabaseContext database)
-        : base(database)
-    {
-    }
-
-    protected override IQueryable<DataSetEntity> Query(IQueryable<DataSetEntity> query)
-    {
-        return Database.Set<DataSetEntity>().Include(ds => ds.Transformations);
-    }
-
-    protected override DataSetEntity ToEntity(DataSet model)
+    public static DataSetEntity ToEntity(this DataSet model)
     {
         return new DataSetEntity
         {
@@ -32,8 +21,10 @@ public sealed class DataSetRepository : Repository<DataSet, DataSetEntity>
             }).ToList()
         };
     }
+    
+    
 
-    protected override DataSet FromEntity(DataSetEntity entity)
+    public static DataSet ToModel(this DataSetEntity entity)
     {
         return new DataSet
         {
@@ -46,5 +37,4 @@ public sealed class DataSetRepository : Repository<DataSet, DataSetEntity>
             }).ToArray(),
         };
     }
-
 }

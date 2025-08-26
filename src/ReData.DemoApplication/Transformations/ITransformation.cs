@@ -14,3 +14,12 @@ public interface ITransformation
 {
     Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder);
 }
+
+
+public record Transformation
+{
+    public required bool Enabled { get; init; }
+    
+    public required ITransformation Data { get; init; }
+
+}

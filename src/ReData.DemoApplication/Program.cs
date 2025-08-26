@@ -6,6 +6,7 @@ using ReData.DemoApplication;
 using ReData.DemoApplication.Converters;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Extensions;
+using ReData.DemoApplication.Repositories;
 using ReData.DemoApplication.Requests;
 using ReData.DemoApplication.Responses;
 using ReData.DemoApplication.Services;
@@ -22,6 +23,7 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 }
 
+services.AddTransient<IRepository<DataSet>, DataSetRepository>();
 services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 services.AddControllers().AddJsonOptions(options =>
@@ -37,7 +39,7 @@ services.AddSingleton<ConnectionService>();
 
 var app = builder.Build();
 
-// app.Migrate<ApplicationDatabaseContext>();
+app.Migrate<ApplicationDatabaseContext>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 

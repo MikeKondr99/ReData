@@ -21,24 +21,24 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
     NzIconModule,
   ],
   template: `
-    <nz-input-group [nzSuffix]="suffixIconSearch">
-      <input type="text" nz-input placeholder="input search text" [(ngModel)]="search" />
-    </nz-input-group>
-    <ng-template #suffixIconSearch>
-      <span nz-icon nzType="search" ></span>
-    </ng-template>
-    <nz-list class="overflow-y-scroll max-h-screen">
-      @for (f of data(); track f) {
-        <nz-list-item>
-          <nz-card nzSize="small" class="w-full" >
-            <nz-card-meta
-              [nzTitle]="f.sign"
-              [nzDescription]="f.doc"
-            ></nz-card-meta>
-          </nz-card>
-        </nz-list-item>
-      }
-    </nz-list>
+    <div class="h-full">
+      <nz-input-group [nzSuffix]="suffixIconSearch">
+        <input type="text" nz-input placeholder="input search text" [(ngModel)]="search" />
+      </nz-input-group>
+      <ng-template #suffixIconSearch>
+        <span nz-icon nzType="search" ></span>
+      </ng-template>
+      <nz-list>
+        @for (f of data(); track f) {
+          <nz-list-item>
+              <nz-card-meta
+                [nzTitle]="f.sign"
+                [nzDescription]="f.doc"
+              ></nz-card-meta>
+          </nz-list-item>
+        }
+      </nz-list>
+    </div>
   `,
   styles: ``
 })
