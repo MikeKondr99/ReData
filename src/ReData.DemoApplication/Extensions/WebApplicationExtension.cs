@@ -10,6 +10,7 @@ public static class WebApplicationExtension
         using (var scope = webApplication.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<T>();
+            db.Database.EnsureCreated();
             db.Database.Migrate();
         }
     }

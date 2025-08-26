@@ -302,6 +302,7 @@ export class TransformationListComponent {
   }
 
   addWhereTransformation() {
+    this.transformations ??= [];
     this.transformations.push({
       enabled: true,
       data: {
@@ -313,6 +314,7 @@ export class TransformationListComponent {
   }
 
   addOrderByTransformation() {
+    this.transformations ??= [];
     this.transformations.push(
       {
         enabled: true,
@@ -343,6 +345,7 @@ export class TransformationListComponent {
 
   // Add these methods to the component class
   addSelectTransformation() {
+    this.transformations ??= [];
     this.transformations.push(
       {
         enabled: true,
@@ -356,6 +359,7 @@ export class TransformationListComponent {
 
   // Add these methods to the component class
   addGroupByTransformation() {
+    this.transformations ??= [];
     this.transformations.push(
       {
         enabled: true,
@@ -369,6 +373,7 @@ export class TransformationListComponent {
   }
 
   addLimitTransformation() {
+    this.transformations ??= [];
     this.transformations.push(
       {
         enabled: true,
