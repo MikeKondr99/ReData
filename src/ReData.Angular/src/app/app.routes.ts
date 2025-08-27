@@ -8,27 +8,27 @@ import {InstructionPageComponent} from '../pages/instruction-page.component';
 export const routes: Routes = [
   {
     path: 'functions',
-    component: FunctionsPageComponent,
+    loadComponent: () => import('../pages/function-page.component').then(m => m.FunctionsPageComponent),
   },
   {
     path: 'docs',
-    component: InstructionPageComponent,
+    loadComponent: () => import('../pages/instruction-page.component').then(m => m.InstructionPageComponent),
   },
   {
     path: 'datasets',
     children: [
       {
         path:"",
-        component: DatasetsPage
+        loadComponent: () => import('../pages/datasets-page.component').then(m => DatasetsPage),
 
       },
       {
         path:":id",
-        component: DatasetEditPage
+        loadComponent: () => import('../pages/dataset-edit-page.component').then(m => DatasetEditPage),
       },
       {
         path:"new",
-        component: DatasetEditPage
+        loadComponent: () => import('../pages/dataset-edit-page.component').then(m => m.DatasetEditPage),
       }
     ],
   },

@@ -6,3 +6,5 @@ riderModule.iml
 **/**/appsettings.Development.json
 **/.env.local
 
+
+**/wwwroot

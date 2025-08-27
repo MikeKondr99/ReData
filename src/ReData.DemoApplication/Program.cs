@@ -39,6 +39,19 @@ services.AddSingleton<ConnectionService>();
 
 var app = builder.Build();
 
+app.Use(async (context, next) =>
+{
+    await next();
+    
+    // If there's no available file and the request doesn't start with /api
+    if (context.Response.StatusCode == 404 && 
+        context.Request.Path.Value?.StartsWith("/api", StringComparison.Ordinal) != true)
+    {
+        context.Request.Path = "/index.html";
+        await next();
+    }
+});
+
 app.Migrate<ApplicationDatabaseContext>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
