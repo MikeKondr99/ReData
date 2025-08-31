@@ -47,10 +47,6 @@ export class BreadcrumbComponent {
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(text);
   }
 
-  _ = effect(() => {
-    console.log('breadcrumbs updated', this.breadcrumbs.path());
-  })
-
   public t(segment: string) {
     const dict:Record<string,string> = {
       'datasets': 'Наборы данных',

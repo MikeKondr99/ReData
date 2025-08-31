@@ -1,11 +1,5 @@
 ﻿import {Data} from '@angular/router';
 
-import * as monaco from 'monaco-editor';
-import * as MonacoModule from 'monaco-editor';
-
-export type IEditor = typeof monaco.editor;
-export type Monaco = typeof MonacoModule;
-
 export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit' | 'groupBy';
 
 export type WhereTransformation = {

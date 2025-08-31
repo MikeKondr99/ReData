@@ -55,11 +55,6 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "node_modules/monaco-editor",
-                "output": "/assets/monaco/"
-              },
-              {
-                "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
               },
@@ -72,7 +67,8 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
+              "node_modules/ace-builds/css/ace.css",
+              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css"
             ],
             "scripts": [],
             "prerender": false,
@@ -112,7 +108,7 @@
               "buildTarget": "ReData.Angular:build:development"
             },
             "options": {
-              "proxyConfig": "proxy.conf.json"
+              "proxyConfig": "proxy.conf.json",
             }
           },
           "defaultConfiguration": "development"
@@ -130,11 +126,6 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
-              {
-                "glob": "**/*",
-                "input": "node_modules/monaco",
-                "output": "/assets/monaco/"
-              },
               {
                 "glob": "**/*",
                 "input": "public"

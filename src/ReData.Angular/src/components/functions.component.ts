@@ -1,6 +1,5 @@
 ﻿
 import {Component, computed, effect, inject, input, model, viewChild} from '@angular/core';
-import {EditorComponent} from 'ngx-monaco-editor-v2';
 import {FormsModule} from '@angular/forms';
 import {FunctionService} from '../services/function.service';
 import {NzListModule} from 'ng-zorro-antd/list';
@@ -13,7 +12,6 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
   selector: 'app-functions',
   standalone: true,
   imports: [
-    EditorComponent,
     FormsModule,
     NzListModule,
     NzCardModule,

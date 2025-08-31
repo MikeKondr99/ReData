@@ -14,9 +14,9 @@ import {
   isOrderByTransformation, isSelectTransformation, isWhereTransformation,
    Transformation
 } from '../types';
-import {FxInputComponent} from './fx-input.component';
 import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
 import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
+import {AceEditorComponent} from './ace-editor.component';
 
 @Component({
   selector: 'app-transformations-list',
@@ -32,10 +32,10 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
     NzDividerModule,
     NzIconModule,
     NzInputNumberModule,
-    FxInputComponent,
     CdkDropList,
     CdkDrag,
-    CdkDragHandle
+    CdkDragHandle,
+    AceEditorComponent
   ],
   styles: `
     .cdk-drag-preview {
@@ -89,9 +89,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Фильтр</span>
                     </div>
-                    <app-fx-input ngDefaultControl class="min-w-72 max-w-[800px]" [(ngModel)]="item.data.condition" [error]="getError(i,0)"
-                                  (ngModelChange)="onTransformationChange()">
-                    </app-fx-input>
+                    <app-ace-editor [(value)]="item.data.condition" (valueChange)="onTransformationChange()" [error]="getError(i,0)"></app-ace-editor>
                   </div>
                 } @else if (isOrderByTransformation(item.data)) {
                   <div class="flex flex-col gap-2 w-full">
@@ -103,10 +101,7 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 
                     @for (orderItem of item.data.items; track orderItem; let idx = $index) {
                       <div class="flex items-center gap-2">
-                        <app-fx-input class="min-w-72" ngDefaultControl [(ngModel)]="orderItem.expression"
-                                      [error]="getError(i,idx)"
-                                      (ngModelChange)="onTransformationChange()">
-                        </app-fx-input>
+                        <app-ace-editor class="min-w-[250px] max-w-[250px]" [(value)]="orderItem.expression" [error]="getError(i,idx)" (valueChange)="onTransformationChange()"></app-ace-editor>
                         <nz-switch [(ngModel)]="orderItem.descending" (ngModelChange)="onTransformationChange()" ></nz-switch>
                         <span>{{ orderItem.descending ? 'DESC' : 'ASC' }}</span>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
@@ -125,25 +120,27 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                       <span>Преобразовать</span>
                     </div>
                     @for (selectItem of item.data.items; track idx; let idx = $index) {
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-start gap-1">
                         <input
                           nz-input
-                          class="max-w-44"
+                          class="max-w-44 min-w-44"
+                          [nzSize]="'small'"
                           [(ngModel)]="selectItem.field"
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
                         <span>=</span>
-                        <app-fx-input ngDefaultControl class="min-w-[600px]" [(ngModel)]="selectItem.expression"
-                                      (ngModelChange)="onTransformationChange()"
+
+                        <app-ace-editor class="w-[550px]" [(value)]="selectItem.expression"
+                                      (valueChange)="onTransformationChange()"
                                       [error]="getError(i,idx)">
-                        </app-fx-input>
+                        </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
                         </button>
                       </div>
                     }
-                    <button nz-button nzType="default" nzShape="circle" (click)="addSelectItem(i)">
+                    <button nz-button nzType="default" nzShape="circle" nzSize="small" (click)="addSelectItem(i)">
                       <span nz-icon nzType="plus"></span>
                     </button>
                   </div>
@@ -156,48 +153,50 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                     </div>
                     Группы
                     @for (selectItem of item.data.groups; track idx; let idx = $index) {
-                      <div class="flex items-center gap-2">
+                      <div class="flex gap-1 items-start">
                         <input
                           nz-input
                           class="max-w-44"
+                          [nzSize]="'small'"
                           [(ngModel)]="selectItem.field"
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
                         <span>=</span>
-                        <app-fx-input ngDefaultControl class="min-w-[600px]" [(ngModel)]="selectItem.expression"
-                                      (ngModelChange)="onTransformationChange()"
+                        <app-ace-editor class="w-[550px]"  [(value)]="selectItem.expression"
+                                      (valueChange)="onTransformationChange()"
                                       [error]="getError(i,idx + item.data.groups.length) ?? getError(i,idx)">
-                        </app-fx-input>
+                        </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'groups', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
                         </button>
                       </div>
                     }
-                    <button nz-button nzType="default" nzShape="circle" (click)="addGroupItem(i)">
+                    <button nz-button nzType="default" nzShape="circle" nzSize="small" (click)="addGroupItem(i)">
                       <span nz-icon nzType="plus"></span>
                     </button>
                     Агрегации
                     @for (selectItem of item.data.items; track idx; let idx = $index) {
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-start gap-1">
                         <input
                           nz-input
                           class="max-w-44"
+                          nzSize="small"
                           [(ngModel)]="selectItem.field"
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
                         <span>=</span>
-                        <app-fx-input ngDefaultControl class="min-w-[600px]" [(ngModel)]="selectItem.expression"
-                                      (ngModelChange)="onTransformationChange()"
-                                      [error]="getError(i,item.data.groups.length + idx)">
-                        </app-fx-input>
+                        <app-ace-editor class="w-[550px]"  [(value)]="selectItem.expression"
+                                      (valueChange)="onTransformationChange()"
+                                      [error]="getError(i,item.data.items.length + idx)">
+                        </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
                         </button>
                       </div>
                     }
-                    <button nz-button nzType="default" nzShape="circle" (click)="addSelectItem(i)">
+                    <button nz-button nzType="default" nzShape="circle" nzSize="small" (click)="addSelectItem(i)">
                       <span nz-icon nzType="plus"></span>
                     </button>
                   </div>
@@ -218,7 +217,6 @@ import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
                       Со смещением в
                       <nz-input-number [(ngModel)]="item.data.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
                       записей
-
                     </div>
                   </div>
                 }
@@ -366,7 +364,7 @@ export class TransformationListComponent {
         data: {
           $type: 'groupBy',
           groups: [{field: 'Группа1', expression: "[Поле1]"}],
-          items: [{field: 'Поле1', expression: 'Sum(1)'}],
+          items: [{field: 'Поле1', expression: 'SUM(1)'}],
         }
       });
     this.onTransformationChange();
@@ -424,7 +422,6 @@ export class TransformationListComponent {
 
 
   onTransformationChange() {
-    console.log('onTransformationChange', this.transformations);
     this.changesSubject.next();
   }
 

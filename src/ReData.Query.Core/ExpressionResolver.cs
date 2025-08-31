@@ -54,7 +54,7 @@ public sealed class ExpressionResolver : INameResolver
         return new ExprError()
         {
             Span = name.Span,
-            Message = $"Field '{name.Value} was not found"
+            Message = $"Поле '{name.Value}' не найдено"
         };
     }
 
