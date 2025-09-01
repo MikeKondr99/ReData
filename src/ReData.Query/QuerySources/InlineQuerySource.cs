@@ -13,10 +13,10 @@ public record struct InlineQuerySource : IQuerySource
 {
     public IResolvedTemplate Name { get; init; }
 
-    private readonly IFieldStorage fieldStorage;
+    private readonly IEnumerable<Field> fieldStorage;
 
     private readonly DatabaseType databaseType;
-    public IFieldStorage Fields() => fieldStorage;
+    public IEnumerable<Field> Fields() => fieldStorage;
     
     public InlineQuerySource(string columnName, string[] dataExpressions, DatabaseType databaseType)
     {
@@ -27,14 +27,24 @@ public record struct InlineQuerySource : IQuerySource
         
         var resolver = Factory.CreateExpressionResolver(databaseType);
         IExpressionCompiler compiler = new ExpressionCompiler();
-        var fields = new FieldStorage([]);
 
+        
         var exprs = dataExpressions
             .Select(d => Expr.Parse(d).Expect("Inline expression must be valid"))
-            .Select(e => resolver.ResolveExpr(e, fields).Expect("Inline expression must be resolvable")).ToArray();
+            .Select(e => resolver.ResolveExpr(e, new TableQuerySource(new NameTemplate(Template.Create("test")),[])).Expect("Inline expression must be resolvable")).ToArray();
 
         var fieldType = exprs.Aggregate(new FieldType(Unknown, false), (t, e) => ResolveField(t, e.Type));
 
+        fieldStorage =
+        [
+            new Field()
+            {
+                Alias = columnName,
+                Template = resolver.ResolveName([columnName]).Template,
+                Type = fieldType,
+            }
+        ];
+        
         var compiled = exprs.Select(exp => compiler.Compile(exp)).ToArray();
 
         string data =
@@ -51,14 +61,6 @@ public record struct InlineQuerySource : IQuerySource
         this.databaseType = databaseType;
         var queryName = resolver.ResolveName(["InlineQuery"]);
         Name = new NameTemplate(Template.Create($"({data}) AS {queryName.Template.ToString()}"));
-        fieldStorage = new FieldStorage([
-            new Field()
-            {
-                Alias = columnName,
-                Template = resolver.ResolveName(["InlineQuery",columnName]).Template,
-                Type = fieldType,
-            }
-        ]);
     }
     
     private static FieldType ResolveField(FieldType field, ExprType type)

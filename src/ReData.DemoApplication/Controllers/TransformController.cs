@@ -85,7 +85,7 @@ public class TransformController : ControllerBase
             {
                 Data = data,
                 Query = sql,
-                Fields = build.Fields().Fields.Select(f => new TransformFieldViewModel()
+                Fields = build.Fields().Select(f => new TransformFieldViewModel()
                 {
                     Alias = f.Alias,
                     Type = f.Type.Type,

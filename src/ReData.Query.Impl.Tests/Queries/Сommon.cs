@@ -7,6 +7,8 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
+#pragma warning disable SA1118
+
 public static class RecordsTestHelper
 {
     public static IEnumerable<Dictionary<string, IValue>> PrepareRecords(this IEnumerable<dynamic> objects)
@@ -944,6 +946,32 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
                 concat = v.OrderBy(u => u.Age).Select(u => (string)u.FirstName).JoinBy(", ")
             })
             .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    
+    // Баг найден Данилой Карбушевым
+    // Sort
+    // Limit 
+    // Where
+    [Fact]
+    public async Task TestToTrackBug85()
+    {
+        var runner = await db.GetRunnerAsync();
+        // Arrange
+        var qb = assets.UsersQuery
+            .OrderBy([
+                ("UserId", OrderItem.Type.Desc)
+            ]).Expect(e => e.JoinBy(", "))
+            .Take(10)
+            .Where("Age < 100");
+
+        // Act
+        var result = await runner.RunQueryAsObjectAsync(qb.UnwrapOk().Value.Build());
+
+        // Assert
+        var expect = assets.UsersDynamicArray.OrderBy(u => u.UserId).Take(10).PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }

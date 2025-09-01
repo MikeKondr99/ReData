@@ -9,7 +9,7 @@ public class AggInfoTransformation : ITransformation
 {
     public Result<QueryBuilder,IEnumerable<ExprError?>> Apply(QueryBuilder builder)
     {
-        var fields = builder.Build().Fields().Fields;
+        var fields = builder.Build().Fields();
         Dictionary<string, string> select = new();
 
         foreach (var field in fields)

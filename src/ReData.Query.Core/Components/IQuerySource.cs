@@ -1,4 +1,5 @@
 ﻿using ReData.Query.Core.Template;
+using ReData.Query.Core.Types;
 
 namespace ReData.Query.Core.Components;
 
@@ -6,5 +7,5 @@ public interface IQuerySource
 {
     public IResolvedTemplate? Name { get; }
 
-    public IFieldStorage Fields();
+    public IEnumerable<Field> Fields();
 }

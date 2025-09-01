@@ -14,13 +14,13 @@ public sealed class ExpressionResolver : INameResolver
     public required INameResolver NameResolver { private get; init; }
     public required IFunctionStorage Functions { private get; init; }
 
-    public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IFieldStorage fields)
+    public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IQuerySource source)
     {
         var result = expr switch
         {
             Literal literal => ResolveLiteral(literal),
-            NameExpr name => ResolveName(name, fields),
-            FuncExpr func => ResolveFunction(func, fields),
+            NameExpr name => ResolveName(name, source),
+            FuncExpr func => ResolveFunction(func, source),
         };
         return result;
     }
@@ -32,15 +32,15 @@ public sealed class ExpressionResolver : INameResolver
         return LiteralResolver.Resolve(literal);
     }
 
-    public static Result<ResolvedExpr, ExprError> ResolveName(NameExpr name, IFieldStorage fields)
+    public static Result<ResolvedExpr, ExprError> ResolveName(NameExpr name, IQuerySource source)
     {
-        var fieldOption = fields[name.Value];
+        var fieldOption = source.Fields().Get(name.Value);
         if (fieldOption is ISome<Field>(var field))
         {
             return new ResolvedExpr
             {
                 Expression = name,
-                Template = field.Template,
+                Template = Template.Template.Create($"{source.Name?.Template}.{field.Template}"),
                 Type = new ExprType()
                 {
                     DataType = field.Type.Type,
@@ -59,9 +59,9 @@ public sealed class ExpressionResolver : INameResolver
     }
 
     
-    public Result<ResolvedExpr, ExprError> ResolveFunction(FuncExpr funcExpr, IFieldStorage fields)
+    public Result<ResolvedExpr, ExprError> ResolveFunction(FuncExpr funcExpr, IQuerySource source)
     {
-        var arguments = funcExpr.Arguments.Select(a => ResolveExpr(a, fields)).ToResult();
+        var arguments = funcExpr.Arguments.Select(a => ResolveExpr(a, source)).ToResult();
 
         if (!arguments.Unwrap(out var args, out var error))
         {

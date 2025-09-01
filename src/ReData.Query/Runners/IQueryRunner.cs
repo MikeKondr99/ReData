@@ -10,7 +10,7 @@ public interface IQueryRunner : IAsyncDisposable
     async Task<IReadOnlyList<Dictionary<string, IValue>>> RunQueryAsObjectAsync(Core.Query query)
     {
         var data = await RunQueryAsync(query);
-        var fields = query.Fields().Fields.Select(f => f.Alias).ToList();
+        var fields = query.Fields().Select(f => f.Alias).ToList();
     
         List<Dictionary<string, IValue>> result = new List<Dictionary<string, IValue>>();
     

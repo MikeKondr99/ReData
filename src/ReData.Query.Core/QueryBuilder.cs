@@ -13,7 +13,7 @@ public record QueryBuilder
 {
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
-    private IFieldStorage Fields => Query.Fields();
+    private IEnumerable<Field> Fields => Query.Fields();
 
     public QueryBuilder(Query query, ExpressionResolver resolver)
     {
@@ -39,7 +39,7 @@ public record QueryBuilder
             From = new TableQuerySource(resolver.ResolveName(path), fields.Select(f => new Field
                 {
                     Alias = f.name,
-                    Template = resolver.ResolveName([queryName,f.name]).Template,
+                    Template = resolver.ResolveName([f.name]).Template,
                     Type = f.type,
                 }).ToArray()
             ),
@@ -75,7 +75,7 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = ResolveManySelectItems(
+        var res = qb.ResolveManySelectItems(
             select,
             r => r.NotBool().NotNull()
         ).GetErrors(out var errors);
@@ -114,7 +114,7 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = Resolve(condition).NotAggregated().Bool();
+        var res = qb.Resolve(condition).NotAggregated().Bool();
 
         if (res.UnwrapErr(out var err, out var where))
         {
@@ -138,7 +138,7 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        IEnumerable<OrderItem> res = ResolveMany(
+        IEnumerable<OrderItem> res = qb.ResolveMany(
                 order.Select(o => o.expr),
                 r => r.NotAggregated().NotBool().NotNull())
             .Select((r, i) => r.Map(e => new OrderItem(e, order[i].type)))
@@ -169,12 +169,12 @@ public record QueryBuilder
             qb = CreateCte();
         }
         
-        var resGroup = ResolveMany(
+        var resGroup = qb.ResolveMany(
             groupBy,
             r => r.NotAggregated().NotBool().NotNull().NotConst())
         .GetErrors(out var errors);
 
-        var res = ResolveManySelectItems(
+        var res = qb.ResolveManySelectItems(
             select,
             r => r.NotBool().NotNull().AggregatedOrGrouped(resGroup)
         ).GetErrors(out var errors2);
@@ -203,7 +203,7 @@ public record QueryBuilder
             {
                 Name = CteName(),
                 From = Query,
-            }
+            },
         };
     }
 
@@ -263,7 +263,7 @@ public record QueryBuilder
         {
             return error;
         }
-        return Resolver.ResolveExpr(expression, Fields);
+        return Resolver.ResolveExpr(expression, Query.From);
     }
 
     public Query Build()

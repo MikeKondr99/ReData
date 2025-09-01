@@ -20,9 +20,9 @@ public class MySqlRunner : IQueryRunner
             await Connection.OpenAsync();
         }
 
-        var fields = query.Fields().Fields;
+        var fields = query.Fields();
         var result = new List<Record>();
-        int len = query.Select?.Count ?? query.Fields().Fields.Count;
+        int len = query.Select?.Count ?? query.Fields().Count();
         var sql = QueryCompiler.Compile(query);
         await using var command = new MySqlCommand(sql, Connection);
         await using DbDataReader reader = await command.ExecuteReaderAsync();
@@ -31,7 +31,7 @@ public class MySqlRunner : IQueryRunner
             var current = new IValue[len];
             for (int i = 0; i < len; i++)
             {
-                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields[i].Type);
+                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields.Get(i).Type);
             }
             result.Add(new Record(current));
         }

@@ -1,5 +1,5 @@
-﻿using ReData.Query.Core.Components;
-using ReData.Query.Core.Components.Implementation;
+﻿using System.Runtime.InteropServices;
+using ReData.Query.Core.Components;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 
@@ -19,19 +19,26 @@ public sealed record Query : IQuerySource
 
     public required IResolvedTemplate Name { get; init; }
 
-    public IFieldStorage Fields()
+    public IEnumerable<Field> Fields()
     {
         if (Select is null)
         {
             return From.Fields();
+            // IToken[] nameTemplate = [..Name.Template.Tokens];
+            // return new FieldStorage(From.Fields().Fields.Select(f => new Fiel.Fieldsd
+            // {
+            //     Alias = f.Alias,
+            //     Type = f.Type,
+            //     Template = Template.Template.FromTokens(),
+            // }).ToArray());
         }
 
-        return new FieldStorage(Select.Select(m => new Field
+        return Select.Select(m => new Field
         {
             Alias = m.Alias,
-            Template = new ResolvedTemplate(Template.Template.Create($"{Name.Template.ToString()}.{m.Column.Template.ToString()}")).Template,
+            Template = m.Column.Template,
             Type = new FieldType(m.ResolvedExpr.Type.DataType, m.ResolvedExpr.Type.CanBeNull),
-        }).ToArray());
+        });
     }
     
     private record struct NoSource : IQuerySource
@@ -41,6 +48,6 @@ public sealed record Query : IQuerySource
         }
 
         public IResolvedTemplate? Name => null;
-        public IFieldStorage Fields() => new FieldStorage([]);
+        public IEnumerable<Field> Fields() => [];
     }
 }

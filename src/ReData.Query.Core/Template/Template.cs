@@ -23,6 +23,15 @@ public struct Template : ITemplate
     }
 
 
+    public static Template FromTokens(IEnumerable<IToken> tokens)
+    {
+        return new Template()
+        {
+            Tokens = tokens.ToList(),
+        };
+    }
+
+
     public override string ToString()
     {
         return string.Concat(Tokens.Select(t => t switch

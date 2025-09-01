@@ -16,6 +16,14 @@ public struct TemplateInterpolatedStringHandler
     {
         Tokens.Add(new ConstToken(s));
     }
+    
+    public void AppendFormatted(ITemplate? template)
+    {
+        if (template is not null)
+        {
+            Tokens.AddRange(template.Tokens);
+        }
+    }
 
     public void AppendFormatted<T>(T t)
     {

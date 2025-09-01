@@ -20,9 +20,9 @@ public class PostgresRunner : IQueryRunner
         {
             await Connection.OpenAsync();
         }
-        var fields = query.Fields().Fields;
+        var fields = query.Fields();
         var result = new List<Record>();
-        int len = query.Select?.Count ?? query.Fields().Fields.Count;
+        int len = query.Select?.Count ?? query.Fields().Count();
         var sql = QueryCompiler.Compile(query);
         await using NpgsqlCommand command = new NpgsqlCommand(sql, Connection);
         await using NpgsqlDataReader reader = await command.ExecuteReaderAsync();
@@ -32,7 +32,7 @@ public class PostgresRunner : IQueryRunner
             for (int i = 0; i < len; i++)
             {
                 var val = reader.GetValue(i);
-                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields[i].Type);
+                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i), fields.Get(i).Type);
             }
             result.Add(new Record(current));
         }

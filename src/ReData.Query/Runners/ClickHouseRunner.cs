@@ -16,13 +16,13 @@ public class ClickHouseRunner : IQueryRunner
     
     public async Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query)
     {
-        var fields = query.Fields().Fields;
+        var fields = query.Fields();
         if (Connection.State is not ConnectionState.Open)
         {
             await Connection.OpenAsync();
         }
         var result = new List<Record>();
-        int len = query.Select?.Count ?? query.Fields().Fields.Count;
+        int len = query.Select?.Count ?? query.Fields().Count();
         var sql = QueryCompiler.Compile(query);
         await using DbDataReader reader = await Connection.ExecuteReaderAsync(sql);
         while (await reader.ReadAsync())
@@ -30,7 +30,7 @@ public class ClickHouseRunner : IQueryRunner
             var current = new IValue[len];
             for (int i = 0; i < len; i++)
             {
-                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i),fields[i].Type);
+                current[i] = DatabaseValuesMapper.MapField(reader.GetValue(i),fields.Get(i).Type);
             }
             result.Add(new Record(current));
         }
