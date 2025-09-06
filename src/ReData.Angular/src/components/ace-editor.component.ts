@@ -4,22 +4,16 @@ import {
   Component,
   ElementRef,
   AfterViewInit,
-  ViewChild,
-  Input,
-  Output,
-  EventEmitter,
   OnDestroy,
-  inject, effect, viewChild, input, output, model
+   effect, viewChild, input, output
 } from '@angular/core';
 import * as ace from 'ace-builds';
 import { Ace } from 'ace-builds';
 import '../services/relang';
 import 'ace-builds/src-noconflict/theme-eclipse';
 import 'ace-builds/src-noconflict/ext-language_tools'
-import {parForEach} from 'ace-builds-internal/autocomplete/util';
-import {FunctionService} from '../services/function.service';
 import {ExprError, FunctionArgument, FunctionViewModel} from '../types';
-// import 'ace-builds/src-noconflict/mode-javascript';
+
 @Component({
   standalone: true,
   selector: 'app-ace-editor',
@@ -45,7 +39,6 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
   //
   //   }
   // })
-
 
   public editorElement = viewChild<ElementRef>('editor', );
 
@@ -75,11 +68,9 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     let error = this.error();
     if(error) {
       console.log(error);
-      let row = error.span.line - 1;
-      let column = error.span.column;
       this.editor?.getSession().setAnnotations([{
-        row: row,
-        column: column,
+        row: error.span.startRow - 1,
+        column: error.span.startColumn - 1,
         text: error.message,
         type: "error", // Shows in gutter and hover
       }]);
@@ -87,7 +78,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
         this.editor?.getSession().removeMarker(this.markerId);
         this.markerId = undefined;
       }
-      this.markerId =  this.editor?.getSession().addMarker(new ace.Range(row,column,row, column + error.span.length), "ace-warning", "text", false);
+      this.markerId =  this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
     } else {
       this.editor?.getSession().setAnnotations([]);
       if(this.markerId) {
@@ -130,8 +121,6 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     this.editor.clearSelection();
     this.editor.session.on('change', () => {
       let newValue = this.editor?.getValue() ?? '';
-      console.log('onchange',newValue);
-
       this.updateGutter();
       this.valueChange.emit(newValue);
 

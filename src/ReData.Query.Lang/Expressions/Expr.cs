@@ -33,7 +33,7 @@ public abstract record Expr
         {
             return new ExprError()
             {
-                Span = new ExprSpan(1, 1, 100),
+                Span = new ExprSpan(1, 1, 100,100),
                 Message = e.Message
             };
         }
