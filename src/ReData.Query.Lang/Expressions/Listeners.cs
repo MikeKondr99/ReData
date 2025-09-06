@@ -5,6 +5,7 @@ namespace ReData.Query.Lang.Expressions;
 
 public sealed class TokenErrorListener : IAntlrErrorListener<int>
 {
+    /// <inheritdoc />
     public void SyntaxError(
         IRecognizer recognizer,
         int offendingSymbol,
@@ -17,7 +18,7 @@ public sealed class TokenErrorListener : IAntlrErrorListener<int>
         {
             Error = new ExprError()
             {
-                Span = new ExprSpan(line, charPositionInLine, 1),
+                Span = new ExprSpan((uint)line, (uint)charPositionInLine, 1000, 1000),
                 Message = msg,
             }
         };

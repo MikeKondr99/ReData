@@ -115,13 +115,13 @@ export interface ReturnType
 export interface ExprError {
   span: ExprSpan
   message: string;
-
 }
 
 export interface ExprSpan {
-  line: number;
-  column: number;
-  length: number;
+  startRow: number,
+  startColumn: number,
+  endRow: number,
+  endColumn: number,
 }
 
 export type FunctionKind = 'Default' | 'Method' | 'Binary' | 'Unary';

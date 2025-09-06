@@ -17,10 +17,7 @@ public sealed class ErrorListener : IAntlrErrorListener<IToken>
         {
             Error = new ExprError()
             {
-                Span = new ExprSpan(
-                    line,
-                    charPositionInLine,
-                    offendingSymbol.StopIndex + 1 - offendingSymbol.StopIndex),
+                Span = new ExprSpan((uint)line, (uint)charPositionInLine, 1000, 1000),
                 Message = msg,
             }
         };

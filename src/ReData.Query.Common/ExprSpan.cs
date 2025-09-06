@@ -1,3 +1,3 @@
 ﻿namespace ReData.Query.Common;
 
-public record struct ExprSpan(int Line, int Column, int Length);
+public record struct ExprSpan(uint StartRow, uint StartColumn, uint EndRow, uint EndColumn);
