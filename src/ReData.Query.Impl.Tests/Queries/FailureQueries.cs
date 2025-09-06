@@ -1,7 +1,10 @@
 ﻿using FluentAssertions;
+using ReData.Query.Common;
 using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Tests.Queries;
+
+#pragma warning disable SA1118
 
 public class FailureQueries
 {
@@ -13,7 +16,7 @@ public class FailureQueries
             ["Test"] = "MIN(FirstName) + LastName",
         }).ExpectErr("Должен упасть с ошибкой");
     }
-    
+
     [Fact]
     public void CombinationOfAggrFieldAndNotAggrFieldShouldFail()
     {
@@ -23,7 +26,7 @@ public class FailureQueries
             ["Test2"] = "LastName",
         }).ExpectErr("Должен упасть с ошибкой");
     }
-    
+
     [Fact]
     public void SelectMustBeNonBoolean()
     {
@@ -32,7 +35,7 @@ public class FailureQueries
             ["Test"] = "10 = 10",
         }).ExpectErr("Должен упасть с ошибкой");
     }
-    
+
     [Fact]
     public void SelectMustBeNonNull()
     {
@@ -41,7 +44,7 @@ public class FailureQueries
             ["Test"] = "null",
         }).ExpectErr("Должен упасть с ошибкой");
     }
-    
+
     [Fact]
     public void OrderByMustBeNonBoolean()
     {
@@ -49,7 +52,7 @@ public class FailureQueries
             .OrderBy([("10 = 10", OrderItem.Type.Asc)])
             .ExpectErr("Должен упасть с ошибкой");
     }
-    
+
     [Fact]
     public void OrderByMustBeNonNull()
     {
@@ -57,7 +60,23 @@ public class FailureQueries
             .OrderBy([("null", OrderItem.Type.Asc)])
             .ExpectErr("Должен упасть с ошибкой");
     }
-    
+
+    [Fact]
+    public void ErrorInGroupByFieldMustNotDupError()
+    {
+        IEnumerable<ExprError?>? errors = new PostgresAssets().UsersQuery
+            .GroupBy([
+                "NotViableField"
+            ], new()
+            {
+                ["Group1"] = "NotViableField",
+                ["sum"] = "Sum(UserId)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        errors.Should().HaveCount(2);
+    }
+
     [Theory]
     [InlineData("'text'")]
     [InlineData("10")]
