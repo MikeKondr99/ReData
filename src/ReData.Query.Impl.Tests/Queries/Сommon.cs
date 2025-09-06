@@ -975,4 +975,6 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
+    
+    
 }

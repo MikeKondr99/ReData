@@ -182,7 +182,7 @@ public record QueryBuilder
         if (!resGroup.Any()  || !res.Any())
         {
             errors = !errors.Any() ? Enumerable.Repeat<ExprError?>(null, groupBy.Count) : errors;
-            return Result.Error(errors.Concat(errors2)); 
+            return Result.Error(errors.Concat(errors2.Skip(groupBy.Count))); 
         }
         
         return qb with
