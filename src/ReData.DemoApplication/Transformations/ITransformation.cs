@@ -12,7 +12,7 @@ namespace ReData.DemoApplication.Transformations;
 [JsonDerivedType(typeof(GroupByTransformation), typeDiscriminator: "groupBy")]
 public interface ITransformation
 {
-    Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder);
+    Result<QueryBuilder, IEnumerable<ExprError[]>> Apply(QueryBuilder builder);
 }
 
 

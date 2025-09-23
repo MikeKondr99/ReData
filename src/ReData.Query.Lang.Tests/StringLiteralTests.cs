@@ -7,7 +7,7 @@ namespace ReData.Query.Lang.Tests;
 public class StringLiteralTests
 {
 
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
+    private Func<EquivalencyAssertionOptions<ExprNode>, EquivalencyAssertionOptions<ExprNode>> options = (options) =>
         options.Excluding(e => e.Span);
     
     [Theory]
@@ -25,8 +25,8 @@ public class StringLiteralTests
   
     public void Interpolation(string expr, string expected)
     {
-        var input = Expr.Parse(expr).Unwrap();
-        var expect = Expr.Parse(expected).Unwrap();
+        var input = ExprNode.Parse(expr).Unwrap();
+        var expect = ExprNode.Parse(expected).Unwrap();
         input.Equivalent(expect).Should().Be(true);
     }
     
@@ -43,7 +43,7 @@ public class StringLiteralTests
     [InlineData(@"'(\{age})'","({age})")]
     public void StringLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr).Unwrap();
+        var e = ExprNode.Parse(expr).Unwrap();
         var expect = new StringLiteral(expected);
         e.Should().BeEquivalentTo(new StringLiteral(expected), options);
     }

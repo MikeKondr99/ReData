@@ -20,7 +20,7 @@ public sealed class OracleLiteralResolver : ILiteralResolver
         };
         return new ResolvedExpr()
         {
-            Expression = literal,
+            Node = literal,
             Template = Template.Create(temp.template),
             Type = temp.type.Const(),
         };

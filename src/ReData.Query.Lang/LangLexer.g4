@@ -26,7 +26,7 @@ NULL: 'null';
 
 NAME: [a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я_0-9]*;
 
-BLOCKED_NAME: '[' (ESCAPED_BLOCKED_NAME | ~']')+? ']';
+BLOCKED_NAME: '[' (ESCAPED_BLOCKED_NAME | ~']' ~[\n\r])+? ']';
 
 INTEGER: [0-9]+;
 

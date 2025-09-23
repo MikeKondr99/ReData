@@ -44,7 +44,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   public value = input<string>('');
 
-  public error = input<ExprError>();
+  public error = input<ExprError[]>();
 
   public valueChange = output<string>();
 
@@ -65,33 +65,39 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
 
   updateError = effect(() => {
-    let error = this.error();
-    if(error) {
-      console.log(error);
-      this.editor?.getSession().setAnnotations([{
-        row: error.span.startRow - 1,
-        column: error.span.startColumn - 1,
-        text: error.message,
-        type: "error", // Shows in gutter and hover
-      }]);
-      if(this.markerId) {
-        this.editor?.getSession().removeMarker(this.markerId);
-        this.markerId = undefined;
-      }
-      this.markerId =  this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
-    } else {
-      this.editor?.getSession().setAnnotations([]);
-      if(this.markerId) {
-        this.editor?.getSession().removeMarker(this.markerId);
-        this.markerId = undefined;
+    let errors = this.error() ?? [];
+
+    // Расставляем маркеры
+    this.clearMarkers();
+    for(let error of errors) {
+      let marker =  this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
+      if(marker) {
+        this.markers.push(marker);
       }
     }
+    // Расставляем аннотации
+    this.editor?.getSession().setAnnotations(errors.map(error => ({
+      row: error.span.startRow - 1,
+      column: error.span.startColumn - 1,
+      text: error.message,
+      type: "error", // Shows in gutter and hover
+    })));
     this.updateGutter();
+
+
+
   })
 
-  private markerId?: number;
+  private clearMarkers() {
+    for (let marker of this.markers) {
+      this.editor?.getSession().removeMarker(marker);
+    }
+    this.markers = [];
+  }
+
+  private markers: number[] = [];
   private editor?: Ace.Editor;
-  private functionList: FunctionViewModel[] = [];
+  // private functionList: FunctionViewModel[] = [];
 
   ngAfterViewInit() {
     this.initializeEditor();
@@ -139,7 +145,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   updateGutter() {
     this.editor?.setOptions({
-      showGutter: /[\r\n]/.test(this.editor?.getValue()) || !!this.markerId
+      showGutter: /[\r\n]/.test(this.editor?.getValue()) || this.markers.length > 0
     })
   }
 

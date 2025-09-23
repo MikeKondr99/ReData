@@ -6,4 +6,5 @@ namespace ReData.Query.Core.Components;
 public interface ILiteralResolver
 {
     public ResolvedExpr Resolve(Literal literal);
+    
 }

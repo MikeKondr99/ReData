@@ -78,7 +78,7 @@ public static class RecordsTestHelper
     }
 }
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprNodeTests(db)
 {
     [Fact]
     public async Task TableQuery()

@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Tests.Literals;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprNodeTests(runner)
 {
      
     [Theory(DisplayName = "Int")]

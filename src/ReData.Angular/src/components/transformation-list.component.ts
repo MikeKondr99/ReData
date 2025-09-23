@@ -247,7 +247,7 @@ export class TransformationListComponent {
   private changesSubject = new Subject<void>();
   transformationsChange = output<Transformation[]>();
 
-  public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
+  public errors = input<{ index: number, errors?: ExprError[][], message?: string } | null>(null);
 
   initialTransformations = input.required<Transformation[]>()
 

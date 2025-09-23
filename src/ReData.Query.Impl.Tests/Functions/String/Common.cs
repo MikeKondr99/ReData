@@ -2,7 +2,7 @@
 
 namespace ReData.Query.Impl.Tests.Functions.String;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprNodeTests(runner)
 {
      
      [Theory(DisplayName = "Upper")]
@@ -157,10 +157,10 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      // // Unicode support
      // [InlineData("Split('привет,мир,да', ',', 2)", "мир")]
      // [InlineData("Split('αβγ→δεζ→θη', '→', 2)", "δεζ")]
-     // public Task FuncSplitTests(string expr, object? expected)
+     // public Task FuncSplitTests(string exprNode, object? expected)
      // {
      //      Skip.If(runner.GetDatabaseType() is DatabaseType.Oracle, "Oracle не имеет реализацию функции Split");
-     //      return Test(expr, expected);
+     //      return Test(exprNode, expected);
      // }
 
      [Theory(DisplayName = "Composite")]

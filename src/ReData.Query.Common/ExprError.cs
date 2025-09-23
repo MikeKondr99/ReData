@@ -1,6 +1,6 @@
 ﻿namespace ReData.Query.Common;
 
-public record ExprError
+public sealed record ExprError
 {
     public required ExprSpan Span { get; init; }
     

@@ -8,18 +8,18 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang;
 
-internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
+internal sealed partial class ExpressionParser : LangParserBaseVisitor<ExprNode>
 {
-    public override Expr VisitStart(LangParser.StartContext context)
+    public override ExprNode VisitStart(LangParser.StartContext context)
     {
         return Visit(context.children[0]);
     }
 
-    public override Expr VisitUnary(LangParser.UnaryContext context)
+    public override ExprNode VisitUnary(LangParser.UnaryContext context)
     {
         if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
         {
-            return new FuncExpr()
+            return new FuncExprNode()
             { 
                 Span = Span(context),
                 Name = op.GetText(),
@@ -30,17 +30,17 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         throw new Exception("Non valid unary expression");
     }
 
-    public override Expr VisitScope(LangParser.ScopeContext context)
+    public override ExprNode VisitScope(LangParser.ScopeContext context)
     {
         return Visit(context.children[1]);
     }
 
-    public override Expr VisitBinary(LangParser.BinaryContext context)
+    public override ExprNode VisitBinary(LangParser.BinaryContext context)
     {
         
         if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
         {
-            return new FuncExpr()
+            return new FuncExprNode()
             {
                 Span = Span(context),
                 Name = op.GetText(),
@@ -51,10 +51,10 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         throw new Exception("Non valid binary expression");
     }
 
-    public override Expr VisitObjectFunction(LangParser.ObjectFunctionContext context)
+    public override ExprNode VisitObjectFunction(LangParser.ObjectFunctionContext context)
     {
         var args = context.children.OfType<ParserRuleContext>().Select(a => Visit(a));
-        return new FuncExpr()
+        return new FuncExprNode()
         {
             Span = Span(context),
             Name = context.children[2].GetText(),
@@ -63,9 +63,10 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         };
     }
 
-    public override Expr VisitName(LangParser.NameContext context)
+    public override ExprNode VisitName(LangParser.NameContext context)
     {
         var name = context.GetText();
+        var tokenLen = name.Length;
         if (name[0] is '[' && name[^1] is ']')
         {
             name = name[1..^1];
@@ -73,21 +74,21 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 
         name = EscapeRegex().Replace(name, "]");
 
-        return new NameExpr(name)
+        return new NameExprNode(name)
         {
-            Span = Span(context),
+            Span = Span(context)
         };
     }
 
 
-    public override Expr VisitString(LangParser.StringContext context)
+    public override ExprNode VisitString(LangParser.StringContext context)
     {
-        List<Expr> exprs = new();
+        List<ExprNode> exprs = new();
         foreach (var part in context.stringContents())
         {
             var expr = part.children.OfType<LangParser.ExprContext>().FirstOrDefault();
 
-            void Append(Expr expr)
+            void Append(ExprNode expr)
             {
                 if (exprs.LastOrDefault() is StringLiteral last && expr is StringLiteral nw)
                 {
@@ -102,7 +103,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
             if (expr is not null)
             {
                 var e = Visit(expr);
-                Append(new FuncExpr
+                Append(new FuncExprNode
                     {
                         Name = "Text",
                         Arguments = [e],
@@ -139,7 +140,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
             return new StringLiteral("");
         }
 
-        var result = exprs.Aggregate((a, b) => new FuncExpr
+        var result = exprs.Aggregate((a, b) => new FuncExprNode
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -149,7 +150,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         return result;
     }
 
-    public override Expr VisitInteger(LangParser.IntegerContext context)
+    public override ExprNode VisitInteger(LangParser.IntegerContext context)
     {
         return new IntegerLiteral(long.Parse(context.GetText()))
         {
@@ -157,7 +158,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         };
     }
 
-    public override Expr VisitNumber(LangParser.NumberContext context)
+    public override ExprNode VisitNumber(LangParser.NumberContext context)
     {
         return new NumberLiteral(double.Parse(context.GetText(), CultureInfo.InvariantCulture))
         {
@@ -165,10 +166,10 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         };
     }
 
-    public override Expr VisitFunc(LangParser.FuncContext context)
+    public override ExprNode VisitFunc(LangParser.FuncContext context)
     {
         var args = context.children.OfType<LangParser.ExprContext>().Select(a => Visit(a));
-        return new FuncExpr()
+        return new FuncExprNode()
         {
             Span = Span(context),
             Name = context.children[0].GetText(),
@@ -177,7 +178,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         };
     }
 
-    public override Expr VisitBoolean(LangParser.BooleanContext context)
+    public override ExprNode VisitBoolean(LangParser.BooleanContext context)
     {
         return new BooleanLiteral(bool.Parse(context.GetText()))
         {
@@ -186,7 +187,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
     }
 
 
-    public override Expr VisitNull(LangParser.NullContext context)
+    public override ExprNode VisitNull(LangParser.NullContext context)
     {
         return new NullLiteral()
         {
@@ -196,7 +197,12 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
     
     private static ExprSpan Span(ParserRuleContext context)
     {
-        return new ExprSpan((uint)context.Start.Line, (uint)context.Start.Column, (uint)context.Stop.Line, (uint)(context.Stop.Column + context.Stop.StopIndex));
+        return new ExprSpan(
+            (uint)context.Start.Line,
+            (uint)context.Start.Column,
+            (uint)context.Stop.Line,
+            (uint)(context.Stop.Column + context.Stop.Text.Length)
+        );
     }
 
     [GeneratedRegex(@"\\\]")]

@@ -8,7 +8,7 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests;
 
-public abstract class ExprTests(IDatabaseFixture db)
+public abstract class ExprNodeTests(IDatabaseFixture db)
 {
     
     public async Task Test(string expr, object? expected)

@@ -3,11 +3,11 @@ using ReData.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
-public record FuncExpr : Expr
+public record FuncExprNode : ExprNode
 {
     public required string Name { get; init; }
     
-    public required IReadOnlyList<Expr> Arguments { get; init; }
+    public required IReadOnlyList<ExprNode> Arguments { get; init; }
     
     public FuncExprKind Kind { get; init; }
     

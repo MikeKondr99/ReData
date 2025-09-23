@@ -22,8 +22,8 @@ public class EquivalencyTests
     [InlineData("Func(x.Year(),y,x.Year())", "Func(x.Year(),y,x.Year())")]
     public void EqualsTest(string expr1, string expr2)
     {
-        var exp1 = Expr.Parse(expr1).Unwrap();
-        var exp2 = Expr.Parse(expr2).Unwrap();
+        var exp1 = ExprNode.Parse(expr1).Unwrap();
+        var exp2 = ExprNode.Parse(expr2).Unwrap();
 
         exp1.Equivalent(exp2).Should().Be(true);
     }
@@ -41,8 +41,8 @@ public class EquivalencyTests
     [InlineData("x ^ y ^ z", "(x ^ y) ^ z")]
     public void NotEqualsTest(string expr1, string expr2)
     {
-        var exp1 = Expr.Parse(expr1).Unwrap();
-        var exp2 = Expr.Parse(expr2).Unwrap();
+        var exp1 = ExprNode.Parse(expr1).Unwrap();
+        var exp2 = ExprNode.Parse(expr2).Unwrap();
 
         exp1.NotEquivalent(exp2).Should().Be(true);
     }

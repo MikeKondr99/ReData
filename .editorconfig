@@ -108,6 +108,7 @@ dotnet_diagnostic.SA1008.severity = suggestion # autofix?
 
 dotnet_diagnostic.SA1515.severity = none
 dotnet_diagnostic.SA1512.severity = none
+dotner_diagnostic.SA1011.severity = none
 dotnet_diagnostic.SA12.severity = none
 
 

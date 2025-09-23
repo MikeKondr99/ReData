@@ -6,7 +6,7 @@ namespace ReData.Query.Lang.Tests;
 
 public class LiteralsTest
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
+    private Func<EquivalencyAssertionOptions<ExprNode>, EquivalencyAssertionOptions<ExprNode>> options = (options) =>
         options.Excluding(e => e.Span);
 
     [Theory]
@@ -24,8 +24,8 @@ public class LiteralsTest
     [InlineData("[and]","and")]
     public void NameLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr).Unwrap();
-        e.Should().BeEquivalentTo(new NameExpr(expected), options);
+        var e = ExprNode.Parse(expr).Unwrap();
+        e.Should().BeEquivalentTo(new NameExprNode(expected), options);
     }
     
     [Theory]
@@ -41,7 +41,7 @@ public class LiteralsTest
     // [InlineData(@"' \\n '",@" \n ")]
     public void StringLiteral(string expr, string expected)
     {
-        var e = Expr.Parse(expr).Unwrap();
+        var e = ExprNode.Parse(expr).Unwrap();
         e.Should().BeEquivalentTo(new StringLiteral(expected), options);
     }
     
@@ -54,7 +54,7 @@ public class LiteralsTest
     [InlineData("0.1234567890", 0.1234567890)]
     public void NumberLiteral(string input, double expected)
     {
-        var expr = Expr.Parse(input).UnwrapOk().Value;
+        var expr = ExprNode.Parse(input).UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new NumberLiteral(expected), options);
     }
@@ -62,10 +62,10 @@ public class LiteralsTest
     [Fact]
     public void ShouldParseUnary()
     {
-        var expr = Expr.Parse("-1").UnwrapOk().Value;
+        var expr = ExprNode.Parse("-1").UnwrapOk().Value;
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "-",
             Arguments = [new IntegerLiteral(1)],
@@ -82,7 +82,7 @@ public class LiteralsTest
     [InlineData("00001", 1)]
     public void IntegerLiteral(string input, long expected)
     {
-        var expr = Expr.Parse(input).Unwrap();
+        var expr = ExprNode.Parse(input).Unwrap();
         expr.Should().BeEquivalentTo(new IntegerLiteral(expected), options);
     }
 
@@ -91,7 +91,7 @@ public class LiteralsTest
     [InlineData("false", false)]
     public void BooleanLiteral(string input, bool expected)
     {
-        var expr = Expr.Parse(input).UnwrapOk().Value;
+        var expr = ExprNode.Parse(input).UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new BooleanLiteral(expected), options);
     }
@@ -100,7 +100,7 @@ public class LiteralsTest
     [InlineData("null")]
     public void NullLiteral(string input)
     {
-        var expr = Expr.Parse(input).UnwrapOk().Value;
+        var expr = ExprNode.Parse(input).UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(new NullLiteral(), options);
     }
@@ -119,7 +119,7 @@ public class LiteralsTest
     // [InlineData("+3", "expected expression",0)]
     // public void ShouldNotParse(string input, string message, int index)
     // {
-    //     Expr.Parse(input).UnwrapErr();
+    //     ExprNode.Parse(input).UnwrapErr();
     // }
     
     [Theory]
@@ -127,7 +127,7 @@ public class LiteralsTest
     [InlineData("a % 3")]
     public void ShouldThrowUnexpectedToken(string input)
     {
-        Expr.Parse(input).UnwrapErr();
+        ExprNode.Parse(input).UnwrapErr();
     }
     
     

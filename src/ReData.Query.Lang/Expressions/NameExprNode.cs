@@ -1,7 +1,7 @@
 ﻿
 namespace ReData.Query.Lang.Expressions;
 
-public sealed record NameExpr(string Value) : Expr
+public sealed record NameExprNode(string Value) : ExprNode
 {
     public override string ToString()
     {
@@ -10,6 +10,6 @@ public sealed record NameExpr(string Value) : Expr
 
     public override int GetHashCode()
     {
-        return HashCode.Combine("NameExpr", Value);
+        return HashCode.Combine("NameExprNode", Value);
     }
 }

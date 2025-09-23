@@ -8,7 +8,7 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Functions.Reflection;
 
-public abstract partial class Сommon(IDatabaseFixture db) : ExprTests(db)
+public abstract partial class Сommon(IDatabaseFixture db) : ExprNodeTests(db)
 {
      [Fact]
      public async Task FuncDbVersionTests()

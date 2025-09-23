@@ -30,7 +30,7 @@ public record struct InlineQuerySource : IQuerySource
 
         
         var exprs = dataExpressions
-            .Select(d => Expr.Parse(d).Expect("Inline expression must be valid"))
+            .Select(d => ExprNode.Parse(d).Expect("Inline expression must be valid"))
             .Select(e => resolver.ResolveExpr(e, new TableQuerySource(new NameTemplate(Template.Create("test")),[])).Expect("Inline expression must be resolvable")).ToArray();
 
         var fieldType = exprs.Aggregate(new FieldType(Unknown, false), (t, e) => ResolveField(t, e.Type));

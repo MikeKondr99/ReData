@@ -6,22 +6,22 @@ namespace ReData.Query.Lang.Tests;
 
 public class ParsingTests
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
+    private Func<EquivalencyAssertionOptions<ExprNode>, EquivalencyAssertionOptions<ExprNode>> options = (options) =>
         options.Excluding(e => e.Span);
     
     [Fact]
     public void BinaryOp()
     {
-        var expr = Expr.Parse("number + 3").UnwrapOk().Value;
+        var expr = ExprNode.Parse("number + 3").UnwrapOk().Value;
 
         expr.Should().BeEquivalentTo(
-            new FuncExpr()
+            new FuncExprNode()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("number"),
+                new NameExprNode("number"),
                 new IntegerLiteral(3),
             ]
         }, options);
@@ -30,22 +30,22 @@ public class ParsingTests
     [Fact]
     public void ShouldGivePriority()
     {
-        var expr = Expr.Parse("a + b * c").UnwrapOk().Value;
+        var expr = ExprNode.Parse("a + b * c").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new FuncExpr()
+                new NameExprNode("a"),
+                new FuncExprNode()
                 {
                     Name = "*",
                     Arguments =
                     [
-                        new NameExpr("b"),
-                        new NameExpr("c"),
+                        new NameExprNode("b"),
+                        new NameExprNode("c"),
                     ]
                 }
             ]
@@ -56,21 +56,21 @@ public class ParsingTests
     [Fact]
     public void ShouldParseWithoutCapturingBinary()
     {
-        var expr = Expr.Parse("a + c.Call()").UnwrapOk().Value;
+        var expr = ExprNode.Parse("a + c.Call()").UnwrapOk().Value;
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new FuncExpr()
+                new NameExprNode("a"),
+                new FuncExprNode()
                 {
                     Name = "Call",
                     Arguments = [
-                        new NameExpr("c")
+                        new NameExprNode("c")
                     ]
                 }
             ]
@@ -81,9 +81,9 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedy()
     {
-        var expr = Expr.Parse("'a' + 'b'").UnwrapOk().Value;
+        var expr = ExprNode.Parse("'a' + 'b'").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -99,17 +99,17 @@ public class ParsingTests
     [Fact]
     public void ShouldParseNameNonGreedy()
     {
-        var expr = Expr.Parse("[a] + [b]").UnwrapOk().Value;
+        var expr = ExprNode.Parse("[a] + [b]").UnwrapOk().Value;
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
             Arguments =
             [
-                new NameExpr("a"),
-                new NameExpr("b"),
+                new NameExprNode("a"),
+                new NameExprNode("b"),
             ]
         }, options);
     }
@@ -117,18 +117,18 @@ public class ParsingTests
     [Fact]
     public void ShouldParseStringNonGreedyInArguments()
     {
-        var expr = Expr.Parse("If(10 > 5 and null, 'then', 'else')").UnwrapOk().Value;
+        var expr = ExprNode.Parse("If(10 > 5 and null, 'then', 'else')").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        expr.Should().BeEquivalentTo(new FuncExprNode()
         {
             Name = "If",
             Arguments =
             [
-                new FuncExpr()
+                new FuncExprNode()
                 {
                     Name = "and",
                     Arguments = [
-                        new FuncExpr()
+                        new FuncExprNode()
                         {
                             Name = ">",
                             Arguments = [

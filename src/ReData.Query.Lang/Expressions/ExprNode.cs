@@ -4,14 +4,14 @@ using ReData.Query.Common;
 
 namespace ReData.Query.Lang.Expressions;
 
-public abstract record Expr
+public abstract record ExprNode
 {
    public ExprSpan Span { get; init; }
 
     private int? hash;
     public int Hash => hash ??= GetHashCode();
     
-    public static Result<Expr, ExprError> Parse(string s)
+    public static Result<ExprNode, ExprError> Parse(string s)
     {
         try
         {
@@ -22,8 +22,8 @@ public abstract record Expr
             tokens.Fill();
             var parser = new LangParser(tokens);
             parser.AddErrorListener(new ErrorListener());
-            Expr expr = new ExpressionParser().VisitStart(parser.start());
-            return Result.Ok(expr);
+            ExprNode exprNode = new ExpressionParser().VisitStart(parser.start());
+            return Result.Ok(exprNode);
         }
         catch (ExprErrorException e)
         {
@@ -44,26 +44,26 @@ public abstract record Expr
         return 17;
     }
 
-    public bool Equivalent(Expr other)
+    public bool Equivalent(ExprNode other)
     {
         return Hash == other.Hash;
     }
     
-    public bool NotEquivalent(Expr other)
+    public bool NotEquivalent(ExprNode other)
     {
         return Hash != other.Hash;
     }
     
-    public Expr Replace(Expr pattern, Expr value)
+    public ExprNode Replace(ExprNode pattern, ExprNode value)
     {
         if (this.Equivalent(pattern))
         {
             return value;
         }
 
-        if (this is FuncExpr f)
+        if (this is FuncExprNode f)
         {
-            return new FuncExpr()
+            return new FuncExprNode()
             {
                 Name = f.Name,
                 Arguments = f.Arguments.Select(a => a.Replace(pattern, value)).ToArray(),

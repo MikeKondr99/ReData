@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace ReData.Query.Lang.Expressions;
 
-public abstract record Literal : Expr
+public abstract record Literal : ExprNode
 {
     
 }

@@ -8,7 +8,7 @@ public class OrderByTransformation : ITransformation
 {
     public required OrderItem[] Items { get; init; }
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<ExprError[]>> Apply(QueryBuilder builder)
     {
         return builder.OrderBy(Items.Select(i => (i.Expression, i.Descending ? Query.Core.Types.OrderItem.Type.Desc : Query.Core.Types.OrderItem.Type.Asc)).ToArray());
     }

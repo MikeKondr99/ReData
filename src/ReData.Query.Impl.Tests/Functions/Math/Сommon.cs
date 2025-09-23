@@ -3,7 +3,7 @@ using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.Math;
 
-public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
+public abstract class Сommon(IDatabaseFixture runner) : ExprNodeTests(runner)
 {
     [Theory(DisplayName = "Addition")]
     [InlineData("2 + 2", 4)]
@@ -72,7 +72,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     // [InlineData("2.Pow(3 + 1)", 16)]      // Power with parenthesis in addition
     // [InlineData("Pow(2, 3 * 2)", 64)]     // Power with multiplication in the exponent
     //
-    // public Task Power(string expr, object? expected) => Test(expr, expected);
+    // public Task Power(string exprNode, object? expected) => Test(exprNode, expected);
     
     
     [Theory(DisplayName = "Priority")]

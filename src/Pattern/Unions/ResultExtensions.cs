@@ -1,11 +1,12 @@
-﻿using Pattern.Unions;
+﻿using System.Runtime.InteropServices;
+using Pattern.Unions;
 
 namespace Pattern;
 
 
 public static class ResultCollectionExtensions
 {
-    public static Unions.Result<IReadOnlyCollection<T>, E> ToResult<T, E>(this IEnumerable<Unions.Result<T, E>> collection)
+    public static Result<IReadOnlyCollection<T>, E> ToResult<T, E>(this IEnumerable<Result<T, E>> collection)
     {
         var items = new List<T>();
         foreach (var item in collection)
@@ -15,6 +16,30 @@ public static class ResultCollectionExtensions
                 return err;
             }
             items.Add(item.Unwrap());
+        }
+        return items;
+    }
+    
+    public static Result<IReadOnlyCollection<T>, IReadOnlyCollection<E>> ToResultOrErrors<T, E>(this IEnumerable<Result<T, E>> collection)
+    {
+        List<T> items = new List<T>();
+        List<E>? errors = null;
+        foreach (var item in collection)
+        {
+            if (item is IError<E>(var err))
+            {
+                errors ??= [];
+                errors.Add(err);
+            }
+            else
+            {
+                items.Add(item.Unwrap());
+            }
+        }
+
+        if (errors is not null)
+        {
+            return errors;
         }
         return items;
     }

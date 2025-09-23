@@ -6,6 +6,7 @@ using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Lang.Expressions;
+using static ReData.Query.Core.SystemErrorLints;
 
 namespace ReData.Query.Core;
 
@@ -13,6 +14,7 @@ public record QueryBuilder
 {
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
+
     private IEnumerable<Field> Fields => Query.Fields();
 
     public QueryBuilder(Query query, ExpressionResolver resolver)
@@ -28,9 +30,12 @@ public record QueryBuilder
             Name = resolver.ResolveName(["DualQuery"]),
         }, resolver);
     }
-    
-    
-    public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, FieldType type)> fields)
+
+
+    public static QueryBuilder FromTable(
+        ExpressionResolver resolver,
+        ReadOnlySpan<string> path,
+        IReadOnlyList<(string name, FieldType type)> fields)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -43,7 +48,7 @@ public record QueryBuilder
                     Type = f.type,
                 }).ToArray()
             ),
-            Select = fields.Select((f,i) =>
+            Select = fields.Select((f, i) =>
             {
                 return new SelectItem()
                 {
@@ -51,7 +56,7 @@ public record QueryBuilder
                     Column = resolver.ResolveName([f.name]),
                     ResolvedExpr = new ResolvedExpr()
                     {
-                        Expression = new NameExpr(f.name),
+                        Node = new NameExprNode(f.name),
                         Template = resolver.ResolveName([f.name]).Template,
                         Arguments = null,
                         Type = new ExprType()
@@ -67,7 +72,7 @@ public record QueryBuilder
         }, resolver);
     }
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Select(Dictionary<string, string> select)
+    public Result<QueryBuilder, IEnumerable<ExprError[]>> Select(Dictionary<string, string> select)
     {
         var qb = this;
         if (Query.Select is not null)
@@ -78,25 +83,27 @@ public record QueryBuilder
         var res = qb.ResolveManySelectItems(
             select,
             r => r.NotBool().NotNull()
-        ).GetErrors(out var errors);
+        ).GetErrors(out IEnumerable<ExprError[]> errors);
 
         if (res.Count is 0)
         {
             return Result.Error(errors);
         }
-        
+
         var agg = FunctionStorage.AggPropagation(res.Select(m => m.ResolvedExpr.Type));
 
         if (agg is INone)
         {
-            return Result.Error(res.Select(m => (ExprError?)new ExprError
-            {
-                Span = m.ResolvedExpr.Expression.Span,
-                Message = "Все значения в выборке должны быть либо агрегированными либо нет"
-            })!);
-
+            return Result.Error(res.Select(m => 
+            (ExprError[])[
+                new ExprError
+                {
+                    Span = m.ResolvedExpr.Node.Span,
+                    Message = "Все значения в выборке должны быть либо агрегированными либо нет"
+                }
+            ]));
         }
-        
+
         return qb with
         {
             Query = qb.Query with
@@ -105,8 +112,8 @@ public record QueryBuilder
             }
         };
     }
-    
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Where(string condition)
+
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Where(string condition)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -114,23 +121,25 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = qb.Resolve(condition).NotAggregated().Bool();
+        var res = qb.Resolve(condition).AddErrorLints([NotAggregated, Bool]);
 
-        if (res.UnwrapErr(out var err, out var where))
+        if (res.Context.HasErrors())
         {
-            return Result.Error(Once.From(err).AsEnumerable<ExprError?>());
+            var errors = res.Context.Errors;
+            return Result.Error<IEnumerable<IReadOnlyList<ExprError>>>([res.Context.Errors]);
         }
 
         return qb with
         {
             Query = qb.Query with
             {
-                Where = [..qb.Query.Where ?? [], where]
+                Where = [..qb.Query.Where ?? [], res.Expr]
             }
         };
     }
-    
-    public Result<QueryBuilder,IEnumerable<ExprError?>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
+
+    public Result<QueryBuilder, IEnumerable<ExprError[]>> OrderBy(
+        IReadOnlyList<(string expr, OrderItem.Type type)> order)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -143,7 +152,7 @@ public record QueryBuilder
                 r => r.NotAggregated().NotBool().NotNull())
             .Select((r, i) => r.Map(e => new OrderItem(e, order[i].type)))
             .GetErrors(out var errors);
-        
+
         if (!res.Any())
         {
             return Result.Error(errors);
@@ -151,7 +160,7 @@ public record QueryBuilder
 
         // Игнорируем константы
         res = res.Where(o => !o.ResolvedExpr.Type.IsConstant);
-        
+
         return qb with
         {
             Query = qb.Query with
@@ -160,31 +169,32 @@ public record QueryBuilder
             }
         };
     }
-    
-    public Result<QueryBuilder,IEnumerable<ExprError?>> GroupBy(IReadOnlyList<string> groupBy, Dictionary<string, string> select)
+
+    public Result<QueryBuilder, IEnumerable<ExprError[]>> GroupBy(IReadOnlyList<string> groupBy,
+        Dictionary<string, string> select)
     {
         var qb = this;
         if (Query.Select is not null)
         {
             qb = CreateCte();
         }
-        
+
         var resGroup = qb.ResolveMany(
-            groupBy,
-            r => r.NotAggregated().NotBool().NotNull().NotConst())
-        .GetErrors(out var errors);
+                groupBy,
+                r => r.NotAggregated().NotBool().NotNull().NotConst())
+            .GetErrors(out var errors);
 
         var res = qb.ResolveManySelectItems(
             select,
             r => r.NotBool().NotNull().AggregatedOrGrouped(resGroup)
         ).GetErrors(out var errors2);
-        
-        if (!resGroup.Any()  || !res.Any())
+
+        if (!resGroup.Any() || !res.Any())
         {
-            errors = !errors.Any() ? Enumerable.Repeat<ExprError?>(null, groupBy.Count) : errors;
-            return Result.Error(errors.Concat(errors2.Skip(groupBy.Count))); 
+            errors = !errors.Any() ? Enumerable.Repeat<ExprError[]>([], groupBy.Count) : errors;
+            return Result.Error(errors.Concat(errors2.Skip(groupBy.Count)));
         }
-        
+
         return qb with
         {
             Query = qb.Query with
@@ -222,13 +232,14 @@ public record QueryBuilder
     {
         return new SelectItem(alias, GetColumnName(alias, index), res);
     }
-    
+
     public QueryBuilder Take(uint take)
     {
         if (Query.Limit > 0)
         {
             take = Math.Min(Query.Limit, take);
         }
+
         return this with
         {
             Query = Query with
@@ -237,7 +248,7 @@ public record QueryBuilder
             }
         };
     }
-    
+
     public QueryBuilder Skip(uint skip)
     {
         var offset = skip + Query.Offset;
@@ -246,6 +257,7 @@ public record QueryBuilder
         {
             limit = Math.Min(limit, skip);
         }
+
         return this with
         {
             Query = Query with
@@ -256,14 +268,62 @@ public record QueryBuilder
         };
     }
 
-    private Result<ResolvedExpr,ExprError> Resolve(string expr)
+    // private Result<ResolvedExpr, ExprError[]> ExternalResolve(string exprNode)
+    // {
+    //     var resExpr = ExprNode.Parse(exprNode);
+    //     if (!resExpr.Unwrap(out var expression, out var error))
+    //     {
+    //         ExprError[] errors = [error];
+    //         return errors;
+    //     }
+    //
+    //     var context = new ExprContext()
+    //     {
+    //         Fields = Query.From.Fields().ToArray(),
+    //         Errors = new List<ExprError>(),
+    //         QuerySource = Query.From,
+    //     };
+    //     
+    //     var res = Resolver.ResolveExpr(expression, context);
+    //
+    //     if (context.HasErrors())
+    //     {
+    //         return context.Errors.ToArray();
+    //     }
+    //
+    //     return res!;
+    // }
+    
+    private ExprWithContext Resolve(string expr)
     {
-        var resExpr = Expr.Parse(expr);
+        var context = new ExprContext()
+        {
+            Fields = Query.From.Fields().ToArray(),
+            Errors = new List<ExprError>(),
+            QuerySource = Query.From,
+        };
+        
+        var resExpr = ExprNode.Parse(expr);
         if (!resExpr.Unwrap(out var expression, out var error))
         {
-            return error;
+            return new ExprWithContext()
+            {
+                Expr = default,
+                Context = context with
+                {
+                    Errors = [error],
+                }
+            };
         }
-        return Resolver.ResolveExpr(expression, Query.From);
+
+        
+        var res = Resolver.ResolveExpr(expression, context);
+
+        return new ExprWithContext()
+        {
+            Expr = res,
+            Context = context,
+        };
     }
 
     public Query Build()
@@ -271,32 +331,32 @@ public record QueryBuilder
         return Query;
     }
 
-    private IEnumerable<Result<ResolvedExpr, ExprError>> ResolveMany(
+    private IEnumerable<ExprWithContext> ResolveMany(
         IEnumerable<string> exprs,
-        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
-        )
+        Func<ResolvedExpr, string?>? condition = null
+    )
     {
-        condition ??= (r) => r;
+        condition ??= (r) => null;
         foreach (var expr in exprs)
         {
-            Result<ResolvedExpr, ExprError> res = condition(Resolve(expr));
+            Result<ResolvedExpr, ExprError[]> res = condition(Resolve(expr));
             yield return res;
         }
     }
-    private IEnumerable<Result<SelectItem, ExprError>> ResolveManySelectItems(
-        Dictionary<string,string> select,
-        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
-        )
+
+    private IEnumerable<Result<SelectItem, ExprError[]>> ResolveManySelectItems(
+        Dictionary<string, string> select,
+        Func<Result<ResolvedExpr, ExprError[]>, Result<ResolvedExpr, ExprError[]>>? condition = null
+    )
     {
         condition ??= (r) => r;
         int i = 0;
         foreach (var kv in select)
         {
-            Result<SelectItem, ExprError> res = condition(Resolve(kv.Value))
-              .Map(r => new SelectItem(kv.Key, Resolver.ResolveName([$"column{i + 1}"]), r));
+            Result<SelectItem, ExprError[]> res = condition(Resolve(kv.Value))
+                .Map(r => new SelectItem(kv.Key, Resolver.ResolveName([$"column{i + 1}"]), r));
             yield return res;
             i += 1;
         }
     }
 }
-

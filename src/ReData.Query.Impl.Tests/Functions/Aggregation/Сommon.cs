@@ -7,7 +7,7 @@ using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Functions.Aggregation;
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
+public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprNodeTests(db)
 {
     private QueryBuilder GetInline(string expr, string[] data, string? where = null)
     {

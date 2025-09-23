@@ -64,7 +64,7 @@ public class FailureQueries
     [Fact]
     public void ErrorInGroupByFieldMustNotDupError()
     {
-        IEnumerable<ExprError?>? errors = new PostgresAssets().UsersQuery
+        IEnumerable<ExprError[]> errors = new PostgresAssets().UsersQuery
             .GroupBy([
                 "NotViableField"
             ], new()
