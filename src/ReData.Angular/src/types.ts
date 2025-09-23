@@ -127,13 +127,13 @@ export interface ExprSpan {
 export type FunctionKind = 'Default' | 'Method' | 'Binary' | 'Unary';
 
 export type DataType =
-  'Unknown' |
-  'Null' |
-  'Number' |
-  'Integer' |
-  'Text' |
-  'Bool' |
-  'DateTime';
+  'unk' |
+  'null' |
+  'num' |
+  'int' |
+  'text' |
+  'bool' |
+  'date';
 
 export interface Breadcrumb {
   label: string;

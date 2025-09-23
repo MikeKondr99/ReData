@@ -1,18 +1,18 @@
-﻿import {Component, effect, input, output} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzSelectModule } from 'ng-zorro-antd/select';
-import { NzSwitchModule } from 'ng-zorro-antd/switch';
-import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { debounceTime, Subject } from 'rxjs';
+﻿import {Component, effect, input, output, signal} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {NzButtonModule} from 'ng-zorro-antd/button';
+import {NzFormModule} from 'ng-zorro-antd/form';
+import {NzInputModule} from 'ng-zorro-antd/input';
+import {NzSelectModule} from 'ng-zorro-antd/select';
+import {NzSwitchModule} from 'ng-zorro-antd/switch';
+import {NzDividerModule} from 'ng-zorro-antd/divider';
+import {NzIconModule} from 'ng-zorro-antd/icon';
+import {debounceTime, Subject} from 'rxjs';
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {
   ExprError, isGroupByTransformation, isLimitTransformation,
   isOrderByTransformation, isSelectTransformation, isWhereTransformation,
-   Transformation
+  Transformation
 } from '../types';
 import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
 import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
@@ -74,12 +74,14 @@ import {AceEditorComponent} from './ace-editor.component';
           <span nz-icon nzType="vertical-align-bottom" nzTheme="outline"></span>
         </button>
       </nz-button-group>
-      <div cdkDropList (cdkDropListDropped)="drop($event)" class="flex h-full overflow-y-auto flex-col gap-3 max-h-[79vh] bg-gray-50 px-5 py-6 font-sans">
+      <div cdkDropList (cdkDropListDropped)="drop($event)"
+           class="flex h-full overflow-y-auto flex-col gap-3 max-h-[79vh] bg-gray-50 px-5 py-6 font-sans">
         @for (item of transformations; track i; let i = $index) {
-          <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg border-l-8 border-blue-500"
-               [class.border-red-400]="hasErrors(i)"
-               [class.border-gray-200]="!item.enabled"
-               cdkDrag cdkDragLockAxis="y">
+          <div
+            class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg border-l-8 border-blue-500"
+            [class.border-red-400]="hasErrors(i)"
+            [class.border-gray-200]="!item.enabled"
+            cdkDrag cdkDragLockAxis="y">
             <div class="flex items-start">
               <div class="flex flex-grow flex-wrap items-baseline gap-x-2 gap-y-1.5">
                 @if (isWhereTransformation(item.data)) {
@@ -89,7 +91,10 @@ import {AceEditorComponent} from './ace-editor.component';
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Фильтр</span>
                     </div>
-                    <app-ace-editor [(value)]="item.data.condition" (valueChange)="onTransformationChange()" [error]="getError(i,0)"></app-ace-editor>
+                    <app-ace-editor [(value)]="item.data.condition"
+                                    (valueChange)="onTransformationChange()"
+                                    [fields]="fields()[i]"
+                                    [error]="getError(i,0)"></app-ace-editor>
                   </div>
                 } @else if (isOrderByTransformation(item.data)) {
                   <div class="flex flex-col gap-2 w-full">
@@ -101,8 +106,14 @@ import {AceEditorComponent} from './ace-editor.component';
 
                     @for (orderItem of item.data.items; track orderItem; let idx = $index) {
                       <div class="flex items-center gap-2">
-                        <app-ace-editor class="min-w-[250px] max-w-[250px]" [(value)]="orderItem.expression" [error]="getError(i,idx)" (valueChange)="onTransformationChange()"></app-ace-editor>
-                        <nz-switch [(ngModel)]="orderItem.descending" (ngModelChange)="onTransformationChange()" ></nz-switch>
+                        <app-ace-editor class="min-w-[250px] max-w-[250px]"
+                                        [(value)]="orderItem.expression"
+                                        [error]="getError(i,idx)"
+                                        (valueChange)="onTransformationChange()"
+                                        [fields]="fields()[i]"
+                        ></app-ace-editor>
+                        <nz-switch [(ngModel)]="orderItem.descending"
+                                   (ngModelChange)="onTransformationChange()"></nz-switch>
                         <span>{{ orderItem.descending ? 'DESC' : 'ASC' }}</span>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -110,7 +121,8 @@ import {AceEditorComponent} from './ace-editor.component';
                       </div>
                     }
                     <button nz-button nzType="default" nzShape="circle"><span nz-icon nzType="plus"
-                                                                              (click)="addOrderByItem(i)"></span></button>
+                                                                              (click)="addOrderByItem(i)"></span>
+                    </button>
                   </div>
                 } @else if (isSelectTransformation(item.data)) {
                   <div class="flex flex-col gap-2 w-full">
@@ -131,9 +143,12 @@ import {AceEditorComponent} from './ace-editor.component';
                         />
                         <span>=</span>
 
-                        <app-ace-editor class="w-[550px]" [(value)]="selectItem.expression"
-                                      (valueChange)="onTransformationChange()"
-                                      [error]="getError(i,idx)">
+                        <app-ace-editor class="w-[550px]"
+                                        [(value)]="selectItem.expression"
+                                        (valueChange)="onTransformationChange()"
+                                        [error]="getError(i,idx)"
+                                        [fields]="fields()[i]"
+                        >
                         </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -163,9 +178,12 @@ import {AceEditorComponent} from './ace-editor.component';
                           placeholder="Field name"
                         />
                         <span>=</span>
-                        <app-ace-editor class="w-[550px]"  [(value)]="selectItem.expression"
-                                      (valueChange)="onTransformationChange()"
-                                      [error]="getError(i,idx + item.data.groups.length) ?? getError(i,idx)">
+                        <app-ace-editor class="w-[550px]"
+                                        [(value)]="selectItem.expression"
+                                        (valueChange)="onTransformationChange()"
+                                        [error]="getError(i,idx + item.data.groups.length) ?? getError(i,idx)"
+                                        [fields]="fields()[i]"
+                        >
                         </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'groups', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -187,9 +205,12 @@ import {AceEditorComponent} from './ace-editor.component';
                           placeholder="Field name"
                         />
                         <span>=</span>
-                        <app-ace-editor class="w-[550px]"  [(value)]="selectItem.expression"
-                                      (valueChange)="onTransformationChange()"
-                                      [error]="getError(i,item.data.items.length + idx)">
+                        <app-ace-editor class="w-[550px]"
+                                        [(value)]="selectItem.expression"
+                                        (valueChange)="onTransformationChange()"
+                                        [error]="getError(i,item.data.items.length + idx)"
+                                        [fields]="fields()[i]"
+                        >
                         </app-ace-editor>
                         <button nz-button nzType="text" nzDanger nzSize="small" (click)="removeItem(i,'items', idx)">
                           <span nz-icon nzType="close-circle" nzTheme="outline"></span>
@@ -200,7 +221,7 @@ import {AceEditorComponent} from './ace-editor.component';
                       <span nz-icon nzType="plus"></span>
                     </button>
                   </div>
-                } @else if(isLimitTransformation(item.data)) {
+                } @else if (isLimitTransformation(item.data)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
                       <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
@@ -209,13 +230,15 @@ import {AceEditorComponent} from './ace-editor.component';
                     </div>
                     <div>
                       Взять только
-                      <nz-input-number [(ngModel)]="item.data.limit" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                      <nz-input-number [(ngModel)]="item.data.limit"
+                                       (ngModelChange)="onTransformationChange()"></nz-input-number>
                       записей
                     </div>
 
                     <div>
                       Со смещением в
-                      <nz-input-number [(ngModel)]="item.data.offset" (ngModelChange)="onTransformationChange()"></nz-input-number>
+                      <nz-input-number [(ngModel)]="item.data.offset"
+                                       (ngModelChange)="onTransformationChange()"></nz-input-number>
                       записей
                     </div>
                   </div>
@@ -229,17 +252,17 @@ import {AceEditorComponent} from './ace-editor.component';
             </div>
           </div>
         }
-        @if(errors()?.message) {
-          <pre class="text-red-500 whitespace-pre-line relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg">
+        @if (errors()?.message) {
+          <pre
+            class="text-red-500 whitespace-pre-line relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg">
           {{ errors()?.message }}
         </pre>
         }
-        </div>
+      </div>
     </div>
   `,
 })
 export class TransformationListComponent {
-
 
 
   transformations: Transformation[] = <any>null;
@@ -249,14 +272,16 @@ export class TransformationListComponent {
 
   public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
 
+  public fields = signal<string[][]>([])
+
   initialTransformations = input.required<Transformation[]>()
 
   applyInitialTransformations = effect(() => {
-    if(this.transformations === null) {
+    if (this.transformations === null) {
       this.transformations = this.initialTransformations();
       this.onTransformationChange();
     }
-  }, { allowSignalWrites: true })
+  }, {allowSignalWrites: true})
 
   hasErrors(index: number) {
     let transformations = this.transformations;
@@ -267,8 +292,8 @@ export class TransformationListComponent {
     index = enabledIndices.indexOf(index);
 
     let errors = this.errors();
-    if(errors?.index == index) {
-      if(errors?.errors) {
+    if (errors?.index == index) {
+      if (errors?.errors) {
         return true;
       }
     }
@@ -284,8 +309,8 @@ export class TransformationListComponent {
     index = enabledIndices.indexOf(index);
 
     let errors = this.errors();
-    if(errors?.index == index) {
-      if(errors?.errors) {
+    if (errors?.index == index) {
+      if (errors?.errors) {
         return errors?.errors[pos] ?? undefined;
       }
     }
@@ -305,7 +330,7 @@ export class TransformationListComponent {
       enabled: true,
       data: {
         $type: 'where',
-        condition: '\'10\' = 10.Text()' ,
+        condition: '\'10\' = 10.Text()',
       },
     });
     this.onTransformationChange();
@@ -318,7 +343,7 @@ export class TransformationListComponent {
         enabled: true,
         data: {
           $type: 'orderBy',
-          items: [{ expression: '10', descending: false }],
+          items: [{expression: '10', descending: false}],
         },
       });
     this.onTransformationChange();
@@ -327,7 +352,7 @@ export class TransformationListComponent {
   // Add these methods to the TransformationListComponent class
   addOrderByItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex].data;
-    if(isOrderByTransformation(transformation)) {
+    if (isOrderByTransformation(transformation)) {
       transformation.items.push({
         expression: '',
         descending: false
@@ -386,7 +411,7 @@ export class TransformationListComponent {
 
   addSelectItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex].data;
-    if(isSelectTransformation(transformation) || isGroupByTransformation(transformation)) {
+    if (isSelectTransformation(transformation) || isGroupByTransformation(transformation)) {
       transformation.items.push({
         field: `Поле${transformation.items.length + 1}`,
         expression: '100',
@@ -397,7 +422,7 @@ export class TransformationListComponent {
 
   addGroupItem(transformationIndex: number) {
     let transformation = this.transformations[transformationIndex].data;
-    if(isGroupByTransformation(transformation)) {
+    if (isGroupByTransformation(transformation)) {
       transformation.groups.push({
         field: `Группа${transformation.groups.length + 1}`,
         expression: '[Поле]',
@@ -406,11 +431,10 @@ export class TransformationListComponent {
     this.onTransformationChange();
   }
 
-  removeItem(transformationIndex: number, key: string, index: number)
-  {
+  removeItem(transformationIndex: number, key: string, index: number) {
     let transformation = this.transformations[transformationIndex].data;
     let items = (transformation as any)[key] as never[];
-    if(items.length > index) {
+    if (items.length > index) {
       items.splice(index, 1);
 
       if (items.length === 0) {
@@ -423,10 +447,11 @@ export class TransformationListComponent {
 
   onTransformationChange() {
     this.changesSubject.next();
+    this.updateFields();
   }
 
   drop(event: CdkDragDrop<any[]>): void {
-    if(event.previousIndex !== event.currentIndex) {
+    if (event.previousIndex !== event.currentIndex) {
       moveItemInArray(this.transformations, event.previousIndex, event.currentIndex);
       this.onTransformationChange();
     }
@@ -442,4 +467,21 @@ export class TransformationListComponent {
   protected readonly isSelectTransformation = isSelectTransformation;
   protected readonly isLimitTransformation = isLimitTransformation;
   protected readonly isGroupByTransformation = isGroupByTransformation;
+
+  updateFields() {
+    const fields = [["id", "customer_name", "email", "age", "account_balance", "is_active", "signup_date", "last_login", "customer_category", "random_number", "notes", "purchase_count"]];
+
+    for (const tr of this.transformations) {
+
+      if(isSelectTransformation(tr.data) && tr.enabled) {
+        fields.push(tr.data.items.map(i => i.field));
+      } else if(isGroupByTransformation(tr.data) && tr.enabled) {
+        fields.push([...tr.data.groups.map(i => i.field), ...tr.data.items.map(i => i.field)]);
+      } else {
+        fields.push(fields[fields.length-1]);
+      }
+    }
+    this.fields.set(fields)
+    console.log(fields);
+  }
 }

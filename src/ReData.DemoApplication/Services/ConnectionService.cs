@@ -29,7 +29,6 @@ public class ConnectionService
             ("notes",new FieldType(DataType.Text, true)),
             ("purchase_count",new FieldType(DataType.Integer, true)),
         ];
-
         var query = QueryBuilder.FromTable(
             Factory.CreateExpressionResolver(DatabaseType.PostgreSql),
             ["test_data"],

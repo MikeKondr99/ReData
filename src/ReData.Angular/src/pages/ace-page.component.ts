@@ -20,7 +20,6 @@ import {NzInputDirective, NzInputModule} from 'ng-zorro-antd/input';
   template: `
     <div class="relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg border-l-8 border-blue-500 m-4 w-[500px]"
          cdkDrag cdkDragLockAxis="y">
-      <app-ace-editor></app-ace-editor>
       <input
         nz-input
         class="max-w-44"

@@ -60,11 +60,11 @@ export class FunctionsComponent {
 
   displayFunc(func: FunctionViewModel): string {
     if(func.kind == 'Binary') {
-      return `(${this.displayArgType(func.arguments[0].type)} ${func.name} ${this.displayArgType(func.arguments[1].type)}) -> ${this.displayArgType(func.returnType)}`;
+      return `(${this.displayArgType(func.arguments[0].type)} ${func.name} ${this.displayArgType(func.arguments[1].type)}) → ${this.displayArgType(func.returnType)}`;
     } else if(func.kind == 'Unary') {
       return `(${func.name} ${this.displayArgType(func.arguments[0].type)}) -> ${this.displayArgType(func.returnType)}`;
     } else {
-      return `${func.name}(${func.arguments.map(a => this.displayArg(a)).join(', ')}) -> ${this.displayArgType(func.returnType)}`;
+      return `${func.name}(${func.arguments.map(a => this.displayArg(a)).join(', ')}) → ${this.displayArgType(func.returnType)}`;
     }
   }
 
@@ -73,20 +73,6 @@ export class FunctionsComponent {
   }
 
   displayArgType(argType: { dataType: DataType, canBeNull: boolean }): string {
-    return `${this.displayDataType(argType.dataType)}${argType.canBeNull ? '' : '!'}`;
+    return `${argType.dataType}${argType.canBeNull ? '' : '!'}`;
   }
-
-  displayDataType(type: DataType) {
-    let map: Record<DataType, string> = {
-      'Bool': 'bool',
-      'Integer': 'int',
-      'Null': 'null',
-      'DateTime': 'date',
-      'Number': 'num',
-      'Text': 'text',
-      'Unknown': 'unknown'
-    }
-    return map[type];
-  }
-
 }

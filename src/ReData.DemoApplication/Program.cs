@@ -29,6 +29,7 @@ services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(b
 services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new ValueConverter());
+    options.JsonSerializerOptions.Converters.Add(new DataTypeJsonConverter());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.WriteIndented = true;

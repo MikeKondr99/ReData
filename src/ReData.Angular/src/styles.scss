@@ -25,3 +25,46 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
 
+.function-item {
+  //margin-bottom: 16px;
+}
+
+.function-signature {
+  //font-weight: normal;
+  //background-color: red;
+}
+
+
+.argument {
+  //margin-left: 16px;
+  //display: block;
+  color: #333;
+}
+
+.type {
+  display: inline-block;
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.return-type {
+  color: #0066cc;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.function-doc {
+  //background-color: #0066cc;
+  color: #666;
+  font-size: 15px;
+  //margin-top: -20px;
+}
+
+.argument-line {
+  //padding-left: 12px;
+}
+
+.ace_doc-tooltip {
+  max-width: 400px !important;
+}
+

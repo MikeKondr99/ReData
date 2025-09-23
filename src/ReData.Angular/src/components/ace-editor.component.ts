@@ -1,18 +1,19 @@
-﻿
-// editor.component.ts
+﻿// editor.component.ts
 import {
   Component,
   ElementRef,
   AfterViewInit,
   OnDestroy,
-   effect, viewChild, input, output
+  effect, viewChild, input, output, inject
 } from '@angular/core';
 import * as ace from 'ace-builds';
-import { Ace } from 'ace-builds';
+import type {Ace} from 'ace-builds';
 import '../services/relang';
 import 'ace-builds/src-noconflict/theme-eclipse';
 import 'ace-builds/src-noconflict/ext-language_tools'
-import {ExprError, FunctionArgument, FunctionViewModel} from '../types';
+import {DataType, ExprError, FunctionArgument, FunctionViewModel} from '../types';
+import {FunctionService} from '../services/function.service';
+import {groupBy} from '../helpers';
 
 @Component({
   standalone: true,
@@ -29,44 +30,46 @@ import {ExprError, FunctionArgument, FunctionViewModel} from '../types';
 })
 export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
-  // _ = effect(() => {
-  //   let funcs = this.functions.data();
-  //   if(funcs) {
-  //     this.editor?.setOptions({
-  //       enableBasicAutocompletion: [this.getCompleter(['name', 'age', 'super field'], funcs)],
-  //       enableLiveAutocompletion: [this.getCompleter(['name', 'age', 'super field'], funcs)],
-  //     })
-  //
-  //   }
-  // })
 
-  public editorElement = viewChild<ElementRef>('editor', );
+  public editorElement = viewChild<ElementRef>('editor',);
 
   public value = input<string>('');
 
   public error = input<ExprError>();
 
+  public fields = input.required<string[]>();
+
   public valueChange = output<string>();
 
+  private functions = inject(FunctionService);
 
 
+  _ = effect(() => {
+    let funcs = this.functions.data();
+    // let fields = this.fields();
+    if (funcs) {
+      this.editor?.setOptions({
+        enableBasicAutocompletion: [this.getCompleter([], funcs)],
+
+      })
+
+    }
+  })
 
 
   updateValue = effect(() => {
     let value = this.value();
-    if(this.editor?.getValue() !== value) {
+    if (this.editor?.getValue() !== value) {
       this.editor?.setValue(value);
       this.editor?.clearSelection();
     }
     // this.valueChange.emit(this.value());
-
-
   });
 
 
   updateError = effect(() => {
     let error = this.error();
-    if(error) {
+    if (error) {
       console.log(error);
       this.editor?.getSession().setAnnotations([{
         row: error.span.startRow - 1,
@@ -74,14 +77,14 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
         text: error.message,
         type: "error", // Shows in gutter and hover
       }]);
-      if(this.markerId) {
+      if (this.markerId) {
         this.editor?.getSession().removeMarker(this.markerId);
         this.markerId = undefined;
       }
-      this.markerId =  this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
+      this.markerId = this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
     } else {
       this.editor?.getSession().setAnnotations([]);
-      if(this.markerId) {
+      if (this.markerId) {
         this.editor?.getSession().removeMarker(this.markerId);
         this.markerId = undefined;
       }
@@ -125,16 +128,6 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
       this.valueChange.emit(newValue);
 
     });
-
-
-    // this.editor.getSession().setAnnotations([
-    //   {
-    //     row: 1,
-    //     column: 5,
-    //     text: "This is an error message",
-    //     type: "error", // Shows in gutter and hover
-    //   }
-    // ])
   }
 
   updateGutter() {
@@ -149,86 +142,123 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // getCompleter(fields: string[], funcs: FunctionViewModel[]): Ace.Completer {
-  //   var completions:Ace.Completion[] = [];
-  //   var methodCompletions:Ace.Completion[] = [];
-  //   const regex = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/;
-  //
-  //   for (let field of fields) {
-  //     if(regex.test(field)) {
-  //       completions.push({
-  //         caption: field,
-  //         value: field,
-  //         meta: "variable",
-  //         score: 10
-  //       });
-  //     }
-  //     completions.push({
-  //       caption: field,
-  //       value: `[${field}]`,
-  //       meta: "variable",
-  //       score: 10
-  //     });
-  //   }
-  //
-  //   for(let func of funcs.filter(f => f.name[0].toLowerCase() != f.name[0].toUpperCase())) {
-  //     completions.push({
-  //       caption: `${func.name}`,
-  //       snippet: `${func.name}(${func.arguments.map((a,i) => `\${${i+1}:${a.name}}`).join(', ')})`,
-  //       meta: "function",
-  //       score: 20
-  //     });
-  //     if(func.kind === 'Method' && func.arguments.length > 0) {
-  //       methodCompletions.push({
-  //         caption: `${func.name}`,
-  //         snippet: `${func.name}(${(func.arguments.slice(1)).map((a,i) => `\${${i+1}:${a.name}}`).join(', ')})`,
-  //         meta: "function",
-  //         score: 20
-  //       });
-  //     }
-  //   }
-  //
-  //   console.log(`creating new Completer with ${completions.length} completions`);
-  //   console.log(completions);
-  //
-  //     return {
-  //       getCompletions: function(editor: Ace.Editor, session: Ace.EditSession, pos: Ace.Position, prefix: string, callback: Ace.CompleterCallback) {
-  //         const line = session.getLine(pos.row);
-  //         const cursor = pos.column;
-  //
-  //         const isAfterDot = (line:string, cursor:number) => {
-  //           // Look backwards from cursor to find if there's a dot before
-  //           for (let i = cursor - 1; i >= 0; i--) {
-  //             const char = line.charAt(i);
-  //             if (char === '.') {
-  //               return true;
-  //             }
-  //             if (char === ' ' || char === '\t') {
-  //               continue; // skip whitespace
-  //             }
-  //             if (char === '\n' || char === ';' || char === '(') {
-  //               break; // we hit the beginning of expression
-  //             }
-  //           }
-  //           return false;
-  //         };
-  //
-  //
-  //         // Check if we're after a dot (for method completion)
-  //         const isMethodCall = isAfterDot(line, cursor);
-  //
-  //         if (isMethodCall) {
-  //           console.log('🔵 Method call context detected');
-  //           // Return method completions with modified signatures
-  //           callback(null, methodCompletions);
-  //         } else {
-  //           console.log('🔵 Regular context');
-  //           // Return regular completions
-  //           callback(null, completions);
-  //         }
-  //       },
-  //     }
-  //   }
+  private static getFieldCompletions(fields: string[]): Ace.Completion[] {
+    const simpleField = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/;
+    const result: Ace.Completion[] = [];
+
+    for (let field of fields) {
+      if (simpleField.test(field)) {
+        result.push({
+          caption: field,
+          value: field,
+          meta: "field",
+          score: 30
+        });
+      } else {
+        result.push({
+          caption: field,
+          value: `[${field}]`,
+          meta: "field",
+          score: 29
+        });
+
+      }
+    }
+    return result;
+  }
+
+  private static getFunctionsCompletions(functions: FunctionViewModel[]): Ace.Completion[] {
+    const result: Ace.Completion[] = [];
+
+    // Функции
+    let funcGroups = groupBy(functions.filter(f => f.kind === 'Default' || f.kind === 'Method'), (f) => f.name);
+    for (let funcName in funcGroups) {
+      result.push({
+        caption: `${funcName}`,
+        snippet: `${funcName}(\${1:})`,
+        meta: "function",
+        score: 20,
+        docHTML: createFunctionHtml(funcGroups[funcName], false),
+      });
+    }
+
+    // Методы
+    funcGroups = groupBy(functions.filter(f => f.kind === 'Method'), (f) => f.name);
+    for (let funcName in funcGroups) {
+      result.push({
+        caption: `${funcName}`,
+        snippet: `${funcName}(\${1:})`,
+        meta: "method",
+        score: 100,
+        docHTML: createFunctionHtml(funcGroups[funcName], true),
+      });
+    }
+    return result;
+
+  }
+
+
+  getCompleter(fields: string[], functions: FunctionViewModel[]): Ace.Completer {
+    let completions: Ace.Completion[] = [];
+
+    completions = completions.concat(AceEditorComponent.getFieldCompletions(fields));
+    completions = completions.concat(AceEditorComponent.getFunctionsCompletions(functions))
+
+    return {
+      getCompletions: function (editor: Ace.Editor, session: Ace.EditSession, pos: Ace.Position, prefix: string, callback: Ace.CompleterCallback) {
+        const line = session.getLine(pos.row);
+        const cursor = pos.column;
+
+        const isAfterDot = (line: string, cursor: number) => {
+          // Look backwards from cursor to find if there's a dot before
+          for (let i = cursor - 1; i >= 0; i--) {
+            const char = line.charAt(i);
+            if (char === '.') {
+              return true;
+            }
+            if (char === ' ' || char === '\t') {
+              continue; // skip whitespace
+            }
+            if (char === '\n' || char === ';' || char === '(') {
+              break; // we hit the beginning of expression
+            }
+          }
+          return false;
+        };
+
+
+        // Check if we're after a dot (for method completion)
+        const isMethodCall = isAfterDot(line, cursor);
+
+        if (isMethodCall) {
+          // Return method completions with modified signatures
+          callback(null, completions.filter(c => c.meta == 'method'));
+        } else {
+          // Return regular completions
+          callback(null, completions.filter(c => c.meta != 'method'));
+        }
+      },
+    }
+  }
+
+}
+
+
+function createFunctionHtml(funcs: FunctionViewModel[], methods: boolean): string {
+  let result = '';
+  let skip = methods ? 1 : 0;
+
+  for (let func of funcs) {
+    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'aggr ' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}</span></div><div class="function-doc">${func.doc}</div></div>`;
+  }
+  return `<div class="function-hint">${result}</div>`
+}
+
+function createFunctionArgHtml(arg: FunctionArgument, last: boolean) {
+  return `<span class="argument">${arg.name}: ${createTypeHtml(arg.type.dataType,arg.type.canBeNull)}${last ? '' : ', '}</span>`;
+}
+function createTypeHtml(type: DataType, canBeNull: boolean) {
+  return `<span class="type">${type}${(canBeNull ? '' : '!')}</span>`;
 }
 
 
