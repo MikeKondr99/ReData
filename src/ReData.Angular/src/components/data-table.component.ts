@@ -90,13 +90,6 @@ export class DataTableComponent {
     return new Date(value).toLocaleString();
   }
 
-  // fieldAlias(field: Field) {
-  //   const regex = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/;
-  //   if(regex.test(field.alias))
-  //     return field.alias;
-  //   return `[${field.alias}]`
-  // }
-
   textAlign(type: string) {
     if(type != 'Text') return 'right'
     return 'left'
