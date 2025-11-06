@@ -17,7 +17,7 @@ ace.define("ace/mode/relang_highlight_rules", ["require", "exports", "module", "
       }, {
         token: "string", // string start quote
         regex: "'",
-        next: "in_string"
+        next: "string_0"
       }, {
         token: "tag", // blocked name start bracket
         regex: "\\[",
@@ -44,16 +44,6 @@ ace.define("ace/mode/relang_highlight_rules", ["require", "exports", "module", "
         token: "keyword.operator.comparison", // comparison operators
         regex: "<|>|<=|>=|!=|="
       }],
-      "in_string": [{
-        token: "keyword", // escape sequences
-        regex: "\\\\'"
-      },  {
-        token: "string",
-        regex: "'",
-        next: "start"
-      }, {
-        defaultToken: "string"
-      }],
       "blocked_name": [{
         token: "keyword", // escape sequences
         regex: "\\\\\\]"
@@ -72,6 +62,56 @@ ace.define("ace/mode/relang_highlight_rules", ["require", "exports", "module", "
         defaultToken: "comment.block" // block comment content
       }]
     };
+
+    const MAX_INTERPOLATION_DEPTH = 3;
+    // Generate string and interpolation rules for each level
+    for (let level = 0; level <= MAX_INTERPOLATION_DEPTH; level++) {
+      const isLastLevel = level === MAX_INTERPOLATION_DEPTH;
+
+      // String rule for this level
+      this.$rules[`string_${level}`] = [{
+        token: "keyword", // escape sequences for quote
+        regex: "\\\\'"
+      }, {
+        token: "keyword", // escape sequences for $
+        regex: "\\\\\\$"
+      }];
+
+      // Only add interpolation if not the last level
+      if (!isLastLevel) {
+        this.$rules[`string_${level}`].push({
+          token: "keyword",
+          regex: "\\$\\{",
+          next: `interpolation_${level}`
+        });
+      }
+
+    // String end - go back to appropriate state
+    this.$rules[`string_${level}`].push({
+      token: "string",
+      regex: "'",
+      next: level === 0 ? "start" : `interpolation_${level - 1}`
+    });
+
+    this.$rules[`string_${level}`].push({
+      defaultToken: "string"
+    });
+
+    // Interpolation rule for this level (only create if not the last level)
+    if (!isLastLevel) {
+      this.$rules[`interpolation_${level}`] = [{
+        token: "keyword",
+        regex: "\\}",
+        next: `string_${level}`
+      }, {
+        token: "string",
+        regex: "'",
+        next: `string_${level + 1}`
+      }, {
+        include: "start"
+      }];
+    }
+  }
 
   };
   oop.inherits(RelangHighlightRules, TextHighlightRules);

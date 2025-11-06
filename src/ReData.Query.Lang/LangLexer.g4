@@ -44,8 +44,8 @@ mode IN_STRING;
 
 DQUOTE_IN_STRING: ['] -> type(QUOTE), popMode;
 
-CURLY_OPEN: '{' -> pushMode(DEFAULT_MODE);
+CURLY_OPEN: '${' -> pushMode(DEFAULT_MODE);
 
 ESCAPE_SEQUENCE: '\\' . ;
 
-TEXT: ~[\\{']+ ;
+TEXT: ~[\\$']+ ;
