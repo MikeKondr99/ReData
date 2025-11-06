@@ -196,7 +196,12 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
     
     private static ExprSpan Span(ParserRuleContext context)
     {
-        return new ExprSpan((uint)context.Start.Line, (uint)context.Start.Column, (uint)context.Stop.Line, (uint)(context.Stop.Column + context.Stop.StopIndex));
+        return new ExprSpan(
+            (uint)context.Start.Line,
+            (uint)context.Start.Column,
+            (uint)context.Stop.Line,
+            (uint)(context.Stop.Column + context.Stop.Text.Length)
+        );
     }
 
     [GeneratedRegex(@"\\\]")]
