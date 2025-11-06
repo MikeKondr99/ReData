@@ -103,7 +103,7 @@ export class DataTableComponent {
   }
 
   fieldType(field: Field) {
-    return `${this.typeMap[field.type] ?? 'unk'}${field.canBeNull ? '' : '!'}`;
+    return `${field.type}${field.canBeNull ? '' : '!'}`;
   }
 
   fieldAlias(field: Field) {
@@ -112,14 +112,4 @@ export class DataTableComponent {
       return field.alias;
     return `[${field.alias}]`
   }
-
-
-  private typeMap:Record<string,string> = {
-    'DateTime': 'date',
-    'Number': 'num',
-    'Integer': 'int',
-    'Bool': 'bool',
-    'Text': 'text',
-  }
-
 }
