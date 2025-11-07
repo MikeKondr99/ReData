@@ -98,6 +98,7 @@ public class StringFunctions : FunctionsDescriptor
             {
                 [Oracle] = $"{0}", // В Oracle пустая строка и null это одно и тоже
                 [ClickHouse] = $"nullIf({0}, '')",
+                [SqlServer] = $"NULLIF({0}, N'')", 
                 [All] = $"NULLIF({0}, '')", 
             });
         
@@ -121,7 +122,7 @@ public class StringFunctions : FunctionsDescriptor
             .CustomNullPropagation(_ => true)
             .Templates(new()
             {
-                [SqlServer] = $"CASE WHEN {substring} <> '' THEN NULLIF(CHARINDEX({substring} COLLATE Latin1_General_100_CS_AS, {input}  COLLATE Latin1_General_100_CS_AS), 0) ELSE 1 END",
+                [SqlServer] = $"CASE WHEN {substring} <> N'' THEN NULLIF(CHARINDEX({substring} COLLATE Latin1_General_100_CS_AS, {input}  COLLATE Latin1_General_100_CS_AS), 0) ELSE 1 END",
                 [MySql] = $"NULLIF(LOCATE({substring} COLLATE utf8mb4_bin, {input} COLLATE utf8mb4_bin), 0)",
                 [PostgreSql] = $"NULLIF(STRPOS({input}, {substring}), 0)",
                 [Oracle] = $"NULLIF(INSTR({input}, {substring}), 0)",
@@ -136,7 +137,7 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 [Oracle] = $"(LENGTH({input}) - LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input}), REVERSE({substring})), 0))",
-                [SqlServer] = $"CASE WHEN {substring} <> '' THEN (LEN({input} COLLATE Latin1_General_100_CS_AS) - LEN({substring} COLLATE Latin1_General_100_CS_AS) + 2 - NULLIF(CHARINDEX(REVERSE({substring} COLLATE Latin1_General_100_CS_AS), REVERSE({input} COLLATE Latin1_General_100_CS_AS)), 0)) ELSE LEN({input}) + 1 END",
+                [SqlServer] = $"CASE WHEN {substring} <> N'' THEN (LEN({input} COLLATE Latin1_General_100_CS_AS) - LEN({substring} COLLATE Latin1_General_100_CS_AS) + 2 - NULLIF(CHARINDEX(REVERSE({substring} COLLATE Latin1_General_100_CS_AS), REVERSE({input} COLLATE Latin1_General_100_CS_AS)), 0)) ELSE LEN({input}) + 1 END",
                 [ClickHouse] = $"(lengthUTF8({input}) - lengthUTF8({substring}) + 2 - nullIf(positionUTF8(reverseUTF8({input}), reverseUTF8({substring})), 0))",
                 [MySql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(INSTR(REVERSE({input} COLLATE utf8mb4_bin), REVERSE({substring} COLLATE utf8mb4_bin)), 0))",
                 [PostgreSql] = $"(CHAR_LENGTH({input}) - CHAR_LENGTH({substring}) + 2 - NULLIF(STRPOS(REVERSE({input}), REVERSE({substring})), 0))",

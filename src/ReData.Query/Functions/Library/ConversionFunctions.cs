@@ -134,6 +134,7 @@ public class ConversionFunctions : FunctionsDescriptor
             .Doc("Преобразует логическое значение в текст ('true' или 'false')")
             .Templates(new()
             {
+                [SqlServer] = $"CASE WHEN {0} THEN N'true' ELSE N'false' END",
                 [All] = $"CASE WHEN {0} THEN 'true' ELSE 'false' END"
             });
 
