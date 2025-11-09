@@ -4,6 +4,39 @@ namespace ReData.Query.Impl.Tests.Functions.String;
 
 public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
 {
+     [Theory(DisplayName = "String Addition")]
+     [InlineData("'hello' + 'world'", "helloworld")] // Basic concatenation
+     [InlineData("'a' + 'b' + 'c'", "abc")] // Multiple concatenations
+     [InlineData("'' + 'text'", "text")] // Empty string + text
+     [InlineData("'text' + ''", "text")] // Text + empty string
+     [InlineData("'' + ''", "")] // Both empty
+     // Null handling
+     [InlineData("'text' + null", null)] // Text + null
+     [InlineData("null + 'text'", null)] // Null + text
+     [InlineData("null + null", null)] // Both null
+     // Type inference
+     [InlineData("Type('a' + 'b')", "Text")] // Both strings → Text
+     [InlineData("Type('a' + null)", "Text?")] // String + null → Text?
+     [InlineData("Type(null + 'b')", "Text?")] // Null + string → Text?
+     // Whitespace and special characters
+     [InlineData("'hello ' + 'world'", "hello world")] // With spaces
+     [InlineData("'line1\\n' + 'line2'", "line1\nline2")] // With newline
+     [InlineData("'tab\\t' + 'end'", "tab\tend")] // With tab
+     [InlineData("'привет' + 'мир'", "приветмир")] // Unicode
+     [InlineData("'😀' + '👍'", "😀👍")] // Emoji
+     // With explicit conversions
+     [InlineData("'number: ' + Text(42)", "number: 42")] // String + converted number
+     [InlineData("Text(3.14) + ' is pi'", "3.14 is pi")] // Converted number + string
+     [InlineData("'result: ' + Text(true)", "result: true")] // String + converted boolean
+     [InlineData("Text(false) + ' is false'", "false is false")] // Converted boolean + string
+     [InlineData("'date: ' + Text(Date(2023,5,15))", "date: 2023-05-15 00:00:00")] // String + converted date
+     // Type inference with conversions
+     [InlineData("Type('text' + Text(42))", "Text")] // String + converted number → Text
+     [InlineData("Type(Text(42) + 'text')", "Text")] // Converted number + string → Text
+     // Null handling with conversions
+     [InlineData("'text' + Text(null)", null)] // String + converted null
+     [InlineData("Text(null) + 'text'", null)] // Converted null + string
+     public Task StringAddition(string expr, object? expected) => Test(expr, expected);
      
      [Theory(DisplayName = "Upper")]
      [InlineData("Upper('Hello World!')", "HELLO WORLD!")]
