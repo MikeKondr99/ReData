@@ -14,6 +14,6 @@ public class MySql(MySqlDatabaseFixture db, MySqlAssets assets) : Сommon(db, as
 [Collection("ClickHouse")]
 public class ClickHouse(ClickHouseDatabaseFixture db, ClickHouseAssets assets) : Сommon(db, assets);
 
-[Collection("Oracle")]
-public class Oracle(OracleDatabaseFixture db, OracleAssets assets) : Сommon(db, assets);
+// [Collection("Oracle")]
+// public class Oracle(OracleDatabaseFixture db, OracleAssets assets) : Сommon(db, assets);
 

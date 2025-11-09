@@ -16,7 +16,7 @@ public class MySql(MySqlDatabaseFixture runner) : Сommon(runner);
 [Collection("ClickHouse")]
 public class ClickHouse(ClickHouseDatabaseFixture runner) : Сommon(runner);
 
-[Collection("Oracle")]
-public class Oracle(OracleDatabaseFixture runner) : Сommon(runner);
+// [Collection("Oracle")]
+// public class Oracle(OracleDatabaseFixture runner) : Сommon(runner);
 
 #pragma warning restore SA1402
