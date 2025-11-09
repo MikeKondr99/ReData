@@ -48,4 +48,4 @@ CURLY_OPEN: '${' -> pushMode(DEFAULT_MODE);
 
 ESCAPE_SEQUENCE: '\\' . ;
 
-TEXT: ~[\\$']+ ;
+TEXT: ~[\\'$]+ | '$';
