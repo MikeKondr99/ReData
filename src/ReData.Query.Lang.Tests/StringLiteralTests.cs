@@ -11,17 +11,17 @@ public class StringLiteralTests
         options.Excluding(e => e.Span);
     
     [Theory]
-    [InlineData("'{Name}:{10}'","Text(Name) + ':' + Text(10)")]
-    [InlineData("'{a}1{b}2'", "Text(a) + '1' + Text(b) + '2'")]
-    [InlineData("'Hello{Name}'", "'Hello' + Text(Name)")]
-    [InlineData("'{Val}%'", "Text(Val) + '%'")]
-    [InlineData("'{X}+{Y}={Sum}'", "Text(X) + '+' + Text(Y) + '=' + Text(Sum)")]
-    [InlineData("'Count: {Count}'", "'Count: ' + Text(Count)")]
-    [InlineData("'{A}{B}{C}'", "Text(A) + Text(B) + Text(C)")]
-    [InlineData("'1{2}3{4}5'", "'1' + Text(2) + '3' + Text(4) + '5'")]
-    [InlineData("'{Start}...{End}'", "Text(Start) + '...' + Text(End)")]
-    [InlineData("'{Total} items'", "Text(Total) + ' items'")]
-    [InlineData("'{10 + 20} items'", "Text(10 + 20) + ' items'")]
+    [InlineData("'${Name}:${10}'","Text(Name) + ':' + Text(10)")]
+    [InlineData("'${a}1${b}2'", "Text(a) + '1' + Text(b) + '2'")]
+    [InlineData("'Hello${Name}'", "'Hello' + Text(Name)")]
+    [InlineData("'${Val}%'", "Text(Val) + '%'")]
+    [InlineData("'${X}+${Y}=${Sum}'", "Text(X) + '+' + Text(Y) + '=' + Text(Sum)")]
+    [InlineData("'Count: ${Count}'", "'Count: ' + Text(Count)")]
+    [InlineData("'${A}${B}${C}'", "Text(A) + Text(B) + Text(C)")]
+    [InlineData("'1${2}3${4}5'", "'1' + Text(2) + '3' + Text(4) + '5'")]
+    [InlineData("'${Start}...${End}'", "Text(Start) + '...' + Text(End)")]
+    [InlineData("'${Total} items'", "Text(Total) + ' items'")]
+    [InlineData("'${10 + 20} items'", "Text(10 + 20) + ' items'")]
   
     public void Interpolation(string expr, string expected)
     {

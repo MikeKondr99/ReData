@@ -49,6 +49,7 @@ public abstract class ExprTests(IDatabaseFixture db)
     protected static IValue ExpectedValue(object? value) => value switch
     {
         int v => new IntegerValue(v),
+        long l => new IntegerValue(l),
         bool b => new BoolValue(b),
         double v => new NumberValue(v),
         string v when v.StartsWith('@') => new DateTimeValue(DateTime.Parse(v[1..],CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal).ToUniversalTime()),
