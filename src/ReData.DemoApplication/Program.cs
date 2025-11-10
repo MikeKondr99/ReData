@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using ReData.DemoApplication.Converters;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Extensions;
-using ReData.DemoApplication.Repositories;
 using ReData.DemoApplication.Services;
 using Scalar.AspNetCore;
 
@@ -18,11 +17,18 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 }
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new ValueConverter());
+    options.SerializerOptions.Converters.Add(new DataTypeJsonConverter());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
+
 services.AddOutputCache();
 services.AddFastEndpoints();
 services.SwaggerDocument();
 
-services.AddTransient<IRepository<DataSet>, DataSetRepository>();
 services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 services.AddSingleton<ConnectionService>();
@@ -47,13 +53,7 @@ app.Migrate<ApplicationDatabaseContext>();
 app.UseOutputCache();
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.UseFastEndpoints(c =>
-{
-    c.Serializer.Options.Converters.Add(new ValueConverter());
-    c.Serializer.Options.Converters.Add(new DataTypeJsonConverter());
-    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
-    c.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
+app.UseFastEndpoints();
 
 app.UseSwaggerGen(options =>
 {

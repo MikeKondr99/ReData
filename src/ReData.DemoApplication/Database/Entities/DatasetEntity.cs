@@ -1,8 +1,7 @@
-﻿using ReData.DemoApplication.Repositories;
-
+﻿
 namespace ReData.DemoApplication.Database.Entities;
 
-public record DataSetEntity : IEntity
+public record DataSetEntity
 {
     public required Guid Id { get; set; }
     

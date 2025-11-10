@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Database.Entities;
 using ReData.DemoApplication.Endpoints.Datasets;
-using ReData.DemoApplication.Repositories;
 
 namespace ReData.DemoApplication.Endpoints.DataSets;
 
@@ -23,23 +22,17 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
     public override async Task<Results<Created<CreateDataSetResponse>, BadRequest<string>>> ExecuteAsync(
         CreateDataSetRequest req, CancellationToken ct)
     {
-        var dataset = new DataSet
-        {
-            Id = Guid.NewGuid(),
-            Name = req.Name,
-            Transformations = req.Transformations
-        };
-
+        var newId = Guid.NewGuid();
         // Map to entity
         var entity = new DataSetEntity
         {
-            Id = dataset.Id,
-            Name = dataset.Name,
-            Transformations = dataset.Transformations.Select((t, index) => new TransformationEntity
+            Id = newId,
+            Name = req.Name,
+            Transformations = req.Transformations.Select((t, index) => new TransformationEntity
             {
                 Enabled = t.Enabled,
                 Description = t.Description,
-                DataSetId = dataset.Id,
+                DataSetId = newId,
                 Order = (uint)index,
                 Data = t.Transformation
             }).ToList()
@@ -52,18 +45,18 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
 
             var response = new CreateDataSetResponse
             {
-                Id = dataset.Id,
-                Name = dataset.Name,
-                Transformations = dataset.Transformations.Select(t => new TransformationBlockResponse
+                Id = entity.Id,
+                Name = entity.Name,
+                Transformations = entity.Transformations.Select(t => new TransformationBlockResponse
                 {
                     Enabled = t.Enabled,
                     Description = t.Description,
-                    Transformation = t.Transformation
+                    Transformation = t.Data
                 }).ToList()
             };
 
             await OutputCache.EvictByTagAsync("datasets", ct);
-            return TypedResults.Created($"/api/datasets/{dataset.Id}", response);
+            return TypedResults.Created($"/api/datasets/{entity.Id}", response);
         }
         catch (Exception ex) when (ex is DbUpdateException or DbUpdateConcurrencyException)
         {
