@@ -4,7 +4,7 @@ import {DatasetsService} from '../services/datasets.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
-import {ApiResponse, DataSetViewModel, ExprError, Field, Transformation, TransformationData} from '../types';
+import {ApiResponse, DataSetViewModel, ExprError, Field, TransformationBlock, TransformationData} from '../types';
 import {catchError, finalize, of, Subject, takeUntil} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {TransformationListComponent} from '../components/transformation-list.component';
@@ -79,7 +79,7 @@ export class DatasetEditPage{
   id = this.route.snapshot.paramMap.get('id');
 
   dataset = this.datasetsService.getById(this.id ?? "");
-  transformations = signal<Transformation[]>(<any>null);
+  transformations = signal<TransformationBlock[]>(<any>null);
 
   datasetLoaded = effect(() => {
     let dataset = this.dataset();
@@ -97,7 +97,7 @@ export class DatasetEditPage{
   response = signal<ApiResponse>({ data: [], fields: [], query: '', total:0 });
 
   api = effect(() => {
-    let transformations: TransformationData[] = this.transformations().filter(t => t.enabled).map(t => t.data);
+    let transformations: TransformationData[] = this.transformations().filter(t => t.enabled).map(t => t.transformation);
     if(transformations === null) return;
     untracked(() => {
       this.loading.set(true);
@@ -120,7 +120,7 @@ export class DatasetEditPage{
     })
   })
 
-  transformationsChanged(transformations: Transformation[])
+  transformationsChanged(transformations: TransformationBlock[])
   {
     this.unsaved.set(true);
     this.transformations.set([...transformations]);

@@ -26,9 +26,10 @@ public sealed class DataSetRepository : Repository<DataSet, DataSetEntity>
             Transformations = model.Transformations.Select((t, index) => new TransformationEntity
             {
                 Enabled = t.Enabled,
+                Description = t.Description,
                 DataSetId = model.Id,
                 Order = (uint)index,
-                Data = t.Data
+                Data = t.Transformation
             }).ToList()
         };
     }
@@ -39,9 +40,10 @@ public sealed class DataSetRepository : Repository<DataSet, DataSetEntity>
         {
             Id = entity.Id,
             Name = entity.Name,
-            Transformations = entity.Transformations.OrderBy(t => t.Order).Select(t => new Transformation()
+            Transformations = entity.Transformations.OrderBy(t => t.Order).Select(t => new TransformationBlock()
             {
-                Data = t.Data,
+                Transformation = t.Data,
+                Description = t.Description,
                 Enabled = t.Enabled,
             }).ToArray(),
         };

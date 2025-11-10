@@ -29,11 +29,11 @@ export type LimitTransformation = {
   offset?: number;
 };
 
-export interface Transformation
+export interface TransformationBlock
 {
   enabled: boolean;
-  data: TransformationData
-
+  description?: string;
+  transformation: TransformationData
 }
 
 export type TransformationData = (WhereTransformation | OrderByTransformation | SelectTransformation | LimitTransformation | GroupByTransformation);
@@ -145,5 +145,5 @@ export interface DataSetViewModel
 {
   id: string;
   name: string;
-  transformations: Transformation[];
+  transformations: TransformationBlock[];
 }

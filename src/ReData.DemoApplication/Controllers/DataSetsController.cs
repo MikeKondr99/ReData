@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Pattern.Unions;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Database.Entities;
-using ReData.DemoApplication.Mappers;
 using ReData.DemoApplication.Repositories;
 using ReData.DemoApplication.Requests;
 
@@ -104,9 +102,10 @@ public class DataSetController : ControllerBase
             entity.Transformations.Add(new TransformationEntity
             {
                 Enabled = dataset.Transformations[i].Enabled,
+                Description = dataset.Transformations[i].Description,
                 DataSetId = dataset.Id,
                 Order = (uint)i,
-                Data = dataset.Transformations[i].Data,
+                Data = dataset.Transformations[i].Transformation,
             });
         }
 

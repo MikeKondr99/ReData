@@ -9,5 +9,7 @@ public record TransformationEntity
     public required uint Order { get; init; }
     
     public required bool Enabled { get; init; }
+    
+    public required string? Description { get; init; }
     public required ITransformation Data { get; init; }
 }

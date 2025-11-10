@@ -8,5 +8,5 @@ public sealed record DataSet : IEntity
     
     public required string Name { get; init; }
 
-    public required IReadOnlyList<Transformation> Transformations { get; init; }
+    public required IReadOnlyList<TransformationBlock> Transformations { get; init; }
 }

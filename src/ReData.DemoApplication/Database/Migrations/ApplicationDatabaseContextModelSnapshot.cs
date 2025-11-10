@@ -55,6 +55,9 @@ namespace ReData.DemoApplication.Database.Migrations
                     b.Property<Guid?>("DataSetEntityId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<bool>("Enabled")
                         .HasColumnType("boolean");
 
