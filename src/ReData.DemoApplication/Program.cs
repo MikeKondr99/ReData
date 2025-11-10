@@ -1,19 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
+using FastEndpoints;
+using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApplication;
 using ReData.DemoApplication.Converters;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Extensions;
 using ReData.DemoApplication.Repositories;
-using ReData.DemoApplication.Requests;
-using ReData.DemoApplication.Responses;
 using ReData.DemoApplication.Services;
-using ReData.Query;
-using ReData.Query.Core;
-using ReData.Query.Impl.Functions;
-using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -23,18 +18,12 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 }
 
+services.AddOutputCache();
+services.AddFastEndpoints();
+services.SwaggerDocument();
+
 services.AddTransient<IRepository<DataSet>, DataSetRepository>();
 services.AddDbContext<ApplicationDatabaseContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new ValueConverter());
-    options.JsonSerializerOptions.Converters.Add(new DataTypeJsonConverter());
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    options.JsonSerializerOptions.WriteIndented = true;
-
-});
 
 services.AddSingleton<ConnectionService>();
 
@@ -54,10 +43,22 @@ app.Use(async (context, next) =>
 });
 
 app.Migrate<ApplicationDatabaseContext>();
+
+app.UseOutputCache();
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseFastEndpoints(c =>
+{
+    c.Serializer.Options.Converters.Add(new ValueConverter());
+    c.Serializer.Options.Converters.Add(new DataTypeJsonConverter());
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
+    c.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+});
 
-
-app.MapControllers();
+app.UseSwaggerGen(options =>
+{
+    options.Path = "/openapi/{documentName}.json";
+});
+app.MapScalarApiReference();
 
 app.Run();

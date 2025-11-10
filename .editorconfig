@@ -83,6 +83,7 @@ dotnet_diagnostic.CA1707.severity = warning # autofix?
 # Всякая невидимая пробельная дичь
 # Сделать бы это всё автоформатом
 dotnet_diagnostic.SA1002.severity = none
+dotnet_diagnostic.SA1011.severity = none
 dotnet_diagnostic.SA1028.severity = suggestion # autofix?
 dotnet_diagnostic.SA1003.severity = warning # autofix?
 dotnet_diagnostic.SA1507.severity = suggestion # autofix?

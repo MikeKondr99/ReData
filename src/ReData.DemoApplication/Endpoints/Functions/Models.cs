@@ -1,8 +1,8 @@
 ﻿using ReData.Query.Core.Types;
 
-namespace ReData.DemoApplication.Responses;
+namespace ReData.DemoApplication.Endpoints.Functions;
 
-public sealed record FunctionViewModel
+public sealed record FunctionResponse
 {
     public required string Name { get; init; }
 
