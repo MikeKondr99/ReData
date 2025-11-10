@@ -1,4 +1,5 @@
-﻿[*.cs]
+﻿
+[*.cs]
 # Global severity levels
 dotnet_analyzer_diagnostic.severity = error # Default level for all analyzers
 
@@ -83,6 +84,7 @@ dotnet_diagnostic.CA1707.severity = warning # autofix?
 # Всякая невидимая пробельная дичь
 # Сделать бы это всё автоформатом
 dotnet_diagnostic.SA1002.severity = none
+dotnet_diagnostic.SA1010.severity = none
 dotnet_diagnostic.SA1011.severity = none
 dotnet_diagnostic.SA1028.severity = suggestion # autofix?
 dotnet_diagnostic.SA1003.severity = warning # autofix?
@@ -117,3 +119,8 @@ dotnet_diagnostic.SA12.severity = none
 dotnet_sort_system_directives_first = true
 csharp_new_line_before_open_brace = all
 
+[**/Migrations/*.cs]
+dotnet_analyzer_diagnostic.severity = none
+
+[*.g.cs]
+dotnet_analyzer_diagnostic.severity = none

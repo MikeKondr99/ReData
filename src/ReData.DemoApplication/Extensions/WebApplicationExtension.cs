@@ -13,4 +13,5 @@ public static class WebApplicationExtension
             db.Database.Migrate();
         }
     }
+    
 }

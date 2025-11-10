@@ -8,6 +8,9 @@
 
     <ItemGroup>
         <PackageReference Include="Scalar.AspNetCore.Swashbuckle" />
+        <PackageReference Include="TickerQ" />
+        <PackageReference Include="TickerQ.Dashboard" />
+        <PackageReference Include="TickerQ.EntityFrameworkCore" />
         <ProjectReference Include="..\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
@@ -16,6 +19,7 @@
         <PackageReference Include="FastEndpoints" />
         <PackageReference Include="FastEndpoints.Swagger" />
 
+        
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
