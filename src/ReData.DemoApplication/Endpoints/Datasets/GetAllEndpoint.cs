@@ -8,7 +8,7 @@ using ReData.DemoApplication.Endpoints.Datasets;
 namespace ReData.DemoApplication.Endpoints.DataSets;
 
 public class GetAllEndpoint : EndpointWithoutRequest<
-    Ok<List<DataSetResponse>>
+    Ok<List<DataSetListItem>>
 >
 {
     public required ApplicationDatabaseContext Db { get; init; }
@@ -24,27 +24,17 @@ public class GetAllEndpoint : EndpointWithoutRequest<
         ));
     }
 
-    public override async Task<Ok<List<DataSetResponse>>> ExecuteAsync(
+    public override async Task<Ok<List<DataSetListItem>>> ExecuteAsync(
         CancellationToken ct)
     {
         var datasetEntities = await Db.Set<DataSetEntity>()
-            .Include(ds => ds.Transformations)
             .OrderBy(ds => ds.Name)
             .ToListAsync(ct);
 
-        var response = datasetEntities.Select(entity => new DataSetResponse
+        var response = datasetEntities.Select(entity => new DataSetListItem()
         {
             Id = entity.Id,
             Name = entity.Name,
-            Transformations = entity.Transformations
-                .OrderBy(t => t.Order)
-                .Select(t => new TransformationBlockResponse
-                {
-                    Enabled = t.Enabled,
-                    Description = t.Description,
-                    Transformation = t.Data,
-                })
-                .ToList()
         }).ToList();
 
         return TypedResults.Ok(response);

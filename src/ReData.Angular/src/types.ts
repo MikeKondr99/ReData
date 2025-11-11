@@ -147,3 +147,9 @@ export interface DataSetViewModel
   name: string;
   transformations: TransformationBlock[];
 }
+
+export interface DataSetListItem
+{
+  id: string;
+  name: string;
+}

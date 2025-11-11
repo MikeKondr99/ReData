@@ -1,6 +1,6 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ApiResponse, DataSetViewModel, FunctionViewModel} from '../types';
+import {ApiResponse, DataSetListItem, DataSetViewModel, FunctionViewModel} from '../types';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {BehaviorSubject, switchMap} from 'rxjs';
 
@@ -13,7 +13,7 @@ export class DatasetsService {
 
   datasets = toSignal(
     this.refresh$.pipe(
-      switchMap(() => this.http.get<DataSetViewModel[]>('api/datasets'))
+      switchMap(() => this.http.get<DataSetListItem[]>('api/datasets'))
     ),
     { initialValue: [] }
   );

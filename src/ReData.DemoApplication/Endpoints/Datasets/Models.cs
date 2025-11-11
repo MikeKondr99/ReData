@@ -14,6 +14,12 @@ public sealed record DataSetResponse
     public required IReadOnlyList<TransformationBlockResponse> Transformations { get; init; }
 }
 
+public sealed record DataSetListItem
+{
+    public required Guid Id { get; init; }
+    public required string Name { get; init; }
+}
+
 public sealed record TransformationBlockResponse
 {
     public required bool Enabled { get; init; }
