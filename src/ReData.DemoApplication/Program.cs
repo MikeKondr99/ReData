@@ -12,6 +12,7 @@ using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
+using TickerQ.Utilities.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -37,6 +38,11 @@ services.SwaggerDocument();
 
 services.AddTickerQ(options =>
 {
+    options.ConfigureScheduler(scheduler =>
+    {
+        scheduler.MaxConcurrency = 8;
+        scheduler.NodeIdentifier = "main-server";
+    });
     options.AddOperationalStore(efOptions =>
     {
         // Use built-in TickerQDbContext with connection string
@@ -49,7 +55,7 @@ services.AddTickerQ(options =>
                     builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
                     builder.MigrationsAssembly("ReData.DemoApplication");
                 });
-        }, schema: "tickerq");
+        });
     });
     options.AddDashboard(dashboardOptions =>
     {
