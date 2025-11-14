@@ -51,6 +51,12 @@ import {AceEditorComponent} from './ace-editor.component';
     :host {
       height: 100%;
     }
+    .mini-select {
+      width: fit-content;
+    }
+    .mini-select.ant-select-focused {
+      width: 150px;
+    }
   `,
   template: `
     <div class="h-full">
@@ -143,7 +149,11 @@ import {AceEditorComponent} from './ace-editor.component';
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
-                        <span>=</span>
+                        <nz-select class="mini-select" nzSize="small" nzSuffixIcon="1">
+                          <nz-option nzValue="Equal" nzLabel="=" ></nz-option>
+                          <nz-option nzValue="Rename" nzLabel="Заменить"></nz-option>
+                          <nz-option nzValue="Rename" nzLabel="Удалить"></nz-option>
+                        </nz-select>
 
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
@@ -160,6 +170,14 @@ import {AceEditorComponent} from './ace-editor.component';
                     <button nz-button nzType="default" nzShape="circle" nzSize="small" (click)="addSelectItem(i)">
                       <span nz-icon nzType="plus"></span>
                     </button>
+                    <span class="flex gap-2 items-center">
+                      <span>Остальное</span>
+                      <nz-select class="w-36" [(ngModel)]="item.transformation.restOptions"
+                                 (ngModelChange)="onTransformationChange()">
+                        <nz-option nzValue="NoAction" nzLabel="Оставить"></nz-option>
+                        <nz-option nzValue="Delete" nzLabel="Удалить"></nz-option>
+                      </nz-select>
+                    </span>
                   </div>
                 } @else if (isGroupByTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
@@ -167,7 +185,7 @@ import {AceEditorComponent} from './ace-editor.component';
                       <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Преобразовать</span>
-<!--                      <p nz-typography nzEditable [(nzContent)]="item.description" [nzEditTooltip]="null" class="mb-0 -ml-1 text-gray-200" [nzExpandable]="false" ></p>-->
+                      <!--                      <p nz-typography nzEditable [(nzContent)]="item.description" [nzEditTooltip]="null" class="mb-0 -ml-1 text-gray-200" [nzExpandable]="false" ></p>-->
                     </div>
                     Группы
                     @for (selectItem of item.transformation.groups; track idx; let idx = $index) {
@@ -378,6 +396,7 @@ export class TransformationListComponent {
         transformation: {
           $type: 'select',
           items: [{field: 'Поле1', expression: '100'}],
+          restOptions: "NoAction"
         },
       });
     this.onTransformationChange();

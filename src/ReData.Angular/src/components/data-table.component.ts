@@ -91,7 +91,7 @@ export class DataTableComponent {
   }
 
   textAlign(type: string) {
-    if(type != 'Text') return 'right'
+    if(type != 'text') return 'right'
     return 'left'
   }
 
