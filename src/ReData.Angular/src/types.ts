@@ -145,7 +145,27 @@ export interface DataSetViewModel
 {
   id: string;
   name: string;
+  tableId: string | null;
+  fieldList: FieldList | null;
   transformations: TransformationBlock[];
+
+}
+
+
+export interface UploadResponse
+{
+  tableId: string | null;
+  fieldList: FieldList | null;
+}
+
+
+export type FieldList = Field[]
+
+export interface Field
+{
+  alias: string;
+  dataType: DataType,
+  canBeNull: boolean,
 }
 
 export interface DataSetListItem

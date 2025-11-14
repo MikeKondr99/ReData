@@ -3,11 +3,13 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import {provideHttpClient} from '@angular/common/http';
 import {provideRouter} from '@angular/router';
 import { routes } from './app.routes';
+import { provideNzI18n, en_US, ru_RU} from 'ng-zorro-antd/i18n';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(),
+    provideNzI18n(ru_RU)
   ]
 };

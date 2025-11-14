@@ -1,6 +1,8 @@
-﻿using ReData.Query;
+﻿using ReData.DemoApplication.Database.Entities;
+using ReData.Query;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
+using Field = ReData.DemoApplication.Database.Entities.Field;
 
 namespace ReData.DemoApplication.Services;
 
@@ -13,7 +15,25 @@ public class ConnectionService
         Connection = configuration["DemoDbConnection"] ?? string.Empty;
     }
 
-    public QueryBuilder GetQuery()
+    public QueryBuilder GetQuery(Guid? tableId, IReadOnlyList<Field>? fieldList)
+    {
+        if (tableId is null || fieldList is null)
+        {
+            return DefaultQuery();
+        }
+
+
+        List<(string name, FieldType type)> fields =
+            fieldList.Select(f => (f.Alias, new FieldType(f.DataType, f.CanBeNull))).ToList();
+        var query = QueryBuilder.FromTable(
+            Factory.CreateExpressionResolver(DatabaseType.PostgreSql),
+            [$"table_{tableId}"],
+            fields
+        );
+        return query;
+    }
+
+    private static QueryBuilder DefaultQuery()
     {
         IReadOnlyList<(string name, FieldType type)> fields = [
             ("id",new FieldType(DataType.Integer, false)),
@@ -36,6 +56,4 @@ public class ConnectionService
         );
         return query;
     }
-
-
 }

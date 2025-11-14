@@ -57,10 +57,10 @@ services.AddTickerQ(options =>
                 });
         });
     });
-    options.AddDashboard(dashboardOptions =>
-    {
-        dashboardOptions.SetBasePath("/api/tickerq");
-    });
+    // options.AddDashboard(dashboardOptions =>
+    // {
+    //     dashboardOptions.SetBasePath("/api/tickerq");
+    // });
 });
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>

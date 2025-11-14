@@ -1,11 +1,16 @@
-﻿using ReData.DemoApplication.Transformations;
+﻿using ReData.DemoApplication.Database.Entities;
+using ReData.DemoApplication.Transformations;
 using ReData.Query.Core.Types;
 using ReData.Query.Runners.Value;
+using Field = ReData.DemoApplication.Database.Entities.Field;
 
 namespace ReData.DemoApplication.Endpoints.Transform;
 
 public sealed record TransformRequest
 {
+    public required Guid? TableId { get; init; }
+    
+    public required IReadOnlyList<Field>? FieldList { get; init; }
     public required List<ITransformation> Transformations { get; init; } = new();
 }
 

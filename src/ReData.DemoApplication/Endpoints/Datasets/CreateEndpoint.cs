@@ -28,6 +28,8 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
         {
             Id = newId,
             Name = req.Name,
+            TableId = req.TableId,
+            FieldList = [..req.FieldList],
             Transformations = req.Transformations.Select((t, index) => new TransformationEntity
             {
                 Enabled = t.Enabled,
@@ -47,12 +49,6 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                Transformations = entity.Transformations.Select(t => new TransformationBlockResponse
-                {
-                    Enabled = t.Enabled,
-                    Description = t.Description,
-                    Transformation = t.Data
-                }).ToList()
             };
 
             await OutputCache.EvictByTagAsync("datasets", ct);

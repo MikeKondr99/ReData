@@ -4,9 +4,17 @@ import {DatasetsService} from '../services/datasets.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
-import {ApiResponse, DataSetViewModel, ExprError, Field, TransformationBlock, TransformationData} from '../types';
+import {
+  ApiResponse,
+  DataSetViewModel,
+  ExprError,
+  Field,
+  TransformationBlock,
+  TransformationData,
+  UploadResponse
+} from '../types';
 import {catchError, finalize, of, Subject, takeUntil} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpEventType, HttpRequest, HttpResponse} from '@angular/common/http';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FormsModule} from '@angular/forms';
 import {NzToolTipModule} from 'ng-zorro-antd/tooltip';
@@ -18,6 +26,8 @@ import {NzFormModule} from 'ng-zorro-antd/form';
 import {ActivatedRoute} from '@angular/router';
 import {DataTableComponent} from '../components/data-table.component';
 import {BreadcrumbsService} from '../services/breadcrumb.service';
+import {NzUploadChangeParam, NzUploadFile, NzUploadModule} from 'ng-zorro-antd/upload';
+import {data} from 'autoprefixer';
 
 @Component({
   selector: 'dataset-edit-page',
@@ -36,6 +46,7 @@ import {BreadcrumbsService} from '../services/breadcrumb.service';
     TransformationListComponent,
     NzListModule,
     NzIconModule,
+    NzUploadModule,
     NzButtonModule,
     DataTableComponent,
   ],
@@ -48,6 +59,16 @@ import {BreadcrumbsService} from '../services/breadcrumb.service';
             <input nz-input name="name" [(ngModel)]="datasetName"/>
           </nz-form-control>
         </nz-form-item>
+        <nz-upload
+          [nzCustomRequest]="customUpload"
+          [nzFileList]="fileList"
+          nzListType="text"
+        >
+          <button nz-button>
+            <span nz-icon nzType="upload"></span>
+            Click to Upload
+          </button>
+        </nz-upload>
         <app-transformations-list  [initialTransformations]="transformations()" [errors]="error()" class="w-full flex-1" (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
         <button nz-button nzType="primary" [disabled]="!unsaved()" (click)="saveDataset()">Сохранить</button>
       </div>
@@ -86,12 +107,16 @@ export class DatasetEditPage{
     if(dataset) {
       this.transformationsChanged(dataset.transformations);
       this.datasetName.set(dataset.name);
+      this.datasetFile.set({ fieldList: dataset.fieldList, tableId: dataset.tableId });
       this.breadcrumbs.setLastSegment(dataset.name);
     }
   }, { allowSignalWrites: true });
 
+  fileList: NzUploadFile[] = [];
+
   unsaved = signal(false);
   datasetName = model<string>('');
+  datasetFile= signal<UploadResponse>({ tableId: null, fieldList: null});
   loading = signal(false);
   error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: '', total:0 });
@@ -101,7 +126,8 @@ export class DatasetEditPage{
     if(transformations === null) return;
     untracked(() => {
       this.loading.set(true);
-      let _ = this.http.post<ApiResponse>('api/transform', { transformations }
+      console.log(this.datasetFile());
+      let _ = this.http.post<ApiResponse>('api/transform', { tableId: this.datasetFile().tableId, fieldList: this.datasetFile().fieldList, transformations }
       ).pipe(
         finalize(() => {
           this.loading.set(false);
@@ -128,15 +154,16 @@ export class DatasetEditPage{
 
   saveDataset() {
     let datasetName = this.datasetName();
+    let datasetFile = this.datasetFile();
     let transformations = this.transformations();
 
     if(this.id == 'new') {
-      let _ = this.http.post<{}>(`api/datasets/`, { name: datasetName, transformations }).subscribe(dataset => {
+      let _ = this.http.post<{}>(`api/datasets/`, { name: datasetName, transformations, tableId: datasetFile.tableId, fieldList: datasetFile.fieldList }).subscribe(dataset => {
         this.unsaved.set(false);
       });
 
     } else {
-      let _ = this.http.put<DataSetViewModel>(`api/datasets/${this.id}`, { id: this.id, name: datasetName, transformations }).subscribe(dataset => {
+      let _ = this.http.put<DataSetViewModel>(`api/datasets/${this.id}`, { id: this.id, name: datasetName, transformations, tableId: datasetFile.tableId, fieldList: datasetFile.fieldList }).subscribe(dataset => {
         this.unsaved.set(false);
       });
 
@@ -145,5 +172,23 @@ export class DatasetEditPage{
 
   }
 
+  customUpload = (item: any) => {
+    const formData = new FormData();
+    formData.append('file', item.file);
 
+    const req = new HttpRequest('POST', '/api/datasets/upload', formData, {
+      reportProgress: true,
+    });
+
+    return this.http.request<UploadResponse>(req).subscribe(res => {
+      if(res instanceof HttpResponse) {
+        const body: UploadResponse | null = res.body;
+        if(body) {
+          this.datasetFile.set(body);
+        }
+      }
+
+    })
+
+  }
 }

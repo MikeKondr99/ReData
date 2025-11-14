@@ -1,4 +1,6 @@
-﻿using ReData.DemoApplication.Transformations;
+﻿using Npgsql.PostgresTypes;
+using ReData.DemoApplication.Database.Entities;
+using ReData.DemoApplication.Transformations;
 
 namespace ReData.DemoApplication.Endpoints.Datasets;
 
@@ -30,23 +32,43 @@ public sealed record TransformationBlockResponse
 public sealed record CreateDataSetRequest
 {
     public required string Name { get; init; }
+    
+    public required Guid? TableId { get; init; }
+    
+    public required IReadOnlyList<Field> FieldList { get; init; }
     public required IReadOnlyList<TransformationBlock> Transformations { get; init; }
+    
 }
 
 public sealed record CreateDataSetResponse
 {
     public required Guid Id { get; init; }
     public required string Name { get; init; }
-    public required IReadOnlyList<TransformationBlockResponse> Transformations { get; init; }
 }
 
 public sealed record UpdateDataSetRequest
 {
     public required string Name { get; init; }
+    
+    public required Guid? TableId { get; init; }
+    
+    public required IReadOnlyList<Field> FieldList { get; init; }
     public required IReadOnlyList<TransformationBlock> Transformations { get; init; }
 }
 
 public record DeleteDataSetRequest
 {
     public required Guid Id { get; init; }
+}
+
+public class UploadFileRequest
+{
+    public required IFormFile File { get; init; }
+}
+
+public class UploadFileResponse
+{
+    public required Guid TableId { get; init; }
+    
+    public required IReadOnlyList<Field> FieldList { get; init; }
 }
