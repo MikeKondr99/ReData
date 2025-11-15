@@ -1,11 +1,11 @@
 ﻿
-import {Component, computed, effect, inject, input, model, signal, untracked} from '@angular/core';
+import {Component, effect, inject, model, signal, untracked} from '@angular/core';
 import {DatasetsService} from '../services/datasets.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
-import {ApiResponse, DataSetViewModel, ExprError, Field, TransformationBlock, TransformationData} from '../types';
-import {catchError, finalize, of, Subject, takeUntil} from 'rxjs';
+import {ApiResponse, DataSetViewModel, ExprError, TransformationBlock, TransformationData} from '../types';
+import {catchError, finalize, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FormsModule} from '@angular/forms';
@@ -84,6 +84,7 @@ export class DatasetEditPage{
   datasetLoaded = effect(() => {
     let dataset = this.dataset();
     if(dataset) {
+      console.log('dataset loaded', dataset);
       this.transformationsChanged(dataset.transformations);
       this.datasetName.set(dataset.name);
       this.breadcrumbs.setLastSegment(dataset.name);
@@ -122,6 +123,7 @@ export class DatasetEditPage{
 
   transformationsChanged(transformations: TransformationBlock[])
   {
+    console.log('transformationsChanged', transformations);
     this.unsaved.set(true);
     this.transformations.set([...transformations]);
   }

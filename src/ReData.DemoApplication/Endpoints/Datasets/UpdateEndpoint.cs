@@ -50,7 +50,7 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
             entity.Transformations.Add(new TransformationEntity
             {
                 Enabled = req.Transformations[i].Enabled,
-                Description = req.Transformations[i].Description,
+                Description = null,
                 DataSetId = id,
                 Order = (uint)i,
                 Data = req.Transformations[i].Transformation,

@@ -1,13 +1,8 @@
-﻿import {Component, inject, input} from '@angular/core';
-import {BreadcrumbsService} from '../services/breadcrumb.service';
-import {NzIconModule} from 'ng-zorro-antd/icon';
-import {NzBreadCrumbModule} from 'ng-zorro-antd/breadcrumb';
-import {RouterLink} from '@angular/router';
+﻿import {Component, input} from '@angular/core';
 import {
-  NzTableCellDirective,
   NzTableComponent,
   NzTableVirtualScrollDirective,
-  NzTbodyComponent, NzTheadComponent, NzThMeasureDirective, NzTrDirective
+  NzThMeasureDirective
 } from 'ng-zorro-antd/table';
 import {NzTooltipDirective} from 'ng-zorro-antd/tooltip';
 import { Field } from '../types';
@@ -16,14 +11,10 @@ import { Field } from '../types';
   selector: 'app-data-table',
   standalone: true,
   imports: [
-    NzTableCellDirective,
     NzTableComponent,
     NzTableVirtualScrollDirective,
-    NzTbodyComponent,
     NzThMeasureDirective,
-    NzTheadComponent,
     NzTooltipDirective,
-    NzTrDirective
   ],
   template: `
     <nz-table
@@ -91,7 +82,7 @@ export class DataTableComponent {
   }
 
   textAlign(type: string) {
-    if(type != 'Text') return 'right'
+    if(type != 'text') return 'right'
     return 'left'
   }
 

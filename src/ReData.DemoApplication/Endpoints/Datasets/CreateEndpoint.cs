@@ -31,7 +31,7 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
             Transformations = req.Transformations.Select((t, index) => new TransformationEntity
             {
                 Enabled = t.Enabled,
-                Description = t.Description,
+                Description = null,
                 DataSetId = newId,
                 Order = (uint)index,
                 Data = t.Transformation
