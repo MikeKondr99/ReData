@@ -1,9 +1,9 @@
-﻿import {Component, effect, inject} from '@angular/core';
+﻿import {Component, inject} from '@angular/core';
 import {BreadcrumbsService} from '../services/breadcrumb.service';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzBreadCrumbModule} from 'ng-zorro-antd/breadcrumb';
 import {RouterLink} from '@angular/router';
-import {NzSkeletonComponent, NzSkeletonModule} from 'ng-zorro-antd/skeleton';
+import {NzSkeletonModule} from 'ng-zorro-antd/skeleton';
 
 @Component({
   selector: 'app-breadcrumb',
@@ -51,10 +51,10 @@ export class BreadcrumbComponent {
     const dict:Record<string,string> = {
       'datasets': 'Наборы данных',
       'new': 'Новый',
-      'docs': 'Инструкция',
+      'docs': 'Документация',
       'functions': 'Функции',
     }
-    return dict[segment] ?? segment;
+    return dict[segment] ?? decodeURI(segment);
   }
 
 }

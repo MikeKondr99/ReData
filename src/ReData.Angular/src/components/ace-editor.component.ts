@@ -122,6 +122,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
       // enableSnippets: true,
     });
     this.editor.setValue(this.value())
+    this.updateGutter();
     this.editor.clearSelection();
     this.editor.session.on('change', () => {
       let newValue = this.editor?.getValue() ?? '';
