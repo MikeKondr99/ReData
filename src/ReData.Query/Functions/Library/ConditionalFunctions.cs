@@ -61,22 +61,6 @@ public class ConditionalFunctions : FunctionsDescriptor
                 {
                     [All] = $"({value} IS NOT NULL)",
                 });
-
-            Binary("=", type, Null)
-                .Doc("Проверяет равенство")
-                .ReturnsNotNull(Bool)
-                .Templates(new()
-                {
-                    [All] = $"({value} IS NULL)",
-                });
-
-            Binary("!=", type, Null)
-                .Doc("Проверяет неравенство")
-                .ReturnsNotNull(Bool)
-                .Templates(new()
-                {
-                    [All] = $"({value} IS NULL)",
-                });
         }
     }
 }

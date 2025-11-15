@@ -8,7 +8,7 @@ using static DataType;
 
 public class ImplicitConversionFunctions : FunctionsDescriptor
 {
-    private FunctionBuilder Convertion(DataType input, DataType ret, int level)
+    private FunctionBuilder Conversion(DataType input, DataType ret, int level)
     {
         var name = ret switch
         {
@@ -54,6 +54,12 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             // .Template($"({0} = 0)");
 
         Function("TextFromNull")
+            .ImplicitCast(1)
+            .Arg("input", Null)
+            .Returns(Text)
+            .Template($"LOWER({0})");
+        
+        Function("DateFromNull")
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Text)

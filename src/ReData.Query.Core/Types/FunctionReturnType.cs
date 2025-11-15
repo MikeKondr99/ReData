@@ -12,7 +12,7 @@ public sealed record FunctionReturnType
     {
         if (Aggregated)
         {
-            return $"Agg`{DataType.Display()}{(CanBeNull ? "" : "!")}`";
+            return $"agg<{DataType.Display()}{(CanBeNull ? "" : "!")}>";
         }
         return $"{DataType.Display()}{(CanBeNull ? "" : "!")}";
     }

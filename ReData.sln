@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B4D3E35-18B6-4864-92CA-C55E0598E491}"
 	ProjectSection(SolutionItems) = preProject
 		docs\Readme.md = docs\Readme.md
+		docs\function-coverage-report.md = docs\function-coverage-report.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19AC12A0-0EE2-4BF5-B640-607429F7BEA8}"

@@ -95,7 +95,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("(-4.0).IsNull()", false)]
      [InlineData("IsNull(null + 5)", true)] // Edge case: null in expression
      [InlineData("IsNull(5 + null)", true)] // Edge case: null in expression
-     [InlineData("IsNull(5 + null).Type()", "Bool")] // returns always not null
+     [InlineData("IsNull(5 + null).Type()", "bool!")] // returns always not null
      public Task IsNullTest(string expr, object? expected) => Test(expr, expected);
      
      
@@ -131,4 +131,60 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("5.Between(1.5, 10.5)", true)] // 5 is between 1.5 and 10.5
      [InlineData("Between(5.5, 1, 10)", true)] // 5.5 is between 1 and 10
      public Task BetweenFunction(string expr, object? expected) => Test(expr, expected);
+     
+     
+     
+     [Theory(DisplayName = "Date Comparison")]
+     // Date != Date
+     [InlineData("Date('2023-01-01') != Date('2023-01-02')", true)]
+     [InlineData("Date('2023-01-01') != Date('2023-01-01')", false)]
+     // [InlineData("(Date('2023-01-01') != ''.EmptyIsNull().Date()).IsNull()", true)]
+
+     // Date < Date
+     [InlineData("Date('2023-01-01') < Date('2023-01-02')", true)]
+     [InlineData("Date('2023-01-02') < Date('2023-01-01')", false)]
+     // [InlineData("(Date('2023-01-01') < ''.EmptyIsNull().Date().IsNull()", true)]
+
+     // Date <= Date
+     [InlineData("Date('2023-01-01') <= Date('2023-01-02')", true)]
+     [InlineData("Date('2023-01-01') <= Date('2023-01-01')", true)]
+     [InlineData("Date('2023-01-02') <= Date('2023-01-01')", false)]
+
+     // Date = Date
+     [InlineData("Date('2023-01-01') = Date('2023-01-01')", true)]
+     [InlineData("Date('2023-01-01') = Date('2023-01-02')", false)]
+     // [InlineData("(Date('2023-01-01') = ''.EmptyIsNull().Date()).IsNull()", true)]
+
+     // Date > Date
+     [InlineData("Date('2023-01-02') > Date('2023-01-01')", true)]
+     [InlineData("Date('2023-01-01') > Date('2023-01-02')", false)]
+     // [InlineData("(Date('2023-01-02') > ''.EmptyIsNull().Date()).IsNull()", true)]
+
+     // Date >= Date
+     [InlineData("Date('2023-01-02') >= Date('2023-01-01')", true)]
+     [InlineData("Date('2023-01-01') >= Date('2023-01-01')", true)]
+     [InlineData("Date('2023-01-01') >= Date('2023-01-02')", false)]
+     public Task DateComparisonTests(string expr, object? expected) => Test(expr, expected);
+     
+     
+     [Theory(DisplayName = "Date Between")]
+     // Normal cases
+     [InlineData("Date('2023-06-15').Between(Date('2023-01-01'), Date('2023-12-31'))", true)]
+     [InlineData("Date('2023-06-15').Between(Date('2023-06-15'), Date('2023-12-31'))", true)] // Equal to start
+     [InlineData("Date('2023-12-31').Between(Date('2023-01-01'), Date('2023-12-31'))", true)] // Equal to end
+
+     // Outside range
+     [InlineData("Date('2022-12-31').Between(Date('2023-01-01'), Date('2023-12-31'))", false)]
+     [InlineData("Date('2024-01-01').Between(Date('2023-01-01'), Date('2023-12-31'))", false)]
+
+     // With nulls
+     // [InlineData("Date('2023-06-15').Between(null, Date('2023-12-31')).IsNull()", true)]
+     // [InlineData("Date('2023-06-15').Between(Date('2023-01-01'), null).IsNull()", true)]
+     // [InlineData("Date('2023-06-15').Between(null, null).IsNull()", true)]
+     // [InlineData("''.EmptyIsNull().Date().Between(Date('2023-01-01'), Date('2023-12-31')).IsNull()", true)]
+
+     // Edge cases with time
+     [InlineData("Date('2023-06-15 14:30').Between(Date('2023-06-15'), Date('2023-06-16'))", true)]
+     [InlineData("Date('2023-06-15 00:00').Between(Date('2023-06-15'), Date('2023-06-15'))", true)] // Exact match with time
+     public Task DateBetweenTests(string expr, object? expected) => Test(expr, expected);
 }

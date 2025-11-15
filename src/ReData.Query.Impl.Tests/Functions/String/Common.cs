@@ -15,9 +15,9 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("null + 'text'", null)] // Null + text
      [InlineData("null + null", null)] // Both null
      // Type inference
-     [InlineData("Type('a' + 'b')", "Text")] // Both strings → Text
-     [InlineData("Type('a' + null)", "Text?")] // String + null → Text?
-     [InlineData("Type(null + 'b')", "Text?")] // Null + string → Text?
+     [InlineData("Type('a' + 'b')", "text!")] // Both strings → Text
+     [InlineData("Type('a' + null)", "text")] // String + null → Text?
+     [InlineData("Type(null + 'b')", "text")] // Null + string → Text?
      // Whitespace and special characters
      [InlineData("'hello ' + 'world'", "hello world")] // With spaces
      [InlineData("'line1\\n' + 'line2'", "line1\nline2")] // With newline
@@ -31,8 +31,8 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Text(false) + ' is false'", "false is false")] // Converted boolean + string
      [InlineData("'date: ' + Text(Date(2023,5,15))", "date: 2023-05-15 00:00:00")] // String + converted date
      // Type inference with conversions
-     [InlineData("Type('text' + Text(42))", "Text")] // String + converted number → Text
-     [InlineData("Type(Text(42) + 'text')", "Text")] // Converted number + string → Text
+     [InlineData("Type('text' + Text(42))", "text!")] // String + converted number → Text
+     [InlineData("Type(Text(42) + 'text')", "text!")] // Converted number + string → Text
      // Null handling with conversions
      [InlineData("'text' + Text(null)", null)] // String + converted null
      [InlineData("Text(null) + 'text'", null)] // Converted null + string

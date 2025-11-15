@@ -249,7 +249,7 @@ function createFunctionHtml(funcs: FunctionViewModel[], methods: boolean): strin
   let skip = methods ? 1 : 0;
 
   for (let func of funcs) {
-    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'aggr ' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}</span></div><div class="function-doc">${func.doc}</div></div>`;
+    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'agg<' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}${(func.returnType.aggregated ? '>' : '')}</span></div><div class="function-doc">${func.doc}</div></div>`;
   }
   return `<div class="function-hint">${result}</div>`
 }

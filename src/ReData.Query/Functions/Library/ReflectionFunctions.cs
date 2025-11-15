@@ -9,13 +9,13 @@ public class ReflectionFunctions : FunctionsDescriptor
 {
     private static string TypeMapping(DataType type) => type switch
     {
-        Text => "Text",
-        Number => "Num",
-        Integer => "Int",
-        Bool => "Bool",
-        DateTime => "Date",
-        Unknown => "Unknown",
-        Null => "Null",
+        Text => "text",
+        Number => "num",
+        Integer => "int",
+        Bool => "bool",
+        DateTime => "date",
+        Unknown => "unk",
+        Null => "null",
     };
     
     protected override void Functions()
@@ -28,17 +28,21 @@ public class ReflectionFunctions : FunctionsDescriptor
                 .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
                 .Templates(new()
                 {
-                    [All] = $"'{TypeMapping(type)}?'",
-                });
-            
-            Method("Type")
-                .Doc("Возвращает тип значения в виде строки")
-                .ReqArg("input", type)
-                .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
-                .Templates(new()
-                {
                     [All] = $"'{TypeMapping(type)}'",
                 });
+
+            // null! не существует и нет смысла для такой функции
+            if (type is not Null)
+            {
+                Method("Type")
+                    .Doc("Возвращает тип значения в виде строки")
+                    .ReqArg("input", type)
+                    .ReturnsNotNull(Text, ConstPropagation.AlwaysTrue)
+                    .Templates(new()
+                    {
+                        [All] = $"'{TypeMapping(type)}!'",
+                    });
+            }
         }
 
 
