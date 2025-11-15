@@ -1,5 +1,4 @@
-﻿import {Data} from '@angular/router';
-
+﻿
 export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit' | 'groupBy';
 
 export type WhereTransformation = {
@@ -61,7 +60,7 @@ export function isLimitTransformation(t: TransformationData): t is LimitTransfor
 
 export interface Field {
   alias: string;
-  type: 'Number' | 'Text' | 'Integer' | 'Boolean' | 'DateTime' | 'Unknown';
+  type: 'num' | 'text' | 'int' | 'bool' | 'date' | 'unk';
   canBeNull: boolean;
 }
 
