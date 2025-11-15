@@ -15,10 +15,6 @@ export const routes: Routes = [
     loadComponent: () => import('../pages/instruction-page.component').then(m => m.InstructionPageComponent),
   },
   {
-    path: 'ace',
-    loadComponent: () => import('../pages/ace-page.component').then(m => m.AcePageComponent),
-  },
-  {
     path: 'datasets',
     children: [
       {
