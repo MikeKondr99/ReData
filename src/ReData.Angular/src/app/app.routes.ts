@@ -1,6 +1,4 @@
 import { Routes } from '@angular/router';
-import {DatasetsPage} from '../pages/datasets-page.component';
-import {DatasetEditPage} from '../pages/dataset-edit-page.component';
 import {HomePageComponent} from '../pages/home-page.component';
 
 export const routes: Routes = [
@@ -9,12 +7,8 @@ export const routes: Routes = [
     loadComponent: () => import('../pages/function-page.component').then(m => m.FunctionsPageComponent),
   },
   {
-    path: 'docs/:path',
-    loadComponent: () => import('../components/documentation-viewer.component').then(m => m.DocumentationViewerComponent),
-  },
-  {
     path: 'docs',
-    loadComponent: () => import('../components/documentation-viewer.component').then(m => m.DocumentationViewerComponent),
+    loadComponent: () => import('../pages/instruction-page.component').then(m => m.InstructionPageComponent),
   },
   {
     path: 'datasets',
@@ -22,7 +16,6 @@ export const routes: Routes = [
       {
         path:"",
         loadComponent: () => import('../pages/datasets-page.component').then(m => m.DatasetsPage),
-
       },
       {
         path:":id",

@@ -1,4 +1,7 @@
-﻿namespace ReData.Query.Core.Types;
+﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+namespace ReData.Query.Core.Types;
 
 
 public record struct ExprType
@@ -104,12 +107,19 @@ public record struct ExprType
 
 public enum DataType
 {
+    [JsonStringEnumMemberName("unk")]
     Unknown = 0,
+    [JsonStringEnumMemberName("null")]
     Null = 1,
+    [JsonStringEnumMemberName("num")]
     Number = 2,
+    [JsonStringEnumMemberName("int")]
     Integer = 3,
+    [JsonStringEnumMemberName("text")]
     Text = 4,
+    [JsonStringEnumMemberName("bool")]
     Bool = 5,
+    [JsonStringEnumMemberName("date")]
     DateTime = 6,
 }
 
