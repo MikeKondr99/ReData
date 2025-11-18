@@ -28,7 +28,6 @@ if (builder.Environment.IsDevelopment())
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new ValueConverter());
-    // options.SerializerOptions.Converters.Add(new DataTypeJsonConverter());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<FunctionKind>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<DataType>());
 });
@@ -38,6 +37,7 @@ services.AddOutputCache();
 services.AddFastEndpoints();
 services.SwaggerDocument(options =>
 {
+    options.ShortSchemaNames = true;
     // Для работы требуется что бы базой был класс или абстрактный класс
     options.UseOneOfForPolymorphism = true;
     options.ExcludeNonFastEndpoints = true;

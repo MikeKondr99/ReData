@@ -4,6 +4,12 @@ using ReData.Query.Impl.Functions;
 
 namespace ReData.DemoApplication.Endpoints.Functions;
 
+/// <summary>
+/// Получить все функции
+/// </summary>
+/// <remarks>
+/// Возвращает полный список доступных для провайдера PostrgreSql функций
+/// </remarks>>
 public class Endpoint : EndpointWithoutRequest<
     Results<
         Ok<List<FunctionResponse>>,
