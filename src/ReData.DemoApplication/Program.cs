@@ -13,7 +13,6 @@ using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
-using TickerQ.Utilities.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -63,10 +62,10 @@ services.AddTickerQ(options =>
                 });
         });
     });
-    options.AddDashboard(dashboardOptions =>
+    if (builder.Environment.IsDevelopment())
     {
-        dashboardOptions.SetBasePath("/api/tickerq");
-    });
+        options.AddDashboard(dashboardOptions => { dashboardOptions.SetBasePath("/api/tickerq"); });
+    }
 });
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>
@@ -100,6 +99,10 @@ app.UseFastEndpoints();
 
 app.UseSwaggerGen(options => { options.Path = "/openapi/{documentName}.json"; });
 app.UseTickerQ();
-app.MapScalarApiReference("api/docs");
+
+if (builder.Environment.IsDevelopment())
+{
+    app.MapScalarApiReference("api/docs");
+}
 
 app.Run();

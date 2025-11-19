@@ -12,6 +12,8 @@ dotnet_analyzer_diagnostic.severity = error # Default level for all analyzers
 # dotnet_diagnostic.CA1822.severity = warning # Mark static methods as warning
 # dotnet_diagnostic.CA1304.severity = error # CultureInfo as error
 
+dotnet_diagnostic.CS0618.severity = error;
+
 # file header
 dotnet_diagnostic.SA1633.severity = none
 # Нельзя называть тип Option
