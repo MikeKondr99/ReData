@@ -1,4 +1,7 @@
-﻿using ReData.DemoApplication.Transformations;
+﻿using System.ComponentModel.DataAnnotations;
+using FastEndpoints;
+using FluentValidation;
+using ReData.DemoApplication.Transformations;
 
 namespace ReData.DemoApplication.Endpoints.Datasets;
 
@@ -33,6 +36,20 @@ public sealed record CreateDataSetRequest
     public required IReadOnlyList<TransformationBlock> Transformations { get; init; }
 }
 
+public sealed class CreateDataSetRequestValidator : Validator<CreateDataSetRequest> 
+{
+    public CreateDataSetRequestValidator()
+    {
+        RuleFor(req => req.Name)
+            .NotNull()
+            .MinimumLength(3)
+            .MaximumLength(20);
+        RuleFor(req => req.Transformations)
+            .NotNull();
+    }
+    
+}
+
 public sealed record CreateDataSetResponse
 {
     public required Guid Id { get; init; }
@@ -46,7 +63,7 @@ public sealed record UpdateDataSetRequest
     public required IReadOnlyList<TransformationBlock> Transformations { get; init; }
 }
 
-public record DeleteDataSetRequest
+public sealed record DeleteDataSetRequest
 {
     public required Guid Id { get; init; }
 }

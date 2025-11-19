@@ -4,14 +4,15 @@ namespace ReData.DemoApplication.Extensions;
 
 public static class WebApplicationExtension
 {
-    public static void Migrate<T>(this WebApplication webApplication)
+    public static void Migrate<T>(this IServiceProvider serviceProvider)
         where T : DbContext
     {
-        using (var scope = webApplication.Services.CreateScope())
+        using (var scope = serviceProvider.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<T>();
             db.Database.Migrate();
         }
+        
     }
     
 }

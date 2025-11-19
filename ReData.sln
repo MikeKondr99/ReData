@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pattern", "src\Pattern\Patt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Query.Common", "src\ReData.Query.Common\ReData.Query.Common.csproj", "{4715213E-CAB8-420F-9A2F-B5CC115F95ED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApp.Tests", "src\ReData.DemoApp.Tests\ReData.DemoApp.Tests\ReData.DemoApp.Tests.csproj", "{9859A825-C45C-466D-AAE0-F64AFB5C14F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,10 @@ Global
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -114,5 +120,6 @@ Global
 		{5F4D072E-56B4-4D91-9190-361CA5E57ABC} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
 		{532BF429-8BE3-41D7-BB78-27831F09D874} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6} = {19AC12A0-0EE2-4BF5-B640-607429F7BEA8}
 	EndGlobalSection
 EndGlobal

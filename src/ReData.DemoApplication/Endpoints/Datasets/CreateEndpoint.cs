@@ -1,4 +1,5 @@
 ﻿using FastEndpoints;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,14 @@ using ReData.DemoApplication.Endpoints.Datasets;
 
 namespace ReData.DemoApplication.Endpoints.DataSets;
 
-public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<CreateDataSetResponse>, BadRequest<string>>>
+using Response =
+    Results<
+        Created<CreateDataSetResponse>,
+        BadRequest<ErrorResponse>,
+        Conflict<ErrorResponse>
+    >;
+
+public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
 {
     public required ApplicationDatabaseContext Db { get; init; }
     public required IOutputCacheStore OutputCache { get; init; }
@@ -19,9 +27,17 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
         AllowAnonymous();
     }
 
-    public override async Task<Results<Created<CreateDataSetResponse>, BadRequest<string>>> ExecuteAsync(
+    public override async Task<Response> ExecuteAsync(
         CreateDataSetRequest req, CancellationToken ct)
     {
+        var existingDataset = Db.DataSets.FirstOrDefault(ds => ds.Name == req.Name);
+        if (existingDataset is not null)
+        {
+            return TypedResults.Conflict(new ErrorResponse([
+                new("name", "'name' must be unique")
+            ]));
+        }
+
         var newId = Guid.NewGuid();
         // Map to entity
         var entity = new DataSetEntity
@@ -38,29 +54,23 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Results<Created<Cre
             }).ToList()
         };
 
-        try
-        {
-            Db.Set<DataSetEntity>().Add(entity);
-            await Db.SaveChangesAsync(ct);
 
-            var response = new CreateDataSetResponse
+        Db.DataSets.Add(entity);
+        await Db.SaveChangesAsync(ct);
+
+        var response = new CreateDataSetResponse
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Transformations = entity.Transformations.Select(t => new TransformationBlockResponse
             {
-                Id = entity.Id,
-                Name = entity.Name,
-                Transformations = entity.Transformations.Select(t => new TransformationBlockResponse
-                {
-                    Enabled = t.Enabled,
-                    Description = t.Description,
-                    Transformation = t.Data
-                }).ToList()
-            };
+                Enabled = t.Enabled,
+                Description = t.Description,
+                Transformation = t.Data
+            }).ToList()
+        };
 
-            await OutputCache.EvictByTagAsync("datasets", ct);
-            return TypedResults.Created($"/api/datasets/{entity.Id}", response);
-        }
-        catch (Exception ex) when (ex is DbUpdateException or DbUpdateConcurrencyException)
-        {
-            return TypedResults.BadRequest("Failed to create dataset");
-        }
+        await OutputCache.EvictByTagAsync("datasets", ct);
+        return TypedResults.Created($"/api/datasets/{entity.Id}", response);
     }
 }

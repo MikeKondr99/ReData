@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FastEndpoints.Testing"/>
+        <!-- BASE -->
+        <PackageReference Include="coverlet.collector"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
+        <PackageReference Include="xunit"/>
+        <PackageReference Include="Xunit.SkippableFact"/>
+        <PackageReference Include="FluentAssertions"/>
+        <PackageReference Include="xunit.runner.visualstudio" />
+
+        <PackageReference Include="TestContainers"/>
+        <PackageReference Include="TestContainers.PostgreSql"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="Always"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\ReData.DemoApplication\ReData.DemoApplication.csproj" />
+    </ItemGroup>
+
+</Project>

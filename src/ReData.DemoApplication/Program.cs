@@ -1,9 +1,8 @@
-using System.Text.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic.CompilerServices;
 using ReData.DemoApplication.Converters;
 using ReData.DemoApplication.Database;
 using ReData.DemoApplication.Extensions;
@@ -18,7 +17,7 @@ using TickerQ.Utilities.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
-var tickerQConnectinoString = builder.Configuration.GetConnectionString("TickerQ");
+var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
 
 if (builder.Environment.IsDevelopment())
 {
@@ -56,7 +55,7 @@ services.AddTickerQ(options =>
         efOptions.UseTickerQDbContext<TickerQDbContext>(optionsBuilder =>
         {
             // dotnet ef migrations add TickerQInitialCreate --context TickerQDbContext --project ./src/ReData.DemoApplication -o ./Jobs/Migrations
-            optionsBuilder.UseNpgsql(tickerQConnectinoString,
+            optionsBuilder.UseNpgsql(tickerQConnectionString,
                 builder =>
                 {
                     builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
@@ -90,8 +89,8 @@ app.Use(async (context, next) =>
     }
 });
 
-app.Migrate<ApplicationDatabaseContext>();
-app.Migrate<TickerQDbContext>();
+app.Services.Migrate<ApplicationDatabaseContext>();
+app.Services.Migrate<TickerQDbContext>();
 
 
 app.UseOutputCache();
