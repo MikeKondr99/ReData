@@ -28,7 +28,7 @@ public class GetAllEndpoint : EndpointWithoutRequest<
         CancellationToken ct)
     {
         var response = await Db.DataSets
-            .OrderBy(ds => ds.Name)
+            .OrderByDescending(ds => ds.UpdatedAt)
             .Select(ds => new DataSetListItem()
             {
                 Id = ds.Id,
