@@ -62,7 +62,7 @@ import bootstrap from '../main.server';
           <nz-form-control [nzSm]="14" [nzXs]="24">
             <input nz-input name="name" [(ngModel)]="datasetName"/>
           </nz-form-control>
-          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Коннектор</nz-form-label>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Файл</nz-form-label>
           <nz-form-control>
             <div class="flex gap-2 items-center">
               <app-data-connector-selector class="flex-grow" (modelChange)="connector.set($event)" [id]="connector()?.id"></app-data-connector-selector>

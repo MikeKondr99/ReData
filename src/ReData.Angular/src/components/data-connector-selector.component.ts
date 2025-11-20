@@ -19,7 +19,7 @@ import {DataConnectorsService} from '../services/data-connectors.service';
   ],
   template: `
     <div>
-      <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Select a person" [(ngModel)]="model">
+      <nz-select nzShowSearch nzPlaceHolder="Не выбран файл" [(ngModel)]="model" nzCl>
         @for (connector of dataConnectors(); track connector.id) {
           <nz-option [nzValue]="connector" [nzLabel]="connector.name">
             {{ connector.name }}

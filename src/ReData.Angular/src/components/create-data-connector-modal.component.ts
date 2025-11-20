@@ -25,7 +25,7 @@ import {DataConnectorListItem} from '../types';
     FormsModule,
   ],
   template: `
-    <nz-modal [(nzVisible)]="isVisible" nzTitle="Создание коннектора" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" (nzAfterClose)="handleCancel()" >
+    <nz-modal [(nzVisible)]="isVisible" nzTitle="Создание файла" (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" (nzAfterClose)="handleCancel()" >
       <ng-container *nzModalContent>
           <nz-form-item>
             <nz-form-label [nzSpan]="5">Название</nz-form-label>
@@ -77,6 +77,7 @@ export class CreateDataConnectorModalComponent {
 
   handleCancel() {
     this.isVisible.set(false);
+    this.resetForm();
   }
 
   handleOk() {
@@ -111,5 +112,13 @@ export class CreateDataConnectorModalComponent {
           this.uploading = false;
         }
       });
+  }
+
+  resetForm()
+  {
+    this.name = '';
+    this.separator = ',';
+    this.withHeader = true;
+    this.fileList = [];
   }
 }
