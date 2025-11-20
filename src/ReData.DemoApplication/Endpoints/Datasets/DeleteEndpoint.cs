@@ -25,7 +25,7 @@ public class DeleteEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFoun
     public override async Task<Results<Ok, NotFound>> ExecuteAsync(
         DeleteDataSetRequest req, CancellationToken ct)
     {
-        var entity = await Db.Set<DataSetEntity>()
+        var entity = await Db.DataSets
             .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
 
         if (entity is null)
@@ -33,7 +33,7 @@ public class DeleteEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFoun
             return TypedResults.NotFound();
         }
 
-        Db.Set<DataSetEntity>().Remove(entity);
+        Db.DataSets.Remove(entity);
         await Db.SaveChangesAsync(ct);
         await OutputCache.EvictByTagAsync("datasets", ct);
 

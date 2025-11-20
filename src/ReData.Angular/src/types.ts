@@ -144,10 +144,17 @@ export interface DataSetViewModel
 {
   id: string;
   name: string;
+  dataConnectorId: string;
   transformations: TransformationBlock[];
 }
 
 export interface DataSetListItem
+{
+  id: string;
+  name: string;
+}
+
+export interface DataConnectorListItem
 {
   id: string;
   name: string;

@@ -69,9 +69,12 @@ services.AddTickerQ(options =>
 });
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
 
-services.AddSingleton<ConnectionService>();
+services.AddScoped<ConnectionService>();
 
 var app = builder.Build();
 

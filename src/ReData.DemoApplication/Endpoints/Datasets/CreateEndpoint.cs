@@ -44,6 +44,7 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
         {
             Id = newId,
             Name = req.Name,
+            DataConnectorId = req.ConnectorId,
             Transformations = req.Transformations.Select((t, index) => new TransformationEntity
             {
                 Enabled = t.Enabled,
@@ -51,7 +52,9 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
                 DataSetId = newId,
                 Order = (uint)index,
                 Data = t.Transformation
-            }).ToList()
+            }).ToList(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow,
         };
 
 
@@ -62,12 +65,6 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
         {
             Id = entity.Id,
             Name = entity.Name,
-            Transformations = entity.Transformations.Select(t => new TransformationBlockResponse
-            {
-                Enabled = t.Enabled,
-                Description = t.Description,
-                Transformation = t.Data
-            }).ToList()
         };
 
         await OutputCache.EvictByTagAsync("datasets", ct);

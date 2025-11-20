@@ -25,7 +25,7 @@ public class Endpoint : Endpoint<TransformRequest,
     {
         string? sql = null;
         int i = -1;
-        var query = ConnectionService.GetQuery();
+        var query = ConnectionService.GetQueryBuilder(req.DataConnectorId);
         Query.Core.Query build;
 
         // 1. Apply transformations

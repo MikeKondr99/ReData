@@ -8,8 +8,8 @@
 public abstract record BaseEntity : ICreatedAt, IUpdatedAt
 {
     /// <inheritdoc />
-    public DateTimeOffset CreatedAt { get; set; }
+    public required DateTimeOffset CreatedAt { get; init; }
 
     /// <inheritdoc />
-    public DateTimeOffset UpdatedAt { get; set; }
+    public required DateTimeOffset UpdatedAt { get; set; }
 }

@@ -6,6 +6,7 @@ namespace ReData.DemoApplication.Endpoints.Transform;
 
 public sealed record TransformRequest
 {
+    public required Guid DataConnectorId { get; init; }
     public required List<ITransformation> Transformations { get; init; } = new();
 }
 

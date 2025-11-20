@@ -4,6 +4,7 @@ import { provideHttpClient} from '@angular/common/http';
 import {provideRouter} from '@angular/router';
 import { routes } from './app.routes';
 import {provideMarkdown} from 'ngx-markdown';
+import { provideNzI18n, ru_RU } from 'ng-zorro-antd/i18n';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -11,5 +12,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(),
     provideMarkdown(),
+    provideNzI18n(ru_RU)
   ]
 };

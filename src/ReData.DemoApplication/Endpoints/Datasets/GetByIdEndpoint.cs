@@ -39,6 +39,7 @@ public class GetByIdEndpoint : Endpoint<GetByIdRequest, Results<Ok<DataSetRespon
         {
             Id = entity.Id,
             Name = entity.Name,
+            DataConnectorId = entity.DataConnectorId,
             Transformations = entity.Transformations
                 .OrderBy(t => t.Order)
                 .Select(t => new TransformationBlockResponse

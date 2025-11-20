@@ -4,7 +4,14 @@ import {DatasetsService} from '../services/datasets.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
-import {ApiResponse, DataSetViewModel, ExprError, TransformationBlock, TransformationData} from '../types';
+import {
+  ApiResponse,
+  DataConnectorListItem,
+  DataSetViewModel,
+  ExprError,
+  TransformationBlock,
+  TransformationData
+} from '../types';
 import {catchError, finalize, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {TransformationListComponent} from '../components/transformation-list.component';
@@ -18,6 +25,10 @@ import {NzFormModule} from 'ng-zorro-antd/form';
 import {ActivatedRoute} from '@angular/router';
 import {DataTableComponent} from '../components/data-table.component';
 import {BreadcrumbsService} from '../services/breadcrumb.service';
+import {DataConnectorSelectorComponent} from '../components/data-connector-selector.component';
+import {NzModalModule} from 'ng-zorro-antd/modal';
+import {CreateDataConnectorModalComponent} from '../components/create-data-connector-modal.component';
+import bootstrap from '../main.server';
 
 @Component({
   selector: 'dataset-edit-page',
@@ -32,20 +43,33 @@ import {BreadcrumbsService} from '../services/breadcrumb.service';
     NzTabsModule,
     NzToolTipModule,
     NzIconModule,
+    NzModalModule,
     NzButtonModule,
     TransformationListComponent,
     NzListModule,
     NzIconModule,
     NzButtonModule,
     DataTableComponent,
+    DataConnectorSelectorComponent,
+    CreateDataConnectorModalComponent,
   ],
   template: `
+    <app-create-data-connector-modal [(isVisible)]="createModelOpened"></app-create-data-connector-modal>
     <div class="w-full h-full overflow-hidden flex flex-row gap-2">
       <div class="flex flex-col w-[50%] h-full pt-2">
-        <nz-form-item class="w-[60%] ">
-          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">Название</nz-form-label>
+        <nz-form-item class="w-[60%] gap-2">
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Название</nz-form-label>
           <nz-form-control [nzSm]="14" [nzXs]="24">
             <input nz-input name="name" [(ngModel)]="datasetName"/>
+          </nz-form-control>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired>Коннектор</nz-form-label>
+          <nz-form-control>
+            <div class="flex gap-2 items-center">
+              <app-data-connector-selector class="flex-grow" (modelChange)="connector.set($event)" [id]="connector()?.id"></app-data-connector-selector>
+              <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="createModelOpened.set(true)">
+                <nz-icon nzType="plus" />
+              </button>
+            </div>
           </nz-form-control>
         </nz-form-item>
         <app-transformations-list  [initialTransformations]="transformations()" [errors]="error()" class="w-full flex-1" (transformationsChange)="transformationsChanged($event)"></app-transformations-list>
@@ -80,6 +104,9 @@ export class DatasetEditPage{
 
   dataset = this.datasetsService.getById(this.id ?? "");
   transformations = signal<TransformationBlock[]>(<any>null);
+  connector = signal<DataConnectorListItem | undefined>(undefined);
+
+  createModelOpened = model<boolean>(false);
 
   datasetLoaded = effect(() => {
     let dataset = this.dataset();
@@ -87,6 +114,7 @@ export class DatasetEditPage{
       console.log('dataset loaded', dataset);
       this.transformationsChanged(dataset.transformations);
       this.datasetName.set(dataset.name);
+      this.connector.set({ id: dataset.dataConnectorId, name: '' })
       this.breadcrumbs.setLastSegment(dataset.name);
     }
   }, { allowSignalWrites: true });
@@ -99,10 +127,11 @@ export class DatasetEditPage{
 
   api = effect(() => {
     let transformations: TransformationData[] = this.transformations().filter(t => t.enabled).map(t => t.transformation);
+    let connector = this.connector();
     if(transformations === null) return;
     untracked(() => {
       this.loading.set(true);
-      let _ = this.http.post<ApiResponse>('api/transform', { transformations }
+      let _ = this.http.post<ApiResponse>('api/transform', { transformations, dataConnectorId: connector?.id }
       ).pipe(
         finalize(() => {
           this.loading.set(false);
@@ -133,18 +162,16 @@ export class DatasetEditPage{
     let transformations = this.transformations();
 
     if(this.id == 'new') {
-      let _ = this.http.post<{}>(`api/datasets/`, { name: datasetName, transformations }).subscribe(dataset => {
+      let _ = this.http.post<{}>(`api/datasets/`, { name: datasetName, transformations, connectorId: this.connector()?.id ?? '00000000-0000-0000-0000-000000000000' }).subscribe(dataset => {
         this.unsaved.set(false);
       });
 
     } else {
-      let _ = this.http.put<DataSetViewModel>(`api/datasets/${this.id}`, { id: this.id, name: datasetName, transformations }).subscribe(dataset => {
+      let _ = this.http.put<DataSetViewModel>(`api/datasets/${this.id}`, { id: this.id, name: datasetName, connectorId: this.connector()?.id ?? '00000000-0000-0000-0000-000000000000',  transformations }).subscribe(dataset => {
         this.unsaved.set(false);
       });
 
     }
-
-
   }
 
 

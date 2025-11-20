@@ -28,6 +28,7 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
         var id = Route<Guid>("Id");
 
         var entity = await Db.Set<DataSetEntity>()
+            .AsTracking()
             .Include(ds => ds.Transformations)
             .FirstOrDefaultAsync(ds => ds.Id == id, ct);
 
@@ -57,12 +58,15 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
             });
         }
 
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+
         await Db.SaveChangesAsync(ct);
 
         var response = new DataSetResponse
         {
             Id = entity.Id,
             Name = entity.Name,
+            DataConnectorId = entity.DataConnectorId,
             Transformations = entity.Transformations
                 .OrderBy(t => t.Order)
                 .Select(t => new TransformationBlockResponse
