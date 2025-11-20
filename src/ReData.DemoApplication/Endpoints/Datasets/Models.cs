@@ -49,8 +49,7 @@ public sealed class CreateDataSetRequestValidator : Validator<CreateDataSetReque
     {
         RuleFor(req => req.Name)
             .NotNull()
-            .MinimumLength(3)
-            .MaximumLength(20);
+            .MinimumLength(3);
         RuleFor(req => req.Transformations)
             .NotNull();
     }
