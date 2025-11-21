@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "application", "application"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ReData.Angular", "src\ReData.Angular\ReData.Angular.esproj", "{A2335225-724F-4A8B-BE31-E78957BD5424}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApplication", "src\ReData.DemoApplication\ReData.DemoApplication.csproj", "{768DF377-762C-426F-95C5-A45019FEBAFB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApp", "src\ReData.DemoApp\ReData.DemoApp.csproj", "{768DF377-762C-426F-95C5-A45019FEBAFB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Common", "src\ReData.Common\ReData.Common.csproj", "{FCB79206-8562-4DDB-B1B0-4622D7965492}"
 EndProject

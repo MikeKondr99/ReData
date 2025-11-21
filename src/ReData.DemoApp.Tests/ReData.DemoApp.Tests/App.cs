@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ReData.DemoApplication.Database;
-using ReData.DemoApplication.Extensions;
+using ReData.DemoApp.Database;
+using ReData.DemoApp.Extensions;
 using Testcontainers.PostgreSql;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace ReData.DemoApp.Tests;
 
-public class App : AppFixture<ReData.DemoApplication.Services.ConnectionService>
+public class App : AppFixture<ReData.DemoApp.Services.ConnectionService>
 {
     private static readonly PostgreSqlContainer PostgresContainer = new PostgreSqlBuilder()
         .WithImage("postgres:15-alpine")

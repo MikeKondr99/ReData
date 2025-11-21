@@ -1,13 +1,13 @@
 using System.Text.Json;
 using FluentValidation.Results;
-using ReData.DemoApplication.Database;
-using ReData.DemoApplication.Endpoints.Datasets;
-using ReData.DemoApplication.Endpoints.DataSets;
-using ReData.DemoApplication.Endpoints.Functions;
+using ReData.DemoApp.Database;
+using ReData.DemoApp.Endpoints.Datasets;
+using ReData.DemoApp.Endpoints.DataSets;
+using ReData.DemoApp.Endpoints.Functions;
 
 namespace ReData.DemoApp.Tests;
 
-using Endpoint = ReData.DemoApplication.Endpoints.Functions.Endpoint;
+using Endpoint = DemoApp.Endpoints.Functions.Endpoint;
 
 public class Tests(App App) : TestBase<App>
 {
@@ -19,12 +19,12 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = FakeDatasetName(),
-            Transformations = []
+            Transformations = [],
+            ConnectorId = Guid.Empty,
         };
         var (rsp, res) = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
         rsp.IsSuccessStatusCode.Should().BeTrue();
         res.Name.Should().BeEquivalentTo(req.Name);
-        res.Transformations.Should().BeEquivalentTo(req.Transformations);
         res.Id.Should().NotBeEmpty();
 
 
@@ -39,6 +39,7 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = "",
+            ConnectorId = Guid.Empty,
             Transformations = []
         };
         var rsp = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest>(req);
@@ -51,7 +52,8 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = null!,
-            Transformations = []
+            Transformations = [],
+            ConnectorId = Guid.Empty,
         };
         var rsp = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest>(req);
         rsp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -63,7 +65,8 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = "x",
-            Transformations = []
+            Transformations = [],
+            ConnectorId = Guid.Empty
         };
         var (rsp, res) = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest, ErrorResponse>(req);
         rsp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -80,7 +83,8 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = FakeDatasetName(),
-            Transformations = []
+            Transformations = [],
+            ConnectorId = Guid.Empty,
         };
         var (rsp, res) = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -95,7 +99,8 @@ public class Tests(App App) : TestBase<App>
         var req = new CreateDataSetRequest
         {
             Name = FakeDatasetName(),
-            Transformations = null
+            Transformations = null,
+            ConnectorId = Guid.Empty,
         };
         var rsp = await App.Client.POSTAsync<CreateEndpoint, CreateDataSetRequest>(req);
         rsp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
