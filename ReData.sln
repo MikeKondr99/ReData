@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B4D3E35-18B6-4864-92CA-C55E0598E491}"
 	ProjectSection(SolutionItems) = preProject
 		docs\Readme.md = docs\Readme.md
+		docs\function-coverage-report.md = docs\function-coverage-report.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19AC12A0-0EE2-4BF5-B640-607429F7BEA8}"
@@ -32,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "application", "application"
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "ReData.Angular", "src\ReData.Angular\ReData.Angular.esproj", "{A2335225-724F-4A8B-BE31-E78957BD5424}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApplication", "src\ReData.DemoApplication\ReData.DemoApplication.csproj", "{768DF377-762C-426F-95C5-A45019FEBAFB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApp", "src\ReData.DemoApp\ReData.DemoApp.csproj", "{768DF377-762C-426F-95C5-A45019FEBAFB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Common", "src\ReData.Common\ReData.Common.csproj", "{FCB79206-8562-4DDB-B1B0-4622D7965492}"
 EndProject
@@ -41,6 +42,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pattern", "src\Pattern\Pattern.csproj", "{532BF429-8BE3-41D7-BB78-27831F09D874}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Query.Common", "src\ReData.Query.Common\ReData.Query.Common.csproj", "{4715213E-CAB8-420F-9A2F-B5CC115F95ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApp.Tests", "src\ReData.DemoApp.Tests\ReData.DemoApp.Tests\ReData.DemoApp.Tests.csproj", "{9859A825-C45C-466D-AAE0-F64AFB5C14F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +97,10 @@ Global
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,5 +120,6 @@ Global
 		{5F4D072E-56B4-4D91-9190-361CA5E57ABC} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
 		{532BF429-8BE3-41D7-BB78-27831F09D874} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
 		{4715213E-CAB8-420F-9A2F-B5CC115F95ED} = {AEA54264-1385-49A6-B435-0CB8CDD9E4B6}
+		{9859A825-C45C-466D-AAE0-F64AFB5C14F6} = {19AC12A0-0EE2-4BF5-B640-607429F7BEA8}
 	EndGlobalSection
 EndGlobal

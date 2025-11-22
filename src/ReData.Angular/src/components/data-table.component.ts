@@ -1,29 +1,18 @@
-﻿import {Component, inject, input} from '@angular/core';
-import {BreadcrumbsService} from '../services/breadcrumb.service';
-import {NzIconModule} from 'ng-zorro-antd/icon';
-import {NzBreadCrumbModule} from 'ng-zorro-antd/breadcrumb';
-import {RouterLink} from '@angular/router';
+﻿import {Component, input} from '@angular/core';
 import {
-  NzTableCellDirective,
-  NzTableComponent,
+  NzTableModule,
   NzTableVirtualScrollDirective,
-  NzTbodyComponent, NzTheadComponent, NzThMeasureDirective, NzTrDirective
 } from 'ng-zorro-antd/table';
 import {NzTooltipDirective} from 'ng-zorro-antd/tooltip';
-import { Field } from '../types';
+import {DataType, Field} from '../types';
 
 @Component({
   selector: 'app-data-table',
   standalone: true,
   imports: [
-    NzTableCellDirective,
-    NzTableComponent,
+    NzTableModule,
     NzTableVirtualScrollDirective,
-    NzTbodyComponent,
-    NzThMeasureDirective,
-    NzTheadComponent,
     NzTooltipDirective,
-    NzTrDirective
   ],
   template: `
     <nz-table
@@ -39,7 +28,7 @@ import { Field } from '../types';
       <thead>
       <tr>
         @for (field of fields(); track field.alias) {
-          <th nzWidth="174px">
+          <th [nzWidth]="'174px'">
             <div class="flex flex-row flex-nowrap">
               <span class="text-blue-700">
                 {{ fieldType(field) }}
@@ -66,7 +55,7 @@ import { Field } from '../types';
               } @else if (data[field.alias] === '') {
                 <span class="text-gray-500 italic">Пустая строка</span>
               } @else {
-                @if (field.type == 'DateTime') {
+                @if (field.type == 'date') {
                   {{ date(data[field.alias]) }}
                 } @else {
                   {{ data[field.alias] }}
@@ -87,10 +76,17 @@ export class DataTableComponent {
   height = input.required<string>();
 
   date(value: string) {
-    return new Date(value).toLocaleString();
+    const date = new Date(value);
+    const isMidnight = date.getHours() === 0 && date.getMinutes() === 0 && date.getSeconds() === 0;
+
+    if (isMidnight) {
+      return date.toLocaleDateString();
+    } else {
+      return date.toLocaleString();
+    }
   }
 
-  textAlign(type: string) {
+  textAlign(type: DataType) {
     if(type != 'text') return 'right'
     return 'left'
   }

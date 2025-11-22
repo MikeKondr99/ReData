@@ -54,5 +54,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Date('2025-03-27 21:19')", "@2025-03-27 21:19Z")]
      [InlineData("'2025-03-27 21:40'.Date()", "@2025-03-27 21:40Z")]
      [InlineData("Date('2025-03-27')", "@2025-03-27 00:00Z")]
+     [InlineData("''.EmptyIsNull().Date()", null)]
+     [InlineData("Date('2025-03-27').Date().Date()", "@2025-03-27 00:00Z")]
      public Task Date(string expr, object? expected) => Test(expr, expected);
 }

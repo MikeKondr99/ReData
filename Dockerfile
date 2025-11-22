@@ -29,11 +29,11 @@ WORKDIR /app
 # Copy all remaining source code
 COPY src/ ./src
 
-RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
+RUN dotnet restore src/ReData.DemoApp/ReData.DemoApp.csproj
 
 # Build and publish the main project
 
-RUN dotnet publish src/ReData.DemoApplication/ReData.DemoApplication.csproj \
+RUN dotnet publish src/ReData.DemoApp/ReData.DemoApp.csproj \
     -c Release \
     --no-restore \
     -o out \
@@ -51,4 +51,4 @@ COPY --from=angular-build /app/angular/dist/re-data.angular/browser ./wwwroot
 # Expose ports (adjust as needed)
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "ReData.DemoApplication.dll"]
+ENTRYPOINT ["dotnet", "ReData.DemoApp.dll"]

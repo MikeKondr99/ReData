@@ -35,6 +35,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 
+
 .argument {
   //margin-left: 16px;
   //display: block;
@@ -67,4 +68,19 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .ace_doc-tooltip {
   max-width: 400px !important;
 }
+
+
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before {
+  content: "" !important;
+}
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+  @apply bg-gray-100 border outline-red-100 rounded-md py-0.5 px-1 font-medium;
+}
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::after {
+  content: "" !important;
+}
+
 

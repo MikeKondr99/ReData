@@ -1,5 +1,4 @@
-﻿import {Data} from '@angular/router';
-
+﻿
 export type TransformationType = 'where' | 'orderBy' | 'select' | 'limit' | 'groupBy';
 
 export type WhereTransformation = {
@@ -62,7 +61,7 @@ export function isLimitTransformation(t: TransformationData): t is LimitTransfor
 
 export interface Field {
   alias: string;
-  type: 'Number' | 'Text' | 'Integer' | 'Boolean' | 'DateTime' | 'Unknown';
+  type: 'num' | 'text' | 'int' | 'bool' | 'date' | 'unk';
   canBeNull: boolean;
 }
 
@@ -146,10 +145,17 @@ export interface DataSetViewModel
 {
   id: string;
   name: string;
+  dataConnectorId: string;
   transformations: TransformationBlock[];
 }
 
 export interface DataSetListItem
+{
+  id: string;
+  name: string;
+}
+
+export interface DataConnectorListItem
 {
   id: string;
   name: string;

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using Pattern;
 using Pattern.Unions;
 using ReData.Query.Core.Template;
@@ -10,14 +11,22 @@ public sealed class FunctionStorage : IFunctionStorage
 {
     private ILookup<string, FunctionDefinition> lookup;
 
-    private string[] allFunctionNames;
-
     private ILookup<FunctionArgumentType, FunctionDefinition> implicitCasts;
+
+    public ConcurrentDictionary<string, int> FunctionUsage { get; init; }
 
     public FunctionStorage(IEnumerable<FunctionDefinition> functions)
     {
         functions = functions.Where(f => f.Template is not null).ToArray();
-        allFunctionNames = functions.Select(f => f.Name).Distinct().ToArray();
+        
+        FunctionUsage =
+            new ConcurrentDictionary<string, int>(
+                functions
+                    .Where (f => f.Arguments.All(a => a.Type.DataType is not DataType.Unknown))
+                    .Where(f => f.ImplicitCast is null)
+                    .Select(f => new KeyValuePair<string, int>(f.ToString(), 0))
+            );
+        
         lookup = functions.Where(f => f.ImplicitCast is null).ToLookup(f => f.Name, f => f);
         implicitCasts = functions.Where(f => f.ImplicitCast is not null).ToLookup(
             f => f.Arguments[0].Type,
@@ -89,9 +98,10 @@ public sealed class FunctionStorage : IFunctionStorage
 
         if (agg is not Option<bool>.Some(var aggr))
         {
-            return new FunctionResolutionError("Не допускается комбинирование агрегированных и нет значений в аргументах функции");
+            return new FunctionResolutionError(
+                "Не допускается комбинирование агрегированных и нет значений в аргументах функции");
         }
-        
+
         var functions = GetValidFunctions(sign);
 
         List<FunctionResolution> matches = [];
@@ -106,6 +116,7 @@ public sealed class FunctionStorage : IFunctionStorage
             {
                 return new FunctionResolutionError("Не допускается вложенность агрегирования");
             }
+
             var resolution = new FunctionResolution()
             {
                 Function = func,
@@ -131,6 +142,11 @@ public sealed class FunctionStorage : IFunctionStorage
             return new FunctionResolutionError($"Функция {sign} не была найдена");
         }
 
+        if (FunctionUsage.ContainsKey(result.Function.ToString()))
+        {
+            FunctionUsage.AddOrUpdate(result.Function.ToString(), 1, (_, c) => c + 1);
+        }
+
         return result;
     }
 
@@ -153,8 +169,10 @@ public sealed class FunctionStorage : IFunctionStorage
             {
                 return true;
             }
+
             return Option.None();
-        } 
+        }
+
         return false;
     }
 
@@ -163,7 +181,7 @@ public sealed class FunctionStorage : IFunctionStorage
         return types.All(at => at.IsConstant);
     }
 
-    
+
     private static bool PropagatesNull(FunctionDefinition function, FunctionSignature sign)
     {
         // Если не может быть null значит не может

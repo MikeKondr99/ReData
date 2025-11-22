@@ -18,6 +18,7 @@ import {
 import {NzInputNumberModule} from 'ng-zorro-antd/input-number';
 import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 import {AceEditorComponent} from './ace-editor.component';
+import {NzSpaceModule} from 'ng-zorro-antd/space';
 
 @Component({
   selector: 'app-transformations-list',
@@ -37,7 +38,8 @@ import {AceEditorComponent} from './ace-editor.component';
     CdkDropList,
     CdkDrag,
     CdkDragHandle,
-    AceEditorComponent
+    AceEditorComponent,
+    NzSpaceModule
   ],
   styles: `
     .cdk-drag-preview {
@@ -60,7 +62,7 @@ import {AceEditorComponent} from './ace-editor.component';
   `,
   template: `
     <div class="h-full">
-      <nz-button-group class="mb-3 ml-3">
+      <nz-space-compact class="mb-3 ml-3">
         <button nz-button nzType="primary" (click)="addWhereTransformation()">
           Фильтровать
           <span nz-icon nzType="filter"></span>
@@ -81,7 +83,7 @@ import {AceEditorComponent} from './ace-editor.component';
           Ограничить
           <span nz-icon nzType="vertical-align-bottom" nzTheme="outline"></span>
         </button>
-      </nz-button-group>
+      </nz-space-compact>
       <div cdkDropList (cdkDropListDropped)="drop($event)"
            class="flex h-full overflow-y-auto flex-col gap-3 max-h-[79vh] bg-gray-50 px-5 py-6 font-sans">
         @for (item of transformations; track i; let i = $index) {
@@ -299,6 +301,7 @@ export class TransformationListComponent {
 
   applyInitialTransformations = effect(() => {
     if (this.transformations === null) {
+      console.log('initial transformations loaded',this.initialTransformations());
       this.transformations = this.initialTransformations();
       this.onTransformationChange();
     }

@@ -4,7 +4,7 @@ import {
   ElementRef,
   AfterViewInit,
   OnDestroy,
-  effect, viewChild, input, output, inject
+  effect, viewChild, input, output, inject, untracked
 } from '@angular/core';
 import * as ace from 'ace-builds';
 import type {Ace} from 'ace-builds';
@@ -59,6 +59,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   updateValue = effect(() => {
     let value = this.value();
+    console.log('value comparison', value, this.editor?.getValue())
     if (this.editor?.getValue() !== value) {
       this.editor?.setValue(value);
       this.editor?.clearSelection();
@@ -70,7 +71,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
   updateError = effect(() => {
     let error = this.error();
     if (error) {
-      console.log(error);
+      console.log(error, untracked(this.value));
       this.editor?.getSession().setAnnotations([{
         row: error.span.startRow - 1,
         column: error.span.startColumn - 1,
@@ -94,7 +95,6 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   private markerId?: number;
   private editor?: Ace.Editor;
-  private functionList: FunctionViewModel[] = [];
 
   ngAfterViewInit() {
     this.initializeEditor();
@@ -121,12 +121,13 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
       // enableLiveAutocompletion: false,
       // enableSnippets: true,
     });
+    this.editor.setValue(this.value())
+    this.updateGutter();
     this.editor.clearSelection();
     this.editor.session.on('change', () => {
       let newValue = this.editor?.getValue() ?? '';
       this.updateGutter();
       this.valueChange.emit(newValue);
-
     });
   }
 
@@ -249,7 +250,7 @@ function createFunctionHtml(funcs: FunctionViewModel[], methods: boolean): strin
   let skip = methods ? 1 : 0;
 
   for (let func of funcs) {
-    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'aggr ' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}</span></div><div class="function-doc">${func.doc}</div></div>`;
+    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'agg<' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}${(func.returnType.aggregated ? '>' : '')}</span></div><div class="function-doc">${func.doc}</div></div>`;
   }
   return `<div class="function-hint">${result}</div>`
 }
