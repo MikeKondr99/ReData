@@ -41,7 +41,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
 
         var csvConfiguration = new CsvConfiguration()
         {
-            Seperator = ',', // req.Separator,
+            Seperator = req.Separator, // req.Separator,
             ReadEmptyStringAsNull = true,
         };
         var query = fileStream.QueryAsync(

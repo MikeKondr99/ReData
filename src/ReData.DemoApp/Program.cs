@@ -62,10 +62,11 @@ services.AddTickerQ(options =>
                 });
         });
     });
-    if (builder.Environment.IsDevelopment())
+    options.AddDashboard(dashboardOptions =>
     {
-        options.AddDashboard(dashboardOptions => { dashboardOptions.SetBasePath("/api/tickerq"); });
-    }
+        dashboardOptions.SetBasePath("/api/tickerq");
+        dashboardOptions.WithBasicAuth("test", "secret9");
+    });
 });
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>
@@ -93,7 +94,6 @@ app.Use(async (context, next) =>
 
 app.Services.Migrate<ApplicationDatabaseContext>();
 app.Services.Migrate<TickerQDbContext>();
-
 
 app.UseOutputCache();
 app.UseDefaultFiles();
