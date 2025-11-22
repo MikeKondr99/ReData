@@ -51,4 +51,4 @@ COPY --from=angular-build /app/angular/dist/re-data.angular/browser ./wwwroot
 # Expose ports (adjust as needed)
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "ReData.DemoApplication.dll"]
+ENTRYPOINT ["dotnet", "ReData.DemoApp.dll"]
