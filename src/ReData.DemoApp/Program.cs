@@ -71,11 +71,11 @@ services.AddTickerQ(options =>
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ReData"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-services.AddScoped<ConnectionService>();
+services.AddScoped<DwhService>();
 
 var app = builder.Build();
 

@@ -5,15 +5,17 @@ using ReData.Query.Core.Types;
 
 namespace ReData.DemoApp.Services;
 
-public class ConnectionService
+public class DwhService
 {
     private readonly ApplicationDatabaseContext db;
-    public string Connection { get; init; }
+    public string DwhReadConnection { get; init; }
+    public string DwhWriteConnection { get; init; }
 
-    public ConnectionService(IConfiguration configuration, ApplicationDatabaseContext db)
+    public DwhService(IConfiguration configuration, ApplicationDatabaseContext db)
     {
         this.db = db;
-        Connection = configuration["DemoDbConnection"] ?? string.Empty;
+        DwhReadConnection = configuration.GetConnectionString("DwhRead") ?? string.Empty;
+        DwhWriteConnection = configuration.GetConnectionString("DwhWrite") ?? string.Empty;
     }
 
     public QueryBuilder GetQueryBuilder(Guid dataConnectorId)

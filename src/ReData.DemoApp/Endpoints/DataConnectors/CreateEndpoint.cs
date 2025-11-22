@@ -19,7 +19,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
     Results<Created<CreateDataConnectorResponse>, BadRequest<string>>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
-    public required ConnectionService ConnectionService { get; init; }
+    public required DwhService DwhService { get; init; }
     
     public required IOutputCacheStore OutputCache { get; init; }
 
@@ -55,7 +55,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
         var tableId = Guid.NewGuid();
         string tableName = $"table_{tableId}";
 
-        using (var connection = new NpgsqlConnection(ConnectionService.Connection))
+        using (var connection = new NpgsqlConnection(DwhService.DwhWriteConnection))
         {
             await connection.OpenAsync(ct);
             await using (var transaction = await connection.BeginTransactionAsync(ct))

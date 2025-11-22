@@ -11,7 +11,7 @@ using Factory = ReData.Query.Factory;
 public class Endpoint : Endpoint<TransformRequest, 
     Results<Ok<TransformResponse>, BadRequest<object>, InternalServerError<ExecutionErrorResponse>>>
 {
-    public required ConnectionService ConnectionService { get; init; }
+    public required DwhService DwhService { get; init; }
     public IQueryCompiler Compiler { get; } = Factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
     public override void Configure()
@@ -25,7 +25,7 @@ public class Endpoint : Endpoint<TransformRequest,
     {
         string? sql = null;
         int i = -1;
-        var query = ConnectionService.GetQueryBuilder(req.DataConnectorId);
+        var query = DwhService.GetQueryBuilder(req.DataConnectorId);
         Query.Core.Query build;
 
         // 1. Apply transformations
@@ -81,7 +81,7 @@ public class Endpoint : Endpoint<TransformRequest,
         // 3. Execute query
         try
         {
-            await using var runner = Factory.CreateQueryRunner(ReData.Query.DatabaseType.PostgreSql, ConnectionService.Connection);
+            await using var runner = Factory.CreateQueryRunner(ReData.Query.DatabaseType.PostgreSql, DwhService.DwhWriteConnection);
             var data = await runner.RunQueryAsObjectAsync(build);
 
             var response = new TransformResponse

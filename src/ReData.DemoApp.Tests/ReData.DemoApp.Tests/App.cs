@@ -8,7 +8,7 @@ using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace ReData.DemoApp.Tests;
 
-public class App : AppFixture<ReData.DemoApp.Services.ConnectionService>
+public class App : AppFixture<ReData.DemoApp.Services.DwhService>
 {
     private static readonly PostgreSqlContainer PostgresContainer = new PostgreSqlBuilder()
         .WithImage("postgres:15-alpine")
@@ -34,8 +34,9 @@ public class App : AppFixture<ReData.DemoApp.Services.ConnectionService>
 
     protected override void ConfigureApp(IWebHostBuilder a)
     {
-        Environment.SetEnvironmentVariable("DemoDbConnection", GetDemoDbConnectionString());
-        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", GetDefaultConnectionString());
+        Environment.SetEnvironmentVariable("ConnectinoStrings__DwhWrite", GetDwhConnectionString());
+        Environment.SetEnvironmentVariable("ConnectinoStrings__DwhRead", GetDwhConnectionString());
+        Environment.SetEnvironmentVariable("ConnectionStrings__ReData", GetReDataConnectionString());
         Environment.SetEnvironmentVariable("ConnectionStrings__TickerQ", GetTickerQConnectionString());
         // НЕ РАБОТАЕТ ХЗ ПОЧЕМУ
         // a.ConfigureAppConfiguration((context, config) =>
@@ -66,7 +67,7 @@ public class App : AppFixture<ReData.DemoApp.Services.ConnectionService>
         // Create the three databases
         var databases = new[]
         {
-            "demo", "redata", "tickerq"
+            "dwh", "redata", "tickerq"
         };
 
         foreach (var dbName in databases)
@@ -77,12 +78,12 @@ public class App : AppFixture<ReData.DemoApp.Services.ConnectionService>
         }
     }
 
-    private static string GetDemoDbConnectionString()
+    private static string GetDwhConnectionString()
     {
-        return PostgresContainer.GetConnectionString().Replace("test_db", "demo");
+        return PostgresContainer.GetConnectionString().Replace("test_db", "dwh");
     }
 
-    private static string GetDefaultConnectionString()
+    private static string GetReDataConnectionString()
     {
         return PostgresContainer.GetConnectionString().Replace("test_db", "redata");
     }

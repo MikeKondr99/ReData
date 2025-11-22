@@ -8,15 +8,15 @@ namespace ReData.DemoApp.Jobs;
 
 public sealed class ClearUnusedDwhTableJob
 {
-    private ConnectionService ConnectionService { get; init; }
+    private DwhService DwhService { get; init; }
     private ApplicationDatabaseContext Db { get; init; }
 
     public ClearUnusedDwhTableJob(
         ApplicationDatabaseContext db,
-        ConnectionService connectionService
+        DwhService dwhService
     )
     {
-        ConnectionService = connectionService;
+        DwhService = dwhService;
         Db = db;
     }
 
@@ -26,7 +26,7 @@ public sealed class ClearUnusedDwhTableJob
         CancellationToken ct)
     {
         var connectedTables = Db.DataConnectors.Select(dc => dc.TableName);
-        var connectionString = ConnectionService.Connection;
+        var connectionString = DwhService.DwhWriteConnection;
 
         using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync(ct);
