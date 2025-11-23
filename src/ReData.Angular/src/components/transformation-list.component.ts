@@ -151,12 +151,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
-                        <nz-select class="mini-select" nzSize="small" nzSuffixIcon="1">
-                          <nz-option nzValue="Equal" nzLabel="=" ></nz-option>
-                          <nz-option nzValue="Rename" nzLabel="Заменить"></nz-option>
-                          <nz-option nzValue="Rename" nzLabel="Удалить"></nz-option>
-                        </nz-select>
-
+                        =
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
@@ -174,7 +169,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                     </button>
                     <span class="flex gap-2 items-center">
                       <span>Остальное</span>
-                      <nz-select class="w-36" [(ngModel)]="item.transformation.restOptions"
+                      <nz-select class="w-36" [(ngModel)]="item.transformation.restOptions" nzSize="small"
                                  (ngModelChange)="onTransformationChange()">
                         <nz-option nzValue="NoAction" nzLabel="Оставить"></nz-option>
                         <nz-option nzValue="Delete" nzLabel="Удалить"></nz-option>

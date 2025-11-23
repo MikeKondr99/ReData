@@ -25,7 +25,7 @@ WORKDIR /app
 
 # COPY src ./src
 
-# RUN dotnet restore src/ReData.DemoApplication/ReData.DemoApplication.csproj
+# RUN dotnet restore src/ReData.DemoApp/ReData.DemoApp.csproj
 # Copy all remaining source code
 COPY src/ ./src
 

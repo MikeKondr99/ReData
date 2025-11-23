@@ -1,10 +1,8 @@
-﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
-using FastEndpoints;
-using Pattern.Unions;
+﻿using Pattern.Unions;
 using ReData.Query.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
+using ReData.Query.Lang.Expressions;
 
 namespace ReData.DemoApp.Transformations;
 
@@ -26,15 +24,13 @@ public class SelectTransformation : ITransformation
             oldFields = builder.Build().Fields().Where(f => !newFields.Contains(f.Alias)).ToArray();
             foreach (var field in oldFields)
             {
-                // TODO: нехватает escape '\]'
-                var alias = $"[{field.Alias}]";
                 if (field.Type.Type == DataType.Bool)
                 {
-                    dict.Add(field.Alias, $"Int({alias})");
+                    dict.Add(field.Alias, $"Int({Expr.Field(field.Alias)})");
                 }
                 else
                 {
-                    dict.Add(field.Alias, alias);
+                    dict.Add(field.Alias, Expr.Field(field.Alias));
                 }
             }
         }

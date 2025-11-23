@@ -7,6 +7,7 @@ using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
+using ReData.DemoApp.Transformations;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
 using TickerQ.Dashboard.DependencyInjection;
@@ -28,6 +29,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new ValueConverter());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<FunctionKind>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<DataType>());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<SelectRestOptions>());
 });
 
 services.AddOutputCache();

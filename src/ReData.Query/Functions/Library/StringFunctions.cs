@@ -114,7 +114,7 @@ public class StringFunctions : FunctionsDescriptor
                 [All] = $"REPLACE({input}, {1}, {2})",
             });
         
-         int substring = 1;
+        int substring = 1;
         Method("Index")
             .Arg("input", Text)
             .Arg("substring", Text)
@@ -128,6 +128,20 @@ public class StringFunctions : FunctionsDescriptor
                 [Oracle] = $"NULLIF(INSTR({input}, {substring}), 0)",
                 [ClickHouse] = $"nullIf(positionUTF8({input}, {substring}),0)",
             });
+        
+        // Method("Contains")
+        //     .Arg("input", Text)
+        //     .Arg("substring", Text)
+        //     .Returns(Bool)
+        //     .CustomNullPropagation(_ => true)
+        //     .Templates(new()
+        //     {
+        //         [SqlServer] = $"CASE WHEN {substring} <> N'' THEN CHARINDEX({substring} COLLATE Latin1_General_100_CS_AS, {input}  COLLATE Latin1_General_100_CS_AS) <> 0 ELSE 0 = 0 END",
+        //         [MySql] = $"LOCATE({substring} COLLATE utf8mb4_bin, {input} COLLATE utf8mb4_bin) <> 0",
+        //         [PostgreSql] = $"STRPOS({input}, {substring}) <> 0",
+        //         [Oracle] = $"INSTR({input}, {substring}) <> 0",
+        //         [ClickHouse] = $"positionUTF8({input}, {substring}) <> 0",
+        //     });
 
         Method("LastIndex")
             .Arg("input", Text)
