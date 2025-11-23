@@ -14,6 +14,7 @@ export type OrderByTransformation = {
 export type SelectTransformation = {
   $type: 'select';
   items: SelectItem[];
+  restOptions: "Delete" | "NoAction"
 };
 
 export type GroupByTransformation = {

@@ -55,7 +55,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
         var tableId = Guid.NewGuid();
         string tableName = $"table_{tableId}";
 
-        using (var connection = new NpgsqlConnection(DwhService.DwhWriteConnection))
+        using (var connection = new NpgsqlConnection(DwhService.WriteConnection))
         {
             await connection.OpenAsync(ct);
             await using (var transaction = await connection.BeginTransactionAsync(ct))

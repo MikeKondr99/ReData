@@ -73,4 +73,10 @@ public abstract record Expr
         }
         return this;
     }
+
+    public static string Field(string alias)
+    {
+        alias = $"[{alias.Replace("]", @"\]")}]";
+        return alias;
+    }
 }
