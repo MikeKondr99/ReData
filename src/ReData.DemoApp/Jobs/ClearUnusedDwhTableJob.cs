@@ -26,7 +26,7 @@ public sealed class ClearUnusedDwhTableJob
         CancellationToken ct)
     {
         var connectedTables = Db.DataConnectors.Select(dc => dc.TableName);
-        var connectionString = DwhService.DwhWriteConnection;
+        var connectionString = DwhService.WriteConnection;
 
         using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync(ct);

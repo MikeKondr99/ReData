@@ -8,14 +8,14 @@ namespace ReData.DemoApp.Services;
 public class DwhService
 {
     private readonly ApplicationDatabaseContext db;
-    public string DwhReadConnection { get; init; }
-    public string DwhWriteConnection { get; init; }
+    public string ReadConnection { get; init; }
+    public string WriteConnection { get; init; }
 
     public DwhService(IConfiguration configuration, ApplicationDatabaseContext db)
     {
         this.db = db;
-        DwhReadConnection = configuration.GetConnectionString("DwhRead") ?? string.Empty;
-        DwhWriteConnection = configuration.GetConnectionString("DwhWrite") ?? string.Empty;
+        ReadConnection = configuration.GetConnectionString("DwhRead") ?? string.Empty;
+        WriteConnection = configuration.GetConnectionString("DwhWrite") ?? string.Empty;
     }
 
     public QueryBuilder GetQueryBuilder(Guid dataConnectorId)

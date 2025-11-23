@@ -37,7 +37,7 @@ public sealed record CompilationErrorResponse
 {
     public required int Index { get; init; }
     public required string Message { get; init; }
-    public required string[]? Query { get; init; }
+    public required string? Query { get; init; }
 }
 
 public sealed record ExecutionErrorResponse

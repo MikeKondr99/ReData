@@ -56,7 +56,7 @@ public class Endpoint : Endpoint<TransformRequest,
             {
                 Index = i,
                 Message = $"Непредвиденная ошибка при составлении создании трансформаций:\n{ex.Message}",
-                Query = sql?.Split("\n")?.ToArray()
+                Query = sql,
             };
             return TypedResults.BadRequest((object)errorResponse);
         }
@@ -73,7 +73,7 @@ public class Endpoint : Endpoint<TransformRequest,
             {
                 Index = i,
                 Message = $"Непредвиденная ошибка компиляции запроса:\n{ex.Message}",
-                Query = sql?.Split("\n")?.ToArray()
+                Query = sql,
             };
             return TypedResults.BadRequest((object)errorResponse);
         }
@@ -81,7 +81,7 @@ public class Endpoint : Endpoint<TransformRequest,
         // 3. Execute query
         try
         {
-            await using var runner = Factory.CreateQueryRunner(ReData.Query.DatabaseType.PostgreSql, DwhService.DwhWriteConnection);
+            await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, DwhService.ReadConnection);
             var data = await runner.RunQueryAsObjectAsync(build);
 
             var response = new TransformResponse
