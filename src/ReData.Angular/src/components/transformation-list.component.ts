@@ -53,12 +53,6 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
     :host {
       height: 100%;
     }
-    .mini-select {
-      width: fit-content;
-    }
-    .mini-select.ant-select-focused {
-      width: 150px;
-    }
   `,
   template: `
     <div class="h-full">
@@ -151,7 +145,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                           (ngModelChange)="onTransformationChange()"
                           placeholder="Field name"
                         />
-                        =
+                        <span>=</span>
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
