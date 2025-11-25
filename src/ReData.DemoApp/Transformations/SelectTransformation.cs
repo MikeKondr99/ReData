@@ -1,4 +1,5 @@
-﻿using Pattern.Unions;
+﻿using System.Text.Json.Serialization;
+using Pattern.Unions;
 using ReData.Query.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
@@ -47,6 +48,7 @@ public class SelectTransformation : ITransformation
 /// <summary>
 /// Опция для трансформации, что делать с не указанными полями
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<SelectRestOptions>))]
 public enum SelectRestOptions
 {
     /// <summary>

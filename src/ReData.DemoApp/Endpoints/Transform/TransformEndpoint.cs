@@ -8,7 +8,8 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Factory = ReData.Query.Factory;
 
-public class Endpoint : Endpoint<TransformRequest, 
+public class TransformEndpoint : Endpoint<
+    TransformRequest, 
     Results<Ok<TransformResponse>, BadRequest<object>, InternalServerError<ExecutionErrorResponse>>>
 {
     public required DwhService DwhService { get; init; }

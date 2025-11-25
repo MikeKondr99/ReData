@@ -117,8 +117,8 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
       showGutter: true,
       readOnly: false,
       cursorStyle: 'slim',
-      // enableBasicAutocompletion: false,
-      // enableLiveAutocompletion: false,
+      // enableBasicAutocompletion: true,
+      // enableLiveAutocompletion: true,
       // enableSnippets: true,
     });
     this.editor.setValue(this.value())
@@ -202,7 +202,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
   getCompleter(fields: string[], functions: FunctionViewModel[]): Ace.Completer {
     let completions: Ace.Completion[] = [];
 
-    completions = completions.concat(AceEditorComponent.getFieldCompletions(fields));
+    // completions = completions.concat(AceEditorComponent.getFieldCompletions(fields));
     completions = completions.concat(AceEditorComponent.getFunctionsCompletions(functions))
 
     return {
@@ -231,13 +231,16 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
         // Check if we're after a dot (for method completion)
         const isMethodCall = isAfterDot(line, cursor);
 
+        let resultCompletions: Ace.Completion[] = [];
         if (isMethodCall) {
           // Return method completions with modified signatures
-          callback(null, completions.filter(c => c.meta == 'method'));
+          resultCompletions = completions.filter(c => c.meta == 'method')
         } else {
           // Return regular completions
-          callback(null, completions.filter(c => c.meta != 'method'));
+          resultCompletions = completions.filter(c => c.meta != 'method')
         }
+        console.log('resultCompletions', resultCompletions);
+        callback(null, completions.filter(c => c.meta == 'method'));
       },
     }
   }

@@ -12,7 +12,7 @@ public sealed record DataSetEntity : BaseEntity
 
     public required string Name { get; set; }
 
-    public required Guid DataConnectorId { get; init; }
+    public required Guid DataConnectorId { get; set; }
 
     public DataConnectorEntity DataConnector { get; init; }
     public required List<TransformationEntity> Transformations { get; init; }

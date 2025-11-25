@@ -1,13 +1,12 @@
 ﻿using FastEndpoints;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.Datasets;
+using ReData.DemoApp.Endpoints.Datasets.Create;
+using ReData.DemoApp.Transformations;
 
-namespace ReData.DemoApp.Endpoints.DataSets;
+namespace ReData.DemoApp.Endpoints.Datasets.CreateDataset;
 
 using Response =
     Results<
@@ -16,7 +15,7 @@ using Response =
         Conflict<ErrorResponse>
     >;
 
-public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
+public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 {
     public required ApplicationDatabaseContext Db { get; init; }
     public required IOutputCacheStore OutputCache { get; init; }
@@ -24,20 +23,40 @@ public class CreateEndpoint : Endpoint<CreateDataSetRequest, Response>
     public override void Configure()
     {
         Post("/api/datasets");
+        Summary(summary =>
+        {
+            summary.ExampleRequest = new CreateDataSetRequest
+            {
+                Name = "Имя набора",
+                ConnectorId = Guid.Empty,
+                Transformations =
+                [
+                    new TransformationBlock()
+                    {
+                        Enabled = true,
+                        Transformation = new SelectTransformation()
+                        {
+                            Items =
+                            [
+                                new SelectItem()
+                                {
+                                    Field = "Поле",
+                                    Expression = "id * 2",
+                                }
+                            ],
+                            RestOptions = SelectRestOptions.Delete,
+                        }
+                    }
+                ]
+            };
+        });
         AllowAnonymous();
     }
 
     public override async Task<Response> ExecuteAsync(
-        CreateDataSetRequest req, CancellationToken ct)
+        CreateDataSetRequest req,
+        CancellationToken ct)
     {
-        var existingDataset = Db.DataSets.FirstOrDefault(ds => ds.Name == req.Name);
-        if (existingDataset is not null)
-        {
-            return TypedResults.Conflict(new ErrorResponse([
-                new("name", "'name' must be unique")
-            ]));
-        }
-
         var newId = Guid.NewGuid();
         // Map to entity
         var entity = new DataSetEntity

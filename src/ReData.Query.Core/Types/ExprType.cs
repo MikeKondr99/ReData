@@ -109,6 +109,7 @@ public record struct ExprType
 /// Базовые типы данных в системе типов.
 /// Определяет примитивные типы, с которыми работают функции.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<DataType>))]
 public enum DataType
 {
     /// <summary>

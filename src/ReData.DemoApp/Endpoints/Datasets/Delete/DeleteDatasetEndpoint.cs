@@ -1,16 +1,13 @@
-﻿// Endpoints/DataSets/DeleteEndpoint.cs
-
-using FastEndpoints;
+﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
-using ReData.DemoApp.Endpoints.Datasets;
-using ReData.DemoApp.Database.Entities;
+using ReData.DemoApp.Endpoints.DataSets;
 
-namespace ReData.DemoApp.Endpoints.DataSets;
+namespace ReData.DemoApp.Endpoints.Datasets.Delete;
 
-public class DeleteEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFound>>
+public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
     public required IOutputCacheStore OutputCache { get; init; }

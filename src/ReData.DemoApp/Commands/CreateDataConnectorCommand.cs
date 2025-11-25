@@ -1,50 +1,48 @@
-﻿using FastEndpoints;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OutputCaching;
+using FastEndpoints;
 using MiniExcelLibs;
 using MiniExcelLibs.Csv;
 using Npgsql;
 using ReData.Common;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.DataSets;
 using ReData.DemoApp.Services;
 using ReData.Query.Core.Types;
-using Entities_Field = ReData.DemoApp.Database.Entities.Field;
 using Field = ReData.DemoApp.Database.Entities.Field;
 
-namespace ReData.DemoApp.Endpoints.DataSources;
+namespace ReData.DemoApp.Commands;
 
-public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
-    Results<Created<CreateDataConnectorResponse>, BadRequest<string>>>
+public class CreateDataConnectorCommand : ICommand<DataConnectorEntity>
 {
+    public required string Name { get; init; }
+
+    public required char Separator { get; init; }
+
+    public required bool WithHeader { get; init; }
+
+    public required Stream FileStream { get; init; }
+}
+
+public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCommand, DataConnectorEntity>
+{
+    public CreateDataConnectorHandler(
+        ApplicationDatabaseContext db,
+        DwhService dwh)
+    {
+        Db = db;
+        DwhService = dwh;
+    }
     public required ApplicationDatabaseContext Db { get; init; }
     public required DwhService DwhService { get; init; }
-    
-    public required IOutputCacheStore OutputCache { get; init; }
 
-    public override void Configure()
+    /// <inheritdoc />
+    public async Task<DataConnectorEntity> ExecuteAsync(CreateDataConnectorCommand command, CancellationToken ct)
     {
-        Post("/api/data-connectors");
-        AllowAnonymous();
-        AllowFileUploads(dontAutoBindFormData: true);
-        // MaxRequestBodySize(50 * 1024 * 1024);
-    }
-
-    public override async Task<Results<Created<CreateDataConnectorResponse>, BadRequest<string>>> ExecuteAsync(
-        CreateDataConnectorRequest req, CancellationToken ct)
-    {
-        req.Name = Query<string>("name")!;
-        // req.Separator = Query<char>("separator");
-        // req.WithHeader = Query<bool>("withHeader");
-        Stream? fileStream = (await FormMultipartSectionsAsync(ct).FirstOrDefaultAsync()).FileSection?.Section.Body;
-
         var csvConfiguration = new CsvConfiguration()
         {
-            Seperator = req.Separator, // req.Separator,
+            Seperator = command.Separator, // req.Separator,
             ReadEmptyStringAsNull = true,
         };
-        var query = fileStream.QueryAsync(
+        var query = command.FileStream.QueryAsync(
             excelType: ExcelType.CSV,
             useHeaderRow: false, // false for now
             configuration: csvConfiguration,
@@ -64,7 +62,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
                     connection: connection,
                     transaction: transaction,
                     tableName: tableName,
-                    withHeader: req.WithHeader,
+                    withHeader: command.WithHeader,
                     rows: query,
                     ct: ct
                 );
@@ -75,9 +73,9 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
         var entity = new DataConnectorEntity()
         {
             Id = Guid.NewGuid(),
-            Name = req.Name,
+            Name = command.Name,
             TableName = tableName,
-            FieldList = columns.Select(c => new Entities_Field
+            FieldList = columns.Select(c => new Field()
             {
                 Alias = c,
                 DataType = DataType.Text,
@@ -89,16 +87,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
         Db.DataConnectors.Add(entity);
         await Db.SaveChangesAsync(ct);
 
-
-        var response = new CreateDataConnectorResponse()
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-        };
-
-        await OutputCache.EvictByTagAsync("data-connectors", ct);
-        
-        return TypedResults.Created("lol", response);
+        return entity;
     }
 
     private static async Task<string> CreateTableAsync(
@@ -107,7 +96,6 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
         string tableName,
         string[] columns)
     {
-
         var createTableSql = $"""
                               CREATE TABLE "{tableName}" (
                                   rownum SERIAL PRIMARY KEY,
@@ -158,7 +146,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
             // Если без хедера то обрабатывает первую запись как запись
             if (!withHeader)
             {
-                var row = iter.Current as IDictionary<string,object?>;
+                var row = iter.Current as IDictionary<string, object?>;
                 await writer.StartRowAsync(ct);
                 for (var i = 0; i < columns.Length; i++)
                 {
@@ -169,7 +157,7 @@ public class CreateDataSourceEndpoint : Endpoint<CreateDataConnectorRequest,
 
             while (await iter.MoveNextAsync())
             {
-                var row = iter.Current as IDictionary<string,object?>;
+                var row = iter.Current as IDictionary<string, object?>;
                 await writer.StartRowAsync(ct);
 
                 for (var i = 0; i < columns.Length; i++)

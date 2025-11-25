@@ -1,8 +1,11 @@
-﻿namespace ReData.Query.Core.Types;
+﻿using System.Text.Json.Serialization;
+
+namespace ReData.Query.Core.Types;
 
 /// <summary>
 /// Категория функции, определяющая способ её вызова и синтаксис использования.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<FunctionKind>))]
 public enum FunctionKind
 {
     /// <summary>

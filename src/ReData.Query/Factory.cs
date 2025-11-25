@@ -1,4 +1,5 @@
-﻿using ClickHouse.Client.ADO;
+﻿using System.Collections.Concurrent;
+using ClickHouse.Client.ADO;
 using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using Npgsql;
@@ -15,7 +16,7 @@ namespace ReData.Query;
 
 public static class Factory
 {
-    private static readonly Dictionary<DatabaseType, FunctionStorage> FunctionStorages = new();
+    private static readonly ConcurrentDictionary<DatabaseType, FunctionStorage> FunctionStorages = new();
 
     public static IQueryRunner CreateQueryRunner(DatabaseType database, string connectionString)
     {
@@ -92,22 +93,18 @@ public static class Factory
     
     public static IFunctionStorage CreateFunctionStorage(DatabaseType database)
     {
-        if (FunctionStorages.TryGetValue(database, out var fs))
+        return FunctionStorages.GetOrAdd(database, (key) =>
         {
-            return fs;
-        }
-
-        var newFs = database switch
-        {
-            DatabaseType.PostgreSql => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.PostgreSql),
-            DatabaseType.SqlServer => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.SqlServer),
-            DatabaseType.MySql => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.MySql),
-            DatabaseType.ClickHouse => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.ClickHouse),
-            DatabaseType.Oracle => GlobalFunctionsStorage.GetFunctions(Impl.Functions.DatabaseTypes.Oracle),
-        };
-        FunctionStorages[database] = newFs;
-        return newFs;
-
+            var newFs = database switch
+            {
+                DatabaseType.PostgreSql => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.PostgreSql),
+                DatabaseType.SqlServer => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.SqlServer),
+                DatabaseType.MySql => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.MySql),
+                DatabaseType.ClickHouse => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.ClickHouse),
+                DatabaseType.Oracle => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.Oracle),
+            };
+            return newFs;
+        });
     }
 
 

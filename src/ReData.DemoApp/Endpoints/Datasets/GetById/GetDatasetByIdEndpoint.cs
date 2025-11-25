@@ -2,13 +2,14 @@
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
+using ReData.DemoApp.Endpoints.Datasets.GetById;
 
 namespace ReData.DemoApp.Endpoints.Datasets;
 
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-public class GetByIdEndpoint : Endpoint<GetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
+public class GetDatasetByIdEndpoint : Endpoint<GetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
 

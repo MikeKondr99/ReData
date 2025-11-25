@@ -10,7 +10,7 @@ namespace ReData.DemoApp.Endpoints.Functions;
 /// <remarks>
 /// Возвращает полный список доступных для провайдера PostrgreSql функций
 /// </remarks>>
-public class Endpoint : EndpointWithoutRequest<
+public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     Results<
         Ok<List<FunctionResponse>>,
         NotFound,

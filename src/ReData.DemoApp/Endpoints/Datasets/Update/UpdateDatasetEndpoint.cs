@@ -1,16 +1,14 @@
-﻿// Endpoints/DataSets/UpdateEndpoint.cs
-
-using FastEndpoints;
+﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.Datasets;
+using ReData.DemoApp.Endpoints.Datasets.GetById;
 
-namespace ReData.DemoApp.Endpoints.DataSets;
+namespace ReData.DemoApp.Endpoints.Datasets.Update;
 
-public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetResponse>, NotFound>>
+public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<UpdateDataSetResponse>, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
 
@@ -22,15 +20,13 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
         AllowAnonymous();
     }
 
-    public override async Task<Results<Ok<DataSetResponse>, NotFound>> ExecuteAsync(
+    public override async Task<Results<Ok<UpdateDataSetResponse>, NotFound>> ExecuteAsync(
         UpdateDataSetRequest req, CancellationToken ct)
     {
-        var id = Route<Guid>("Id");
-
         var entity = await Db.Set<DataSetEntity>()
             .AsTracking()
             .Include(ds => ds.Transformations)
-            .FirstOrDefaultAsync(ds => ds.Id == id, ct);
+            .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
 
         if (entity is null)
         {
@@ -39,6 +35,7 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
 
         // Update simple properties
         entity.Name = req.Name;
+        entity.DataConnectorId = req.ConnectorId;
 
         // Remove existing transformations
         Db.Set<TransformationEntity>().RemoveRange(entity.Transformations);
@@ -52,7 +49,7 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
             {
                 Enabled = req.Transformations[i].Enabled,
                 Description = null,
-                DataSetId = id,
+                DataSetId = req.Id,
                 Order = (uint)i,
                 Data = req.Transformations[i].Transformation,
             });
@@ -62,7 +59,7 @@ public class UpdateEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<DataSetR
 
         await Db.SaveChangesAsync(ct);
 
-        var response = new DataSetResponse
+        var response = new UpdateDataSetResponse
         {
             Id = entity.Id,
             Name = entity.Name,

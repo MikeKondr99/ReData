@@ -1,22 +1,70 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ReData.DemoApp.Database;
+using ReData.Common;
+using ReData.DemoApp.Commands;
+using ReData.DemoApp.Database.Entities;
+using ReData.DemoApp.Endpoints.DataSets;
+using ReData.DemoApp.Endpoints.DataSources;
 using ReData.DemoApp.Extensions;
 using Testcontainers.PostgreSql;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace ReData.DemoApp.Tests;
 
-public class App : AppFixture<ReData.DemoApp.Services.DwhService>
+public class App : AppFixture<Services.DwhService>
 {
     private static readonly PostgreSqlContainer PostgresContainer = new PostgreSqlBuilder()
+        .WithName("ReData-Tests")
         .WithImage("postgres:15-alpine")
         .WithDatabase("test_db")
         .WithUsername("postgres")
         .WithPassword("password")
         .WithCleanUp(true)
         .Build();
+
+    private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+
+    public static DataConnectorEntity ExistingDataConnector { get; private set; }
+    // public DataConnectorEntity ExistingDataConnector => existingDataConnector;
+
+    private static bool dataIsInit;
+
+
+    private static async Task InitDataOnce()
+    {
+        if (dataIsInit)
+        {
+            return;
+        }
+
+        await semaphore.WaitAsync();
+
+        if (dataIsInit)
+        {
+            return;
+        }
+        dataIsInit = true;
+
+        var stream =
+            """
+                id,name
+                0,test
+                1,test2
+                """.ToStream();
+
+        var entity = await new CreateDataConnectorCommand
+        {
+            Name = "test",
+            Separator = ',',
+            WithHeader = true,
+            FileStream = stream,
+        }.ExecuteAsync(CancellationToken.None);
+        ExistingDataConnector = entity;
+
+        semaphore.Release();
+    }
 
     protected override async Task PreSetupAsync()
     {
@@ -26,16 +74,15 @@ public class App : AppFixture<ReData.DemoApp.Services.DwhService>
         await CreateDatabases();
     }
 
-
-    protected override Task SetupAsync()
+    protected override async Task SetupAsync()
     {
-        return Task.CompletedTask;
+        await InitDataOnce();
     }
 
     protected override void ConfigureApp(IWebHostBuilder a)
     {
-        Environment.SetEnvironmentVariable("ConnectinoStrings__DwhWrite", GetDwhConnectionString());
-        Environment.SetEnvironmentVariable("ConnectinoStrings__DwhRead", GetDwhConnectionString());
+        Environment.SetEnvironmentVariable("ConnectionStrings__DwhWrite", GetDwhConnectionString());
+        Environment.SetEnvironmentVariable("ConnectionStrings__DwhRead", GetDwhConnectionString());
         Environment.SetEnvironmentVariable("ConnectionStrings__ReData", GetReDataConnectionString());
         Environment.SetEnvironmentVariable("ConnectionStrings__TickerQ", GetTickerQConnectionString());
         // НЕ РАБОТАЕТ ХЗ ПОЧЕМУ

@@ -2,12 +2,10 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
-using ReData.DemoApp.Endpoints.Datasets;
-using ReData.DemoApp.Database.Entities;
 
-namespace ReData.DemoApp.Endpoints.DataSets;
+namespace ReData.DemoApp.Endpoints.Datasets.GetAll;
 
-public class GetAllEndpoint : EndpointWithoutRequest<
+public class GetAllDatasetsEndpoint : EndpointWithoutRequest<
     Ok<List<DataSetListItem>>
 >
 {
