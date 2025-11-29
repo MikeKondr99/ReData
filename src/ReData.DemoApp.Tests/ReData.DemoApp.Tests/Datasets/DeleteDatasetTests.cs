@@ -10,6 +10,9 @@ namespace ReData.DemoApp.Tests.Datasets;
 public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
+    
+    private Task<HttpResponseMessage> Endpoint(DeleteDataSetRequest req) =>
+        App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(req);
 
     private async Task<CreateDataSetResponse> CreateTestDatasetAsync(Guid? connectorId = null, string? name = null)
     {
@@ -30,16 +33,16 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         Db.DataSets.Should().NotContain(ds => ds.Id == existingDataset.Id);
     }
 
@@ -47,17 +50,17 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     public async Task DeleteDataset_WithExistingConnector_ShouldReturnSuccess()
     {
         // Arrange
-        var existingDataset = await CreateTestDatasetAsync(App.ExistingDataConnector.Id);
-        var deleteReq = new DeleteDataSetRequest
+        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
+        var req = new DeleteDataSetRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         Db.DataSets.Should().NotContain(ds => ds.Id == existingDataset.Id);
     }
 
@@ -66,13 +69,13 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = nonExistentId
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -83,17 +86,17 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = existingDataset.Id
         };
 
         // Act - First delete
-        var firstRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
-        firstRsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var firstRsp = await Endpoint(req);
+        firstRsp.Should().BeSuccessful();
 
         // Act - Second delete
-        var secondRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var secondRsp = await Endpoint(req);
 
         // Assert
         secondRsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -108,13 +111,13 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
         var dataset2 = await CreateTestDatasetAsync();
         var dataset3 = await CreateTestDatasetAsync();
 
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = dataset2.Id
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -129,13 +132,13 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     public async Task DeleteDataset_WithEmptyGuid_ShouldReturnNotFound()
     {
         // Arrange
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = Guid.Empty
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -146,13 +149,13 @@ public class DeleteDatasetTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var deleteReq = new DeleteDataSetRequest
+        var req = new DeleteDataSetRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var rsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        var rsp = await Endpoint(req);
 
         // Assert - Specifically check for 200 OK, not just success status
         rsp.StatusCode.Should().Be(HttpStatusCode.OK);

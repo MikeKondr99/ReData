@@ -1,3 +1,4 @@
+using System.DirectoryServices.Protocols;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.CreateDataset;
@@ -11,7 +12,16 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
-    private async Task<CreateDataSetResponse> CreateTestDatasetAsync(Guid? connectorId = null, string? name = null, TransformationBlock[]? transformations = null)
+    private Task<TestResult<DataSetResponse>> Endpoint(GetDatasetByIdRequest req) =>
+        App.Client.GETAsync<GetDatasetByIdEndpoint, GetDatasetByIdRequest, DataSetResponse>(req);
+
+    // private Task<TestResult<ErrorResponse>> EndpointError(CreateDataSetRequest req) =>
+    //     App.Client.PUTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+
+    private async Task<CreateDataSetResponse> CreateTestDatasetAsync(
+        Guid? connectorId = null,
+        string? name = null,
+        TransformationBlock[]? transformations = null)
     {
         var req = new CreateDataSetRequest
         {
@@ -20,7 +30,8 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
             ConnectorId = connectorId ?? Guid.Empty,
         };
 
-        var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, res) =
+            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
         rsp.IsSuccessStatusCode.Should().BeTrue();
         return res;
     }
@@ -30,16 +41,16 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var getReq = new GetByIdRequest()
+        var req = new GetDatasetByIdRequest()
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest, DataSetResponse>(getReq);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         res.Id.Should().Be(existingDataset.Id);
         res.Name.Should().Be(existingDataset.Name);
         res.DataConnectorId.Should().Be(Guid.Empty);
@@ -50,20 +61,20 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     public async Task GetDatasetById_WithExistingConnector_ShouldReturnDataset()
     {
         // Arrange
-        var existingDataset = await CreateTestDatasetAsync(App.ExistingDataConnector.Id);
-        var getReq = new GetByIdRequest
+        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
+        var req = new GetDatasetByIdRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest, DataSetResponse>(getReq);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         res.Id.Should().Be(existingDataset.Id);
         res.Name.Should().Be(existingDataset.Name);
-        res.DataConnectorId.Should().Be(App.ExistingDataConnector.Id);
+        res.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
         res.Transformations.Should().BeEmpty();
     }
 
@@ -86,10 +97,11 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
                 Enabled = false,
                 Transformation = new SelectTransformation()
                 {
-                    Items = [
+                    Items =
+                    [
                         new SelectItem()
                         {
-                            Expression =  "id",
+                            Expression = "id",
                             Field = "Id"
                         }
                     ]
@@ -98,16 +110,16 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
         ];
 
         var existingDataset = await CreateTestDatasetAsync(transformations: transformations);
-        var getReq = new GetByIdRequest
+        var req = new GetDatasetByIdRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest, DataSetResponse>(getReq);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         res.Id.Should().Be(existingDataset.Id);
         res.Transformations.Should().HaveCount(2);
         res.Transformations.Should().BeEquivalentTo(transformations, options => options.WithStrictOrdering());
@@ -118,13 +130,13 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
-        var getReq = new GetByIdRequest
+        var req = new GetDatasetByIdRequest
         {
             Id = nonExistentId
         };
 
         // Act
-        var rsp = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest>(getReq);
+        var (rsp, _) = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -134,13 +146,13 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     public async Task GetDatasetById_WithEmptyGuid_ShouldReturnNotFound()
     {
         // Arrange
-        var getReq = new GetByIdRequest
+        var req = new GetDatasetByIdRequest
         {
             Id = Guid.Empty
         };
 
         // Act
-        var rsp = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest>(getReq);
+        var (rsp, _) = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -151,19 +163,22 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        
-        // Delete the dataset first
-        var deleteReq = new DeleteDataSetRequest { Id = existingDataset.Id };
-        var deleteRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
-        deleteRsp.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getReq = new GetByIdRequest
+        // Delete the dataset first
+        var deleteReq = new DeleteDataSetRequest
+        {
+            Id = existingDataset.Id
+        };
+        var deleteRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(deleteReq);
+        deleteRsp.Should().BeSuccessful();
+
+        var req = new GetDatasetByIdRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var rsp = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest>(getReq);
+        var (rsp, _) = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -173,7 +188,8 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     public async Task GetDatasetById_ShouldReturnAllFieldsCorrectly()
     {
         // Arrange
-        TransformationBlock[] transformations = [
+        TransformationBlock[] transformations =
+        [
             new TransformationBlock()
             {
                 Enabled = true,
@@ -187,8 +203,13 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
                 Enabled = false,
                 Transformation = new OrderByTransformation()
                 {
-                    Items = [
-                        new OrderItem() { Expression = "name", Descending = false }
+                    Items =
+                    [
+                        new OrderItem()
+                        {
+                            Expression = "name",
+                            Descending = false
+                        }
                     ]
                 }
             }
@@ -196,27 +217,26 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
 
         var datasetName = FakeDatasetName();
         var existingDataset = await CreateTestDatasetAsync(
-            connectorId: App.ExistingDataConnector.Id,
+            connectorId: App.Data.ExistingDataConnector.Id,
             name: datasetName,
             transformations: transformations
         );
 
-        var getReq = new GetByIdRequest
+        var req = new GetDatasetByIdRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest, DataSetResponse>(getReq);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.OK);
         res.Id.Should().Be(existingDataset.Id);
         res.Name.Should().Be(datasetName);
-        res.DataConnectorId.Should().Be(App.ExistingDataConnector.Id);
+        res.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
         res.Transformations.Should().BeEquivalentTo(transformations, options => options.WithStrictOrdering());
         res.Transformations.Should().HaveCount(2);
-        
     }
 
     [Fact(DisplayName = "Получение набора с пустым коннектором должно вернуть корректные данные")]
@@ -224,13 +244,13 @@ public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
     {
         // Arrange
         var existingDataset = await CreateTestDatasetAsync(Guid.Empty);
-        var getReq = new GetByIdRequest
+        var req = new GetDatasetByIdRequest
         {
             Id = existingDataset.Id
         };
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetDatasetByIdEndpoint, GetByIdRequest, DataSetResponse>(getReq);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.OK);

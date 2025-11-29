@@ -31,4 +31,10 @@
       <ProjectReference Include="..\..\ReData.DemoApp\ReData.DemoApp.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Init\Data\test.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

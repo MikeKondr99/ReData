@@ -1,3 +1,4 @@
+using Namotion.Reflection;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.CreateDataset;
@@ -10,6 +11,9 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
+    private Task<TestResult<TResponse>> Endpoint<TResponse>(UpdateDataSetRequest req) =>
+        App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, TResponse>(req);
+
     private async Task<CreateDataSetResponse> CreateTestDatasetAsync(Guid? connectorId = null)
     {
         var req = new CreateDataSetRequest
@@ -19,9 +23,8 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
             ConnectorId = Guid.Empty,
         };
 
-        var (rsp, res) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        rsp.Should().BeSuccessful();
         return res;
     }
 
@@ -39,14 +42,13 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         res.Name.Should().BeEquivalentTo(updateReq.Name);
         res.Id.Should().Be(existingDataset.Id);
-        
+
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
             ds.Name == updateReq.Name);
@@ -66,7 +68,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -91,7 +93,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -116,7 +118,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -143,7 +145,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -168,7 +170,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("transformations");
@@ -193,8 +195,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -220,7 +221,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest>(updateReq);
+        var (rsp, _) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -240,18 +241,17 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
             Id = existingDataset.Id,
             Name = FakeDatasetName(),
             Transformations = [],
-            ConnectorId = App.ExistingDataConnector.Id,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с несуществующим коннектором должно вернуть ошибку валидации")]
@@ -269,7 +269,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, ErrorResponse>(updateReq);
+        var rsp = await Endpoint<ErrorResponse>(updateReq);
 
         // Assert
         rsp.ShouldBeError("connectorId");
@@ -282,7 +282,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
     public async Task UpdateDataset_WithEmptyGuidConnector_ShouldReturnSuccess()
     {
         // Arrange
-        var existingDataset = await CreateTestDatasetAsync(App.ExistingDataConnector.Id);
+        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
         var updateReq = new UpdateDataSetRequest
         {
             Id = existingDataset.Id,
@@ -292,8 +292,7 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -312,18 +311,17 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
             Id = existingDataset.Id,
             Name = existingDataset.Name, // Keep same name
             Transformations = [],
-            ConnectorId = App.ExistingDataConnector.Id,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с валидным коннектором и трансформациями должно быть успешным")]
@@ -355,41 +353,40 @@ public class UpdateDatasetTests(App App) : RollbackTestBase<App>(App)
             Id = existingDataset.Id,
             Name = FakeDatasetName(),
             Transformations = transformations,
-            ConnectorId = App.ExistingDataConnector.Id,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с тем же коннектором должно быть успешным")]
     public async Task UpdateDataset_WithSameConnector_ShouldReturnSuccess()
     {
         // Arrange
-        var existingDataset = await CreateTestDatasetAsync(App.ExistingDataConnector.Id);
+        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
         var updateReq = new UpdateDataSetRequest
         {
             Id = existingDataset.Id,
             Name = FakeDatasetName(),
             Transformations = [],
-            ConnectorId = App.ExistingDataConnector.Id, // Same connector
+            ConnectorId = App.Data.ExistingDataConnector.Id, // Same connector
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, UpdateDataSetResponse>(updateReq);
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 }

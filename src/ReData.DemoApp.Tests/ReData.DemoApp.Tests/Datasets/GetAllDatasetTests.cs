@@ -11,36 +11,35 @@ public class GetAllDatasetsTests(App App) : RollbackTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
-    private async Task<CreateDataSetResponse> CreateTestDatasetAsync(string? name = null)
+    private Task<TestResult<List<DataSetListItem>>> Endpoint() =>
+        App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
+    
+    private async Task<CreateDataSetResponse> CreateTestDatasetAsync()
     {
         var req = new CreateDataSetRequest
         {
-            Name = name ?? FakeDatasetName(),
+            Name = FakeDatasetName(),
             Transformations = [],
             ConnectorId = Guid.Empty,
         };
 
         var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        rsp.Should().BeSuccessful();
         return res;
     }
 
     [Fact(DisplayName = "Получение всех наборов должно включать вновь созданные наборы")]
     public async Task GetAllDatasets_ShouldIncludeNewlyCreatedDatasets()
     {
-        // Arrange - get baseline
-        var (initialRsp, initialList) = await App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
-        var initialCount = initialList.Count;
-
-        // Create test datasets
-        var dataset1 = await CreateTestDatasetAsync("test-getall-1");
-        var dataset2 = await CreateTestDatasetAsync("test-getall-2");
+        // Arrange
+        var dataset1 = await CreateTestDatasetAsync();
+        var dataset2 = await CreateTestDatasetAsync();
 
         // Act
-        var (rsp, res) = await App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
+        var (rsp, res) = await Endpoint();
 
         // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Should().BeSuccessful();
         res.Should().Contain(d => d.Id == dataset1.Id);
         res.Should().Contain(d => d.Id == dataset2.Id);
     }
@@ -49,22 +48,18 @@ public class GetAllDatasetsTests(App App) : RollbackTestBase<App>(App)
     public async Task DeletedDataset_ShouldDisappearFromList()
     {
         // Arrange
-        var dataset = await CreateTestDatasetAsync("test-delete-from-list");
-        
-        // Verify it exists
-        var (beforeRsp, beforeList) = await App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
-        var countBefore = beforeList.Count;
+        var dataset = await CreateTestDatasetAsync();
 
         // Delete it
         var deleteRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(
             new DeleteDataSetRequest { Id = dataset.Id });
-        deleteRsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteRsp.Should().BeSuccessful();
 
         // Act
-        var (afterRsp, afterList) = await App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
+        var (rsp, res) = await Endpoint();
 
         // Assert
-        afterRsp.StatusCode.Should().Be(HttpStatusCode.OK);
-        afterList.Should().NotContain(d => d.Id == dataset.Id);
+        rsp.Should().BeSuccessful();
+        res.Should().NotContain(d => d.Id == dataset.Id);
     }
 }

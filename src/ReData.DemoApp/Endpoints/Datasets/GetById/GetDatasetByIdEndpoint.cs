@@ -9,7 +9,7 @@ namespace ReData.DemoApp.Endpoints.Datasets;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-public class GetDatasetByIdEndpoint : Endpoint<GetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
+public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
 
@@ -25,7 +25,7 @@ public class GetDatasetByIdEndpoint : Endpoint<GetByIdRequest, Results<Ok<DataSe
     }
 
     public override async Task<Results<Ok<DataSetResponse>, NotFound>> ExecuteAsync(
-        GetByIdRequest req, CancellationToken ct)
+        GetDatasetByIdRequest req, CancellationToken ct)
     {
         var entity = await Db.Set<DataSetEntity>()
             .Include(ds => ds.Transformations)

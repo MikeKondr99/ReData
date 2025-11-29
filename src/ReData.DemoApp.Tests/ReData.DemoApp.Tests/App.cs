@@ -8,6 +8,7 @@ using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.DataSets;
 using ReData.DemoApp.Endpoints.DataSources;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Tests.Init;
 using Testcontainers.PostgreSql;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
@@ -24,47 +25,8 @@ public class App : AppFixture<Services.DwhService>
         .WithCleanUp(true)
         .Build();
 
-    private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
-    public static DataConnectorEntity ExistingDataConnector { get; private set; }
-    // public DataConnectorEntity ExistingDataConnector => existingDataConnector;
-
-    private static bool dataIsInit;
-
-
-    private static async Task InitDataOnce()
-    {
-        if (dataIsInit)
-        {
-            return;
-        }
-
-        await semaphore.WaitAsync();
-
-        if (dataIsInit)
-        {
-            return;
-        }
-        dataIsInit = true;
-
-        var stream =
-            """
-                id,name
-                0,test
-                1,test2
-                """.ToStream();
-
-        var entity = await new CreateDataConnectorCommand
-        {
-            Name = "test",
-            Separator = ',',
-            WithHeader = true,
-            FileStream = stream,
-        }.ExecuteAsync(CancellationToken.None);
-        ExistingDataConnector = entity;
-
-        semaphore.Release();
-    }
+    public static InitData Data { get; private set; }
 
     protected override async Task PreSetupAsync()
     {
@@ -76,7 +38,7 @@ public class App : AppFixture<Services.DwhService>
 
     protected override async Task SetupAsync()
     {
-        await InitDataOnce();
+        Data = await InitData.CreateAsync();
     }
 
     protected override void ConfigureApp(IWebHostBuilder a)

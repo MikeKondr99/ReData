@@ -8,6 +8,11 @@ namespace ReData.DemoApp.Tests.Datasets;
 public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
+    
+    private Task<TestResult<CreateDataSetResponse>> Endpoint(CreateDataSetRequest req) =>
+        App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+    private Task<TestResult<ErrorResponse>> EndpointError(CreateDataSetRequest req) =>
+        App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
 
     [Fact(DisplayName = "Создание набора с верными данными должно вернуть 'создано'")]
     public async Task CreateDataset_WithValidData_ShouldReturnCreated()
@@ -21,8 +26,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -44,7 +48,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var rsp = await EndpointError(req);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -63,7 +67,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var rsp = await EndpointError(req);
 
         // Assert
         rsp.ShouldBeError("name");
@@ -82,10 +86,10 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var response = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var rsp = await EndpointError(req);
 
         // Assert
-        response.ShouldBeError("name");
+        rsp.ShouldBeError("name");
         Db.DataSets.Should().NotContain(ds => ds.Name == req.Name);
     }
 
@@ -99,12 +103,11 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
             Transformations = [],
             ConnectorId = Guid.Empty,
         };
-        var (rsp, _) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, _) = await Endpoint(req);
         rsp.IsSuccessStatusCode.Should().BeTrue();
 
         // Act
-        var response = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var response = await EndpointError(req);
 
         // Assert
         response.ShouldBeError("name");
@@ -122,7 +125,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var rsp = await EndpointError(req);
 
         // Assert
         rsp.ShouldBeError("transformations");
@@ -136,12 +139,11 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         {
             Name = FakeDatasetName(),
             Transformations = [],
-            ConnectorId = App.ExistingDataConnector.Id,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -150,7 +152,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
 
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Создание набора с несуществующим коннектором должно вернуть ошибку валидации")]
@@ -166,7 +168,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var rsp = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
+        var rsp = await EndpointError(req);
 
         // Assert
         rsp.ShouldBeError("connectorId");
@@ -185,8 +187,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
@@ -215,17 +216,16 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
         {
             Name = FakeDatasetName(),
             Transformations = transformations,
-            ConnectorId = App.ExistingDataConnector.Id,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
         // Act
-        var (rsp, res) =
-            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
+        var (rsp, res) = await Endpoint(req);
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
-            ds.DataConnectorId == App.ExistingDataConnector.Id);
+            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
     }
 }
