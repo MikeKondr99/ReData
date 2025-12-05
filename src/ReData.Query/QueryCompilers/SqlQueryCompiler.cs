@@ -13,12 +13,15 @@ public abstract class SqlQueryCompiler : IQueryCompiler
 {
     public required IExpressionCompiler ExpressionCompiler { protected get; init; }
 
-    public virtual string Compile(Query query)
+    public string Compile(Query query)
     {
+        using var span = Tracing.Source.StartActivity("query compilation");
         StringBuilder res = new StringBuilder();
         WriteQuery(res,query, true);
         res.TrimEnd();
-        return res.ToString();
+        var result = res.ToString();
+        span.SetTag("result", result);
+        return result;
     }
 
     protected virtual void WriteQuery(StringBuilder res, Query query, bool withSubqueries = false)

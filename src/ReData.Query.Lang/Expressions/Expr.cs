@@ -1,4 +1,7 @@
-﻿using Antlr4.Runtime;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Antlr4.Runtime;
+using Microsoft.Extensions.Caching.Memory;
 using Pattern.Unions;
 using ReData.Query.Common;
 
@@ -6,6 +9,9 @@ namespace ReData.Query.Lang.Expressions;
 
 public abstract record Expr
 {
+    private static ActivitySource activitySource = new ActivitySource("ReData.Query.Lang");
+
+    
    public ExprSpan Span { get; init; }
 
     private int? hash;
@@ -13,6 +19,13 @@ public abstract record Expr
     
     public static Result<Expr, ExprError> Parse(string s)
     {
+        if (Global.MemoryCache.TryGetValue<Expr>(s, out var result))
+        {
+            return result;
+        }
+        
+        using var act = activitySource.StartActivity("expression parsing");
+        act.SetTag("expression", s);
         try
         {
             var chars = new AntlrInputStream(s);
@@ -23,17 +36,27 @@ public abstract record Expr
             var parser = new LangParser(tokens);
             parser.AddErrorListener(new ErrorListener());
             Expr expr = new ExpressionParser().VisitStart(parser.start());
+            // Cache.TryAdd(s, expr);
+            Global.MemoryCache.GetOrCreate<Expr>(s, (c) =>
+            {
+                c.SlidingExpiration = TimeSpan.FromMinutes(30);
+                return expr;
+            });
             return Result.Ok(expr);
         }
         catch (ExprErrorException e)
         {
+            act.SetStatus(ActivityStatusCode.Error);
+            act.AddException(e);
             return e.Error;
         }
         catch (Exception e)
         {
+            act.SetStatus(ActivityStatusCode.Error);
+            act.AddException(e);
             return new ExprError()
             {
-                Span = new ExprSpan(1, 1, 100,100),
+                Span = new ExprSpan(1, 1, 100, 100),
                 Message = e.Message
             };
         }

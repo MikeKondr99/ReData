@@ -13,7 +13,7 @@ public sealed record NumberLiteral : Literal<double>
 
     public override string ToString()
     {
-        return Value.ToString();
+        return Value.ToString("0.0###############", CultureInfo.InvariantCulture);
     }
 
     public new void Deconstruct(out double value)

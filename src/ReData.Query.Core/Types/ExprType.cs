@@ -3,7 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace ReData.Query.Core.Types;
 
-
 public record struct ExprType
 {
     public required DataType DataType { get; init; }

@@ -1,7 +1,12 @@
-﻿using Pattern;
+﻿using System.Diagnostics;
+using System.Text;
+using Microsoft.Extensions.Caching.Memory;
+using Pattern;
 using Pattern.Unions;
+using ReData.Common;
 using ReData.Query.Common;
 using ReData.Query.Core.Components;
+using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Lang.Expressions;
@@ -16,13 +21,34 @@ public sealed class ExpressionResolver : INameResolver
 
     public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IQuerySource source)
     {
-        var result = expr switch
+        using var span = Tracing.Source.StartActivity("expression resolution");
+        span?.SetTag("expression", expr.ToString());
+
+        var result = RecursiveResolveExpr(expr, source);
+        
+        if (result.IsError())
+        {
+            span?.SetStatus(ActivityStatusCode.Error);
+        }
+
+        var resExpr = result.Unwrap();
+        
+        // очень дорого, но можно включить если надо
+        // StringBuilder sql = new StringBuilder();
+        // new ExpressionCompiler().Compile(sql, resExpr);
+        // span?.SetTag("sql", sql.ToString());
+
+        return result;
+    }
+
+    private Result<ResolvedExpr, ExprError> RecursiveResolveExpr(Expr expr, IQuerySource source)
+    {
+        return expr switch
         {
             Literal literal => ResolveLiteral(literal),
             NameExpr name => ResolveName(name, source),
             FuncExpr func => ResolveFunction(func, source),
         };
-        return result;
     }
 
 
@@ -58,16 +84,16 @@ public sealed class ExpressionResolver : INameResolver
         };
     }
 
-    
+
     public Result<ResolvedExpr, ExprError> ResolveFunction(FuncExpr funcExpr, IQuerySource source)
     {
-        var arguments = funcExpr.Arguments.Select(a => ResolveExpr(a, source)).ToResult();
+        var arguments = funcExpr.Arguments.Select(a => RecursiveResolveExpr(a, source)).ToResult();
 
         if (!arguments.Unwrap(out var args, out var error))
         {
             return error;
         }
-        
+
         var sign = new FunctionSignature
         {
             Name = funcExpr.Name,
@@ -83,7 +109,7 @@ public sealed class ExpressionResolver : INameResolver
                 Message = err.Message,
             };
         }
-        
+
         var function = definition.Function;
 
         return new ResolvedExpr()
@@ -113,10 +139,9 @@ public sealed class ExpressionResolver : INameResolver
         FuncExprKind.Default => FunctionKind.Default,
         var a => (FunctionKind)a,
     };
-    
+
     public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
         return NameResolver.ResolveName(path);
     }
-
 }

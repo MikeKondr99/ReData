@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
@@ -14,6 +17,7 @@ using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
+using TickerQ.Instrumentation.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -34,17 +38,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 services.AddOutputCache();
 
-services.AddFastEndpoints();
-services.SwaggerDocument(options =>
-{
-    options.ShortSchemaNames = true;
-    // Для работы требуется что бы базой был класс или абстрактный класс
-    options.UseOneOfForPolymorphism = true;
-    options.ExcludeNonFastEndpoints = true;
-});
-
 services.AddTickerQ(options =>
 {
+    options.AddOpenTelemetryInstrumentation();
     options.ConfigureScheduler(scheduler =>
     {
         scheduler.MaxConcurrency = 8;
@@ -71,13 +67,58 @@ services.AddTickerQ(options =>
     });
 });
 
+services.AddFastEndpoints();
+
+services.SwaggerDocument(options =>
+{
+    options.ShortSchemaNames = true;
+    // Для работы требуется что бы базой был класс или абстрактный класс
+    options.UseOneOfForPolymorphism = true;
+    options.ExcludeNonFastEndpoints = true;
+});
+
+
 services.AddDbContext<ApplicationDatabaseContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("ReData"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
+services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddRuntimeInstrumentation()
+            .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "System.Net.Http");
+    })
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource("TickerQ")
+            .AddSource("ReData.App")
+            .AddSource("ReData.Query.Lang")
+            .AddSource("ReData.Query")
+            .AddHttpClientInstrumentation(options => { options.RecordException = true; })
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.RecordException = true;
+                options.Filter = (httpContext) =>
+                {
+                    return httpContext.Request.Path.StartsWithSegments("/api");
+                };
+            })
+            .AddEntityFrameworkCoreInstrumentation(options =>
+            {
+                options.Filter = (_, dbCommand) =>
+                {
+                    return dbCommand.Connection.Database != "TickerQ";
+                };
+            });
+    })
+    .UseOtlpExporter();
+
 services.AddScoped<DwhService>();
+
 
 var app = builder.Build();
 

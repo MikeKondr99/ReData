@@ -1,4 +1,7 @@
-﻿using ReData.DemoApp.Services;
+﻿using System.Diagnostics;
+using OpenTelemetry.Trace;
+using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Services;
 using ReData.Query;
 using ReData.Query.Core.Components;
 
@@ -9,7 +12,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Factory = ReData.Query.Factory;
 
 public class TransformEndpoint : Endpoint<
-    TransformRequest, 
+    TransformRequest,
     Results<Ok<TransformResponse>, BadRequest<object>, InternalServerError<ExecutionErrorResponse>>>
 {
     public required DwhService DwhService { get; init; }
@@ -21,8 +24,10 @@ public class TransformEndpoint : Endpoint<
         AllowAnonymous();
     }
 
-    public override async Task<Results<Ok<TransformResponse>, BadRequest<object>, InternalServerError<ExecutionErrorResponse>>> ExecuteAsync(
-        TransformRequest req, CancellationToken ct)
+    public override async
+        Task<Results<Ok<TransformResponse>, BadRequest<object>, InternalServerError<ExecutionErrorResponse>>>
+        ExecuteAsync(
+            TransformRequest req, CancellationToken ct)
     {
         string? sql = null;
         int i = -1;
@@ -30,36 +35,42 @@ public class TransformEndpoint : Endpoint<
         Query.Core.Query build;
 
         // 1. Apply transformations
-        try
+        using (var apply = Tracing.ReData.StartActivity("apply transformations"))
         {
-            foreach (var transformation in req.Transformations)
+            try
             {
-                i++;
-                var res = transformation.Apply(query);
-                if (res.Unwrap(out var ok, out var err))
+                foreach (var transformation in req.Transformations)
                 {
-                    query = ok;
-                }
-                else
-                {
-                    var errorResponse = new TransformationErrorResponse
+                    using var apply1 = Tracing.ReData.StartActivity($"apply {transformation.GetType().Name[..^14]}");
+                    i++;
+                    var res = transformation.Apply(query);
+                    if (res.Unwrap(out var ok, out var err))
                     {
-                        Index = i,
-                        Errors = err
-                    };
-                    return TypedResults.BadRequest((object)errorResponse);
+                        query = ok;
+                    }
+                    else
+                    {
+                        var errorResponse = new TransformationErrorResponse
+                        {
+                            Index = i,
+                            Errors = err
+                        };
+                        return TypedResults.BadRequest((object)errorResponse);
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            var errorResponse = new CompilationErrorResponse
+            catch (Exception ex)
             {
-                Index = i,
-                Message = $"Непредвиденная ошибка при составлении создании трансформаций:\n{ex.Message}",
-                Query = sql,
-            };
-            return TypedResults.BadRequest((object)errorResponse);
+                apply.AddException(ex);
+                apply.SetStatus(ActivityStatusCode.Error);
+                var errorResponse = new CompilationErrorResponse
+                {
+                    Index = i,
+                    Message = $"Непредвиденная ошибка при составлении создании трансформаций:\n{ex.Message}",
+                    Query = sql,
+                };
+                return TypedResults.BadRequest((object)errorResponse);
+            }
         }
 
         // 2. Compile SQL
@@ -79,36 +90,41 @@ public class TransformEndpoint : Endpoint<
             return TypedResults.BadRequest((object)errorResponse);
         }
 
-        // 3. Execute query
-        try
+        using (var execute = Tracing.ReData.StartActivity("execute"))
         {
-            await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, DwhService.ReadConnection);
-            var data = await runner.RunQueryAsObjectAsync(build);
-
-            var response = new TransformResponse
+            // 3. Execute query
+            try
             {
-                Data = data,
-                Query = sql,
-                Fields = build.Fields().Select(f => new TransformFieldViewModel
+                await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, DwhService.ReadConnection);
+                var data = await runner.RunQueryAsObjectAsync(build);
+
+                var response = new TransformResponse
                 {
-                    Alias = f.Alias,
-                    Type = f.Type.Type,
-                    CanBeNull = f.Type.CanBeNull
-                }).ToList(),
-                Total = data.Count
-            };
+                    Data = data,
+                    Query = sql,
+                    Fields = build.Fields().Select(f => new TransformFieldViewModel
+                    {
+                        Alias = f.Alias,
+                        Type = f.Type.Type,
+                        CanBeNull = f.Type.CanBeNull
+                    }).ToList(),
+                    Total = data.Count
+                };
 
-            return TypedResults.Ok(response);
-        }
-        catch (Exception ex)
-        {
-            var errorResponse = new ExecutionErrorResponse
+                return TypedResults.Ok(response);
+            }
+            catch (Exception ex)
             {
-                Index = i,
-                Message = $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}",
-                Query = sql
-            };
-            return TypedResults.InternalServerError(errorResponse);
+                execute.AddException(ex);
+                execute.SetStatus(ActivityStatusCode.Error);
+                var errorResponse = new ExecutionErrorResponse
+                {
+                    Index = i,
+                    Message = $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}",
+                    Query = sql
+                };
+                return TypedResults.InternalServerError(errorResponse);
+            }
         }
     }
 }
