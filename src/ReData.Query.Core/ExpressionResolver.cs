@@ -16,7 +16,9 @@ namespace ReData.Query.Core;
 public sealed class ExpressionResolver : INameResolver
 {
     public required ILiteralResolver LiteralResolver { private get; init; }
+
     public required INameResolver NameResolver { private get; init; }
+
     public required IFunctionStorage Functions { private get; init; }
 
     public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IQuerySource source)
@@ -25,18 +27,11 @@ public sealed class ExpressionResolver : INameResolver
         span?.SetTag("expression", expr.ToString());
 
         var result = RecursiveResolveExpr(expr, source);
-        
+
         if (result.IsError())
         {
             span?.SetStatus(ActivityStatusCode.Error);
         }
-
-        var resExpr = result.Unwrap();
-        
-        // очень дорого, но можно включить если надо
-        // StringBuilder sql = new StringBuilder();
-        // new ExpressionCompiler().Compile(sql, resExpr);
-        // span?.SetTag("sql", sql.ToString());
 
         return result;
     }
