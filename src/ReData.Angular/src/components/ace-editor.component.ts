@@ -47,10 +47,10 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
   _ = effect(() => {
     let funcs = this.functions.data();
     // let fields = this.fields();
-    if (funcs) {
+    if (funcs && this.editor) {
+
       this.editor?.setOptions({
         enableBasicAutocompletion: [this.getCompleter([], funcs)],
-
       })
 
     }
@@ -59,7 +59,6 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   updateValue = effect(() => {
     let value = this.value();
-    console.log('value comparison', value, this.editor?.getValue())
     if (this.editor?.getValue() !== value) {
       this.editor?.setValue(value);
       this.editor?.clearSelection();
@@ -124,6 +123,12 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     this.editor.setValue(this.value())
     this.updateGutter();
     this.editor.clearSelection();
+    let funcs = untracked(this.functions.data);
+    if(funcs) {
+      this.editor?.setOptions({
+        enableBasicAutocompletion: [this.getCompleter([], funcs)],
+      })
+    }
     this.editor.session.on('change', () => {
       let newValue = this.editor?.getValue() ?? '';
       this.updateGutter();
@@ -240,7 +245,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
           resultCompletions = completions.filter(c => c.meta != 'method')
         }
         console.log('resultCompletions', resultCompletions);
-        callback(null, completions.filter(c => c.meta == 'method'));
+        callback(null, resultCompletions);
       },
     }
   }
