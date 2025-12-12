@@ -1,10 +1,7 @@
-import {Component, computed, effect, inject, model, signal, untracked} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {finalize, catchError, of} from 'rxjs';
-import {ApiResponse, ExprError, Field, TransformationData} from '../types';
-import {ActivatedRoute, RouterLink, RouterOutlet} from '@angular/router';
-import {NzBreadCrumbModule} from 'ng-zorro-antd/breadcrumb';
+import {Component, inject} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
 import {BreadcrumbComponent} from '../components/breadcrumb.component';
+import {VisitorIdService} from '../services/visitor-id.service';
 
 
 @Component({
@@ -41,7 +38,7 @@ import {BreadcrumbComponent} from '../components/breadcrumb.component';
 })
 export class AppComponent {
 
-  // private http = inject(HttpClient);
+  private http = inject(VisitorIdService);
 
   // transformations = signal<Transformation[]>([]);
   // loading = signal(false);

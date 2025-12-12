@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using FastEndpoints;
@@ -101,6 +102,13 @@ services.AddOpenTelemetry()
             .AddHttpClientInstrumentation(options => { options.RecordException = true; })
             .AddAspNetCoreInstrumentation(options =>
             {
+                options.EnrichWithHttpRequest = (activity, request) =>
+                {
+                    if (request.Cookies.TryGetValue("visitorId", out var visitorId))
+                    {
+                        activity.SetTag("VisitorId", visitorId);
+                    }
+                };
                 options.RecordException = true;
                 options.Filter = (httpContext) =>
                 {
