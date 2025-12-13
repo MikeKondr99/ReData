@@ -37,9 +37,13 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
     /// <inheritdoc />
     public async Task<DataConnectorEntity> ExecuteAsync(CreateDataConnectorCommand command, CancellationToken ct)
     {
+        if (command.FileStream is null)
+        {
+            throw new ArgumentNullException("command.FileStream", "Must be not null");
+        }
         var csvConfiguration = new CsvConfiguration()
         {
-            Seperator = command.Separator, // req.Separator,
+            Seperator = command.Separator,
             ReadEmptyStringAsNull = true,
         };
         var query = command.FileStream.QueryAsync(

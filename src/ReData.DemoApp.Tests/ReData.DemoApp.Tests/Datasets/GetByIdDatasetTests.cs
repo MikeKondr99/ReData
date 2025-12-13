@@ -8,7 +8,7 @@ using ReData.DemoApp.Transformations;
 
 namespace ReData.DemoApp.Tests.Datasets;
 
-public class GetDatasetByIdTests(App App) : RollbackTestBase<App>(App)
+public class GetDatasetByIdTests(App App) : DemoAppTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 

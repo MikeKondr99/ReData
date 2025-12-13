@@ -5,7 +5,7 @@ using ReData.DemoApp.Transformations;
 
 namespace ReData.DemoApp.Tests.Datasets;
 
-public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
+public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
     
@@ -14,7 +14,7 @@ public class CreateDatasetTests(App App) : RollbackTestBase<App>(App)
     private Task<TestResult<ErrorResponse>> EndpointError(CreateDataSetRequest req) =>
         App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, ErrorResponse>(req);
 
-    [Fact(DisplayName = "Создание набора с верными данными должно вернуть 'создано'")]
+    [Fact(DisplayName = "Создание набора с верными данными должно вернуть 'успех'")]
     public async Task CreateDataset_WithValidData_ShouldReturnCreated()
     {
         // Arrange
