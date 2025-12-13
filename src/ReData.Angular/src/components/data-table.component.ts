@@ -44,7 +44,7 @@ import {DataType, Field} from '../types';
       <tbody>
       <ng-template nz-virtual-scroll let-data let-index="index">
         <tr>
-          @for (field of fields(); track field.alias) {
+          @for (field of fields(); track field) {
             <td class="text-ellipsis text-nowrap overflow-hidden max-h-15 min-h-14" nz-tooltip
                 [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft"
                 [style.text-align]="textAlign(field.type)">
