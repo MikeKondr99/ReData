@@ -91,7 +91,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                 @if (isWhereTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
-                      <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                      <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Фильтр</span>
                     </div>
@@ -103,7 +103,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                 } @else if (isOrderByTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
-                      <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                      <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Сортировка</span>
                     </div>
@@ -131,7 +131,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                 } @else if (isSelectTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
-                      <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                      <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Преобразовать</span>
                     </div>
@@ -173,7 +173,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                 } @else if (isGroupByTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
-                      <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                      <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Сгруппировать</span>
                       <!--                      <p nz-typography nzEditable [(nzContent)]="item.description" [nzEditTooltip]="null" class="mb-0 -ml-1 text-gray-200" [nzExpandable]="false" ></p>-->
@@ -236,7 +236,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                 } @else if (isLimitTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
                     <div class="flex items-center gap-2">
-                      <span nz-icon nzType="drag" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
+                      <span nz-icon nzType="holder" nzTheme="outline" cdkDragHandle class="cursor-grab"></span>
                       <label nz-checkbox (nzCheckedChange)="toggle(i, $event)" [ngModel]="item.enabled"></label>
                       <span>Ограничить</span>
                     </div>

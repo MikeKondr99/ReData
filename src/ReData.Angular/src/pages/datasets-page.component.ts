@@ -1,56 +1,89 @@
 ﻿
-import {Component, computed, effect, inject} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {DatasetsService} from '../services/datasets.service';
-import {toSignal} from '@angular/core/rxjs-interop';
-import {NzListModule} from 'ng-zorro-antd/list';
-import {NzIconDirective, NzIconModule} from 'ng-zorro-antd/icon';
+import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
 import {RouterLink} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {DataSetViewModel} from '../types';
+import {NzTableModule} from 'ng-zorro-antd/table';
+import {DatePipe, JsonPipe} from '@angular/common';
+import {NzCollapseModule} from 'ng-zorro-antd/collapse';
+import {CollapseComponent} from '../components/collapse.component';
 
 @Component({
   selector: 'app-datasets-page',
   standalone: true,
   imports: [
-    NzListModule,
+    NzTableModule,
+    NzCollapseModule,
     NzIconModule,
     NzButtonModule,
+    CollapseComponent,
     RouterLink,
+    DatePipe,
   ],
   template: `
-        <ng-template #header>
-          <span class="text-xl mr-5"> Наборы данных</span>
-          <span class="text-red-500 text-l" >
+    <div #header>
+      <div class="text-red-500 text-l ml-5">
             Мне лень делать auth поэтому прошу вести себя прилично. Не удаляйте чужие эксперименты. По желанию подписывайтесь под своими.
-          </span>
-          <div class="mt-3">
-            <button nz-button nzType="primary" nzShape="round" routerLink="new">
-              <span nz-icon nzType="plus"></span>
-              Добавить
-            </button>
-          </div>
-        </ng-template>
-        <nz-list nzBordered class="h-full" [nzHeader]="header">
-          @for (dataset of datasets(); track dataset.id) {
-            <nz-list-item>
-                {{ dataset.name }}
-                <ul nz-list-item-actions>
-                  <nz-list-item-action>
-                    <button nz-button nzType="default" nzShape="circle" [routerLink]="[dataset.id]">
-                      <span nz-icon nzType="edit"></span>
-                    </button>
-                  </nz-list-item-action>
-                  <nz-list-item-action>
-                  <button nz-button nzType="default" nzDanger nzShape="circle" (click)="deleteDataset(dataset.id)">
-                    <span nz-icon nzType="delete"></span>
-                  </button>
-                  </nz-list-item-action>
-                </ul>
-            </nz-list-item>
+      </div>
+      <div class="my-3 mx-2">
+        <button nz-button nzType="primary" nzShape="round" routerLink="new">
+          <span nz-icon nzType="plus"></span>
+          Добавить набор
+        </button>
+      </div>
+    </div>
+    <nz-table #basicTable [nzData]="datasets()" [nzShowPagination]="false" >
+      <thead>
+      <tr>
+        <th>Название</th>
+        <th>Поля</th>
+        <th>Записи</th>
+        <th>Дата создания</th>
+        <th>Дата редактирования</th>
+        <th>Действия</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (dataset of datasets(); track dataset.id) {
+          <tr>
+            <td>{{ dataset.name }}</td>
+<!--            {{ (dataset.fieldList ?? '-') | json }}-->
+            <td>
+              @if(dataset.fieldList) {
+                <app-collapse [header]="'Количество полей: ' + dataset.fieldList.length">
+                  @for (field of dataset.fieldList; track field) {
+                    <div>
+                      {{field.alias}}:
+                      <span class="text-blue-700">
+                        {{field.dataType}}{{field.canBeNull ? '' : '!'}}
+                      </span>
+                    </div>
+                  }
 
-          }
-        </nz-list>
+                </app-collapse>
+              } @else {
+                -
+              }
+            </td>
+            <td>{{ dataset.rowsCount ?? '-' }}</td>
+            <td>{{ dataset.createdAt | date:'dd.MM.yyyy hh:mm'}}</td>
+            <td>{{ dataset.updatedAt | date:'dd.MM.yyyy hh:mm'}}</td>
+            <td>
+              <button nz-button nzType="link" nzShape="circle" [routerLink]="[dataset.id]">
+                <span nz-icon nzType="edit"></span>
+              </button>
+              <button nz-button nzType="link" nzDanger nzShape="circle" (click)="deleteDataset(dataset.id)">
+                <span nz-icon nzType="delete"></span>
+              </button>
+            </td>
+          </tr>
+
+        }
+      </tbody>
+    </nz-table>
   `,
   styles: ``
 })

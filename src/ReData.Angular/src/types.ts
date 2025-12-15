@@ -153,6 +153,17 @@ export interface DataSetListItem
 {
   id: string;
   name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  rowsCount: number | null;
+  fieldList: DataSetField[] | null;
+}
+
+export interface DataSetField
+{
+  alias: string;
+  dataType: DataType;
+  canBeNull: boolean;
 }
 
 export interface DataConnectorListItem

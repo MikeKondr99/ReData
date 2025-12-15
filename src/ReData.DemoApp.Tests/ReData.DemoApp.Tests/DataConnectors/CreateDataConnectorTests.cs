@@ -1,10 +1,9 @@
 using System.Text;
-using FluentValidation;
 using ReData.Common;
 using ReData.DemoApp.Commands;
+using ReData.DemoApp.Database.Entities;
 using ReData.Query.Core.Types;
 using Exception = System.Exception;
-using Field = ReData.DemoApp.Database.Entities.Field;
 
 namespace ReData.DemoApp.Tests.DataConnectors;
 
@@ -12,9 +11,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 {
     private static string FakeDataConnectorName() => $"connector{Guid.NewGuid().ToString("N")[..6]}";
 
-    private static Field TextField(string name) => new()
+    private static DataConnectorField TextField(string name) => new()
     {
         Alias = name,
+        Column = "column",
         DataType = DataType.Text,
         CanBeNull = true,
     };
@@ -30,10 +30,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2
-                    1, qwe
-                    2, rty
-                    """.ToStream()
+                col1,col2
+                1, qwe
+                2, rty
+                """.ToStream()
         };
 
         // Act
@@ -99,11 +99,11 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    column_name
-                    value1
-                    value2
-                    value3
-                    """.ToStream()
+                column_name
+                value1
+                value2
+                value3
+                """.ToStream()
         };
 
         // Act
@@ -126,10 +126,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = false,
             FileStream =
                 """
-                    value1
-                    value2
-                    value3
-                    """.ToStream()
+                value1
+                value2
+                value3
+                """.ToStream()
         };
 
         // Act
@@ -177,9 +177,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col1,col2,col2,col2
-                    value1,value2,value3,value4,value5
-                    """.ToStream()
+                col1,col1,col2,col2,col2
+                value1,value2,value3,value4,value5
+                """.ToStream()
         };
 
         // Act
@@ -187,9 +187,8 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         entity.FieldList.Should().HaveCount(5);
-        // Assuming duplicate names are allowed but preserved as-is
         entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(
-            ["col1", "col1", "col2", "col2", "col2"]);
+            ["col1", "col1_2", "col2", "col2_2", "col2_3"]);
     }
 
 
@@ -225,9 +224,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col with spaces,колонка_кириллица,column-with-dashes,column_with_underscores,col!@#$%^&*()
-                    value1,value2,value3,value4,value5
-                    """.ToStream()
+                col with spaces,колонка_кириллица,column-with-dashes,column_with_underscores,col!@#$%^&*()
+                value1,value2,value3,value4,value5
+                """.ToStream()
         };
 
         // Act
@@ -268,6 +267,56 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         entity.FieldList[0].Alias.Should().Be("col,with,commas");
         entity.FieldList[2].Alias.Should().Be("col with \"quotes\"");
     }
+    
+
+    [Fact(DisplayName = "CSV with header should trim empty characters")]
+    public async Task CreateDataset_WithHeaders_ShouldTrimHeaders()
+    {
+        // Arrange
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                col1 , col2\t
+                value1,value2
+                """.ToStream()
+        };
+
+        // Act
+        var entity = await req.ExecuteAsync();
+
+        // Assert
+        entity.FieldList.Should().HaveCount(3);
+        entity.FieldList[0].Alias.Should().Be("col1");
+        entity.FieldList[1].Alias.Should().Be("col2");
+    }
+    
+    [Fact(DisplayName = "CSV with header, but no data should parse")]
+    public async Task CreateDataset_WithHeadersButNoData_ShouldParse()
+    {
+        // Arrange
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream = "1,-7,70,1000023429387429837529875,30".ToStream()
+        };
+
+        // Act
+        var entity = await req.ExecuteAsync();
+
+        // Assert
+        entity.FieldList.Should().HaveCount(5);
+        entity.FieldList[0].Alias.Should().Be("1");
+        entity.FieldList[1].Alias.Should().Be("-7");
+        entity.FieldList[2].Alias.Should().Be("70");
+        entity.FieldList[3].Alias.Should().Be("1000023429387429837529875");
+        entity.FieldList[4].Alias.Should().Be("30");
+    }
 
     [Fact(DisplayName = "Incorrect separator should parse incorrectly")]
     public async Task CreateDataset_IncorrectSeparator_ShouldParseIncorrectly()
@@ -280,9 +329,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1;col2;col3
-                    value1;value2;value3
-                    """.ToStream()
+                col1;col2;col3
+                value1;value2;value3
+                """.ToStream()
         };
 
         // Act
@@ -304,10 +353,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    name,address,city
-                    "John,Smith","123,Main St",NewYork
-                    "Jane,Doe","456,Oak Ave",Boston
-                    """.ToStream()
+                name,address,city
+                "John,Smith","123,Main St",NewYork
+                "Jane,Doe","456,Oak Ave",Boston
+                """.ToStream()
         };
 
         // Act
@@ -329,9 +378,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1	col2	col3
-                    value1	value2	value3
-                    """.ToStream()
+                col1	col2	col3
+                value1	value2	value3
+                """.ToStream()
         };
 
         // Act
@@ -353,9 +402,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1|col2|col3
-                    value1|value2|value3
-                    """.ToStream()
+                col1|col2|col3
+                value1|value2|value3
+                """.ToStream()
         };
 
         // Act
@@ -377,9 +426,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1;col2;col3
-                    value1;value2;value3
-                    """.ToStream()
+                col1;col2;col3
+                value1;value2;value3
+                """.ToStream()
         };
 
         // Act
@@ -413,10 +462,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    name,full_address
-                    John,123 Main St, Apt 4,New York
-                    Jane,456 Oak Ave,Boston
-                    """.ToStream()
+                name,full_address
+                John,123 Main St, Apt 4,New York
+                Jane,456 Oak Ave,Boston
+                """.ToStream()
         };
 
         // Act
@@ -440,10 +489,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    name,address,tags
-                    John,"123 Main St, Apt 4","tag1,tag2,tag3"
-                    Jane,"456 Oak Ave, Suite 100","tagA,tagB"
-                    """.ToStream()
+                name,address,tags
+                John,"123 Main St, Apt 4","tag1,tag2,tag3"
+                Jane,"456 Oak Ave, Suite 100","tagA,tagB"
+                """.ToStream()
         };
 
         // Act
@@ -465,10 +514,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1^col2^col3
-                    value1^value2^value3
-                    value4^value5^value6
-                    """.ToStream()
+                col1^col2^col3
+                value1^value2^value3
+                value4^value5^value6
+                """.ToStream()
         };
 
         // Act
@@ -490,9 +539,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1 col2 col3
-                    value1 value2 value3
-                    """.ToStream()
+                col1 col2 col3
+                value1 value2 value3
+                """.ToStream()
         };
 
         // Act
@@ -596,9 +645,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2,col3
-                    value1,value2,value3
-                    """.ToStream() // Extra newline at end
+                col1,col2,col3
+                value1,value2,value3
+                """.ToStream() // Extra newline at end
         };
 
         // Act
@@ -700,10 +749,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2
-                    "value1,value2
-                    value3,value4
-                    """.ToStream()
+                col1,col2
+                "value1,value2
+                value3,value4
+                """.ToStream()
         };
 
         // Act
@@ -725,10 +774,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2
-                    value1"with quotes,value2
-                    value3,value4
-                    """.ToStream()
+                col1,col2
+                value1"with quotes,value2
+                value3,value4
+                """.ToStream()
         };
 
         // Act
@@ -750,10 +799,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """"
-                    col1,col2
-                    "value1 ""with quotes""",value2
-                    value3,"value4 ""more quotes"""
-                    """".ToStream()
+                col1,col2
+                "value1 ""with quotes""",value2
+                value3,"value4 ""more quotes"""
+                """".ToStream()
         };
 
         // Act
@@ -775,10 +824,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2,col3
-                    value1,value2
-                    value3,value4,value5
-                    """.ToStream()
+                col1,col2,col3
+                value1,value2
+                value3,value4,value5
+                """.ToStream()
         };
 
         // Act & Assert
@@ -796,10 +845,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    col1,col2
-                    value1,value2,value3
-                    value4,value5
-                    """.ToStream()
+                col1,col2
+                value1,value2,value3
+                value4,value5
+                """.ToStream()
         };
 
         // Act

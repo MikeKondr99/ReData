@@ -15,12 +15,20 @@ public sealed record DataConnectorEntity : BaseEntity
 
     public required string TableName { get; init; }
 
-    public required IReadOnlyList<Field> FieldList { get; set; } // Json
+    public required IReadOnlyList<DataConnectorField> FieldList { get; set; } // Json
 }
 
-public struct Field
+public struct DataConnectorField
 {
     public required string Alias { get; init; }
+
+    private string? column;
+
+    public string Column
+    {
+        get => column ?? Alias;
+        init => column = value;
+    }
 
     public required DataType DataType { get; init; }
 

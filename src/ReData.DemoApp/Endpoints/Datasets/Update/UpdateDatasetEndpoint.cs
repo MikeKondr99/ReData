@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
+using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.GetById;
+using ReData.Query.Runners.Value;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Update;
 
@@ -33,16 +35,13 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
             return TypedResults.NotFound();
         }
 
-        // Update simple properties
+        // Обновляем простые свойства
         entity.Name = req.Name;
         entity.DataConnectorId = req.ConnectorId;
 
-        // Remove existing transformations
+        // Очищаем и добавляем новые трансформации
         Db.Set<TransformationEntity>().RemoveRange(entity.Transformations);
-
-        // Clear and add new transformations
         entity.Transformations.Clear();
-
         for (int i = 0; i < req.Transformations.Count; i++)
         {
             entity.Transformations.Add(new TransformationEntity
@@ -57,6 +56,26 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
 
         entity.UpdatedAt = DateTimeOffset.UtcNow;
 
+        var queryBuilder = (await new ApplyTransformationsCommand()
+        {
+            Transformations = req.Transformations.Where(tb => tb.Enabled).Select(tb => tb.Transformation).ToArray(),
+            DataConnectorId = req.ConnectorId
+        }.ExecuteAsync(ct)).UnwrapOrDefault();
+
+        // Добавляем метадату при сохранении набора
+        var metadata = await new GetMetadataCommand()
+        {
+            Transformations = req.Transformations
+                .Where(tb => tb.Enabled)
+                .Select(tb => tb.Transformation)
+                .ToArray(),
+            ConnectorId = req.ConnectorId
+        }.ExecuteAsync(ct);
+
+        entity.RowsCount = metadata.RowsCount;
+        entity.FieldList = metadata.FieldList;
+
+        // Сохраняем в БД
         await Db.SaveChangesAsync(ct);
 
         var response = new UpdateDataSetResponse

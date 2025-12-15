@@ -30,7 +30,7 @@ public record QueryBuilder
     }
     
     
-    public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, FieldType type)> fields)
+    public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, string column, FieldType type)> fields)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -39,7 +39,7 @@ public record QueryBuilder
             From = new TableQuerySource(resolver.ResolveName(path), fields.Select(f => new Field
                 {
                     Alias = f.name,
-                    Template = resolver.ResolveName([f.name]).Template,
+                    Template = resolver.ResolveName([f.column]).Template,
                     Type = f.type,
                 }).ToArray()
             ),
@@ -48,11 +48,11 @@ public record QueryBuilder
                 return new SelectItem()
                 {
                     Alias = f.name,
-                    Column = resolver.ResolveName([f.name]),
+                    Column = resolver.ResolveName([f.column]),
                     ResolvedExpr = new ResolvedExpr()
                     {
                         Expression = new NameExpr(f.name),
-                        Template = resolver.ResolveName([f.name]).Template,
+                        Template = resolver.ResolveName([f.column]).Template,
                         Arguments = null,
                         Type = new ExprType()
                         {
@@ -70,10 +70,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<ExprError?>> Select(Dictionary<string, string> select)
     {
         var qb = this;
-        if (Query.Select is not null)
-        {
-            qb = CreateCte();
-        }
+        qb = CreateCte();
 
         var res = qb.ResolveManySelectItems(
             select,

@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
+using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.Create;
@@ -58,6 +59,16 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
         CancellationToken ct)
     {
         var newId = Guid.NewGuid();
+        
+        var metadata = await new GetMetadataCommand()
+        {
+            Transformations = req.Transformations
+                .Where(tb => tb.Enabled)
+                .Select(tb => tb.Transformation)
+                .ToArray(),
+            ConnectorId = req.ConnectorId,
+        }.ExecuteAsync(ct);
+        
         // Map to entity
         var entity = new DataSetEntity
         {
@@ -72,10 +83,11 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
                 Order = (uint)index,
                 Data = t.Transformation
             }).ToList(),
+            RowsCount = metadata.RowsCount,
+            FieldList = metadata.FieldList,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
-
 
         Db.DataSets.Add(entity);
         await Db.SaveChangesAsync(ct);

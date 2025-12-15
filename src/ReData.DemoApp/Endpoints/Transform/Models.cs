@@ -14,7 +14,6 @@ public sealed record TransformResponse
 {
     public required IReadOnlyList<TransformFieldViewModel> Fields { get; init; }
     public required int Total { get; init; }
-    public required string Query { get; init; }
     public required IReadOnlyList<Dictionary<string, IValue>> Data { get; init; }
 }
 
@@ -27,10 +26,12 @@ public sealed record TransformFieldViewModel
 }
 
 // Error response models
-public sealed record TransformationErrorResponse
+public sealed record TransformErrorResponse
 {
     public required int Index { get; init; }
-    public required object Errors { get; init; }
+    
+    public required string Message { get; init; }
+    public required object? Errors { get; init; }
 }
 
 public sealed record CompilationErrorResponse

@@ -7,7 +7,6 @@ using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Services;
 using ReData.Query.Core.Types;
-using Field = ReData.DemoApp.Database.Entities.Field;
 
 namespace ReData.DemoApp.Commands;
 
@@ -53,7 +52,7 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
             cancellationToken: ct
         );
 
-        string[]? columns = null;
+        string[]? aliases = null;
         var tableId = Guid.NewGuid();
         string tableName = $"table_{tableId}";
 
@@ -62,7 +61,7 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
             await connection.OpenAsync(ct);
             await using (var transaction = await connection.BeginTransactionAsync(ct))
             {
-                columns = await CopyRowsAsync(
+                aliases = await CopyRowsAsync(
                     connection: connection,
                     transaction: transaction,
                     tableName: tableName,
@@ -79,9 +78,10 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
             Id = Guid.NewGuid(),
             Name = command.Name,
             TableName = tableName,
-            FieldList = columns.Select(c => new Field()
+            FieldList = aliases.Select((c, i) => new DataConnectorField()
             {
                 Alias = c,
+                Column = $"column{i + 1}",
                 DataType = DataType.Text,
                 CanBeNull = true,
             }).ToList(),
@@ -98,12 +98,12 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         string tableName,
-        string[] columns)
+        IEnumerable<string> columns)
     {
         var createTableSql = $"""
                               CREATE TABLE "{tableName}" (
                                   rownum SERIAL PRIMARY KEY,
-                                  {columns.Select(c => $"\"{c}\" TEXT").JoinBy(",\n")}
+                                  {columns.Select(c => $"{c} TEXT").JoinBy(",\n")}
                               )
                               """;
 
@@ -128,33 +128,43 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
             throw new Exception();
         }
 
-        string[] columnKeys = (iter.Current as IDictionary<string, object>)!.Keys.ToArray();
-        string[]? columns = null;
+        string[] fieldKeys = (iter.Current as IDictionary<string, object>)!.Keys.ToArray();
+        string[]? aliases = null;
         if (withHeader)
         {
-            columns = (iter.Current as IDictionary<string, object>)!.Values.Select(v => v.ToString()!).ToArray();
+            aliases = (iter.Current as IDictionary<string, object>)!.Values.Select(v => v.ToString()!).ToArray();
+            for (int i = 0; i < aliases.Length; i++)
+            {
+                var counter = 1;
+                var alias = aliases[i];
+                while (aliases[..i].Contains(aliases[i]))
+                {
+                    counter += 1;
+                    aliases[i] = $"{alias}_{counter}";
+                }
+            }
         }
         else
         {
-            columns = columnKeys;
+            aliases = fieldKeys;
         }
 
-        // var columnNames = Enumerable.Range(1, columns.Length).Select(col => $"column{col}").ToArray();
+        var columns = Enumerable.Range(1, aliases.Length).Select(col => $"\"column{col}\"");
 
         await CreateTableAsync(connection, transaction, tableName, columns);
 
         using (var writer =
                connection.BeginBinaryImport(
-                   $"COPY \"{tableName}\" ({columns.Select(c => $"\"{c}\"").JoinBy(", ")}) FROM STDIN (FORMAT BINARY)"))
+                   $"COPY \"{tableName}\" ({columns.JoinBy(", ")}) FROM STDIN (FORMAT BINARY)"))
         {
             // Если без хедера то обрабатывает первую запись как запись
             if (!withHeader)
             {
                 var row = iter.Current as IDictionary<string, object?>;
                 await writer.StartRowAsync(ct);
-                for (var i = 0; i < columns.Length; i++)
+                for (var i = 0; i < aliases.Length; i++)
                 {
-                    var value = row[columnKeys[i]]?.ToString();
+                    var value = row[fieldKeys[i]]?.ToString();
                     await writer.WriteAsync(value, NpgsqlTypes.NpgsqlDbType.Text, ct);
                 }
             }
@@ -164,15 +174,15 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
                 var row = iter.Current as IDictionary<string, object?>;
                 await writer.StartRowAsync(ct);
 
-                for (var i = 0; i < columns.Length; i++)
+                for (var i = 0; i < aliases.Length; i++)
                 {
-                    var value = row[columnKeys[i]]?.ToString();
+                    var value = row[fieldKeys[i]]?.ToString();
                     await writer.WriteAsync(value, NpgsqlTypes.NpgsqlDbType.Text, ct);
                 }
             }
 
             await writer.CompleteAsync(ct);
-            return columns;
+            return aliases;
         }
     }
 }

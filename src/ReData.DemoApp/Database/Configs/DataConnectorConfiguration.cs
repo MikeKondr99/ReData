@@ -15,7 +15,7 @@ public sealed class DataConnectorConfiguration : IEntityTypeConfiguration<DataCo
 
         builder.Property(t => t.FieldList).HasConversion(
             d => JsonSerializer.Serialize(d, jsonSerializerOptions),
-            j => JsonSerializer.Deserialize<IReadOnlyList<Field>>(j, jsonSerializerOptions)!
+            j => JsonSerializer.Deserialize<IReadOnlyList<DataConnectorField>>(j, jsonSerializerOptions)!
         );
 
         builder.Property(ds => ds.FieldList).HasColumnType("jsonb");

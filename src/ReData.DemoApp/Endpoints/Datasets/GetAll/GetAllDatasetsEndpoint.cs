@@ -31,6 +31,10 @@ public class GetAllDatasetsEndpoint : EndpointWithoutRequest<
             {
                 Id = ds.Id,
                 Name = ds.Name,
+                CreatedAt = ds.CreatedAt,
+                UpdatedAt = ds.UpdatedAt,
+                FieldList = ds.FieldList,
+                RowsCount = ds.RowsCount,
             })
             .ToListAsync(ct);
 

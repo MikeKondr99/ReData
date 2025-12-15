@@ -41,7 +41,7 @@ public class InitData
 
     public IReadOnlyDictionary<string, DataConnectorEntity> DataConnectors { get; private set; } = new Dictionary<string, DataConnectorEntity>();
 
-    public DataConnectorEntity ExistingDataConnector => DataConnectors.First().Value;
+    public DataConnectorEntity ExistingDataConnector => DataConnectors["test"];
 
 
     private async Task InitDataOnce()

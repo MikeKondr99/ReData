@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core;
+﻿using Mysqlx.Crud;
+using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using ReData.Query.Runners.Value;
 
@@ -44,16 +45,16 @@ public abstract class BaseTestAssets : ITestAssets
     {
         get
         {
-            IReadOnlyList<(string name, FieldType type)> fields = [
-                ("UserId", new FieldType(DataType.Integer, false)),
-                ("FirstName", new FieldType(DataType.Text, false)),
-                ("LastName", new FieldType(DataType.Text, false)),
-                ("Age", new FieldType(DataType.Integer, false)),
-                ("Salary", new FieldType(DataType.Number, false)),
-                ("DateOfBirth", new FieldType(DataType.DateTime, false)),
-                ("JoinDate", new FieldType(DataType.DateTime, false)),
-                ("LastLoginDate", new FieldType(DataType.DateTime, false)),
-                ("Notes", new FieldType(DataType.Text, false)),
+            IReadOnlyList<(string name, string column, FieldType type)> fields = [
+                ("UserId", "UserId", new FieldType(DataType.Integer, false)),
+                ("FirstName", "FirstName", new FieldType(DataType.Text, false)),
+                ("LastName", "LastName", new FieldType(DataType.Text, false)),
+                ("Age", "Age", new FieldType(DataType.Integer, false)),
+                ("Salary", "Salary", new FieldType(DataType.Number, false)),
+                ("DateOfBirth", "DateOfBirth", new FieldType(DataType.DateTime, false)),
+                ("JoinDate", "JoinDate", new FieldType(DataType.DateTime, false)),
+                ("LastLoginDate", "LastLoginDate", new FieldType(DataType.DateTime, false)),
+                ("Notes", "Notes", new FieldType(DataType.Text, false)),
             ];
             
             return QueryBuilder.FromTable(

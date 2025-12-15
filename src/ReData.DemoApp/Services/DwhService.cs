@@ -18,6 +18,7 @@ public class DwhService
         WriteConnection = configuration.GetConnectionString("DwhWrite") ?? string.Empty;
     }
 
+    // Этот метод здесь очень не в тему
     public QueryBuilder GetQueryBuilder(Guid dataConnectorId)
     {
         var dataConnector = db.DataConnectors.FirstOrDefault(dc => dc.Id == dataConnectorId);
@@ -29,8 +30,8 @@ public class DwhService
 
         var fieldList = dataConnector.FieldList;
 
-        IReadOnlyList<(string name, FieldType type)> fields = fieldList
-            .Select(field => (field.Alias, new FieldType(field.DataType, field.CanBeNull)))
+        IReadOnlyList<(string name, string column,FieldType type)> fields = fieldList
+            .Select(field => (field.Alias, field.Column, new FieldType(field.DataType, field.CanBeNull)))
             .ToList();
 
         return QueryBuilder.FromTable(
