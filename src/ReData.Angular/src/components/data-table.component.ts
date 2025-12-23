@@ -5,6 +5,7 @@ import {
 } from 'ng-zorro-antd/table';
 import {NzTooltipDirective} from 'ng-zorro-antd/tooltip';
 import {DataType, Field} from '../types';
+import {TableCellComponent} from './table-cell.component';
 
 @Component({
   selector: 'app-data-table',
@@ -12,7 +13,7 @@ import {DataType, Field} from '../types';
   imports: [
     NzTableModule,
     NzTableVirtualScrollDirective,
-    NzTooltipDirective,
+    TableCellComponent,
   ],
   template: `
     <nz-table
@@ -45,23 +46,42 @@ import {DataType, Field} from '../types';
       <ng-template nz-virtual-scroll let-data let-index="index">
         <tr>
           @for (field of fields(); track field) {
-            <td class="text-ellipsis text-nowrap overflow-hidden max-h-15 min-h-14" nz-tooltip
-                [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft"
-                [style.text-align]="textAlign(field.type)">
-              @if (data[field.alias]?.type != null) {
-                <span class="text-red-800 italic">{{ data[field.alias].type }}</span>
-              } @else if (data[field.alias] == null) {
-                <span class="text-red-800 italic">NULL</span>
-              } @else if (data[field.alias] === '') {
-                <span class="text-gray-500 italic">Пустая строка</span>
-              } @else {
-                @if (field.type == 'date') {
-                  {{ date(data[field.alias]) }}
-                } @else {
-                  {{ data[field.alias] }}
-                }
-              }
+            <td class="" appTableCell [value]="data[field.alias]" [field]="field">
             </td>
+<!--            <span class="cell-content" [style.text-align]="textAlign(field())">-->
+<!--        @if (value()?.type != null) {-->
+<!--          <span class="text-red-800 italic">{{ value().type }}</span>-->
+<!--        } @else if (value() === null) {-->
+<!--          <span class="text-red-800 italic">NULL</span>-->
+<!--        } @else if (value() === '') {-->
+<!--          <span class="text-gray-500 italic">Пустая строка</span>-->
+<!--        } @else if (field().type == 'date'){-->
+<!--          {{ date(value()) }}-->
+<!--        } @else {-->
+<!--          {{ value() }}-->
+<!--        }-->
+
+  <!--        <button class="icon-container" nz-button nzType="link" nzShape="circle" nzSize="small">-->
+  <!--          <span nz-icon nzType="file-search"></span>-->
+  <!--        </button>-->
+<!--    </span>-->
+<!--            <td class="text-ellipsis text-nowrap overflow-hidden max-h-15 min-h-14" nz-tooltip-->
+<!--                [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft"-->
+<!--                [style.text-align]="textAlign(field.type)">-->
+<!--              @if (data[field.alias]?.type != null) {-->
+<!--                <span class="text-red-800 italic">{{ data[field.alias].type }}</span>-->
+<!--              } @else if (data[field.alias] == null) {-->
+<!--                <span class="text-red-800 italic">NULL</span>-->
+<!--              } @else if (data[field.alias] === '') {-->
+<!--                <span class="text-gray-500 italic">Пустая строка</span>-->
+<!--              } @else {-->
+<!--                @if (field.type == 'date') {-->
+<!--                  {{ date(data[field.alias]) }}-->
+<!--                } @else {-->
+<!--                  {{ data[field.alias] }}-->
+<!--                }-->
+<!--              }-->
+<!--            </td>-->
           }
         </tr>
       </ng-template>

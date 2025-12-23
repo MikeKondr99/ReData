@@ -12,7 +12,7 @@ import {
   TransformationBlock,
   TransformationData
 } from '../types';
-import {catchError, finalize, of} from 'rxjs';
+import {catchError, finalize, of, Subject, takeUntil} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {TransformationListComponent} from '../components/transformation-list.component';
 import {FormsModule} from '@angular/forms';
@@ -125,14 +125,22 @@ export class DatasetEditPage{
   error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: '', total:0 });
 
+  private cancelQuery = new Subject<void>();
+
   api = effect(() => {
     let transformations: TransformationData[] = this.transformations().filter(t => t.enabled).map(t => t.transformation);
     let connector = this.connector();
+
     if(transformations === null) return;
+
+    this.cancelQuery?.next();
+    this.cancelQuery = new Subject<void>();
+
     untracked(() => {
       this.loading.set(true);
       let _ = this.http.post<ApiResponse>('api/transform', { transformations, dataConnectorId: connector?.id }
       ).pipe(
+        takeUntil(this.cancelQuery),
         finalize(() => {
           this.loading.set(false);
         }),
