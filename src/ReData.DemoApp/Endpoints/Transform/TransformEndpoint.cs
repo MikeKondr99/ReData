@@ -6,6 +6,7 @@ using ReData.DemoApp.Services;
 using ReData.Query;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Types;
+using ReData.Query.Lang.Expressions;
 using ReData.Query.Runners.Value;
 using Tracing = ReData.DemoApp.Extensions.Tracing;
 
@@ -71,7 +72,7 @@ public class TransformEndpoint : Endpoint<
             if (req.OrderByName is not null && req.OrderByDescending is not null)
             {
                 var sort = query.OrderBy([
-                    (req.OrderByName, req.OrderByDescending is true ? OrderItem.Type.Desc : OrderItem.Type.Asc)
+                    (Expr.Field(req.OrderByName), req.OrderByDescending is true ? OrderItem.Type.Desc : OrderItem.Type.Asc)
                 ]);
 
                 query = sort.UnwrapOr(query);
