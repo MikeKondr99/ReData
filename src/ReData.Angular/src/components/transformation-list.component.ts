@@ -11,7 +11,7 @@ import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import {debounceTime, Subject} from 'rxjs';
 import {CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {
-  ExprError, isGroupByTransformation, isLimitTransformation,
+  ExprErrors, isGroupByTransformation, isLimitTransformation,
   isOrderByTransformation, isSelectTransformation, isWhereTransformation,
   TransformationBlock
 } from '../types';
@@ -98,7 +98,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                     <app-ace-editor [(value)]="item.transformation.condition"
                                     (valueChange)="onTransformationChange()"
                                     [fields]="fields()[i]"
-                                    [error]="getError(i,0)"></app-ace-editor>
+                                    [errors]="getError(i,0)"></app-ace-editor>
                   </div>
                 } @else if (isOrderByTransformation(item.transformation)) {
                   <div class="flex flex-col gap-2 w-full">
@@ -112,7 +112,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                       <div class="flex items-center gap-2">
                         <app-ace-editor class="min-w-[250px] max-w-[250px]"
                                         [(value)]="orderItem.expression"
-                                        [error]="getError(i,idx)"
+                                        [errors]="getError(i,idx)"
                                         (valueChange)="onTransformationChange()"
                                         [fields]="fields()[i]"
                         ></app-ace-editor>
@@ -149,7 +149,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
-                                        [error]="getError(i,idx)"
+                                        [errors]="getError(i,idx)"
                                         [fields]="fields()[i]"
                         >
                         </app-ace-editor>
@@ -193,7 +193,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
-                                        [error]="getError(i,idx + item.transformation.groups.length) ?? getError(i,idx)"
+                                        [errors]="getError(i,idx + item.transformation.groups.length) ?? getError(i,idx)"
                                         [fields]="fields()[i]"
                         >
                         </app-ace-editor>
@@ -220,7 +220,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
-                                        [error]="getError(i,item.transformation.items.length + idx)"
+                                        [errors]="getError(i,item.transformation.items.length + idx)"
                                         [fields]="fields()[i]"
                         >
                         </app-ace-editor>
@@ -267,8 +267,8 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
         @if (errors()?.message) {
           <pre
             class="text-red-500 whitespace-pre-line relative w-full bg-white pb-3 pl-6 pr-3 pt-3.5 shadow-xl ring-1 ring-gray-900/5 sm:rounded-lg">
-          {{ errors()?.message }}
-        </pre>
+            {{ errors()?.message }}
+          </pre>
         }
       </div>
     </div>
@@ -282,7 +282,7 @@ export class TransformationListComponent {
   private changesSubject = new Subject<void>();
   transformationsChange = output<TransformationBlock[]>();
 
-  public errors = input<{ index: number, errors?: (ExprError | null)[], message?: string } | null>(null);
+  public errors = input<{ index: number, errors?: (ExprErrors | null)[], message?: string } | null>(null);
 
   public fields = signal<string[][]>([])
 

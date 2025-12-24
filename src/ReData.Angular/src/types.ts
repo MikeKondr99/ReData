@@ -112,6 +112,8 @@ export interface ReturnType
   aggregated: boolean,
 }
 
+export type ExprErrors = ExprError[];
+
 export interface ExprError {
   span: ExprSpan
   message: string;

@@ -13,7 +13,7 @@ public class SelectTransformation : ITransformation
 
     public SelectRestOptions RestOptions { get; init; } = SelectRestOptions.Delete;
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         var dict = new Dictionary<string, string>();
 

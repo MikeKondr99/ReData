@@ -26,13 +26,13 @@ public record struct ApplyTransformationError
 
     public required string Message { get; init; }
     
-    public IEnumerable<ExprError?>? Errors { get; init; }
+    public IEnumerable<IReadOnlyList<ExprError>>? Errors { get; init; }
 }
 
 public class ApplyTransoformationsCommandHandler(DwhService dwhService)
     : ICommandHandler<ApplyTransformationsCommand, Result<QueryBuilder,ApplyTransformationError>>
 {
-    public async Task<Result<QueryBuilder,ApplyTransformationError>> ExecuteAsync(ApplyTransformationsCommand command, CancellationToken ct)
+    public async Task<Result<QueryBuilder, ApplyTransformationError>> ExecuteAsync(ApplyTransformationsCommand command, CancellationToken ct)
     {
         // 1. Apply transformations
         using var apply = Tracing.ReData.StartActivity("apply transformations");
@@ -49,7 +49,7 @@ public class ApplyTransoformationsCommandHandler(DwhService dwhService)
                     return new ApplyTransformationError()
                     {
                         Index = i,
-                        Message = $"Ошибка при применении трансформаций:\n",
+                        Message = null!,
                         Errors = errors,
                     };
                 }
@@ -72,7 +72,7 @@ public class ApplyTransoformationsCommandHandler(DwhService dwhService)
     private static bool ApplyTransformation(
         ITransformation transformation,
         ref QueryBuilder query,
-        out IEnumerable<ExprError?>? error)
+        out IEnumerable<IReadOnlyList<ExprError>>? error)
     {
         using var apply1 = Tracing.ReData.StartActivity($"apply {transformation.GetType().Name[..^14]}");
         var res = transformation.Apply(query);

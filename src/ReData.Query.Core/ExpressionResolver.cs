@@ -13,6 +13,13 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Core;
 
+public record ResolutionContext
+{
+    public required IQuerySource QuerySource { get; init; }
+
+    public required List<ExprError> Errors { get; init; }
+}
+
 public sealed class ExpressionResolver : INameResolver
 {
     public required ILiteralResolver LiteralResolver { private get; init; }
@@ -21,40 +28,43 @@ public sealed class ExpressionResolver : INameResolver
 
     public required IFunctionStorage Functions { private get; init; }
 
-    public Result<ResolvedExpr, ExprError> ResolveExpr(Expr expr, IQuerySource source)
+    public ResolvedExpr? ResolveExpr(Expr expr, ResolutionContext context)
     {
         using var span = Tracing.Source.StartActivity("expression resolution");
         span?.SetTag("expression", expr.ToString());
 
-        var result = RecursiveResolveExpr(expr, source);
+        var result = RecursiveResolveExpr(expr, context);
 
-        if (result.IsError())
+        
+        if (!result.HasValue)
         {
             span?.SetStatus(ActivityStatusCode.Error);
+            span?.SetTag("errors", context.Errors.Select(e => e.Message).JoinBy("\n"));
         }
 
         return result;
     }
 
-    private Result<ResolvedExpr, ExprError> RecursiveResolveExpr(Expr expr, IQuerySource source)
+    private ResolvedExpr? RecursiveResolveExpr(Expr expr, ResolutionContext context)
     {
         return expr switch
         {
             Literal literal => ResolveLiteral(literal),
-            NameExpr name => ResolveName(name, source),
-            FuncExpr func => ResolveFunction(func, source),
+            NameExpr name => ResolveName(name, context),
+            FuncExpr func => ResolveFunction(func, context),
         };
     }
 
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public ResolvedExpr ResolveLiteral(Literal literal)
+    private ResolvedExpr ResolveLiteral(Literal literal)
     {
         return LiteralResolver.Resolve(literal);
     }
 
-    public static Result<ResolvedExpr, ExprError> ResolveName(NameExpr name, IQuerySource source)
+    private static ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
+        var source = context.QuerySource;
         var fieldOption = source.Fields().Get(name.Value);
         if (fieldOption is ISome<Field>(var field))
         {
@@ -72,21 +82,24 @@ public sealed class ExpressionResolver : INameResolver
             };
         }
 
-        return new ExprError()
+        context.Errors.Add(new ExprError()
         {
             Span = name.Span,
             Message = $"Поле '{name.Value}' не найдено"
-        };
+        });
+        return null;
     }
 
 
-    public Result<ResolvedExpr, ExprError> ResolveFunction(FuncExpr funcExpr, IQuerySource source)
+    private ResolvedExpr? ResolveFunction(FuncExpr funcExpr, ResolutionContext context)
     {
-        var arguments = funcExpr.Arguments.Select(a => RecursiveResolveExpr(a, source)).ToResult();
+        var arguments = funcExpr.Arguments.Select(a => RecursiveResolveExpr(a, context)).ToArray();
 
-        if (!arguments.Unwrap(out var args, out var error))
+        var args = arguments.Where(a => a.HasValue).Select(a => a!.Value).ToArray();
+
+        if (args.Length != arguments.Length)
         {
-            return error;
+            return null;
         }
 
         var sign = new FunctionSignature
@@ -98,11 +111,13 @@ public sealed class ExpressionResolver : INameResolver
         var def = Functions.ResolveFunction(sign);
         if (def.UnwrapErr(out var err, out var definition))
         {
-            return new ExprError()
-            {
-                Span = funcExpr.Span,
-                Message = err.Message,
-            };
+            context.Errors.Add(
+                new ExprError()
+                {
+                    Span = funcExpr.Span,
+                    Message = err.Message,
+                });
+            return null;
         }
 
         var function = definition.Function;

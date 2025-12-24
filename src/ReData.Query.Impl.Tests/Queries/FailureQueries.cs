@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Mysqlx.Expr;
 using ReData.Query.Common;
 using ReData.Query.Core.Types;
 
@@ -64,7 +65,7 @@ public class FailureQueries
     [Fact]
     public void ErrorInGroupByFieldMustNotDupError()
     {
-        IEnumerable<ExprError?>? errors = new PostgresAssets().UsersQuery
+        IEnumerable<IReadOnlyList<ExprError>>? errors = new PostgresAssets().UsersQuery
             .GroupBy([
                 "NotViableField"
             ], new()

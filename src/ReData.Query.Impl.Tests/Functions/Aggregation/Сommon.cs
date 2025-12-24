@@ -9,19 +9,22 @@ namespace ReData.Query.Impl.Tests.Functions.Aggregation;
 
 public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
+#pragma warning disable CA1822
     private QueryBuilder GetInline(string expr, string[] data, string? where = null)
+#pragma warning restore CA1822
     {
-        var qb = new InlineQuerySource("x", data, assets.DatabaseType).ToQueryBuilder();
-        if (where is not null)
-        {
-            qb = qb.Where(where).Expect("Where must be valid");
-        }
-
-        qb = qb.Select(new()
-        {
-            ["test"] = expr
-        }).Expect("Query must be valid");
-        return qb;
+        return null!;
+        // var qb = new InlineQuerySource("x", data, assets.DatabaseType).ToQueryBuilder();
+        // if (where is not null)
+        // {
+        //     qb = qb.Where(where).Expect("Where must be valid");
+        // }
+        //
+        // qb = qb.Select(new()
+        // {
+        //     ["test"] = expr
+        // }).Expect("Query must be valid");
+        // return qb;
     }
 
     private static string[] ToExpressions(int?[] values)

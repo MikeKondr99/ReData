@@ -8,7 +8,7 @@ import {
   ApiResponse,
   DataConnectorListItem,
   DataSetViewModel,
-  ExprError,
+  ExprErrors,
   TransformationBlock,
   TransformationData
 } from '../types';
@@ -122,7 +122,7 @@ export class DatasetEditPage{
   unsaved = signal(false);
   datasetName = model<string>('');
   loading = signal(false);
-  error = signal<{index: number, errors?: (ExprError | null)[], message?: string, query?: string } | null>(null);
+  error = signal<{index: number, errors?: (ExprErrors | null)[], message?: string, query?: string } | null>(null);
   response = signal<ApiResponse>({ data: [], fields: [], query: '', total:0 });
 
   private cancelQuery = new Subject<void>();

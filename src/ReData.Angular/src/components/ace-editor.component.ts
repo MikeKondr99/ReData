@@ -11,7 +11,7 @@ import type {Ace} from 'ace-builds';
 import '../services/relang';
 import 'ace-builds/src-noconflict/theme-eclipse';
 import 'ace-builds/src-noconflict/ext-language_tools'
-import {DataType, ExprError, FunctionArgument, FunctionViewModel} from '../types';
+import {DataType, ExprErrors, FunctionArgument, FunctionViewModel} from '../types';
 import {FunctionService} from '../services/function.service';
 import {groupBy} from '../helpers';
 
@@ -35,7 +35,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   public value = input<string>('');
 
-  public error = input<ExprError>();
+  public errors = input<ExprErrors>();
 
   public fields = input.required<string[]>();
 
@@ -68,31 +68,41 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
 
   updateError = effect(() => {
-    let error = this.error();
-    if (error) {
-      console.log(error, untracked(this.value));
-      this.editor?.getSession().setAnnotations([{
-        row: error.span.startRow - 1,
-        column: error.span.startColumn - 1,
-        text: error.message,
-        type: "error", // Shows in gutter and hover
-      }]);
-      if (this.markerId) {
-        this.editor?.getSession().removeMarker(this.markerId);
-        this.markerId = undefined;
+    let errors = this.errors();
+
+    if(errors && errors?.length > 0) {
+      const annotations: Ace.Annotation[] = [];
+      for (const marker of this.markers) {
+        this.editor?.getSession().removeMarker(marker);
       }
-      this.markerId = this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-warning", "text", false);
+      this.markers = [];
+      for (const error of errors) {
+        annotations.push({
+          row: error.span.startRow - 1,
+          column: error.span.startColumn - 1,
+          text: error.message,
+          type: "error", // Shows in gutter and hover
+        })
+        const newMarker = this.editor?.getSession().addMarker(new ace.Range(error.span.startRow - 1, error.span.startColumn, error.span.endRow - 1, error.span.endColumn), "ace-error", "text", false);
+        if(newMarker) {
+          this.markers.push(newMarker);
+        }
+      }
+      this.editor?.getSession().setAnnotations(annotations);
     } else {
+      // Стираем аннотации и маркеры
       this.editor?.getSession().setAnnotations([]);
-      if (this.markerId) {
-        this.editor?.getSession().removeMarker(this.markerId);
-        this.markerId = undefined;
+      for (const marker of this.markers) {
+        this.editor?.getSession().removeMarker(marker);
       }
+      this.markers = [];
     }
+
+
     this.updateGutter();
   })
 
-  private markerId?: number;
+  private markers: number[] = [];
   private editor?: Ace.Editor;
 
   ngAfterViewInit() {
@@ -124,7 +134,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     this.updateGutter();
     this.editor.clearSelection();
     let funcs = untracked(this.functions.data);
-    if(funcs) {
+    if (funcs) {
       this.editor?.setOptions({
         enableBasicAutocompletion: [this.getCompleter([], funcs)],
       })
@@ -138,7 +148,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   updateGutter() {
     this.editor?.setOptions({
-      showGutter: /[\r\n]/.test(this.editor?.getValue()) || !!this.markerId
+      showGutter: /[\r\n]/.test(this.editor?.getValue()) || !!this.markers
     })
   }
 
@@ -258,14 +268,15 @@ function createFunctionHtml(funcs: FunctionViewModel[], methods: boolean): strin
   let skip = methods ? 1 : 0;
 
   for (let func of funcs) {
-    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a,i) => createFunctionArgHtml(a,i == func.arguments.length- 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'agg<' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}${(func.returnType.aggregated ? '>' : '')}</span></div><div class="function-doc">${func.doc}</div></div>`;
+    result += `<div class="function-item"><div class="function-signature">(${func.arguments.slice(skip).map((a, i) => createFunctionArgHtml(a, i == func.arguments.length - 1 - skip)).join('')}) → <span class="return-type">${(func.returnType.aggregated ? 'agg<' : '')}${func.returnType.dataType}${(func.returnType.canBeNull ? '' : '!')}${(func.returnType.aggregated ? '>' : '')}</span></div><div class="function-doc">${func.doc}</div></div>`;
   }
   return `<div class="function-hint">${result}</div>`
 }
 
 function createFunctionArgHtml(arg: FunctionArgument, last: boolean) {
-  return `<span class="argument">${arg.name}: ${createTypeHtml(arg.type.dataType,arg.type.canBeNull)}${last ? '' : ', '}</span>`;
+  return `<span class="argument">${arg.name}: ${createTypeHtml(arg.type.dataType, arg.type.canBeNull)}${last ? '' : ', '}</span>`;
 }
+
 function createTypeHtml(type: DataType, canBeNull: boolean) {
   return `<span class="type">${type}${(canBeNull ? '' : '!')}</span>`;
 }

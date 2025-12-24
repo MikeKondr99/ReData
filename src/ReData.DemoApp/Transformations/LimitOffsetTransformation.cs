@@ -9,7 +9,7 @@ public class LimitOffsetTransformation : ITransformation
     public uint? Limit { get; set; }
     public uint? Offset { get; set; }
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Apply(QueryBuilder builder)
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         if (Offset.HasValue)
         {

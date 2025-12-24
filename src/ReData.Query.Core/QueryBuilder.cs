@@ -9,6 +9,8 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Core;
 
+using ResolutionResult = Result<ResolvedExpr, IReadOnlyList<ExprError>>;
+
 public record QueryBuilder
 {
     private Query Query { get; init; }
@@ -67,7 +69,7 @@ public record QueryBuilder
         }, resolver);
     }
 
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Select(Dictionary<string, string> select)
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Select(Dictionary<string, string> select)
     {
         var qb = this;
         qb = CreateCte();
@@ -86,11 +88,12 @@ public record QueryBuilder
 
         if (agg is INone)
         {
-            return Result.Error(res.Select(m => (ExprError?)new ExprError
+            return Result.Error(res.Select(m => (IReadOnlyList<ExprError>)[new ExprError
             {
                 Span = m.ResolvedExpr.Expression.Span,
                 Message = "Все значения в выборке должны быть либо агрегированными либо нет"
-            })!);
+            }
+            ])!);
 
         }
         
@@ -103,7 +106,7 @@ public record QueryBuilder
         };
     }
     
-    public Result<QueryBuilder, IEnumerable<ExprError?>> Where(string condition)
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Where(string condition)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -115,7 +118,7 @@ public record QueryBuilder
 
         if (res.UnwrapErr(out var err, out var where))
         {
-            return Result.Error(Once.From(err).AsEnumerable<ExprError?>());
+            return Result.Error(Once.From(err).AsEnumerable<IReadOnlyList<ExprError>>());
         }
 
         return qb with
@@ -127,7 +130,7 @@ public record QueryBuilder
         };
     }
     
-    public Result<QueryBuilder,IEnumerable<ExprError?>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
+    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
     {
         var qb = this;
         if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
@@ -158,7 +161,7 @@ public record QueryBuilder
         };
     }
     
-    public Result<QueryBuilder,IEnumerable<ExprError?>> GroupBy(IReadOnlyList<string> groupBy, Dictionary<string, string> select)
+    public Result<QueryBuilder,IEnumerable<IReadOnlyList<ExprError>>> GroupBy(IReadOnlyList<string> groupBy, Dictionary<string, string> select)
     {
         var qb = this;
         if (Query.Select is not null)
@@ -178,7 +181,7 @@ public record QueryBuilder
         
         if (!resGroup.Any()  || !res.Any())
         {
-            errors = !errors.Any() ? Enumerable.Repeat<ExprError?>(null, groupBy.Count) : errors;
+            errors = !errors.Any() ? Enumerable.Repeat<IReadOnlyList<ExprError>>([], groupBy.Count) : errors;
             return Result.Error(errors.Concat(errors2.Skip(groupBy.Count))); 
         }
         
@@ -253,14 +256,26 @@ public record QueryBuilder
         };
     }
 
-    private Result<ResolvedExpr,ExprError> Resolve(string expr)
+    private Result<ResolvedExpr, IReadOnlyList<ExprError>> Resolve(string expr)
     {
         var resExpr = Expr.Parse(expr);
         if (!resExpr.Unwrap(out var expression, out var error))
         {
-            return error;
+            return Result.Error<IReadOnlyList<ExprError>>([error]);
         }
-        return Resolver.ResolveExpr(expression, Query.From);
+
+        var context = new ResolutionContext()
+        {
+            Errors = [],
+            QuerySource = Query.From
+        };
+        var res = Resolver.ResolveExpr(expression, context);
+        if (res.HasValue)
+        {
+            return res;
+        }
+
+        return context.Errors;
     }
 
     public Query Build()
@@ -268,28 +283,28 @@ public record QueryBuilder
         return Query;
     }
 
-    private IEnumerable<Result<ResolvedExpr, ExprError>> ResolveMany(
+    private IEnumerable<ResolutionResult> ResolveMany(
         IEnumerable<string> exprs,
-        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
+        Func<ResolutionResult,ResolutionResult>? condition = null
         )
     {
         condition ??= (r) => r;
         foreach (var expr in exprs)
         {
-            Result<ResolvedExpr, ExprError> res = condition(Resolve(expr));
+            ResolutionResult res = condition(Resolve(expr));
             yield return res;
         }
     }
-    private IEnumerable<Result<SelectItem, ExprError>> ResolveManySelectItems(
+    private IEnumerable<Result<SelectItem, IReadOnlyList<ExprError>>> ResolveManySelectItems(
         Dictionary<string,string> select,
-        Func<Result<ResolvedExpr,ExprError>,Result<ResolvedExpr,ExprError>>? condition = null
+        Func<ResolutionResult, ResolutionResult>? condition = null
         )
     {
         condition ??= (r) => r;
         int i = 0;
         foreach (var kv in select)
         {
-            Result<SelectItem, ExprError> res = condition(Resolve(kv.Value))
+            Result<SelectItem, IReadOnlyList<ExprError>> res = condition(Resolve(kv.Value))
               .Map(r => new SelectItem(kv.Key, Resolver.ResolveName([$"column{i + 1}"]), r));
             yield return res;
             i += 1;
