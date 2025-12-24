@@ -5,6 +5,9 @@ using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.Query;
 using ReData.Query.Core.Components;
+using ReData.Query.Core.Types;
+using ReData.Query.Runners.Value;
+using Tracing = ReData.DemoApp.Extensions.Tracing;
 
 namespace ReData.DemoApp.Endpoints.Transform;
 
@@ -26,7 +29,8 @@ public class TransformEndpoint : Endpoint<
 
     /// <inheritdoc />
     public override async
-        Task<Results<Ok<TransformResponse>, BadRequest<TransformErrorResponse>, InternalServerError<TransformErrorResponse>>>
+        Task<Results<Ok<TransformResponse>, BadRequest<TransformErrorResponse>,
+            InternalServerError<TransformErrorResponse>>>
         ExecuteAsync(
             TransformRequest req,
             CancellationToken ct)
@@ -48,21 +52,38 @@ public class TransformEndpoint : Endpoint<
             });
         }
 
-        // 2. Compile SQL
-        try
+
+
+        long? total = null;
+        using (var span = Tracing.ReData.StartActivity("transform-page-preparation"))
         {
-            var sql = Compiler.Compile(query.Build());
-        }
-        catch (Exception ex)
-        {
-            var errorResponse = new TransformErrorResponse()
+            var totalQuery = query.Select(new()
             {
-                Index = req.Transformations.Count,
-                Message = $"Непредвиденная ошибка компиляции запроса:\n{ex.Message}",
-                Errors = null,
-            };
-            return TypedResults.BadRequest(errorResponse);
+                ["TOTAL"] = "COUNT()",
+            });
+
+            total = (await new ExecuteQueryCommand()
+            {
+                Query = totalQuery.Unwrap().Build(),
+            }.ExecuteAsync(ct)).Unwrap().Data[0].Int("TOTAL");
+
+            // 2.1 Add Sort
+            if (req.OrderByName is not null && req.OrderByDescending is not null)
+            {
+                var sort = query.OrderBy([
+                    (req.OrderByName, req.OrderByDescending is true ? OrderItem.Type.Desc : OrderItem.Type.Asc)
+                ]);
+
+                query = sort.UnwrapOr(query);
+            }
+            
+            // 2. Add Paging
+
+
+            query = query.Skip((req.PageNumber - 1) * req.PageSize).Take(req.PageSize);
+            
         }
+
 
         // 3. Query execution
         var execRes = await new ExecuteQueryCommand()
@@ -80,6 +101,10 @@ public class TransformEndpoint : Endpoint<
             });
         }
 
+        ok = ok with
+        {
+            Total = total
+        };
         return TypedResults.Ok(ok);
     }
 }

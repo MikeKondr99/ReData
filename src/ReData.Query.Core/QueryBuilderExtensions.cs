@@ -190,7 +190,7 @@ public static class QueryBuilderExtensions
             }
             else
             {
-                errors = results.Select(r => r.UnwrapErr());
+                errors = results.Select(r => r.UnwrapErrOrDefault()!);
                 return [];
             }
         }

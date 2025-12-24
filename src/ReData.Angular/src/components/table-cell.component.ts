@@ -4,12 +4,13 @@ import {DataType, Field} from '../types';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 import {NzButtonModule} from 'ng-zorro-antd/button';
 import {NzModalService} from 'ng-zorro-antd/modal';
+import {NzCheckboxModule} from 'ng-zorro-antd/checkbox';
 
 
 @Component({
   selector: 'td [appTableCell]',
   standalone: true,
-  imports: [CommonModule, NzIconModule, NzButtonModule],
+  imports: [CommonModule, NzIconModule, NzButtonModule, NzCheckboxModule],
   styles: `
     :host {
       text-overflow: ellipsis;
@@ -60,6 +61,8 @@ import {NzModalService} from 'ng-zorro-antd/modal';
           <span class="text-gray-500 italic">Пустая строка</span>
         } @else if (type == 'date') {
           {{ date(value) }}
+        } @else if (type == 'bool') {
+          <label nz-checkbox class="pointer-events-none" [nzChecked]="value"></label>
         } @else {
           {{ value }}
         }

@@ -148,7 +148,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   updateGutter() {
     this.editor?.setOptions({
-      showGutter: /[\r\n]/.test(this.editor?.getValue()) || !!this.markers
+      showGutter: /[\r\n]/.test(this.editor?.getValue()) || this.markers.length > 0
     })
   }
 

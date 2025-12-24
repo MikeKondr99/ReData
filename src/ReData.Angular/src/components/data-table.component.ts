@@ -1,35 +1,43 @@
-﻿import {Component, input} from '@angular/core';
-import {
-  NzTableModule,
-  NzTableVirtualScrollDirective,
-} from 'ng-zorro-antd/table';
-import {NzTooltipDirective} from 'ng-zorro-antd/tooltip';
-import {DataType, Field} from '../types';
+﻿import {Component, input, output} from '@angular/core';
+import {NzTableModule, NzTableQueryParams} from 'ng-zorro-antd/table';
+import {ApiResponse, DataType, Field} from '../types';
 import {TableCellComponent} from './table-cell.component';
+import {NzDropDownModule} from 'ng-zorro-antd/dropdown';
+import {NzInputModule} from 'ng-zorro-antd/input';
+import {FormsModule} from '@angular/forms';
 
 @Component({
   selector: 'app-data-table',
   standalone: true,
   imports: [
     NzTableModule,
-    NzTableVirtualScrollDirective,
     TableCellComponent,
   ],
   template: `
+    @let data = dataResponse().data;
+    @let total = dataResponse().total;
+    @let fields = dataResponse().fields;
+
+    <ng-template #rangeTemplate let-range="range" let-total>
+      {{ range[0] }}-{{ range[1] }} of {{ total }} items
+    </ng-template>
+
     <nz-table
       #basicTable
+      nzShowSizeChanger
       [nzBordered]="true"
-      [nzVirtualItemSize]="54"
-      [nzVirtualMaxBufferPx]="1299"
-      [nzVirtualMinBufferPx]="1299"
-      [nzData]="data()"
+      [nzData]="data"
       [nzFrontPagination]="false"
-      [nzShowPagination]="false"
+      [nzShowPagination]="true"
+      (nzQueryParams)="tableQueryParamsChange.emit($event)"
+      [nzPageSize]="50"
+      [nzTotal]="total"
+      [nzShowTotal]="rangeTemplate"
       [nzScroll]="{ y: height() }">
       <thead>
       <tr>
-        @for (field of fields(); track field.alias) {
-          <th [nzWidth]="'174px'">
+        @for (field of fields; track field.alias) {
+          <th [nzWidth]="'174px'" [nzSortFn]="true" [nzShowSort]="field.type !== 'bool'" [nzFilterFn]="true" >
             <div class="flex flex-row flex-nowrap">
               <span class="text-blue-700">
                 {{ fieldType(field) }}
@@ -45,43 +53,9 @@ import {TableCellComponent} from './table-cell.component';
       <tbody>
       <ng-template nz-virtual-scroll let-data let-index="index">
         <tr>
-          @for (field of fields(); track field) {
+          @for (field of fields; track field) {
             <td class="" appTableCell [value]="data[field.alias]" [field]="field">
             </td>
-<!--            <span class="cell-content" [style.text-align]="textAlign(field())">-->
-<!--        @if (value()?.type != null) {-->
-<!--          <span class="text-red-800 italic">{{ value().type }}</span>-->
-<!--        } @else if (value() === null) {-->
-<!--          <span class="text-red-800 italic">NULL</span>-->
-<!--        } @else if (value() === '') {-->
-<!--          <span class="text-gray-500 italic">Пустая строка</span>-->
-<!--        } @else if (field().type == 'date'){-->
-<!--          {{ date(value()) }}-->
-<!--        } @else {-->
-<!--          {{ value() }}-->
-<!--        }-->
-
-  <!--        <button class="icon-container" nz-button nzType="link" nzShape="circle" nzSize="small">-->
-  <!--          <span nz-icon nzType="file-search"></span>-->
-  <!--        </button>-->
-<!--    </span>-->
-<!--            <td class="text-ellipsis text-nowrap overflow-hidden max-h-15 min-h-14" nz-tooltip-->
-<!--                [nzTooltipTitle]="data[field.alias]" nzTooltipPlacement="bottomLeft"-->
-<!--                [style.text-align]="textAlign(field.type)">-->
-<!--              @if (data[field.alias]?.type != null) {-->
-<!--                <span class="text-red-800 italic">{{ data[field.alias].type }}</span>-->
-<!--              } @else if (data[field.alias] == null) {-->
-<!--                <span class="text-red-800 italic">NULL</span>-->
-<!--              } @else if (data[field.alias] === '') {-->
-<!--                <span class="text-gray-500 italic">Пустая строка</span>-->
-<!--              } @else {-->
-<!--                @if (field.type == 'date') {-->
-<!--                  {{ date(data[field.alias]) }}-->
-<!--                } @else {-->
-<!--                  {{ data[field.alias] }}-->
-<!--                }-->
-<!--              }-->
-<!--            </td>-->
           }
         </tr>
       </ng-template>
@@ -91,9 +65,11 @@ import {TableCellComponent} from './table-cell.component';
 })
 export class DataTableComponent {
 
-  data = input.required<any[]>();
-  fields = input.required<Field[]>();
+
+  dataResponse = input.required<ApiResponse>();
   height = input.required<string>();
+
+  tableQueryParamsChange = output<NzTableQueryParams>();
 
   date(value: string) {
     const date = new Date(value);
@@ -121,4 +97,6 @@ export class DataTableComponent {
       return field.alias;
     return `[${field.alias}]`
   }
+
 }
+

@@ -72,6 +72,13 @@ export interface ApiResponse {
   data: any[];
 }
 
+// export interface NzTableQueryParams {
+//   pageIndex: number;
+//   pageSize: number;
+//   sort: Array<{ key: string; value: 'ascend' | 'descend' | null }>;
+//   filter: Array<{ key: string; value: any | any[] }>;
+// }
+
 export type OrderByItem = {
   expression: string;
   descending: boolean;
