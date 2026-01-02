@@ -1,0 +1,13 @@
+﻿version: '3'
+services:
+  openapi-generator:
+    image: openapitools/openapi-generator-cli
+    volumes:
+      - ..:/local
+    command: >
+      generate
+      -i ./local/scripts/openapi.json
+      -g typescript-angular
+      -o ./local/
+      --additional-properties=fileNaming=kebab-case,withInterfaces=true,ngVersion=20.0.0,stringEnums=true,useSingleRequestParameter=true,nullSafeAdditionalProps=true,basePath=''
+      --generate-alias-as-model

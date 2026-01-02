@@ -1,21 +1,12 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 
 namespace ReData.DemoApp.Endpoints.DataSets;
 
-public class DataConnectorListItem
-{
-    public Guid Id { get; init; }
-    
-    public string Name { get; init; }
-}
-
-// Request DTO
 public class CreateDataConnectorRequest
 {
     [QueryParam]
     [BindFrom("name")]
     public required string Name { get; set; }
-
 
     [QueryParam]
     [BindFrom("separator")]
@@ -24,12 +15,6 @@ public class CreateDataConnectorRequest
     [QueryParam]
     [BindFrom("withHeader")]
     public required bool WithHeader { get; set; }
-    
-    public required IFormFile File { get; init; }
-}
 
-public class CreateDataConnectorResponse
-{
-    public required Guid Id { get; init; }
-    public required string Name { get; init; }
+    public required IFormFile File { get; init; }
 }

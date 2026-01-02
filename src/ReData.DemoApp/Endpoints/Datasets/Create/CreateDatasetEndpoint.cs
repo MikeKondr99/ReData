@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.OutputCaching;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.Datasets.Create;
+using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Transformations;
 
-namespace ReData.DemoApp.Endpoints.Datasets.CreateDataset;
+namespace ReData.DemoApp.Endpoints.Datasets.Create;
 
 using Response =
     Results<
@@ -16,6 +16,12 @@ using Response =
         Conflict<ErrorResponse>
     >;
 
+/// <summary>
+/// Создать набор данных
+/// </summary>
+/// <remarks>
+/// Создаёт набор данных
+/// </remarks>
 public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 {
     public required ApplicationDatabaseContext Db { get; init; }
@@ -23,7 +29,8 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 
     public override void Configure()
     {
-        Post("/api/datasets");
+        Post("/");
+        Group<DataSetsGroup>();
         Summary(summary =>
         {
             summary.ExampleRequest = new CreateDataSetRequest

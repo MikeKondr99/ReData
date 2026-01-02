@@ -2,9 +2,16 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
+using ReData.DemoApp.Endpoints.Groups;
 
 namespace ReData.DemoApp.Endpoints.Datasets.GetAll;
 
+/// <summary>
+/// Получить все наборы
+/// </summary>
+/// <remarks>
+/// Возвращает список всех наборов данных
+/// </remarks>
 public class GetAllDatasetsEndpoint : EndpointWithoutRequest<
     Ok<List<DataSetListItem>>
 >
@@ -13,7 +20,9 @@ public class GetAllDatasetsEndpoint : EndpointWithoutRequest<
 
     public override void Configure()
     {
-        Get("/api/datasets");
+        Get("/");
+        Group<DataSetsGroup>();
+        // Get("/api/datasets");
         AllowAnonymous();
         
         Options(x => x.CacheOutput(p => p

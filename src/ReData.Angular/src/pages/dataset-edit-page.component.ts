@@ -78,7 +78,7 @@ import {CreateDataConnectorModalComponent} from '../components/create-data-conne
             <app-data-table
               [dataResponse]="response()"
               (tableQueryParamsChange)="tableQueryParams.set($event)"
-              height="80vh"></app-data-table>
+              height="83vh"></app-data-table>
           }
         </div>
       </div>

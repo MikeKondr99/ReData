@@ -4,9 +4,16 @@ using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.DataSets;
+using ReData.DemoApp.Endpoints.Groups;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Delete;
 
+/// <summary>
+/// Удалить набор данных
+/// </summary>
+/// <remarks>
+/// Удаляет набор данных с указанным id
+/// </remarks>
 public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
@@ -15,7 +22,8 @@ public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, 
 
     public override void Configure()
     {
-        Delete("/api/datasets/{Id}");
+        Delete("/{Id}");
+        Group<DataSetsGroup>();
         AllowAnonymous();
     }
 

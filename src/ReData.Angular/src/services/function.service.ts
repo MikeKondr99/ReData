@@ -1,16 +1,15 @@
 import {inject, Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {ApiResponse, FunctionViewModel} from '../types';
 import {toSignal} from '@angular/core/rxjs-interop';
+import {DefaultService} from '../api/api/default.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FunctionService {
 
-  http = inject(HttpClient);
+  defaultService = inject(DefaultService);
 
-  data = toSignal(this.http.get<FunctionViewModel[]>('api/functions'));
+  data = toSignal(this.defaultService.getAllFunctions());
 }
 
 

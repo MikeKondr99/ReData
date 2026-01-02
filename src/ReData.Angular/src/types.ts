@@ -89,36 +89,6 @@ export type SelectItem = {
   expression: string;
 };
 
-export interface FunctionViewModel
-{
-  name: string;
-  doc: string;
-  arguments: FunctionArgument[];
-  returnType: ReturnType;
-  kind: FunctionKind;
-  displayText: string;
-}
-
-export interface FunctionArgument
-{
-  name: string;
-  type: FunctionArgumentType
-  propagateNull: boolean
-}
-
-export interface FunctionArgumentType
-{
-  dataType: DataType;
-  canBeNull: boolean;
-}
-
-export interface ReturnType
-{
-  dataType: DataType
-  canBeNull: boolean
-  aggregated: boolean,
-}
-
 export type ExprErrors = ExprError[];
 
 export interface ExprError {

@@ -1,10 +1,8 @@
-﻿
-import {Component, computed, effect, inject, input, model, viewChild} from '@angular/core';
+﻿import {Component, computed, effect, inject, model} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FunctionService} from '../services/function.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzCardModule} from 'ng-zorro-antd/card';
-import {DataType, FunctionArgument, FunctionArgumentType, FunctionViewModel} from '../types';
 import {NzInputModule} from 'ng-zorro-antd/input';
 import {NzIconModule} from 'ng-zorro-antd/icon';
 
@@ -41,6 +39,7 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
   styles: ``
 })
 export class FunctionsComponent {
+
 
   functions = inject(FunctionService);
 

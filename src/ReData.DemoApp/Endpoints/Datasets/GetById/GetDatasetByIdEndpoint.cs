@@ -3,19 +3,27 @@ using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.GetById;
+using ReData.DemoApp.Endpoints.Groups;
 
 namespace ReData.DemoApp.Endpoints.Datasets;
 
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 
+/// <summary>
+/// Получить набор данных по id
+/// </summary>
+/// <remarks>
+/// Возвращает набор данных с его трансформациями
+/// </remarks>
 public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
 
     public override void Configure()
     {
-        Get("/api/datasets/{Id}");
+        Get("/{Id}");
+        Group<DataSetsGroup>();
         AllowAnonymous();
         
         Options(x => x.CacheOutput(p => p
