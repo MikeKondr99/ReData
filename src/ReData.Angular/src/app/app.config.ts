@@ -6,6 +6,7 @@ import { provideHttpClient} from '@angular/common/http';
 import {provideRouter} from '@angular/router';
 import { routes } from './app.routes';
 import {provideMarkdown} from 'ngx-markdown';
+import { provideApi } from '../api';
 import { provideNzI18n, ru_RU } from 'ng-zorro-antd/i18n';
 
 registerLocaleData(ru);
@@ -15,6 +16,9 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     provideAnimationsAsync(),
+    provideApi( {
+      basePath: '',
+    }),
     provideMarkdown(),
     provideNzI18n(ru_RU)
   ]

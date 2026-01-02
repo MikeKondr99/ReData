@@ -6,10 +6,17 @@ using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.GetById;
+using ReData.DemoApp.Endpoints.Groups;
 using ReData.Query.Runners.Value;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Update;
 
+/// <summary>
+/// Изменить набор данных
+/// </summary>
+/// <remarks>
+/// Редактирует набор данных с указанным id
+/// </remarks>
 public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<UpdateDataSetResponse>, NotFound>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
@@ -18,7 +25,8 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
 
     public override void Configure()
     {
-        Put("/api/datasets/{Id}");
+        Put("/{Id}");
+        Group<DataSetsGroup>();
         AllowAnonymous();
     }
 

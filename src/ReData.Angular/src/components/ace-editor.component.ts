@@ -1,19 +1,25 @@
 ﻿// editor.component.ts
 import {
-  Component,
-  ElementRef,
   AfterViewInit,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  input,
   OnDestroy,
-  effect, viewChild, input, output, inject, untracked
+  output,
+  untracked,
+  viewChild
 } from '@angular/core';
-import * as ace from 'ace-builds';
 import type {Ace} from 'ace-builds';
+import * as ace from 'ace-builds';
 import '../services/relang';
 import 'ace-builds/src-noconflict/theme-eclipse';
 import 'ace-builds/src-noconflict/ext-language_tools'
-import {DataType, ExprErrors, FunctionArgument, FunctionViewModel} from '../types';
 import {FunctionService} from '../services/function.service';
 import {groupBy} from '../helpers';
+import {ExprErrors} from '../types';
+import {DataType, FunctionArgument, FunctionKind, FunctionResponse} from '../api';
 
 @Component({
   standalone: true,
@@ -183,11 +189,11 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     return result;
   }
 
-  private static getFunctionsCompletions(functions: FunctionViewModel[]): Ace.Completion[] {
+  private static getFunctionsCompletions(functions: FunctionResponse[]): Ace.Completion[] {
     const result: Ace.Completion[] = [];
 
     // Функции
-    let funcGroups = groupBy(functions.filter(f => f.kind === 'Default' || f.kind === 'Method'), (f) => f.name);
+    let funcGroups = groupBy(functions.filter(f => f.kind === FunctionKind.Default || f.kind === FunctionKind.Method), (f) => f.name);
     for (let funcName in funcGroups) {
       result.push({
         caption: `${funcName}`,
@@ -199,7 +205,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     // Методы
-    funcGroups = groupBy(functions.filter(f => f.kind === 'Method'), (f) => f.name);
+    funcGroups = groupBy(functions.filter(f => f.kind === FunctionKind.Method), (f) => f.name);
     for (let funcName in funcGroups) {
       result.push({
         caption: `${funcName}`,
@@ -214,7 +220,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
   }
 
 
-  getCompleter(fields: string[], functions: FunctionViewModel[]): Ace.Completer {
+  getCompleter(fields: string[], functions: FunctionResponse[]): Ace.Completer {
     let completions: Ace.Completion[] = [];
 
     // completions = completions.concat(AceEditorComponent.getFieldCompletions(fields));
@@ -263,7 +269,7 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 }
 
 
-function createFunctionHtml(funcs: FunctionViewModel[], methods: boolean): string {
+function createFunctionHtml(funcs: FunctionResponse[], methods: boolean): string {
   let result = '';
   let skip = methods ? 1 : 0;
 

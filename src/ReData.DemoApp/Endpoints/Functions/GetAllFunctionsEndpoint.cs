@@ -1,5 +1,6 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
+using NSwag.Annotations;
 using ReData.Query.Impl.Functions;
 
 namespace ReData.DemoApp.Endpoints.Functions;
@@ -8,8 +9,8 @@ namespace ReData.DemoApp.Endpoints.Functions;
 /// Получить все функции
 /// </summary>
 /// <remarks>
-/// Возвращает полный список доступных для провайдера PostrgreSql функций
-/// </remarks>>
+/// Возвращает полный список доступных для провайдера PostgreSql функций
+/// </remarks>
 public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     Results<
         Ok<List<FunctionResponse>>,
@@ -19,14 +20,16 @@ public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
 {
     public override void Configure()
     {
-        Get("/api/functions");
+        Get("/functions");
         AllowAnonymous();
-        
-        Options(x => x.CacheOutput(p => 
+
+        Options(x => x.CacheOutput(p =>
             p.Expire(TimeSpan.FromDays(1))
         ));
     }
 
+
+    /// <inheritdoc />
     public override async Task<Results<Ok<List<FunctionResponse>>, NotFound, ProblemDetails>> ExecuteAsync(
         CancellationToken ct)
     {

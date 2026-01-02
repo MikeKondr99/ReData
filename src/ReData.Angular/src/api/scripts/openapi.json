@@ -1,0 +1,1256 @@
+{
+  "x-generator": "NSwag v14.6.1.0 (NJsonSchema v11.5.1.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ReData.DemoApp",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5223"
+    }
+  ],
+  "paths": {
+    "/api/transform": {
+      "post": {
+        "operationId": "Transform",
+        "requestBody": {
+          "x-name": "TransformRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/functions": {
+      "get": {
+        "summary": "Получить все функции",
+        "description": "Возвращает полный список доступных для провайдера PostgreSql функций",
+        "operationId": "GetAllFunctions",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FunctionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/datasets/{id}": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Получить набор данных по id",
+        "description": "Возвращает набор данных с его трансформациями",
+        "operationId": "GetDatasetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSetResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Изменить набор данных",
+        "description": "Редактирует набор данных с указанным id",
+        "operationId": "UpdateDataset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "UpdateDataSetRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDataSetRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateDataSetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Удалить набор данных",
+        "description": "Удаляет набор данных с указанным id",
+        "operationId": "DeleteDataset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/datasets": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Получить все наборы",
+        "description": "Возвращает список всех наборов данных",
+        "operationId": "GetAllDatasets",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataSetListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Создать набор данных",
+        "description": "Создаёт набор данных",
+        "operationId": "CreateDataset",
+        "requestBody": {
+          "x-name": "CreateDataSetRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataSetRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDataSetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/data-connectors": {
+      "post": {
+        "summary": "Создать коннектор данных (файл)",
+        "operationId": "CreateDataConnector",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "separator",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "withHeader",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "CreateDataConnectorRequest",
+          "description": "",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDataConnectorRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDataConnectorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "GetAllDataConnectors",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataConnectorListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TransformResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fields",
+          "total",
+          "data"
+        ],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformFieldViewModel"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/components/schemas/IValue"
+              }
+            }
+          }
+        }
+      },
+      "TransformFieldViewModel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "alias",
+          "type",
+          "canBeNull"
+        ],
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "canBeNull": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DataType": {
+        "type": "integer",
+        "description": "Базовые типы данных в системе типов.\nОпределяет примитивные типы, с которыми работают функции.",
+        "x-enumNames": [
+          "Unknown",
+          "Null",
+          "Number",
+          "Integer",
+          "Text",
+          "Bool",
+          "DateTime"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "x-enum-varnames": [
+          "Unknown",
+          "Null",
+          "Number",
+          "Integer",
+          "Text",
+          "Bool",
+          "DateTime"
+        ]
+      },
+      "IValue": {
+        "type": "object",
+        "x-abstract": true,
+        "additionalProperties": false
+      },
+      "TransformErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "index",
+          "message",
+          "errors"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "nullable": true
+          }
+        }
+      },
+      "TransformRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "transformations",
+          "dataConnectorId",
+          "pageNumber",
+          "pageSize"
+        ],
+        "properties": {
+          "dataConnectorId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "pageNumber": {
+            "type": "integer"
+          },
+          "pageSize": {
+            "type": "integer"
+          },
+          "orderByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderByDescending": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "transformations": {
+            "type": "array",
+            "nullable": false,
+            "items": {
+              "$ref": "#/components/schemas/ITransformation"
+            }
+          }
+        }
+      },
+      "ITransformation": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "x-abstract": true,
+        "additionalProperties": false,
+        "required": [
+          "$type"
+        ],
+        "properties": {
+          "$type": {
+            "type": "string"
+          }
+        }
+      },
+      "SelectTransformation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelectItem"
+            }
+          },
+          "restOptions": {
+            "$ref": "#/components/schemas/SelectRestOptions"
+          }
+        }
+      },
+      "SelectItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "field",
+          "expression"
+        ],
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "expression": {
+            "type": "string"
+          }
+        }
+      },
+      "SelectRestOptions": {
+        "type": "integer",
+        "description": "Опция для трансформации, что делать с не указанными полями",
+        "x-enumNames": [
+          "NoAction",
+          "Delete"
+        ],
+        "enum": [
+          1,
+          2
+        ],
+        "x-enum-varnames": [
+          "NoAction",
+          "Delete"
+        ]
+      },
+      "WhereTransformation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "condition"
+        ],
+        "properties": {
+          "condition": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderByTransformation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          }
+        }
+      },
+      "OrderItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expression",
+          "descending"
+        ],
+        "properties": {
+          "expression": {
+            "type": "string"
+          },
+          "descending": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LimitOffsetTransformation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "nullable": true
+          },
+          "offset": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "GroupByTransformation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "groups",
+          "items"
+        ],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelectItem"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelectItem"
+            }
+          }
+        }
+      },
+      "FunctionResponse": {
+        "type": "object",
+        "description": "Описание функции, доступной для вызова в системе.\nПредназначено для отображения пользователю списка всех доступных функций с их параметрами и документацией.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "doc",
+          "arguments",
+          "returnType",
+          "kind",
+          "displayText"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название функции для вызова.\nИспользуется в синтаксисе вызова: Name(аргумент1, аргумент2)",
+            "minLength": 1,
+            "example": "Sign"
+          },
+          "doc": {
+            "type": "string",
+            "description": "Документация по функции - описание что делает функция и как её использовать.\nМожет быть null если документация отсутствует.",
+            "nullable": true,
+            "example": "Получает знак числа"
+          },
+          "arguments": {
+            "type": "array",
+            "description": "Список аргументов функции в порядке их передачи.\nОпределяет сигнатуру вызова: Name(аргумент1, аргумент2)",
+            "items": {
+              "$ref": "#/components/schemas/FunctionArgument"
+            }
+          },
+          "returnType": {
+            "description": "Тип возвращаемого значения функции.\nОписывает что вернет функция после выполнения.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FunctionReturnType"
+              }
+            ]
+          },
+          "kind": {
+            "description": "Категория или тип функции.\nОпределяет поведение и контекст использования функции.",
+            "example": "Method",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FunctionKind"
+              }
+            ]
+          },
+          "displayText": {
+            "type": "string",
+            "description": "Текстовое представление функции для отображения пользователю.\nОбычно содержит сигнатуру функции в читаемом формате."
+          }
+        }
+      },
+      "FunctionArgument": {
+        "type": "object",
+        "description": "Аргумент функции.\nСодержит информацию о параметре, который передается в функцию.",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "type",
+          "propagateNull"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название аргумента."
+          },
+          "type": {
+            "description": "Тип аргумента.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/FunctionArgumentType"
+              }
+            ]
+          },
+          "propagateNull": {
+            "type": "boolean",
+            "description": "Определяет пропагирует ли аргумент null если сам будет null"
+          }
+        }
+      },
+      "FunctionArgumentType": {
+        "type": "object",
+        "description": "Тип аргумента функции.",
+        "additionalProperties": false,
+        "required": [
+          "dataType",
+          "canBeNull"
+        ],
+        "properties": {
+          "dataType": {
+            "description": "Базовый тип данных.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DataType"
+              }
+            ]
+          },
+          "canBeNull": {
+            "type": "boolean",
+            "description": "Может ли аргумент принимать NULL."
+          }
+        }
+      },
+      "FunctionReturnType": {
+        "type": "object",
+        "description": "Тип возвращаемого значения функции.\nОпределяет тип данных, возможность быть NULL и является ли результат агрегированным.",
+        "additionalProperties": false,
+        "required": [
+          "dataType",
+          "canBeNull"
+        ],
+        "properties": {
+          "dataType": {
+            "description": "Базовый тип данных возвращаемого значения.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DataType"
+              }
+            ]
+          },
+          "canBeNull": {
+            "type": "boolean",
+            "description": "Может ли функция возвращать NULL значение."
+          },
+          "aggregated": {
+            "type": "boolean",
+            "description": "Является ли функция агрегирующей (вычисляющей значение по набору данных).\ntrue - функция агрегирует данные (например, SUM, COUNT)\nfalse - функция работает с отдельными значениями"
+          }
+        }
+      },
+      "FunctionKind": {
+        "type": "integer",
+        "description": "Категория функции, определяющая способ её вызова и синтаксис использования.",
+        "x-enumNames": [
+          "Default",
+          "Method",
+          "Binary",
+          "Unary"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "x-enum-varnames": [
+          "Default",
+          "Method",
+          "Binary",
+          "Unary"
+        ]
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "description": "RFC7807 compatible problem details/ error response class. this can be used by configuring startup like so:\napp.UseFastEndpoints(c => c.Errors.UseProblemDetails())",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "default": "https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1"
+          },
+          "title": {
+            "type": "string",
+            "default": "One or more validation errors occurred."
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "default": 400
+          },
+          "instance": {
+            "type": "string",
+            "default": "/api/route"
+          },
+          "traceId": {
+            "type": "string",
+            "default": "0HMPNHL0JHL76:00000001"
+          },
+          "detail": {
+            "type": "string",
+            "description": "the details of the error",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemDetails_Error"
+            }
+          }
+        }
+      },
+      "ProblemDetails_Error": {
+        "type": "object",
+        "description": "the error details object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "the name of the error or property of the dto that caused the error",
+            "default": "Error or field name"
+          },
+          "reason": {
+            "type": "string",
+            "description": "the reason for the error",
+            "default": "Error reason"
+          },
+          "code": {
+            "type": "string",
+            "description": "the code of the error",
+            "nullable": true
+          },
+          "severity": {
+            "type": "string",
+            "description": "the severity of the error",
+            "nullable": true
+          }
+        }
+      },
+      "DataSetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "dataConnectorId",
+          "transformations"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataConnectorId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "transformations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformationBlockResponse"
+            }
+          }
+        }
+      },
+      "TransformationBlockResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enabled",
+          "description",
+          "transformation"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "transformation": {
+            "$ref": "#/components/schemas/ITransformation"
+          }
+        }
+      },
+      "GetDatasetByIdRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "UpdateDataSetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "dataConnectorId",
+          "transformations"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataConnectorId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "transformations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformationBlockResponse"
+            }
+          }
+        }
+      },
+      "UpdateDataSetRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "connectorId",
+          "transformations"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "nullable": false
+          },
+          "connectorId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": false
+          },
+          "transformations": {
+            "type": "array",
+            "nullable": false,
+            "items": {
+              "$ref": "#/components/schemas/TransformationBlock"
+            }
+          }
+        }
+      },
+      "TransformationBlock": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enabled",
+          "transformation"
+        ],
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "transformation": {
+            "$ref": "#/components/schemas/ITransformation"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "the dto used to send an error response to the client",
+        "additionalProperties": false,
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "the http status code sent to the client. default is 400.",
+            "format": "int32",
+            "default": 400
+          },
+          "message": {
+            "type": "string",
+            "description": "the message for the error response",
+            "default": "One or more errors occurred!"
+          },
+          "errors": {
+            "type": "object",
+            "description": "the collection of errors for the current context",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "DataSetListItem": {
+        "type": "object",
+        "description": "Модель отображения набора данных в таблице",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt",
+          "rowsCount",
+          "fieldList"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string",
+            "description": "Название"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Дата и время создания",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Дата и время последнего обновления",
+            "format": "date-time"
+          },
+          "rowsCount": {
+            "type": "integer",
+            "description": "Количество строк при последнем сохранении",
+            "format": "int64",
+            "nullable": true
+          },
+          "fieldList": {
+            "type": "array",
+            "description": "Конечный набор полей при последнем сохранении",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/DataSetField"
+            }
+          }
+        }
+      },
+      "DataSetField": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "alias",
+          "dataType",
+          "canBeNull"
+        ],
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "dataType": {
+            "$ref": "#/components/schemas/DataType"
+          },
+          "canBeNull": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DeleteDataSetRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "CreateDataSetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateDataSetRequest": {
+        "type": "object",
+        "description": "Запрос на создание набора данных",
+        "example": {
+          "name": "Имя набора",
+          "connectorId": "00000000-0000-0000-0000-000000000000",
+          "transformations": [
+            {
+              "enabled": true,
+              "transformation": {
+                "items": [
+                  {
+                    "field": "Поле",
+                    "expression": "id * 2"
+                  }
+                ],
+                "restOptions": 2
+              }
+            }
+          ]
+        },
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "connectorId",
+          "transformations"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "nullable": false,
+            "example": "Имя набора"
+          },
+          "connectorId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": false,
+            "example": "00000000-0000-0000-0000-000000000000"
+          },
+          "transformations": {
+            "type": "array",
+            "nullable": false,
+            "example": [
+              {
+                "enabled": true,
+                "transformation": {
+                  "items": [
+                    {
+                      "field": "Поле",
+                      "expression": "id * 2"
+                    }
+                  ],
+                  "restOptions": 2
+                }
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TransformationBlock"
+            }
+          }
+        }
+      },
+      "CreateDataConnectorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateDataConnectorRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "file"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "DataConnectorListItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "JWTBearerAuth": {
+        "type": "http",
+        "description": "Enter a JWT token to authorize the requests...",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

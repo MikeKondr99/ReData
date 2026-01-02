@@ -1,6 +1,5 @@
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
-using ReData.DemoApp.Endpoints.Datasets.CreateDataset;
 using ReData.DemoApp.Endpoints.Datasets.Delete;
 using ReData.DemoApp.Endpoints.Datasets.GetAll;
 using ReData.DemoApp.Transformations;

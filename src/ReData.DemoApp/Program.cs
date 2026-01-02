@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using ReData.DemoApp;
 using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
@@ -70,9 +71,23 @@ services.AddTickerQ(options =>
 
 services.AddFastEndpoints();
 
+
+
 services.SwaggerDocument(options =>
 {
     options.ShortSchemaNames = true;
+    options.AutoTagPathSegmentIndex = 0;
+    options.DocumentSettings = (settings) =>
+    {
+        settings.SchemaSettings.SchemaProcessors.Add(new XEnumVarnamesNswagSchemaProcessor());
+        settings.SchemaSettings.SchemaProcessors.Add(new RequiredPropertiesSchemaProcessor());
+        // settings.OperationProcessors.Add(new SimplifyOperationIdProcessor());
+        settings.PostProcess = document =>
+        {
+            document.Host = "HOST";
+
+        };
+    };
     // Для работы требуется что бы базой был класс или абстрактный класс
     options.UseOneOfForPolymorphism = true;
     options.ExcludeNonFastEndpoints = true;
@@ -149,9 +164,30 @@ app.Services.Migrate<TickerQDbContext>();
 app.UseOutputCache();
 app.UseDefaultFiles();
 app.UseStaticFiles();
-app.UseFastEndpoints();
+app.UseFastEndpoints(c =>
+{
+    c.Endpoints.ShortNames = true;
+    c.Endpoints.RoutePrefix = "api";
+    c.Endpoints.NameGenerator = (context) =>
+    {
+        var name = context.EndpointType.Name;
+        if (name.EndsWith("Endpoint", StringComparison.InvariantCulture))
+        {
+            return name[..^8];
+        }
+        return name;
+    };
+    c.Serializer.Options.Converters.Add(new ValueConverter());
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter<FunctionKind>());
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter<DataType>());
+    c.Serializer.Options.Converters.Add(new JsonStringEnumConverter<SelectRestOptions>());
+});
 
-app.UseSwaggerGen(options => { options.Path = "/openapi/{documentName}.json"; });
+app.UseSwaggerGen(options =>
+{
+    options.Path = "/openapi/{documentName}.json";
+});
+
 app.UseTickerQ();
 
 if (builder.Environment.IsDevelopment())

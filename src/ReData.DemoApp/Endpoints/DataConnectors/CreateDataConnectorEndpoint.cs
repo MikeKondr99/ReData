@@ -1,19 +1,15 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
-using MiniExcelLibs;
-using MiniExcelLibs.Csv;
-using Npgsql;
 using ReData.Common;
 using ReData.DemoApp.Commands;
-using ReData.DemoApp.Database;
-using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.DataSets;
-using ReData.DemoApp.Services;
-using ReData.Query.Core.Types;
 
-namespace ReData.DemoApp.Endpoints.DataSources;
+namespace ReData.DemoApp.Endpoints.DataConnectors;
 
+/// <summary>
+/// Создать коннектор данных (файл)
+/// </summary>
 public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
     Results<Created<CreateDataConnectorResponse>, BadRequest<string>>>
 {
@@ -22,7 +18,7 @@ public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
 
     public override void Configure()
     {
-        Post("/api/data-connectors");
+        Post("/data-connectors");
         AllowAnonymous();
         AllowFileUploads(dontAutoBindFormData: true);
         // MaxRequestBodySize(50 * 1024 * 1024);

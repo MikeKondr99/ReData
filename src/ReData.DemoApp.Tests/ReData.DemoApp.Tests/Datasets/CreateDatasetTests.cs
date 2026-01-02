@@ -2,7 +2,6 @@ using NJsonSchema.Annotations;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
-using ReData.DemoApp.Endpoints.Datasets.CreateDataset;
 using ReData.DemoApp.Transformations;
 using ReData.Query.Core.Types;
 using OrderItem = ReData.DemoApp.Transformations.OrderItem;

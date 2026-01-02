@@ -32,6 +32,7 @@ import {FormsModule} from '@angular/forms';
       (nzQueryParams)="tableQueryParamsChange.emit($event)"
       [nzPageSize]="50"
       [nzTotal]="total"
+      nzSize = 'small'
       [nzShowTotal]="rangeTemplate"
       [nzScroll]="{ y: height() }">
       <thead>

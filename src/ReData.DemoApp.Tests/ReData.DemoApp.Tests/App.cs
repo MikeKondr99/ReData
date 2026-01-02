@@ -6,7 +6,6 @@ using ReData.Common;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.DataSets;
-using ReData.DemoApp.Endpoints.DataSources;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Tests.Init;
 using Testcontainers.PostgreSql;

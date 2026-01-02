@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Types;
+﻿using System.ComponentModel.DataAnnotations;
+using ReData.Query.Core.Types;
 
 namespace ReData.DemoApp.Endpoints.Functions;
 
@@ -13,6 +14,7 @@ public sealed record FunctionResponse
     /// Используется в синтаксисе вызова: Name(аргумент1, аргумент2)
     /// </summary>
     /// <example>Sign</example>
+    [Required]
     public required string Name { get; init; }
 
     /// <summary>

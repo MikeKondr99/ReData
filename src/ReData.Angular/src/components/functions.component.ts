@@ -1,12 +1,11 @@
-﻿
-import {Component, computed, effect, inject, input, model, viewChild} from '@angular/core';
+﻿import {Component, computed, effect, inject, model} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FunctionService} from '../services/function.service';
 import {NzListModule} from 'ng-zorro-antd/list';
 import {NzCardModule} from 'ng-zorro-antd/card';
-import {DataType, FunctionArgument, FunctionArgumentType, FunctionViewModel} from '../types';
 import {NzInputModule} from 'ng-zorro-antd/input';
 import {NzIconModule} from 'ng-zorro-antd/icon';
+import {DataType, FunctionArgument, FunctionKind, FunctionResponse} from '../api';
 
 @Component({
   selector: 'app-functions',
@@ -42,6 +41,7 @@ import {NzIconModule} from 'ng-zorro-antd/icon';
 })
 export class FunctionsComponent {
 
+
   functions = inject(FunctionService);
 
   search = model<string>('');
@@ -58,10 +58,10 @@ export class FunctionsComponent {
   });
 
 
-  displayFunc(func: FunctionViewModel): string {
-    if(func.kind == 'Binary') {
+  displayFunc(func: FunctionResponse): string {
+    if(func.kind === FunctionKind.Binary) {
       return `(${this.displayArgType(func.arguments[0].type)} ${func.name} ${this.displayArgType(func.arguments[1].type)}) → ${this.displayArgType(func.returnType)}`;
-    } else if(func.kind == 'Unary') {
+    } else if(func.kind === FunctionKind.Unary) {
       return `(${func.name} ${this.displayArgType(func.arguments[0].type)}) -> ${this.displayArgType(func.returnType)}`;
     } else {
       return `${func.name}(${func.arguments.map(a => this.displayArg(a)).join(', ')}) → ${this.displayArgType(func.returnType)}`;

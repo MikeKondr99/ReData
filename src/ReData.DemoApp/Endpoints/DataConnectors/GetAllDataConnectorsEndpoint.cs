@@ -8,7 +8,7 @@ using ReData.DemoApp.Endpoints.Datasets;
 
 namespace ReData.DemoApp.Endpoints.DataConnectors;
 
-public class GetAllEndpoint : EndpointWithoutRequest<
+public class GetAllDataConnectorsEndpoint : EndpointWithoutRequest<
     Ok<List<DataConnectorListItem>>
 >
 {
@@ -16,7 +16,7 @@ public class GetAllEndpoint : EndpointWithoutRequest<
 
     public override void Configure()
     {
-        Get("/api/data-connectors");
+        Get("/data-connectors");
         AllowAnonymous();
         
         Options(x => x.CacheOutput(p => p
