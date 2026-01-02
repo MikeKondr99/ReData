@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Template;
+﻿using System.Diagnostics;
+using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
@@ -263,4 +264,5 @@ public record FunctionBuilder
             ConstPropagation = this.ConstPropagation,
         };
     }
+
 }

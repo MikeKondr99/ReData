@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Template;
+﻿using System.Diagnostics;
+using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
@@ -10,36 +11,47 @@ public class MathFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        foreach (var type in new [] { Integer, Number })
+        foreach (var t in new [] { Integer, Number })
         {
-            Binary("+", type, type)
-                .Doc("Сложение двух чисел")
-                .Returns(type)
+            var prefix2 = t switch
+            {
+                Integer => "целых",
+                Number => "дробных"
+            };
+            var prefix = t switch
+            {
+                Integer => "целого",
+                Number => "дробного"
+            };
+            
+            Binary("+", t, t)
+                .Doc($"Сложение двух {prefix2} чисел")
+                .Returns(t)
                 .Templates(new()
                 {
                     [All] = $"({0} + {1})",
                 });
             
-            Binary("-", type, type)
-                .Doc("Вычитание двух чисел")
-                .Returns(type)
+            Binary("-", t, t)
+                .Doc($"Вычитание двух {prefix2} чисел")
+                .Returns(t)
                 .Templates(new()
                 {
                     [All] = $"({0} - {1})",
                 });
 
             Unary("-")
-                .Doc("Унарный минус числа")
-                .Arg("value", type)
-                .Returns(type)
+                .Doc($"Унарный минус {prefix} числа")
+                .Arg("value", t)
+                .Returns(t)
                 .Templates(new()
                 {
                     [All] = $"(-{0})",
                 });
             
-            Binary("*", type, type)
-                .Doc("Умножение двух чисел")
-                .Returns(type)
+            Binary("*", t, t)
+                .Doc($"Умножение двух {prefix2} чисел")
+                .Returns(t)
                 .Templates(new()
                 {
                     [All] = $"({0} * {1})", 
@@ -47,7 +59,7 @@ public class MathFunctions : FunctionsDescriptor
         }
 
         Binary("/", Number, Number)
-            .Doc("Деление чисел с плавающей точкой")
+            .Doc("Деление дробных чисел")
             .Returns(Number)
             .Templates(new()
             {
@@ -85,12 +97,12 @@ public class MathFunctions : FunctionsDescriptor
             .Templates(powTemplates);
        
        Function("E")
-           .Doc("Возвращает математическую константу e (≈2.71828)")
+           .Doc("Возвращает математическую константу (e ≈ 2.71828)")
             .Returns(Number)
             .Template($"2.718281828459045");
        
        Function("Pi")
-           .Doc("Возвращает математическую константу π (≈3.14159)")
+           .Doc("Возвращает математическую константу (π ≈ 3.14159)")
             .Returns(Number)
             .Template($"3.141592653589793");
     }

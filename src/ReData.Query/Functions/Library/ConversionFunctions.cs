@@ -105,6 +105,7 @@ public class ConversionFunctions : FunctionsDescriptor
             });
 
         Conversion(Text, Bool)
+            .Doc("Возвращает true если текст не пустой")
             .Templates(new()
             {
                 [SqlServer] = $"LEN({0}) > 0",
@@ -113,12 +114,14 @@ public class ConversionFunctions : FunctionsDescriptor
 
 
         Conversion(Number, Bool)
+            .Doc("Возвращает true если дробное число больше нуля")
             .Templates(new()
             {
                 [All] = $"({0} > 0.0)"
             });
 
         Conversion(Integer, Bool)
+            .Doc("Возвращает true если целое число больше нуля")
             .Templates(new()
             {
                 [All] = $"({0} > 0)"

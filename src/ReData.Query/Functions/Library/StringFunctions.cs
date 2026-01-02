@@ -185,6 +185,7 @@ public class StringFunctions : FunctionsDescriptor
 
 
         Method("Len")
+            .Doc("Вычисляет длину текса в символах")
             .Arg("input", Text)
             .Returns(Integer)
             .Templates(new()

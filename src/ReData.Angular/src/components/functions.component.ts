@@ -47,9 +47,13 @@ export class FunctionsComponent {
   search = model<string>('');
 
   data = computed(() => {
+    let search = this.search().toLowerCase();
     return this.functions.data()
       ?.map(f => ({ sign: f.displayText, doc: f.doc }))
-      ?.filter(f => f.sign.includes(this.search()) )
+      ?.filter(f =>
+        f.sign.toLowerCase().includes(search)
+        || f.doc.toLowerCase().includes(search)
+      )
   })
 
   _a = effect(() => {
@@ -58,21 +62,4 @@ export class FunctionsComponent {
   });
 
 
-  displayFunc(func: FunctionViewModel): string {
-    if(func.kind == 'Binary') {
-      return `(${this.displayArgType(func.arguments[0].type)} ${func.name} ${this.displayArgType(func.arguments[1].type)}) → ${this.displayArgType(func.returnType)}`;
-    } else if(func.kind == 'Unary') {
-      return `(${func.name} ${this.displayArgType(func.arguments[0].type)}) -> ${this.displayArgType(func.returnType)}`;
-    } else {
-      return `${func.name}(${func.arguments.map(a => this.displayArg(a)).join(', ')}) → ${this.displayArgType(func.returnType)}`;
-    }
-  }
-
-  displayArg(arg: FunctionArgument): string {
-   return `${arg.name}: ${this.displayArgType(arg.type)}`;
-  }
-
-  displayArgType(argType: { dataType: DataType, canBeNull: boolean }): string {
-    return `${argType.dataType}${argType.canBeNull ? '' : '!'}`;
-  }
 }
