@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import {HomePageComponent} from '../pages/home-page.component';
+import {DocumentationViewerComponent} from '../components/documentation-viewer.component';
 
 export const routes: Routes = [
   {
@@ -8,7 +9,16 @@ export const routes: Routes = [
   },
   {
     path: 'docs',
-    loadComponent: () => import('../pages/instruction-page.component').then(m => m.InstructionPageComponent),
+    children: [
+      {
+        path: '**',
+        loadComponent: () => import('../components/documentation-viewer.component').then(m => m.DocumentationViewerComponent),
+      },
+      {
+        path: '',
+        loadComponent: () => import('../components/documentation-viewer.component').then(m => m.DocumentationViewerComponent),
+      },
+    ]
   },
   {
     path: 'datasets',

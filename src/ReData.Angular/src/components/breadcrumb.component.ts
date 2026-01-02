@@ -54,7 +54,10 @@ export class BreadcrumbComponent {
       'docs': 'Документация',
       'functions': 'Функции',
     }
-    return dict[segment] ?? decodeURI(segment);
+    if(segment.includes('/')) {
+
+    }
+    return dict[segment] ?? decodeURIComponent(segment);
   }
 
 }

@@ -1,4 +1,4 @@
-﻿import { Component, inject, signal } from '@angular/core';
+﻿import {Component, inject, OnInit, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MarkdownComponent } from 'ngx-markdown';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
@@ -76,14 +76,14 @@ import {ActivatedRoute, Router} from '@angular/router';
     }
   `]
 })
-export class DocumentationViewerComponent {
+export class DocumentationViewerComponent implements OnInit {
   private http = inject(HttpClient);
   private docService = inject(DocumentationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
   docStructure = this.docService.getDocsStructure();
-  selectedDoc = signal<string>('test.md');
+  selectedDoc = signal<string>('Введение');
   markdownContent = signal<string>('');
   isLoading = signal<boolean>(false);
   error = signal<string | null>(null);
@@ -93,6 +93,7 @@ export class DocumentationViewerComponent {
   }
 
   ngOnInit() {
+    console.log('doc viewer init');
     // Subscribe to route parameters to handle direct links and browser navigation
     this.route.paramMap.subscribe(params => {
       const docPath = params.get('path');
@@ -113,6 +114,7 @@ export class DocumentationViewerComponent {
     this.error.set(null);
     this.selectedDoc.set(path);
 
+    console.log('DocumentViewer',`./assets/docs/${path}.md` )
     this.http.get(`/assets/docs/${path}.md`, { responseType: 'text' })
       .pipe(
         catchError(err => {
@@ -130,9 +132,11 @@ export class DocumentationViewerComponent {
   onTreeNodeClick(event: NzFormatEmitEvent): void {
     const node = event.node;
     if (node && node.key && !node.isLeaf) {
+      console.log('non leaf node clicked', node)
       // It's a folder, toggle expand
       node.isExpanded = !node.isExpanded;
     } else if (node && node.key && node.isLeaf) {
+      console.log('leaf node clicked', node)
       // It's a file, navigate to it
       this.navigateToDocument(node.key);
     }
@@ -140,7 +144,8 @@ export class DocumentationViewerComponent {
 
   private navigateToDocument(path: string): void {
     // Use Angular router to navigate, which will update URL and browser history
-    this.router.navigate(['/docs', path]);
+    this.router.navigate(['/docs', ...path.split('/')]);
+    this.loadDocument(path);
   }
 
   private updateBrowserHistory(path: string): void {
