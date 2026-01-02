@@ -1,4 +1,4 @@
-﻿import {Component, computed, effect, inject, model} from '@angular/core';
+﻿import {Component, computed, inject, model} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {FunctionService} from '../services/function.service';
 import {NzListModule} from 'ng-zorro-antd/list';
@@ -48,17 +48,10 @@ export class FunctionsComponent {
   data = computed(() => {
     let search = this.search().toLowerCase();
     return this.functions.data()
-      ?.map(f => ({ sign: f.displayText, doc: f.doc }))
+      ?.map(f => ({ sign: f.displayText, doc: f.doc ?? ''}))
       ?.filter(f =>
         f.sign.toLowerCase().includes(search)
         || f.doc.toLowerCase().includes(search)
       )
   })
-
-  _a = effect(() => {
-    console.log(this.data())
-
-  });
-
-
 }
