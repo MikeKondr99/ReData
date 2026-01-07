@@ -8,6 +8,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using ReData.DemoApp;
+using ReData.DemoApp.CommandMiddleware;
 using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
@@ -141,6 +142,11 @@ services.AddOpenTelemetry()
     .UseOtlpExporter();
 
 services.AddScoped<DwhService>();
+
+services.AddCommandMiddleware(c =>
+{
+    c.Register(typeof(TraceCommandMiddleware<,>));
+});
 
 
 var app = builder.Build();

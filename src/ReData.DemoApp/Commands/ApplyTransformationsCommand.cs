@@ -13,7 +13,7 @@ using QueryBuilder = ReData.Query.Core.QueryBuilder;
 
 namespace ReData.DemoApp.Commands;
 
-public record ApplyTransformationsCommand : ICommand<Result<QueryBuilder,ApplyTransformationError>>
+public record ApplyTransformationsCommand : ICommand<Result<QueryBuilder, ApplyTransformationError>>
 {
     public required Guid DataConnectorId { get; init; }
 
@@ -25,18 +25,17 @@ public record struct ApplyTransformationError
     public required int Index { get; init; }
 
     public required string Message { get; init; }
-    
+
     public IEnumerable<IReadOnlyList<ExprError>>? Errors { get; init; }
 }
 
-public class ApplyTransoformationsCommandHandler(DwhService dwhService)
-    : ICommandHandler<ApplyTransformationsCommand, Result<QueryBuilder,ApplyTransformationError>>
+public class ApplyTransformationsCommandHandler(DwhService dwhService)
+    : ICommandHandler<ApplyTransformationsCommand, Result<QueryBuilder, ApplyTransformationError>>
 {
-    public async Task<Result<QueryBuilder, ApplyTransformationError>> ExecuteAsync(ApplyTransformationsCommand command, CancellationToken ct)
+    /// <inheritdoc />
+    public async Task<Result<QueryBuilder, ApplyTransformationError>> ExecuteAsync(ApplyTransformationsCommand command,
+        CancellationToken ct)
     {
-        // 1. Apply transformations
-        using var apply = Tracing.ReData.StartActivity("apply transformations");
-
         var i = 0;
         try
         {
@@ -54,13 +53,11 @@ public class ApplyTransoformationsCommandHandler(DwhService dwhService)
                     };
                 }
             }
-            
+
             return query;
         }
         catch (Exception ex)
         {
-            apply?.AddException(ex);
-            apply?.SetStatus(ActivityStatusCode.Error);
             return new ApplyTransformationError()
             {
                 Index = i,

@@ -28,7 +28,6 @@ public static class Factory
                 Mapper = new DatabaseValuesMapper(),
                 FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
-
             },
             DatabaseType.ClickHouse => new ClickHouseRunner()
             {

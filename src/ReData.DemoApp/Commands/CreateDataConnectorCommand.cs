@@ -30,7 +30,9 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
         Db = db;
         DwhService = dwh;
     }
+
     public required ApplicationDatabaseContext Db { get; init; }
+
     public required DwhService DwhService { get; init; }
 
     /// <inheritdoc />
@@ -40,6 +42,7 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
         {
             throw new ArgumentNullException("command.FileStream", "Must be not null");
         }
+
         var csvConfiguration = new CsvConfiguration()
         {
             Seperator = command.Separator,

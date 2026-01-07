@@ -21,6 +21,7 @@ public sealed class GetMetadataCommand : ICommand<Metadata>
 
 public sealed class GetMetadataCommandHandler() : ICommandHandler<GetMetadataCommand, Metadata>
 {
+    /// <inheritdoc />
     public async Task<Metadata> ExecuteAsync(GetMetadataCommand command, CancellationToken ct)
     {
         IReadOnlyList<DataSetField> fieldList = null;

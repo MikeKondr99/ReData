@@ -10,7 +10,9 @@ public interface IOk<T>
     }
 }
 
-public interface IError<E>
+public interface IError;
+
+public interface IError<E> : IError
 {
     E Value { get; }
     

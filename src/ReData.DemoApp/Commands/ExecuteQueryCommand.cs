@@ -17,37 +17,32 @@ public record ExecuteQueryCommand : ICommand<Result<TransformResponse, string>>
 
 public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler<ExecuteQueryCommand, Result<TransformResponse, string>>
 {
+    /// <inheritdoc />
     public async Task<Result<TransformResponse, string>> ExecuteAsync(ExecuteQueryCommand command, CancellationToken ct)
     {
-        using (var execute = Tracing.ReData.StartActivity("execute"))
+        try
         {
-            // 3. Execute query
-            try
-            {
-                var query = command.Query;
-                await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, dwhService.ReadConnection);
-                var data = await runner.RunQueryAsObjectAsync(query);
+            var query = command.Query;
+            await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, dwhService.ReadConnection);
+            var data = await runner.RunQueryAsObjectAsync(query);
 
-                var response = new TransformResponse
+            var response = new TransformResponse
+            {
+                Data = data,
+                Fields = query.Fields().Select(f => new TransformFieldViewModel
                 {
-                    Data = data,
-                    Fields = query.Fields().Select(f => new TransformFieldViewModel
-                    {
-                        Alias = f.Alias,
-                        Type = f.Type.Type,
-                        CanBeNull = f.Type.CanBeNull
-                    }).ToList(),
-                    Total = data.Count
-                };
+                    Alias = f.Alias,
+                    Type = f.Type.Type,
+                    CanBeNull = f.Type.CanBeNull
+                }).ToList(),
+                Total = data.Count
+            };
 
-                return response;
-            }
-            catch (Exception ex)
-            {
-                execute?.AddException(ex);
-                execute?.SetStatus(ActivityStatusCode.Error);
-                return $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}";
-            }
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}";
         }
     }
 }
