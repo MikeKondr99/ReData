@@ -9,7 +9,9 @@ using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 using ReData.Query.Lang.Expressions;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Core;
 
@@ -18,24 +20,24 @@ public record ResolutionContext
     public required IQuerySource QuerySource { get; init; }
 
     public required List<ExprError> Errors { get; init; }
+
+    public required IFunctionStorage Functions { get; init; }
+
+    public required Dictionary<string, IValue> Variables { get; init; }
 }
 
-public sealed class ExpressionResolver : INameResolver
+public sealed class ExpressionResolver
 {
     public required ILiteralResolver LiteralResolver { private get; init; }
 
-    public required INameResolver NameResolver { private get; init; }
-
-    public required IFunctionStorage Functions { private get; init; }
-
     public ResolvedExpr? ResolveExpr(Expr expr, ResolutionContext context)
     {
-        using var span = Tracing.Source.StartActivity("expression resolution");
+        using var span = Tracing.Source.StartActivity("ResolverExpr");
         span?.SetTag("expression", expr.ToString());
 
         var result = RecursiveResolveExpr(expr, context);
 
-        
+
         if (!result.HasValue)
         {
             span?.SetStatus(ActivityStatusCode.Error);
@@ -62,8 +64,19 @@ public sealed class ExpressionResolver : INameResolver
         return LiteralResolver.Resolve(literal);
     }
 
-    private static ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
+    private ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
+        if (context.Variables.Get(name.Value) is ISome<IValue>(var vr))
+        {
+            Expr expr = Expr.Parse(vr.ToReDataLiteral()).Unwrap();
+            ResolvedExpr rexpr = RecursiveResolveExpr(expr, context)!.Value;
+
+            return rexpr with
+            {
+                Expression = name,
+            };
+        }
+
         var source = context.QuerySource;
         var fieldOption = source.Fields().Get(name.Value);
         if (fieldOption is ISome<Field>(var field))
@@ -108,7 +121,7 @@ public sealed class ExpressionResolver : INameResolver
             Kind = MapFunctionKind(funcExpr.Kind),
             ArgumentTypes = args.Select(arg => arg.Type).ToArray()
         };
-        var def = Functions.ResolveFunction(sign);
+        var def = context.Functions.ResolveFunction(sign);
         if (def.UnwrapErr(out var err, out var definition))
         {
             context.Errors.Add(
@@ -152,6 +165,6 @@ public sealed class ExpressionResolver : INameResolver
 
     public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
-        return NameResolver.ResolveName(path);
+        return LiteralResolver.ResolveName(path);
     }
 }

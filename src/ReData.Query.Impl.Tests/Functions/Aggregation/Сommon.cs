@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using ReData.Query.Core;
+using ReData.Query.Core.Value;
 using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Impl.Tests.Queries;
 using ReData.Query.QuerySources;

@@ -64,9 +64,7 @@ public static class Factory
     {
         return new ExpressionResolver()
         {
-            Functions = CreateFunctionStorage(database),
             LiteralResolver = CreateLiteralResolver(database),
-            NameResolver = CreateNameResolver(database),
         };
     }
 
@@ -79,17 +77,7 @@ public static class Factory
         DatabaseType.Oracle => new OracleLiteralResolver(),
         _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
     };
-    
-    public static INameResolver CreateNameResolver(DatabaseType database) => database switch
-    {
-        DatabaseType.PostgreSql => new BasicNameResolver("\"","\""),
-        DatabaseType.SqlServer => new BasicNameResolver("\"","\""),
-        DatabaseType.MySql => new BasicNameResolver("`","`"),
-        DatabaseType.ClickHouse => new BasicNameResolver("\"","\""),
-        DatabaseType.Oracle => new BasicNameResolver("\"","\""),
-        _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
-    };
-    
+
     public static IFunctionStorage CreateFunctionStorage(DatabaseType database)
     {
         return FunctionStorages.GetOrAdd(database, (key) =>
@@ -136,9 +124,7 @@ public static class Factory
             },
             _ => throw new ArgumentOutOfRangeException(nameof(database), database, null)
         };
-
     }
-    
 }
 
 public enum DatabaseType

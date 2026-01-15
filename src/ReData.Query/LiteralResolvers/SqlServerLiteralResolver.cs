@@ -6,15 +6,15 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.LiteralBuilders;
 
-public sealed class SqlServerLiteralResolver : ILiteralResolver
+public sealed class SqlServerLiteralResolver : BasicSqlLiteralResolver
 {
-    public ResolvedExpr Resolve(Literal literal)
+    public override ResolvedExpr Resolve(Literal literal)
     {
         (TemplateInterpolatedStringHandler template, ExprType type) temp = literal switch
         {
             StringLiteral(var v) => ($"N'{v}'", ExprType.Text()),
             NumberLiteral(var v) => (v.ToString("0.0###############", CultureInfo.InvariantCulture), ExprType.Number()),
-            IntegerLiteral(var v) => (v.ToString(), ExprType.Int()),
+            IntegerLiteral(var v) => (v.ToString(CultureInfo.InvariantCulture), ExprType.Int()),
             BooleanLiteral(var v) => (v ? "0 = 0" : "0 <> 0", ExprType.Boolean()),
             NullLiteral => ("NULL", ExprType.Null())
         };

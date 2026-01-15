@@ -6,4 +6,6 @@ namespace ReData.Query.Core.Components;
 public interface ILiteralResolver
 {
     public ResolvedExpr Resolve(Literal literal);
+
+    public ResolvedTemplate ResolveName(ReadOnlySpan<string> path);
 }

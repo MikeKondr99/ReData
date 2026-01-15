@@ -1,5 +1,6 @@
 ﻿using ClickHouse.Client.Numerics;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Runners;

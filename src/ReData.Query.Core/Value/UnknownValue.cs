@@ -1,4 +1,6 @@
-﻿namespace ReData.Query.Runners.Value;
+﻿using ReData.Query.Runners.Value;
+
+namespace ReData.Query.Core.Value;
 
 public readonly record struct UnknownValue(string Type) : IValue
 {

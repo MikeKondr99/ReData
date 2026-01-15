@@ -1,6 +1,6 @@
 ﻿using ReData.Query.Runners.Value;
 
-namespace ReData.Query.Runners.Value;
+namespace ReData.Query.Core.Value;
 
 public readonly record struct NullValue : IValue
 {

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
+using ReData.Query.Runners.Value;
 
-namespace ReData.Query.Runners.Value;
+namespace ReData.Query.Core.Value;
 
 public readonly record struct NumberValue(double Value) : IValue
 {

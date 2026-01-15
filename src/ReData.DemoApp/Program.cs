@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Swagger;
@@ -14,6 +12,8 @@ using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
+using ReData.Query;
+using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
 using TickerQ.Dashboard.DependencyInjection;
@@ -21,6 +21,9 @@ using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
+using Factory = ReData.Query.Factory;
+
+QueryBuilder.Functions = Factory.CreateFunctionStorage(DatabaseType.PostgreSql);
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;

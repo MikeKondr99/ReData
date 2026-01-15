@@ -5,6 +5,7 @@ using Npgsql;
 using ClickHouse.Client.Utility;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Runners;

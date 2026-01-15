@@ -5,6 +5,7 @@ using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Core;
@@ -13,8 +14,10 @@ using ResolutionResult = Result<ResolvedExpr, IReadOnlyList<ExprError>>;
 
 public record QueryBuilder
 {
+    public static IFunctionStorage Functions { get; set; } = null!;
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
+    
     private IEnumerable<Field> Fields => Query.Fields();
 
     public QueryBuilder(Query query, ExpressionResolver resolver)
@@ -255,7 +258,7 @@ public record QueryBuilder
             }
         };
     }
-
+    
     private Result<ResolvedExpr, IReadOnlyList<ExprError>> Resolve(string expr)
     {
         var resExpr = Expr.Parse(expr);
@@ -267,6 +270,8 @@ public record QueryBuilder
         var context = new ResolutionContext()
         {
             Errors = [],
+            Functions = Functions,
+            Variables = new() { ["user_id"] = new TextValue("Demonmiker") },
             QuerySource = Query.From
         };
         var res = Resolver.ResolveExpr(expression, context);
