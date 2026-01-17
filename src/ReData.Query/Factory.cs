@@ -18,43 +18,28 @@ public static class Factory
 {
     private static readonly ConcurrentDictionary<DatabaseType, FunctionStorage> FunctionStorages = new();
 
-    public static IQueryRunner CreateQueryRunner(DatabaseType database, string connectionString)
+    public static IQueryRunner CreateQueryRunner(DatabaseType database)
     {
         return database switch
         {
             DatabaseType.PostgreSql => new PostgresRunner()
             {
-                Connection = new NpgsqlConnection(connectionString),
-                Mapper = new DatabaseValuesMapper(),
-                FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
             DatabaseType.ClickHouse => new ClickHouseRunner()
             {
-                Connection = new ClickHouseConnection(connectionString),
-                Mapper = new DatabaseValuesMapper(),
-                FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
             DatabaseType.SqlServer => new SqlServerRunner()
             {
-                Connection = new SqlConnection(connectionString),
-                Mapper = new DatabaseValuesMapper(),
-                FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
             DatabaseType.MySql => new MySqlRunner()
             {
-                Connection = new MySqlConnection(connectionString),
-                Mapper = new DatabaseValuesMapper(),
-                FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
             DatabaseType.Oracle => new OracleRunner()
             {
-                Connection = new OracleConnection(connectionString),
-                Mapper = new DatabaseValuesMapper(),
-                FunctionStorage = CreateFunctionStorage(database),
                 QueryCompiler = CreateQueryCompiler(database),
             },
         };

@@ -1,43 +1,49 @@
-﻿using ReData.Query.Core.Value;
+﻿using System.Data.Common;
+using ReData.Query.Core.Value;
 using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Runners;
 
-public interface IQueryRunner : IAsyncDisposable
+public interface IQueryRunner
 {
-    Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query);
+    // Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query);
 
-    
-    async Task<IReadOnlyList<Dictionary<string, IValue>>> RunQueryAsObjectAsync(Core.Query query)
-    {
-        var data = await RunQueryAsync(query);
-        var fields = query.Fields().Select(f => f.Alias).ToList();
-    
-        List<Dictionary<string, IValue>> result = new List<Dictionary<string, IValue>>();
-    
-        foreach (var record in data)
-        {
-            var recordDict = new Dictionary<string, IValue>();
-        
-            for (int i = 0; i < fields.Count; i++)
-            {
-                // Assuming record.values is an IList<IValue> or similar
-                if (i < record.values.Length)
-                {
-                    recordDict[fields[i]] = record.values[i];
-                }
-            }
-        
-            result.Add(recordDict);
-        }
-    
-        return result;
-    }
-    
-    public async Task<IValue> RunQueryAsScalar(Core.Query query)
-    {
-        var data = await RunQueryAsync(query);
-        return data.Single()[0];
-    }
-    
+    Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection);
+
+    // async Task<IReadOnlyList<Dictionary<string, IValue>>> RunQueryAsObjectAsync(Core.Query query,
+    //     DbConnection connection)
+    // {
+    //     var dbReader = await GetDataReaderAsync(query, connection);
+    //
+    //     var fields = query.Fields().ToArray();
+    //
+    //     List<Dictionary<string, IValue>> result = new List<Dictionary<string, IValue>>();
+    //
+    //     while (await dbReader.ReadAsync())
+    //     {
+    //         var recordDict = new Dictionary<string, IValue>();
+    //
+    //         for (int i = 0; i < fields.Length; i++)
+    //         {
+    //             var value = dbReader.GetValue(i);
+    //             recordDict[fields[i].Alias] = DatabaseValuesMapper.MapField(value, fields[i].Type);
+    //         }
+    //
+    //         result.Add(recordDict);
+    //     }
+    //
+    //     return result;
+    // }
+    //
+    // public async Task<IValue> RunQueryAsScalarAsync(Core.Query query, DbConnection connection)
+    // {
+    //     var dbReader = await GetDataReaderAsync(query, connection);
+    //     if (await dbReader.ReadAsync())
+    //     {
+    //         var value = dbReader.GetValue(0);
+    //         return DatabaseValuesMapper.MapField(value, query.Fields().First().Type);
+    //     }
+    //
+    //     throw new Exception("Query не вернул значения хотя ожидался скаляр");
+    // }
 }

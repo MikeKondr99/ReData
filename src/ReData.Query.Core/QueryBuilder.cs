@@ -14,28 +14,30 @@ using ResolutionResult = Result<ResolvedExpr, IReadOnlyList<ExprError>>;
 
 public record QueryBuilder
 {
-    public static IFunctionStorage Functions { get; set; } = null!;
+    public IFunctionStorage Functions { get; set; }
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
-    
     private IEnumerable<Field> Fields => Query.Fields();
 
-    public QueryBuilder(Query query, ExpressionResolver resolver)
+    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions)
     {
         Query = query;
         Resolver = resolver;
+        Functions = functions;
     }
 
-    public static QueryBuilder FromDual(ExpressionResolver resolver)
+    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions)
     {
         return new QueryBuilder(new Query()
-        {
-            Name = resolver.ResolveName(["DualQuery"]),
-        }, resolver);
+            {
+                Name = resolver.ResolveName(["DualQuery"]),
+            },
+            resolver,
+            functions
+        );
     }
     
-    
-    public static QueryBuilder FromTable(ExpressionResolver resolver, ReadOnlySpan<string> path, IReadOnlyList<(string name, string column, FieldType type)> fields)
+    public static QueryBuilder FromTable(ExpressionResolver resolver, IFunctionStorage functions, ReadOnlySpan<string> path, IReadOnlyList<(string name, string column, FieldType type)> fields)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -69,13 +71,20 @@ public record QueryBuilder
                     }
                 };
             }).ToArray()
-        }, resolver);
+        },
+        resolver,
+        functions);
     }
 
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Select(Dictionary<string, string> select)
     {
         var qb = this;
-        qb = CreateCte();
+        // Создаем Cte только если запрос не dual запрос
+        // TODO: исправить и вернуть оптимизации select
+        if (qb.Query.From.Name is not null)
+        {
+            qb = CreateCte();
+        }
 
         var res = qb.ResolveManySelectItems(
             select,

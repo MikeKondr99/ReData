@@ -25,7 +25,7 @@ public abstract record Expr
         }
         
         using var act = activitySource.StartActivity("expression parsing");
-        act.SetTag("expression", s);
+        act?.SetTag("expression", s);
         try
         {
             var chars = new AntlrInputStream(s);
@@ -46,14 +46,14 @@ public abstract record Expr
         }
         catch (ExprErrorException e)
         {
-            act.SetStatus(ActivityStatusCode.Error);
-            act.AddException(e);
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
             return e.Error;
         }
         catch (Exception e)
         {
-            act.SetStatus(ActivityStatusCode.Error);
-            act.AddException(e);
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
             return new ExprError()
             {
                 Span = new ExprSpan(1, 1, 100, 100),

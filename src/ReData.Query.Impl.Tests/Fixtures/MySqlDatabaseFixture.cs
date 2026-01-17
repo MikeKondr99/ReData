@@ -1,4 +1,6 @@
-﻿using MySql.Data.MySqlClient;
+﻿using System.Data.Common;
+using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using ReData.Query.Runners;
 using Testcontainers.MySql;
 
@@ -12,14 +14,21 @@ public class MySqlDatabaseFixture : IAsyncLifetime, IDatabaseFixture
     private string ConnectionString { get; set; } = null!;
     
     private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.MySql, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.MySql));
     }
+
 
     public DatabaseType GetDatabaseType()
     {
         return DatabaseType.MySql;
+    }
+    
+    public DbConnection GetConnection()
+    {
+        return Connection;
     }
 
     public async Task InitializeAsync()
@@ -70,10 +79,6 @@ public class MySqlDatabaseFixture : IAsyncLifetime, IDatabaseFixture
 
     public async Task DisposeAsync()
     {
-        if (runner is not null)
-        {
-            await runner.DisposeAsync();
-        }
         await Container.StopAsync();
         await Container.DisposeAsync();
     }

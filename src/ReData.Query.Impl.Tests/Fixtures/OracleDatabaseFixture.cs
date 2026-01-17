@@ -1,4 +1,6 @@
-﻿using Oracle.ManagedDataAccess.Client;
+﻿using System.Data.Common;
+using ClickHouse.Client.ADO;
+using Oracle.ManagedDataAccess.Client;
 using ReData.Query.Runners;
 using Testcontainers.Oracle;
 
@@ -14,7 +16,7 @@ public class OracleDatabaseFixture : IDatabaseFixture
     
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.Oracle, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.Oracle));
     }
 
     public DatabaseType GetDatabaseType()
@@ -22,6 +24,10 @@ public class OracleDatabaseFixture : IDatabaseFixture
         return DatabaseType.Oracle;
     }
 
+    public DbConnection GetConnection()
+    {
+        return Connection;
+    }
 
     public async Task InitializeAsync()
     {
@@ -44,10 +50,6 @@ public class OracleDatabaseFixture : IDatabaseFixture
     
     public async Task DisposeAsync()
     {
-        if (runner is not null)
-        {
-            await runner.DisposeAsync();
-        }
         await Container.StopAsync();
         await Container.DisposeAsync();
     }

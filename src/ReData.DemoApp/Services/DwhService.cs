@@ -36,6 +36,7 @@ public class DwhService
 
         return QueryBuilder.FromTable(
             Factory.CreateExpressionResolver(DatabaseType.PostgreSql),
+            Factory.CreateFunctionStorage(DatabaseType.PostgreSql),
             [dataConnector.TableName],
             fields
         );

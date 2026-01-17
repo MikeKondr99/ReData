@@ -22,20 +22,28 @@ public class InitData
             return instance;
         }
 
-        Console.WriteLine("waiting init data");
-        await semaphore.WaitAsync();
-
-        if (instance is not null)
         {
-            Console.WriteLine("Getting init data");
-            return instance;
+            Console.WriteLine("waiting init data");
+            await semaphore.WaitAsync();
+
+            try
+            {
+                if (instance is not null)
+                {
+                    Console.WriteLine("Getting init data");
+                    return instance;
+                }
+
+                instance = new InitData();
+                await instance.InitDataOnce();
+                Console.WriteLine("Data is initialized");
+            }
+            finally
+            {
+                semaphore.Release();
+            }
         }
 
-        instance = new InitData();
-        await instance.InitDataOnce();
-        Console.WriteLine("Data is initialized");
-
-        semaphore.Release();
         return instance;
     }
 

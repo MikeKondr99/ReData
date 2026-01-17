@@ -1,4 +1,6 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data.Common;
+using Microsoft.Data.SqlClient;
+using Oracle.ManagedDataAccess.Client;
 using ReData.Query.Runners;
 using Testcontainers.MsSql;
 
@@ -11,9 +13,10 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
 
     private string ConnectionString { get; set; } = null!;
     private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.SqlServer, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.SqlServer));
     }
 
     public DatabaseType GetDatabaseType()
@@ -21,7 +24,11 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
         return DatabaseType.SqlServer;
     }
 
-
+    public DbConnection GetConnection()
+    {
+        return Connection;
+    }
+    
     public async Task InitializeAsync()
     {
         Container = new MsSqlBuilder().WithName("SqlServer-Tests").Build();
@@ -29,7 +36,7 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
         ConnectionString = Container.GetConnectionString();
         Connection = new SqlConnection(ConnectionString);
         await Connection.OpenAsync();
-        
+
         await using var command = new SqlCommand(TestTableSql, Connection);
         await command.ExecuteNonQueryAsync();
     }
@@ -68,12 +75,7 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
 
     public async Task DisposeAsync()
     {
-        if (runner is not null)
-        {
-            await runner.DisposeAsync();
-        }
         await Container.StopAsync();
         await Container.DisposeAsync();
     }
-
 }

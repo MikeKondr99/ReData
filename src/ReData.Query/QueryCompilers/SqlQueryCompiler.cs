@@ -20,7 +20,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         WriteQuery(res,query, true);
         res.TrimEnd();
         var result = res.ToString();
-        span.SetTag("result", result);
+        span?.SetTag("result", result);
         return result;
     }
 

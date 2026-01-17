@@ -1,4 +1,5 @@
-﻿using ClickHouse.Client.ADO;
+﻿using System.Data.Common;
+using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
 using ReData.Query.Runners;
 using Testcontainers.ClickHouse;
@@ -15,12 +16,17 @@ public class ClickHouseDatabaseFixture : IDatabaseFixture
 
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.ClickHouse, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.ClickHouse));
     }
 
     public DatabaseType GetDatabaseType()
     {
         return DatabaseType.ClickHouse;
+    }
+
+    public DbConnection GetConnection()
+    {
+        return Connection;
     }
 
     public async Task InitializeAsync()
@@ -73,11 +79,6 @@ public class ClickHouseDatabaseFixture : IDatabaseFixture
 
     public async Task DisposeAsync()
     {
-        if (runner is not null)
-        {
-            await runner.DisposeAsync();
-        }
-
         await Container.StopAsync();
         await Container.DisposeAsync();
     }

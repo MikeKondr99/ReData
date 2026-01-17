@@ -60,6 +60,7 @@ public abstract class BaseTestAssets : ITestAssets
             
             return QueryBuilder.FromTable(
                 Factory.CreateExpressionResolver(DatabaseType),
+                Factory.CreateFunctionStorage(DatabaseType),
                 ["User"],
                 fields
             );

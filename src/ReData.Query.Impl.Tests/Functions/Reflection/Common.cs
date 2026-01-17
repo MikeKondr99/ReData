@@ -15,14 +15,14 @@ public abstract partial class Сommon(IDatabaseFixture db) : ExprTests(db)
      public async Task FuncDbVersionTests()
      {
         var runner = await db.GetRunnerAsync();
-        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()));
+        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
         qb = qb.Select(new()
         {
             ["test"] = "DbVersion()",
         })
         .Expect(e => e.JoinBy(", "));
 
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         if (result is not TextValue(var text))
         {

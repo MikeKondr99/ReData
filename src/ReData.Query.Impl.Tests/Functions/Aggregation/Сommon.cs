@@ -55,11 +55,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(15));
@@ -70,11 +69,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(9)); // 1 + 3 + 5
@@ -85,11 +83,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0)); // SUM of empty set should be 0
@@ -100,11 +97,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr), "IsNull(x)");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0)); // SUM of all nulls should be 0
@@ -115,11 +111,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.5, 2.5, 3.5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(7.5)); // 1.5 + 2.5 + 3.5
@@ -130,11 +125,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null, 3.3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("SUM(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(6.6)); // 1.1 + 2.2 + 3.3
@@ -149,11 +143,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(3.0)); // (1+2+3+4+5)/5
@@ -164,11 +157,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(3.0)); // (1+3+5)/3
@@ -179,11 +171,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr), "false"); // Filter all out
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -194,11 +185,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr), "IsNull(x)"); // Filter to only nulls
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -209,11 +199,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(5.0));
@@ -224,11 +213,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.5, 2.5, 3.5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(2.5)); // (1.5+2.5+3.5)/3
@@ -239,11 +227,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null, 3.3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(2.2)); // (1.1+2.2+3.3)/3
@@ -254,11 +241,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.0, 2.0, 3.0, 4.0, 5.0];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(3.0));
@@ -274,11 +260,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 2),
             new DateTime(2023, 1, 3)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         var expectedAvg = new DateTime(2023, 1, 2); // Middle date
@@ -296,11 +281,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 3),
             null
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         var expectedAvg = new DateTime(2023, 1, 2); // (1st + 3rd)/2
@@ -312,11 +296,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1)];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, default(NullValue)); // Or whatever your default is
@@ -327,11 +311,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1), null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("AVG(x)", ToExpressions(arr), "IsNull(x)");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, default(NullValue)); // Or whatever your default is
@@ -346,11 +330,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, 3, 8, 1, 4];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, new IntegerValue(1));
@@ -361,11 +345,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, null, 3, null, 1];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(1));
@@ -376,11 +359,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, default(NullValue));
@@ -391,11 +374,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [10, null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, default(NullValue));
@@ -406,11 +389,11 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [5.5, 3.3, 1.1, 4.4];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
+        ;
 
         // Assert
         Compare(result, new NumberValue(1.1));
@@ -426,11 +409,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 1),
             new DateTime(2023, 1, 2)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new DateTimeValue(new DateTime(2023, 1, 1)));
@@ -441,11 +423,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["banana", "apple", "cherry"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("apple"));
@@ -456,11 +437,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["banana", null, "apple"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MIN(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("apple"));
@@ -475,11 +455,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, 3, 8, 1, 4];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(8));
@@ -490,11 +469,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, null, 3, null, 8];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(8));
@@ -505,11 +483,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -520,11 +497,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [5.5, 3.3, 8.8, 1.1];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(8.8));
@@ -540,11 +516,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 3),
             new DateTime(2023, 1, 2)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new DateTimeValue(new DateTime(2023, 1, 3)));
@@ -555,11 +530,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["banana", "apple", "cherry"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("cherry"));
@@ -570,11 +544,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["banana", null, "apple"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("banana"));
@@ -585,11 +558,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["text", null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("MAX(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -604,11 +576,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT()", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5));
@@ -619,11 +590,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT()", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5)); // Counts all rows regardless of nulls
@@ -634,11 +604,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT()", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0));
@@ -649,11 +618,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT()", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3)); // Counts rows, not values
@@ -668,11 +636,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5));
@@ -683,11 +650,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3)); // Only counts non-null values
@@ -698,11 +664,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0));
@@ -713,11 +678,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [12, null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0)); // No non-null values
@@ -728,11 +692,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, 2.2, 3.3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3));
@@ -743,11 +706,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, null, 3.3, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Only counts non-null values
@@ -763,11 +725,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 2),
             new DateTime(2023, 1, 3)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3));
@@ -784,11 +745,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             null,
             new DateTime(2023, 1, 3)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Only counts non-null values
@@ -799,11 +759,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["a", "b", "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3));
@@ -814,11 +773,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["a", null, "c", null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Only counts non-null values
@@ -829,11 +787,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["", "", ""]; // Empty strings are still values
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3)); // Empty string is still a value
@@ -848,11 +805,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3, 2, 1];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3)); // Distinct values: 1, 2, 3
@@ -863,11 +819,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, 2, null, 1];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Distinct non-null values: 1, 2
@@ -878,11 +833,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0));
@@ -893,11 +847,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(0)); // Nulls are not counted in distinct
@@ -908,11 +861,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, 5, 5, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(1));
@@ -923,11 +875,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, 2.2, 1.1, 3.3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(3)); // Distinct: 1.1, 2.2, 3.3
@@ -938,11 +889,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Distinct non-null: 1.1, 2.2
@@ -958,11 +908,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 2),
             new DateTime(2023, 1, 1)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Distinct dates
@@ -978,11 +927,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             null,
             new DateTime(2023, 1, 1)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(1)); // Only one distinct date
@@ -993,11 +941,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["apple", "banana", "apple"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Distinct: "apple", "banana"
@@ -1008,26 +955,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["apple", null, "banana", null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
-
-        // Assert
-        Compare(result, new IntegerValue(2)); // Distinct non-null: "apple", "banana"
-    }
-
-    [Fact]
-    public async Task CountDistinct_Text_CaseSensitive()
-    {
-        // Arrange
-        string?[] arr = ["Apple", "apple", "APPLE"];
-        var runner = await db.GetRunnerAsync();
-        var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
-
-        // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         // Behavior depends on database collation
@@ -1039,11 +970,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["", "", "a"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("COUNT_DISTINCT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(2)); // Distinct: "" and "a"
@@ -1058,11 +988,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5));
@@ -1073,11 +1002,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, 5, 5];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5));
@@ -1088,11 +1016,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, 6];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -1103,11 +1030,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [5, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new IntegerValue(5)); // Only considers non-null values
@@ -1118,11 +1044,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, 2, 3];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -1133,11 +1058,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         int?[] arr = [1, null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue)); // No non-null values
@@ -1148,11 +1072,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [3.14];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new NumberValue(3.14));
@@ -1163,11 +1086,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         double?[] arr = [3.14, 2.71];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -1178,11 +1100,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1)];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new DateTimeValue(new DateTime(2023, 1, 1)));
@@ -1197,11 +1118,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
             new DateTime(2023, 1, 1),
             new DateTime(2023, 1, 2)
         ];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -1212,11 +1132,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["unique"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("unique"));
@@ -1227,11 +1146,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["apple", "banana"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
@@ -1242,11 +1160,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["Apple", "apple"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue)); // Different values due to case
@@ -1257,11 +1174,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["unique", null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("unique")); // Only one non-null value
@@ -1272,30 +1188,28 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["", ""];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("ONLY(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("")); // Empty string is still a distinct value
     }
 
     #endregion
-    
+
     #region CONCAT(value)
-    
+
     [Fact]
     public async Task Concat_Basic()
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("abc")); // Simple concatenation
@@ -1306,11 +1220,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["a", null, "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x)", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("ac")); // Nulls should be skipped
@@ -1320,47 +1233,43 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task Concat_Empty()
     {
         // Arrange
-        string[] arr = ["1","2"];
-        var runner = await db.GetRunnerAsync();
+        string[] arr = ["1", "2"];
         var qb = GetInline("CONCAT(x)", ToExpressions(arr), "false");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue)); // Empty string for empty input
     }
-    
+
     [Fact]
     public async Task Concat_AllNulls()
     {
         // Arrange
-        string?[] arr = ["",null, null, null];
-        var runner = await db.GetRunnerAsync();
+        string?[] arr = ["", null, null, null];
         var qb = GetInline("CONCAT(x)", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue)); // Empty string for all nulls
     }
 
-    
     #endregion
-    
+
     #region CONCAT(value, delimiter)
-    
+
     [Fact]
     public async Task Concat_WithDelimiter()
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, ',')", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("a,b,c")); // Comma-separated
@@ -1371,11 +1280,10 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["a", null, "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, '|')", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("a|c")); // Nulls skipped
@@ -1386,26 +1294,24 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, '')", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("abc")); // Same as basic concat
     }
-    
+
     [Fact]
     public async Task Concat_SingleItem()
     {
         // Arrange
         string[] arr = ["single"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, ',')", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("single")); // No delimiter for single item
@@ -1416,16 +1322,15 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string[] arr = ["привет", "мир"];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, ' ')", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("привет мир")); // Unicode handling
     }
-    
+
     #endregion
 
     #region CONCAT(value, delimiter, sort)
@@ -1435,31 +1340,28 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Arrange
         string?[] arr = ["10", "2", "1",];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, '|', Int(x))", ToExpressions(arr));
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, new TextValue("1|2|10")); // Nulls skipped
     }
-    
+
     [Fact]
     public async Task ConcatNulls_WithDelimiterAndSort()
     {
         // Arrange
         string?[] arr = ["10", "2", "1", null, null];
-        var runner = await db.GetRunnerAsync();
         var qb = GetInline("CONCAT(x, '|', Reverse(x))", ToExpressions(arr), "x.IsNull()");
 
         // Act
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
 
         // Assert
         Compare(result, default(NullValue));
     }
-    
 
     #endregion
 }

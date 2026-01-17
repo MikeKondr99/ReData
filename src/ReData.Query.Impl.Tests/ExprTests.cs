@@ -14,15 +14,32 @@ public abstract class ExprTests(IDatabaseFixture db)
     
     public async Task Test(string expr, object? expected)
     {
-        var runner = await db.GetRunnerAsync();
         PrepareBoolTests(ref expected, ref expr);
-        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()));
+        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
         qb = qb.Select(new()
         {
             ["test"] = expr,
         }).Expect(e => e.JoinBy("\n"));
-        var result = await runner.RunQueryAsScalar(qb.Build());
+        var result = await GetScalarAsync(qb);
         Compare(result, ExpectedValue(expected));
+    }
+
+    public async Task<IValue> GetScalarAsync(QueryBuilder qb)
+    {
+        var runner = await db.GetRunnerAsync();
+        var query = qb.Build();
+        // Act
+        IValue result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToScalar(query.Fields());
+        return result;
+    }
+    
+    public async Task<IReadOnlyList<Dictionary<string, IValue>>> GetObjectsAsync(QueryBuilder qb)
+    {
+        var runner = await db.GetRunnerAsync();
+        var query = qb.Build();
+        // Act
+        var result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToObjects(query.Fields());
+        return result;
     }
 
     private static void PrepareBoolTests(ref object? expected, ref string input)

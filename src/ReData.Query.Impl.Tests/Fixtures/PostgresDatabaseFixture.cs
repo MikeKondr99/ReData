@@ -1,4 +1,5 @@
-﻿using Npgsql;
+﻿using System.Data.Common;
+using Npgsql;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Impl.Functions;
 using ReData.Query.Runners;
@@ -16,12 +17,17 @@ public class PostgresDatabaseFixture : IDatabaseFixture
 
     public Task<IQueryRunner> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.PostgreSql, ConnectionString));
+        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.PostgreSql));
     }
 
     public DatabaseType GetDatabaseType()
     {
         return DatabaseType.PostgreSql;
+    }
+
+    public DbConnection GetConnection()
+    {
+        return Connection;
     }
 
     private string testTableSql = """
@@ -71,11 +77,6 @@ public class PostgresDatabaseFixture : IDatabaseFixture
 
     public async Task DisposeAsync()
     {
-        if (runner is not null)
-        {
-            await runner.DisposeAsync();
-        }
-
         await Container.StopAsync();
         await Container.DisposeAsync();
 

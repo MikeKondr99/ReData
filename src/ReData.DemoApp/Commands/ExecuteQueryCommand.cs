@@ -1,10 +1,14 @@
 using System.Diagnostics;
 using FastEndpoints;
+using Npgsql;
 using Pattern.Unions;
+using ReData.DataExporter;
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.Query;
+using ReData.Query.Core.Types;
+using ReData.Query.Runners;
 using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Commands;
@@ -23,8 +27,13 @@ public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler
         try
         {
             var query = command.Query;
-            await using var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql, dwhService.ReadConnection);
-            var data = await runner.RunQueryAsObjectAsync(query);
+            var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
+            await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
+            
+            var data = await runner
+                .GetDataReaderAsync(query, connection)
+                .CollectToObjects(query.Fields());
+            
 
             var response = new TransformResponse
             {

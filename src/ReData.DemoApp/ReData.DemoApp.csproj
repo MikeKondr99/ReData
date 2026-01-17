@@ -10,6 +10,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\ReData.DataExporter\ReData.DataExporter.csproj" />
         <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />

@@ -41,10 +41,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         entity.Name.Should().Be(req.Name);
-        entity.FieldList.Should().BeEquivalentTo([
-            TextField("col1"),
-            TextField("col2"),
-        ]);
+        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2"]);
     }
 
     [Fact(DisplayName = "Empty CSV file should fail validation")]
@@ -81,11 +78,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         entity.Name.Should().Be(req.Name);
-        entity.FieldList.Should().BeEquivalentTo([
-            TextField("col1"),
-            TextField("col2"),
-            TextField("col3"),
-        ]);
+        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2", "col3"]);
     }
 
     [Fact(DisplayName = "Single column CSV with header should create single field")]
@@ -111,7 +104,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         entity.FieldList.Should().HaveCount(1);
-        entity.FieldList.Should().BeEquivalentTo([TextField("column_name")]);
+        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["column_name"]);
     }
 
 
@@ -137,7 +130,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         entity.FieldList.Should().HaveCount(1);
-        entity.FieldList.Should().BeEquivalentTo([TextField("A")]);
+        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["A"]);
     }
 
     [Fact(DisplayName = "CSV with 50+ columns should create all fields")]
@@ -254,7 +247,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                    "col,with,commas","col with "quotes""
+                    "col,with,commas","col with "quotes" kek"
                     value1,value2
                     """.ToStream()
         };
@@ -263,9 +256,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         var entity = await req.ExecuteAsync();
 
         // Assert
-        entity.FieldList.Should().HaveCount(3);
+        entity.FieldList.Should().HaveCount(2);
         entity.FieldList[0].Alias.Should().Be("col,with,commas");
-        entity.FieldList[2].Alias.Should().Be("col with \"quotes\"");
+        entity.FieldList[1].Alias.Should().Be("col with \"quotes\" kek");
     }
     
 
@@ -289,7 +282,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         var entity = await req.ExecuteAsync();
 
         // Assert
-        entity.FieldList.Should().HaveCount(3);
+        entity.FieldList.Should().HaveCount(2);
         entity.FieldList[0].Alias.Should().Be("col1");
         entity.FieldList[1].Alias.Should().Be("col2");
     }

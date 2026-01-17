@@ -23,8 +23,6 @@ using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
 using Factory = ReData.Query.Factory;
 
-QueryBuilder.Functions = Factory.CreateFunctionStorage(DatabaseType.PostgreSql);
-
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
