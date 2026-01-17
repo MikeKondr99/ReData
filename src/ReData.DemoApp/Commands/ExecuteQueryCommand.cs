@@ -1,13 +1,9 @@
-using System.Diagnostics;
 using FastEndpoints;
 using Npgsql;
 using Pattern.Unions;
-using ReData.DataExporter;
 using ReData.DemoApp.Endpoints.Transform;
-using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.Query;
-using ReData.Query.Core.Types;
 using ReData.Query.Runners;
 using Factory = ReData.Query.Factory;
 
@@ -33,7 +29,6 @@ public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler
             var data = await runner
                 .GetDataReaderAsync(query, connection)
                 .CollectToObjects(query.Fields());
-            
 
             var response = new TransformResponse
             {
