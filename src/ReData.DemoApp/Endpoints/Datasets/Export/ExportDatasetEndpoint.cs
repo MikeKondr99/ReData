@@ -3,6 +3,7 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Org.BouncyCastle.Ocsp;
 using ReData.DataExporter;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
@@ -65,16 +66,41 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             await using var reader = await runner.GetDataReaderAsync(qb.Build(), connection);
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
-            HttpContext.Response.ContentType = "text/csv;";
+            HttpContext.Response.ContentType = GetContentType(req.FileType);
+            // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
             HttpContext.Response.Headers.Append("Content-Disposition",
-                $"attachment; filename=\"{Uri.EscapeDataString(dataset.Name)}.csv\";");
+                $"attachment; filename=\"{Uri.EscapeDataString(dataset.Name)}{GetExtension(req.FileType)}\";");
             var bodyStream = HttpContext.Response.Body;
-            // Пишем сразу в body нифига себе
-            await new SylvanCsvExporter().ExportAsync(reader, bodyStream, ct);
+            var exporter = GetExporter(req.FileType);
+            await exporter.ExportAsync(reader, bodyStream, ct);
         }
         catch (Exception)
         {
             await Send.StatusCodeAsync(500, ct);
         }
     }
+
+    private static string GetContentType(ExportFileType type) => type switch
+    {
+        ExportFileType.Csv => "text/csv",
+        ExportFileType.Excel => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ExportFileType.Json => "application/json"
+    };
+
+    private static string GetExtension(ExportFileType type) => type switch
+    {
+        ExportFileType.Csv => ".csv",
+        ExportFileType.Excel => ".xlsx",
+        ExportFileType.Json => ".json"
+    };
+
+    private static IDataExporter GetExporter(ExportFileType type) => type switch
+    {
+        ExportFileType.Csv => new SylvanCsvExporter(),
+        ExportFileType.Excel => new SylvanExcelExporter(),
+        ExportFileType.Json => new JsonDataExporter(),
+    };
+
+
+
 }

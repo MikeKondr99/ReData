@@ -9,6 +9,7 @@ using ReData.DemoApp;
 using ReData.DemoApp.CommandMiddleware;
 using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
+using ReData.DemoApp.Endpoints.Datasets.Export;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
@@ -38,6 +39,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<FunctionKind>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<DataType>());
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<SelectRestOptions>());
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter<ExportFileType>());
 });
 
 services.AddOutputCache();
