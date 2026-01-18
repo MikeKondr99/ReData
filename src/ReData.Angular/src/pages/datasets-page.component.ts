@@ -10,17 +10,18 @@ import {NzTableModule} from 'ng-zorro-antd/table';
 import {DatePipe, JsonPipe} from '@angular/common';
 import {NzCollapseModule} from 'ng-zorro-antd/collapse';
 import {CollapseComponent} from '../components/collapse.component';
+import {NzPopoverModule} from 'ng-zorro-antd/popover';
 
 @Component({
   selector: 'app-datasets-page',
   standalone: true,
   imports: [
     NzTableModule,
-    NzCollapseModule,
     NzIconModule,
     NzButtonModule,
-    CollapseComponent,
+    NzPopoverModule,
     RouterLink,
+    CollapseComponent,
     DatePipe,
   ],
   template: `
@@ -72,6 +73,28 @@ import {CollapseComponent} from '../components/collapse.component';
             <td>{{ dataset.createdAt | date:'dd.MM.yyyy hh:mm'}}</td>
             <td>{{ dataset.updatedAt | date:'dd.MM.yyyy hh:mm'}}</td>
             <td>
+              <button nz-button
+                      nz-popover
+                      nzPopoverTitle="Экспорт"
+                      nzPopoverTrigger="click"
+                      nzPopoverPlacement="left"
+                      [nzPopoverContent]="exportPopoverTemplate"
+                      nzType="link"
+                      nzShape="circle"
+                >
+                <span nz-icon nzType="export"></span>
+              </button>
+              <ng-template #exportPopoverTemplate>
+                <button nz-button nzType="link" nzShape="circle" (click)="exportDataset(dataset.id,'csv')">
+                  Csv
+                </button>
+                <button nz-button nzType="link" nzShape="circle" (click)="exportDataset(dataset.id,'excel')">
+                  Excel
+                </button>
+                <button nz-button nzType="link" nzShape="circle" (click)="exportDataset(dataset.id,'json')">
+                  Json
+                </button>
+              </ng-template>
               <button nz-button nzType="link" nzShape="circle" [routerLink]="[dataset.id]">
                 <span nz-icon nzType="edit"></span>
               </button>
@@ -104,5 +127,8 @@ export class DatasetsPage {
     });
   }
 
-  protected readonly JSON = JSON;
+  exportDataset(id: string, fileType: string) {
+    // window.open(`api/datasets/${id}/export?fileType=${fileType}`,'_blank');
+    window.location.assign(`api/datasets/${id}/export?fileType=${fileType}`);
+  }
 }

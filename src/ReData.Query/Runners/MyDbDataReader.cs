@@ -14,8 +14,8 @@ public class MyDbDataReader : DbDataReader
     {
         dbDataReaderImplementation = inner;
         int i = 0;
-        getOrdinal = fields.ToDictionary(f => f.Alias, _ => i++);
         getName = fields.Select(f => f.Alias).ToArray();
+        getOrdinal = getName.ToDictionary(n => n, _ => i++);
     }
     
     private DbDataReader dbDataReaderImplementation;
@@ -98,6 +98,12 @@ public class MyDbDataReader : DbDataReader
     public override DataTable? GetSchemaTable()
     {
         return dbDataReaderImplementation.GetSchemaTable();
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        await dbDataReaderImplementation.DisposeAsync();
+        await base.DisposeAsync();
     }
 
     #endregion

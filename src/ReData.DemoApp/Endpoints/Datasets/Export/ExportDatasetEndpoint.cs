@@ -11,6 +11,7 @@ using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Services;
 using ReData.Query;
 using ReData.Query.Core;
+using ReData.Query.Runners;
 using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Export;
@@ -63,7 +64,8 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
 
-            await using var reader = await runner.GetDataReaderAsync(qb.Build(), connection);
+            var rawReader = await runner.GetDataReaderAsync(qb.Build(), connection);
+            await using var reader = rawReader = new MyDbDataReader(rawReader, qb.Build().Fields());
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = GetContentType(req.FileType);
@@ -72,7 +74,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
                 $"attachment; filename=\"{Uri.EscapeDataString(dataset.Name)}{GetExtension(req.FileType)}\";");
             var bodyStream = HttpContext.Response.Body;
             var exporter = GetExporter(req.FileType);
-            await exporter.ExportAsync(reader, bodyStream, ct);
+            await exporter.ExportAsync(rawReader, bodyStream, ct);
         }
         catch (Exception)
         {
