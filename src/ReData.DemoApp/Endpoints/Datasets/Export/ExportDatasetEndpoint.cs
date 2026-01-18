@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Org.BouncyCastle.Ocsp;
-using ReData.DataExporter;
+using ReData.DataIO.DataExporters;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Groups;

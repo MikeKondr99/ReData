@@ -1,7 +1,7 @@
 using System.Data.Common;
 using Sylvan.Data.Excel;
 
-namespace ReData.DataExporter;
+namespace ReData.DataIO.DataExporters;
 
 public sealed class SylvanExcelExporter : IDataExporter
 {

@@ -1,8 +1,13 @@
+using System.Data.Common;
+using System.Diagnostics;
+using DocumentFormat.OpenXml.Office2013.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FastEndpoints;
 using MiniExcelLibs;
 using MiniExcelLibs.Csv;
 using Npgsql;
 using ReData.Common;
+using ReData.DataIO.DataImporters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Services;
@@ -21,60 +26,37 @@ public class CreateDataConnectorCommand : ICommand<DataConnectorEntity>
     public required Stream FileStream { get; init; }
 }
 
-public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCommand, DataConnectorEntity>
+
+public class CreateDataConnectorHandler(DwhService dwhService, ApplicationDatabaseContext db) : ICommandHandler<CreateDataConnectorCommand, DataConnectorEntity>
 {
-    public CreateDataConnectorHandler(
-        ApplicationDatabaseContext db,
-        DwhService dwh)
-    {
-        Db = db;
-        DwhService = dwh;
-    }
-
-    public required ApplicationDatabaseContext Db { get; init; }
-
-    public required DwhService DwhService { get; init; }
-
-    /// <inheritdoc />
     public async Task<DataConnectorEntity> ExecuteAsync(CreateDataConnectorCommand command, CancellationToken ct)
     {
-        if (command.FileStream is null)
+        await using var reader = await new AnalyzeFileCommand()
         {
-            throw new ArgumentNullException("command.FileStream", "Must be not null");
-        }
+            FileStream = command.FileStream,
+            Separator = command.Separator,
+            HasHeaders = command.WithHeader,
+        }.ExecuteAsync(ct);
 
-        var csvConfiguration = new CsvConfiguration()
-        {
-            Seperator = command.Separator,
-            ReadEmptyStringAsNull = true,
-        };
-        var query = command.FileStream.QueryAsync(
-            excelType: ExcelType.CSV,
-            useHeaderRow: false, // false for now
-            configuration: csvConfiguration,
-            cancellationToken: ct
-        );
+        var aliases = Enumerable
+            .Range(0, reader.FieldCount)
+            .Select(i => reader.GetName(i))
+            .ToArray();
 
-        string[]? aliases = null;
-        var tableId = Guid.NewGuid();
-        string tableName = $"table_{tableId}";
+        var types = Enumerable
+            .Range(0, reader.FieldCount)
+            .Select(i => ToReDataType(reader.GetDataTypeName(i)))
+            .ToArray();
 
-        using (var connection = new NpgsqlConnection(DwhService.WriteConnection))
-        {
-            await connection.OpenAsync(ct);
-            await using (var transaction = await connection.BeginTransactionAsync(ct))
-            {
-                aliases = await CopyRowsAsync(
-                    connection: connection,
-                    transaction: transaction,
-                    tableName: tableName,
-                    withHeader: command.WithHeader,
-                    rows: query,
-                    ct: ct
-                );
-                await transaction.CommitAsync(ct);
-            }
-        }
+        await using var connection = new NpgsqlConnection(dwhService.WriteConnection);
+        await connection.OpenAsync(ct);
+        await using var transaction = await connection.BeginTransactionAsync(ct);
+
+        var tableName = await CreateTableAsync(connection, transaction, types);
+        
+        await FillTableAsync(connection, reader, tableName, ct);
+
+        await transaction.CommitAsync(ct);
 
         var entity = new DataConnectorEntity()
         {
@@ -85,107 +67,84 @@ public class CreateDataConnectorHandler : ICommandHandler<CreateDataConnectorCom
             {
                 Alias = c,
                 Column = $"column{i + 1}",
-                DataType = DataType.Text,
+                DataType = types[i],
                 CanBeNull = true,
             }).ToList(),
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
-        Db.DataConnectors.Add(entity);
-        await Db.SaveChangesAsync(ct);
-
+        db.DataConnectors.Add(entity);
+        await db.SaveChangesAsync(ct);
+        
         return entity;
     }
 
     private static async Task<string> CreateTableAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
-        string tableName,
-        IEnumerable<string> columns)
+        DataType[] types)
     {
+        var tableId = Guid.NewGuid();
+        string tableName = $"table_{tableId}";
+    
         var createTableSql = $"""
                               CREATE TABLE "{tableName}" (
                                   rownum SERIAL PRIMARY KEY,
-                                  {columns.Select(c => $"{c} TEXT").JoinBy(",\n")}
+                                  {types.Select((t, i) => $"\"column{i + 1}\" {ToPostgresType(t)}").JoinBy(",\n")}
                               )
                               """;
 
-        using var command = new NpgsqlCommand(createTableSql, connection, transaction);
+        await using var command = new NpgsqlCommand(createTableSql, connection, transaction);
         await command.ExecuteNonQueryAsync();
         return tableName;
     }
 
-    private static async Task<string[]> CopyRowsAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        string tableName,
-        bool withHeader,
-        IAsyncEnumerable<dynamic> rows,
-        CancellationToken ct
-    )
+    private static string ToPostgresType(DataType type)
     {
-        var iter = rows.GetAsyncEnumerator(ct);
-        if (!await iter.MoveNextAsync())
+        return type switch
         {
-            // 0 записей
-            throw new Exception();
-        }
+            DataType.Text => "TEXT",
+            DataType.Integer => "BIGINT",
+            DataType.Number => "DOUBLE PRECISION",
+            DataType.Bool => "BOOLEAN",
+            DataType.DateTime => "TIMESTAMP",
+        };
+    }
+    
+    private static DataType ToReDataType(string type)
+    {
+        return type switch
+        {
+            "String" => DataType.Text,
+            "Double" or "Decimal" => DataType.Number,
+            "Int64" or "Int32" => DataType.Integer,
+            "DateTime" => DataType.DateTime,
+            "Boolean" => DataType.Bool,
+        };
+    }
 
-        string[] fieldKeys = (iter.Current as IDictionary<string, object>)!.Keys.ToArray();
-        string[]? aliases = null;
-        if (withHeader)
+    private static async Task FillTableAsync(
+        NpgsqlConnection connection,
+        DbDataReader reader,
+        string tableName,
+        CancellationToken ct)
+    {
+        var columns = Enumerable
+            .Range(1, reader.FieldCount)
+            .Select(i => $"\"column{i}\"")
+            .JoinBy(", ");
+
+        await using var writer = await connection
+            .BeginBinaryImportAsync($"COPY \"{tableName}\" ({columns}) FROM STDIN (FORMAT BINARY)", ct);
+        while (await reader.ReadAsync(ct))
         {
-            aliases = (iter.Current as IDictionary<string, object>)!.Values.Select(v => v.ToString()!).ToArray();
-            for (int i = 0; i < aliases.Length; i++)
+            await writer.StartRowAsync(ct);
+            for (int i = 0; i < reader.FieldCount; i++)
             {
-                var counter = 1;
-                var alias = aliases[i];
-                while (aliases[..i].Contains(aliases[i]))
-                {
-                    counter += 1;
-                    aliases[i] = $"{alias}_{counter}";
-                }
+                await writer.WriteAsync(reader.GetValue(i), ct);
             }
         }
-        else
-        {
-            aliases = fieldKeys;
-        }
 
-        var columns = Enumerable.Range(1, aliases.Length).Select(col => $"\"column{col}\"");
-
-        await CreateTableAsync(connection, transaction, tableName, columns);
-
-        using (var writer =
-               connection.BeginBinaryImport(
-                   $"COPY \"{tableName}\" ({columns.JoinBy(", ")}) FROM STDIN (FORMAT BINARY)"))
-        {
-            // Если без хедера то обрабатывает первую запись как запись
-            if (!withHeader)
-            {
-                var row = iter.Current as IDictionary<string, object?>;
-                await writer.StartRowAsync(ct);
-                for (var i = 0; i < aliases.Length; i++)
-                {
-                    var value = row[fieldKeys[i]]?.ToString();
-                    await writer.WriteAsync(value, NpgsqlTypes.NpgsqlDbType.Text, ct);
-                }
-            }
-
-            while (await iter.MoveNextAsync())
-            {
-                var row = iter.Current as IDictionary<string, object?>;
-                await writer.StartRowAsync(ct);
-
-                for (var i = 0; i < aliases.Length; i++)
-                {
-                    var value = row[fieldKeys[i]]?.ToString();
-                    await writer.WriteAsync(value, NpgsqlTypes.NpgsqlDbType.Text, ct);
-                }
-            }
-
-            await writer.CompleteAsync(ct);
-            return aliases;
-        }
+        await writer.CompleteAsync(ct);
     }
 }

@@ -28,6 +28,7 @@ public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
         CreateDataConnectorRequest req, CancellationToken ct)
     {
         Stream? fileStream = (await FormMultipartSectionsAsync(ct).FirstOrDefaultAsync()).FileSection?.Section.Body;
+        
         var entity = await new CreateDataConnectorCommand
         {
             Name = Query<string>("name"),

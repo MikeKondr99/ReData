@@ -1,7 +1,7 @@
 using System.Data.Common;
 using BenchmarkDotNet.Attributes;
 using Npgsql;
-using ReData.DataExporter;
+using ReData.DataIO.DataExporters;
 using ReData.Query.Core.Types;
 using ReData.Query.Runners;
 

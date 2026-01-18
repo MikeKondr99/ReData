@@ -2,7 +2,7 @@ using System.Data.Common;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
-namespace ReData.DataExporter;
+namespace ReData.DataIO.DataExporters;
 
 public sealed class OpenXmlExcelExporter : IDataExporter
 {

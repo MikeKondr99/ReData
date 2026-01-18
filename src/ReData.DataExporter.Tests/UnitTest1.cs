@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using ReData.DataIO.DataExporters;
 using Testcontainers.PostgreSql;
 
 namespace ReData.DataExporter.Tests;

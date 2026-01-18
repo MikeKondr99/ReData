@@ -1,7 +1,8 @@
 using System.Data.Common;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace ReData.DataExporter;
+namespace ReData.DataIO.DataExporters;
 
 public sealed class JsonDataExporter : IDataExporter 
 {
@@ -11,8 +12,9 @@ public sealed class JsonDataExporter : IDataExporter
         {
             await using var writer = new Utf8JsonWriter(outputStream, new JsonWriterOptions
             {
-                Indented = true,
-                SkipValidation = false
+                Indented = false,
+                SkipValidation = false,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             });
             
             await WriteJsonArrayAsync(reader, writer, ct);
@@ -34,19 +36,10 @@ public sealed class JsonDataExporter : IDataExporter
         
         try
         {
-            if (await reader.ReadAsync(ct))
+            propNames = new string[reader.FieldCount];
+            for (int i = 0; i < propNames.Length; i++)
             {
-                propNames = new string[reader.FieldCount];
-                for (int i = 0; i < propNames.Length; i++)
-                {
-                    propNames[i] = reader.GetName(i);
-                }
-                WriteRowAsObject(reader, writer, propNames);
-            }
-            else
-            {
-                writer.WriteEndArray();
-                return;
+                propNames[i] = reader.GetName(i);
             }
             
             while (await reader.ReadAsync(ct))

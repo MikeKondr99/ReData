@@ -4,12 +4,13 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>FileExport</RootNamespace>
+        <RootNamespace>ReData.DataIO</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="DocumentFormat.OpenXml" />
       <PackageReference Include="MiniExcel" />
+      <PackageReference Include="Sylvan.Common" />
       <PackageReference Include="Sylvan.Data.Csv" />
       <PackageReference Include="Sylvan.Data.Excel" />
     </ItemGroup>

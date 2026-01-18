@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.Query.Common", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DemoApp.Tests", "src\ReData.DemoApp.Tests\ReData.DemoApp.Tests\ReData.DemoApp.Tests.csproj", "{9859A825-C45C-466D-AAE0-F64AFB5C14F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DataExporter", "src\ReData.DataExporter\ReData.DataExporter.csproj", "{D6706EEF-C7C4-41FF-9130-23A08FEE0596}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DataIO", "src\ReData.DataIO\ReData.DataIO.csproj", "{D6706EEF-C7C4-41FF-9130-23A08FEE0596}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReData.DataExporter.Tests", "src\ReData.DataExporter.Tests\ReData.DataExporter.Tests.csproj", "{782C980B-528F-486D-A086-F4EC9C78742B}"
 EndProject

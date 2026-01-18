@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReData.DataExporter\ReData.DataExporter.csproj" />
+      <ProjectReference Include="..\ReData.DataIO\ReData.DataIO.csproj" />
     </ItemGroup>
 
 </Project>

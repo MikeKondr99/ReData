@@ -1,8 +1,7 @@
 using System.Data.Common;
 using MiniExcelLibs;
-using ReData.DataExporter;
 
-namespace ReData.DataExporter;
+namespace ReData.DataIO.DataExporters;
 
 public sealed class MiniExcelExporter : IDataExporter
 {

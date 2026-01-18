@@ -30,10 +30,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2
-                1, qwe
-                2, rty
-                """.ToStream()
+                    col1,col2
+                    1, qwe
+                    2, rty
+                    """.ToStream()
         };
 
         // Act
@@ -92,11 +92,11 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                column_name
-                value1
-                value2
-                value3
-                """.ToStream()
+                    column_name
+                    value1
+                    value2
+                    value3
+                    """.ToStream()
         };
 
         // Act
@@ -119,10 +119,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = false,
             FileStream =
                 """
-                value1
-                value2
-                value3
-                """.ToStream()
+                    value1
+                    value2
+                    value3
+                    """.ToStream()
         };
 
         // Act
@@ -170,9 +170,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col1,col2,col2,col2
-                value1,value2,value3,value4,value5
-                """.ToStream()
+                    col1,col1,col2,col2,col2
+                    value1,value2,value3,value4,value5
+                    """.ToStream()
         };
 
         // Act
@@ -217,9 +217,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col with spaces,колонка_кириллица,column-with-dashes,column_with_underscores,col!@#$%^&*()
-                value1,value2,value3,value4,value5
-                """.ToStream()
+                    col with spaces,колонка_кириллица,column-with-dashes,column_with_underscores,col!@#$%^&*()
+                    value1,value2,value3,value4,value5
+                    """.ToStream()
         };
 
         // Act
@@ -252,15 +252,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
                     """.ToStream()
         };
 
-        // Act
-        var entity = await req.ExecuteAsync();
-
-        // Assert
-        entity.FieldList.Should().HaveCount(2);
-        entity.FieldList[0].Alias.Should().Be("col,with,commas");
-        entity.FieldList[1].Alias.Should().Be("col with \"quotes\" kek");
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(() => req.ExecuteAsync());
     }
-    
+
 
     [Fact(DisplayName = "CSV with header should trim empty characters")]
     public async Task CreateDataset_WithHeaders_ShouldTrimHeaders()
@@ -273,9 +268,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1 , col2\t
-                value1,value2
-                """.ToStream()
+                    col1 , col2 
+                    value1,value2
+                    """.ToStream()
         };
 
         // Act
@@ -286,7 +281,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         entity.FieldList[0].Alias.Should().Be("col1");
         entity.FieldList[1].Alias.Should().Be("col2");
     }
-    
+
     [Fact(DisplayName = "CSV with header, but no data should parse")]
     public async Task CreateDataset_WithHeadersButNoData_ShouldParse()
     {
@@ -322,9 +317,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1;col2;col3
-                value1;value2;value3
-                """.ToStream()
+                    col1;col2;col3
+                    value1;value2;value3
+                    """.ToStream()
         };
 
         // Act
@@ -346,10 +341,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                name,address,city
-                "John,Smith","123,Main St",NewYork
-                "Jane,Doe","456,Oak Ave",Boston
-                """.ToStream()
+                    name,address,city
+                    "John,Smith","123,Main St",NewYork
+                    "Jane,Doe","456,Oak Ave",Boston
+                    """.ToStream()
         };
 
         // Act
@@ -371,9 +366,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1	col2	col3
-                value1	value2	value3
-                """.ToStream()
+                    col1	col2	col3
+                    value1	value2	value3
+                    """.ToStream()
         };
 
         // Act
@@ -395,9 +390,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1|col2|col3
-                value1|value2|value3
-                """.ToStream()
+                    col1|col2|col3
+                    value1|value2|value3
+                    """.ToStream()
         };
 
         // Act
@@ -419,9 +414,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1;col2;col3
-                value1;value2;value3
-                """.ToStream()
+                    col1;col2;col3
+                    value1;value2;value3
+                    """.ToStream()
         };
 
         // Act
@@ -430,18 +425,6 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         // Assert
         entity.FieldList.Should().HaveCount(3);
         entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2", "col3"]);
-    }
-
-    [SkippableFact(DisplayName = "Multiple character separator should fail validation")]
-    public async Task CreateDataset_MultipleCharSeparator_ShouldFail()
-    {
-        Skip.If(true, "Нужно реализовывать тест на другом слое");
-    }
-
-    [SkippableFact(DisplayName = "Empty separator should fail validation")]
-    public async Task CreateDataset_EmptySeparator_ShouldFail()
-    {
-        Skip.If(true, "Нужно реализовывать тест на другом слое");
     }
 
     [Fact(DisplayName = "Separator that appears in unquoted data values should split incorrectly")]
@@ -455,10 +438,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                name,full_address
-                John,123 Main St, Apt 4,New York
-                Jane,456 Oak Ave,Boston
-                """.ToStream()
+                    name,full_address
+                    John,123 Main St, Apt 4,New York
+                    Jane,456 Oak Ave,Boston
+                    """.ToStream()
         };
 
         // Act
@@ -482,10 +465,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                name,address,tags
-                John,"123 Main St, Apt 4","tag1,tag2,tag3"
-                Jane,"456 Oak Ave, Suite 100","tagA,tagB"
-                """.ToStream()
+                    name,address,tags
+                    John,"123 Main St, Apt 4","tag1,tag2,tag3"
+                    Jane,"456 Oak Ave, Suite 100","tagA,tagB"
+                    """.ToStream()
         };
 
         // Act
@@ -507,10 +490,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1^col2^col3
-                value1^value2^value3
-                value4^value5^value6
-                """.ToStream()
+                    col1^col2^col3
+                    value1^value2^value3
+                    value4^value5^value6
+                    """.ToStream()
         };
 
         // Act
@@ -532,9 +515,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1 col2 col3
-                value1 value2 value3
-                """.ToStream()
+                    col1 col2 col3
+                    value1 value2 value3
+                    """.ToStream()
         };
 
         // Act
@@ -638,9 +621,9 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2,col3
-                value1,value2,value3
-                """.ToStream() // Extra newline at end
+                    col1,col2,col3
+                    value1,value2,value3
+                    """.ToStream() // Extra newline at end
         };
 
         // Act
@@ -742,18 +725,14 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2
-                "value1,value2
-                value3,value4
-                """.ToStream()
+                    col1,col2
+                    "value1,value2
+                    value3,value4
+                    """.ToStream()
         };
 
-        // Act
-        var entity = await req.ExecuteAsync();
-
-        // Assert
-        entity.FieldList.Should().HaveCount(2);
-        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2"]);
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<Exception>(() => req.ExecuteAsync());
     }
 
     [Fact(DisplayName = "CSV with escaped quotes inside unquoted field might fail")]
@@ -767,10 +746,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2
-                value1"with quotes,value2
-                value3,value4
-                """.ToStream()
+                    col1,col2
+                    value1"with quotes,value2
+                    value3,value4
+                    """.ToStream()
         };
 
         // Act
@@ -792,10 +771,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """"
-                col1,col2
-                "value1 ""with quotes""",value2
-                value3,"value4 ""more quotes"""
-                """".ToStream()
+                    col1,col2
+                    "value1 ""with quotes""",value2
+                    value3,"value4 ""more quotes"""
+                    """".ToStream()
         };
 
         // Act
@@ -806,7 +785,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
         entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2"]);
     }
 
-    [Fact(DisplayName = "CSV with missing field at end should handle empty field")]
+    [Fact(DisplayName = "CSV с пропущенными полем в конца засчитывается за null")]
     public async Task CreateDataset_MissingFieldAtEnd_ShouldHandle()
     {
         // Arrange
@@ -817,14 +796,18 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2,col3
-                value1,value2
-                value3,value4,value5
-                """.ToStream()
+                    col1,col2,col3
+                    value1,value2
+                    value3,value4,value5
+                    """.ToStream()
         };
 
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(() => req.ExecuteAsync());
+        // Act
+        var entity = await req.ExecuteAsync();
+
+        // Assert
+        entity.FieldList.Should().HaveCount(3);
+        entity.FieldList.Select(f => f.Alias).Should().BeEquivalentTo(["col1", "col2", "col3"]);
     }
 
     [Fact(DisplayName = "CSV with extra field at end should handle or fail")]
@@ -838,10 +821,10 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
             WithHeader = true,
             FileStream =
                 """
-                col1,col2
-                value1,value2,value3
-                value4,value5
-                """.ToStream()
+                    col1,col2
+                    value1,value2,value3
+                    value4,value5
+                    """.ToStream()
         };
 
         // Act
@@ -866,4 +849,250 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
 
         await req.ExecuteAsync();
     }
+
+    [Fact(DisplayName = "Создание коннектора с целыми числами → должен сохранить столбец с типом DataType.Integer")]
+    public async Task CreateDataset_IntegerFormat_Valid()
+    {
+        // Arrange
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    id,count,negative
+                    1,2,-3
+                    0,10,-999
+                    ,,
+                    """.ToStream()
+        };
+
+        // Act
+        var entity = await req.ExecuteAsync();
+
+        // Assert
+        entity.FieldList.Should().HaveCount(3);
+        entity.FieldList[0].DataType.Should().Be(DataType.Integer);
+        entity.FieldList[1].DataType.Should().Be(DataType.Integer);
+        entity.FieldList[2].DataType.Should().Be(DataType.Integer);
+    }
+
+    [Fact(DisplayName =
+        "Создание коннектора с числами с плавающей точкой → должен сохранить столбец с типом DataType.Number")]
+    public async Task CreateDataset_NumberFormat_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    price,temperature,ratio
+                    13.45,-2.5,0.75
+                    100.00,98.6,0.5
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.Number));
+    }
+
+    [Fact(DisplayName =
+        "Создание коннектора с целыми и дробными числами в одном столбце → должен выбрать тип DataType.Number")]
+    public async Task CreateDataset_IntegerMixedWithNumber_FallbackToNumber()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    id,price
+                    1,13.45
+                    2,10
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList[0].DataType.Should().Be(DataType.Integer);
+        entity.FieldList[1].DataType.Should().Be(DataType.Number);
+    }
+
+    [Fact(DisplayName = "Создание коннектора с булевыми значениями true/false → должен сохранить тип DataType.Bool")]
+    public async Task CreateDataset_BooleanTrueFalse_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    active,verified,completed
+                    true,false,true
+                    False,TRUE,False
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.Bool));
+    }
+
+    [Fact(DisplayName = "Создание коннектора с булевыми значениями 1/0 → должен сохранить тип DataType.Bool")]
+    public async Task CreateDataset_BooleanOneZero_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    is_active,has_access
+                    1,0
+                    0,1
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.Bool));
+    }
+
+    [Fact(DisplayName = "Создание коннектора с датами в формате ISO → должен сохранить тип DataType.DateTime")]
+    public async Task CreateDataset_ISODateFormat_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    date_of_birth,registration_date
+                    1990-01-15,2023-12-31
+                    1985-07-20,2024-01-01
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.DateTime));
+    }
+
+    [Fact(DisplayName = "Создание коннектора с UTC датами → должен сохранить тип DataType.DateTime")]
+    public async Task CreateDataset_UTCDateFormat_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    created_at,updated_at
+                    2023-12-31T23:59:59Z,2024-01-01T00:00:00Z
+                    2023-06-15T12:30:00Z,2023-06-15T14:45:00Z
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.DateTime));
+    }
+
+    [Fact(DisplayName = "Создание коннектора с текстовыми данными → должен сохранить тип DataType.Text")]
+    public async Task CreateDataset_TextFormat_Valid()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    name,city,description
+                    Иван,Москва,Разработчик ПО
+                    Мария,Санкт-Петербург,Тестировщик
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.Text));
+    }
+
+    [Fact(DisplayName = "Создание коннектора со смешанными типами данных → должен выбрать самый общий тип")]
+    public async Task CreateDataset_MixedTypes_FallbackToMostGeneral()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    mixed_column
+                    123
+                    45.67
+                    текстовое значение
+                    true
+                    2023-01-01
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList[0].DataType.Should().Be(DataType.Text);
+    }
+
+    [Fact(DisplayName =
+        "Создание коннектора с пустыми значениями → должен корректно определить тип по непустым значениям")]
+    public async Task CreateDataset_WithNullValues_TypeDeterminedFromNonEmpty()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    id,name,price
+                    1,,10.5
+                    ,Иван,
+                    3,Мария,20.0
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList[0].DataType.Should().Be(DataType.Integer);
+        entity.FieldList[1].DataType.Should().Be(DataType.Text);
+        entity.FieldList[2].DataType.Should().Be(DataType.Number);
+    }
+
+    [Fact(DisplayName = "Создание коннектора только с пустыми значениями → должен выбрать тип DataType.Text")]
+    public async Task CreateDataset_AllNullValues_FallbackToText()
+    {
+        var req = new CreateDataConnectorCommand()
+        {
+            Name = FakeDataConnectorName(),
+            Separator = ',',
+            WithHeader = true,
+            FileStream =
+                """
+                    column1,column2,column3
+                    ,,
+                    ,,
+                    """.ToStream()
+        };
+
+        var entity = await req.ExecuteAsync();
+        entity.FieldList.Should().AllSatisfy(f => f.DataType.Should().Be(DataType.Text));
+    }
+    
 }

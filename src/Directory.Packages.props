@@ -57,6 +57,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Sylvan.Common" Version="0.4.3" />
     <PackageVersion Include="Sylvan.Data.Csv" Version="1.4.3" />
     <PackageVersion Include="Sylvan.Data.Excel" Version="0.5.2" />
     <PackageVersion Include="TickerQ" Version="9.0.0-beta.17" />
