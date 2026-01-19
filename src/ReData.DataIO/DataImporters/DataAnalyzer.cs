@@ -50,9 +50,10 @@ public sealed class DataAnalyzer : IDataAnalyzer
     {
         return
         [
+            new NullOnlyFormat(),
+            new BooleanNumericFormat(),
             new IntegerFormat(),
             new DoubleFormat(),
-            new BooleanNumericFormat(),
             new BooleanTrueFalseFormat(),
             new IsoDateFormat(),
             new UtcDateFormat(),
