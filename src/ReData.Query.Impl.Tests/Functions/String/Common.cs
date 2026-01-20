@@ -47,16 +47,139 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     public Task FuncLowerTests(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Trim")]
-    [InlineData("Trim(' Hello ')", "Hello")]
+    [InlineData("Trim('  hello  ')", "hello")]
+    [InlineData("Trim('  ')", "")]
+    [InlineData("Trim('')", "")]
+    [InlineData("Trim('привет  ')", "привет")]
+    [InlineData("Trim('😀  👍  ')", "😀  👍")] // Emoji with spaces
+    [InlineData("Trim(null)", null)]
     public Task FuncTrimTests(string expr, object? expected) => Test(expr, expected);
 
+    [SkippableTheory(DisplayName = "Trim with charset")]
+    [InlineData("Trim('...hello...', '.')", "hello")]
+    [InlineData("Trim('**hello**', '*')", "hello")]
+    [InlineData("Trim('xxhelloxx', 'x')", "hello")]
+    [InlineData("Trim('abchelloabc', 'abc')", "hello")]
+    [InlineData("Trim('', 'x')", "")]
+    [InlineData("Trim('xxxx', 'x')", "")]
+    [InlineData("Trim('hello', null)", null)]
+    public Task FuncTrimWithCharsetTests(string expr, object? expected)
+    {
+        Skip.IfNot(runner.GetDatabaseType() is DatabaseType.PostgreSql or DatabaseType.SqlServer,
+            "Trim c набором удаляемых символов реализован только в Postgres и SqlServer");
+        return Test(expr, expected);
+    }
+
     [Theory(DisplayName = "TrimLeft")]
-    [InlineData("TrimLeft(' Hello ')", "Hello ")]
+    [InlineData("TrimLeft('  hello  ')", "hello  ")]
+    [InlineData("TrimLeft('  ')", "")]
+    [InlineData("TrimLeft('')", "")]
+    [InlineData("TrimLeft('  привет')", "привет")]
+    [InlineData("TrimLeft('  😀👍')", "😀👍")]
+    [InlineData("TrimLeft(null)", null)]
     public Task FuncTrimLeftTests(string expr, object? expected) => Test(expr, expected);
+    
+    [SkippableTheory(DisplayName = "TrimLeft with charset")]
+    [InlineData("TrimLeft('...hello...', '.')", "hello...")]
+    [InlineData("TrimLeft('**hello**', '*')", "hello**")]
+    [InlineData("TrimLeft('xxhelloxx', 'x')", "helloxx")]
+    [InlineData("TrimLeft('bcahelloabc', 'abc')", "helloabc")]
+    [InlineData("TrimLeft('', 'x')", "")]
+    [InlineData("TrimLeft('xxxx', 'x')", "")]
+    [InlineData("TrimLeft('hello', null)", null)]
+    public Task FuncTrimLeftWithCharsetTests(string expr, object? expected)
+    {
+        Skip.IfNot(runner.GetDatabaseType() is DatabaseType.PostgreSql or DatabaseType.SqlServer,
+            "TrimLeft c набором удаляемых символов реализован только в Postgres и SqlServer");
+        return Test(expr, expected);
+    }
 
     [Theory(DisplayName = "TrimRight")]
-    [InlineData("TrimRight(' Hello ')", " Hello")]
+    [InlineData("TrimRight('  hello  ')", "  hello")]
+    [InlineData("TrimRight('  ')", "")]
+    [InlineData("TrimRight('')", "")]
+    [InlineData("TrimRight('привет  ')", "привет")]
+    [InlineData("TrimRight('😀👍  ')", "😀👍")]
+    [InlineData("TrimRight(null)", null)]
     public Task FuncTrimRightTests(string expr, object? expected) => Test(expr, expected);
+    
+
+    [SkippableTheory(DisplayName = "TrimRight with charset")]
+    [InlineData("TrimRight('...hello...', '.')", "...hello")]
+    [InlineData("TrimRight('**hello**', '*')", "**hello")]
+    [InlineData("TrimRight('xxhelloxx', 'x')", "xxhello")]
+    [InlineData("TrimRight('abchelloabc', 'abc')", "abchello")]
+    [InlineData("TrimRight('', 'x')", "")]
+    [InlineData("TrimRight('xxxx', 'x')", "")]
+    [InlineData("TrimRight('hello', null)", null)]
+    public Task FuncTrimRightWithCharsetTests(string expr, object? expected)
+    {
+        Skip.IfNot(runner.GetDatabaseType() is DatabaseType.PostgreSql or DatabaseType.SqlServer,
+            "TrimLeft c набором удаляемых символов реализован только в Postgres и SqlServer");
+        return Test(expr, expected);
+    }
+    
+    [SkippableTheory(DisplayName = "PadLeft(text, count)")]
+    [InlineData("PadLeft('abc', 5)", "  abc")] // Basic padding
+    [InlineData("PadLeft('abc', 3)", "abc")] // Same length
+    [InlineData("PadLeft('abc', 2)", "ab")] // Shorter than length
+    [InlineData("PadLeft('abc', 0)", "")] // Zero count
+    [InlineData("PadLeft('', 5)", "     ")] // Empty string
+    [InlineData("PadLeft('привет', 8)", "  привет")] // Unicode
+    [InlineData("PadLeft('😀', 3)", "  😀")] // Emoji
+    [InlineData("PadLeft('abc', -1)", "")] // Negative count
+    [InlineData("PadLeft(null, 5)", null)]
+    public Task FuncPadLeftCountTests(string expr, object? expected)
+    {
+        Skip.If(expr.Contains("😀") && runner.GetDatabaseType() is DatabaseType.SqlServer, "Sql server не справляется с сложным юникодом");
+        return Test(expr, expected);
+    }
+
+    [SkippableTheory(DisplayName = "PadRight(text, count)")]
+    [InlineData("PadRight('abc', 5)", "abc  ")] // Basic padding
+    [InlineData("PadRight('abc', 3)", "abc")] // Same length
+    [InlineData("PadRight('abc', 2)", "ab")] // Shorter than length
+    [InlineData("PadRight('abc', 0)", "")] // Zero count
+    [InlineData("PadRight('', 5)", "     ")] // Empty string
+    [InlineData("PadRight('привет', 8)", "привет  ")] // Unicode
+    [InlineData("PadRight('😀', 3)", "😀  ")] // Emoji
+    [InlineData("PadRight('abc', -1)", "")] // Negative count
+    [InlineData("PadRight(null, 5)", null)]
+    public Task FuncPadRightCountTests(string expr, object? expected)
+    {
+        Skip.If(expr.Contains("😀") && runner.GetDatabaseType() is DatabaseType.SqlServer, "Sql server не справляется с сложным юникодом");
+        return Test(expr, expected);
+    }
+
+    [Theory(DisplayName = "PadLeft(text, count, symbol)")]
+    [InlineData("PadLeft('abc', 5, '*')", "**abc")] // Custom symbol
+    [InlineData("PadLeft('abc', 5, '0')", "00abc")] // Zero padding
+    [InlineData("PadLeft('abc', 3, '*')", "abc")] // Same length
+    [InlineData("PadLeft('abc', 2, '*')", "ab")] // Shorter than length
+    [InlineData("PadLeft('abc', 0, '*')", "")] // Zero count
+    [InlineData("PadLeft('', 5, '-')", "-----")] // Empty string
+    [InlineData("PadLeft('123', 5, '0')", "00123")] // Numeric padding
+    [InlineData("PadLeft('abc', 5, '.')", "..abc")] // Dot padding
+    [InlineData("PadLeft('abc', 5, 'XY')", "XYabc")] // Multi-char symbol (uses first char)
+    [InlineData("PadLeft('abc', 5, '')", "abc")]
+    [InlineData("PadLeft('abc', -1, '*')", "")]
+    [InlineData("PadLeft(null, 5, '*')", null)]
+    public Task FuncPadLeftSymbolTests(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "PadRight(text, count, symbol)")]
+    [InlineData("PadRight('abc', 5, '*')", "abc**")] // Custom symbol
+    [InlineData("PadRight('abc', 5, '0')", "abc00")] // Zero padding
+    [InlineData("PadRight('abc', 3, '*')", "abc")] // Same length
+    [InlineData("PadRight('abc', 2, '*')", "ab")] // Shorter than length
+    [InlineData("PadRight('abc', 0, '*')", "")] // Zero count
+    [InlineData("PadRight('', 5, '-')", "-----")] // Empty string
+    [InlineData("PadRight('123', 5, '0')", "12300")] // Numeric padding
+    [InlineData("PadRight('abc', 5, '.')", "abc..")] // Dot padding
+    [InlineData("PadRight('abc', 5, 'XY')", "abcXY")] // Multi-char symbol (uses first char)
+    [InlineData("PadRight('abc', 5, '')", "abc")]
+    [InlineData("PadRight('abc', -1, '*')", "")] // Negative count
+    [InlineData("PadRight(null, 5, '*')", null)]
+    public Task FuncPadRightSymbolTests(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Substring")]
     [InlineData("Substring('Hello World!',5)", "o World!")]
@@ -104,6 +227,23 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         Skip.If(expr.StartsWith("Replace(''") && runner.GetDatabaseType() is DatabaseType.Oracle);
         return Test(expr, expected);
     }
+    
+    [Theory(DisplayName = "Repeat")]
+    [InlineData("Repeat('a', 3)", "aaa")] // Базовый случай
+    [InlineData("Repeat('ab', 2)", "abab")] // Мультисимвольная строка
+    [InlineData("Repeat(' ', 4)", "    ")] // Пробелы
+    [InlineData("Repeat('', 5)", "")] // Пустая строка
+    [InlineData("Repeat('a', 0)", "")] // Ноль повторений
+    [InlineData("Repeat('a', 1)", "a")] // Одно повторение
+    [InlineData("Repeat('привет', 2)", "приветпривет")] // Unicode
+    [InlineData("Repeat('😀', 3)", "😀😀😀")] // Emoji
+    [InlineData("Repeat('\\n', 2)", "\n\n")] // Escape-символы
+    [InlineData("Repeat('.*+', 2)", ".*+.*+")] // Символы regex
+    [InlineData("Repeat('a', -1)", "")] // Отрицательный count
+    [InlineData("Repeat('abc', 1000).Len()", 3000)] // Большой count (проверка длины)
+    [InlineData("Repeat(null, 3)", null)]
+    [InlineData("Repeat('abc', null)", null)]
+    public Task FuncRepeatTests(string expr, object? expected) => Test(expr, expected);
 
     [SkippableTheory(DisplayName = "Index")]
     [InlineData("Index('abc', 'a')", 1)] // Первый символ
@@ -228,19 +368,55 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Split('a,,b,,c', ',,', 2)", "b")]
 
     // Special characters
-    [InlineData("Split('a\tb\tc', '\t', 2)", "b")] // Tab delimiter
-    [InlineData("Split('a\nb\nc', '\n', 3)", "c")] // Newline delimiter
-    [InlineData("Split('a\\b\\c', '\\', 2)", "b")] // Escape character
+    [InlineData(@"Split('a\tb\tc', '\t', 2)", "b")] // Tab delimiter
+    [InlineData(@"Split('a\nb\nc', '\n', 3)", "c")] // Newline delimiter
+    [InlineData(@"Split('a\\b\\c', '\\', 2)", "b")] // Escape character
 
     // Unicode support
     [InlineData("Split('привет,мир,да', ',', 2)", "мир")]
     [InlineData("Split('αβγ→δεζ→θη', '→', 2)", "δεζ")]
     public Task FuncSplitTests(string expr, object? expected)
     {
-        Skip.If(runner.GetDatabaseType() is DatabaseType.Oracle, "Oracle не имеет реализацию функции Split");
-        Skip.If(runner.GetDatabaseType() is DatabaseType.SqlServer, "SqlServer не имеет реализацию функции Split");
-        Skip.If(runner.GetDatabaseType() is DatabaseType.MySql, "MySql не имеет реализацию функции Split");
-        Skip.If(runner.GetDatabaseType() is DatabaseType.ClickHouse, "ClickHouse не имеет реализацию функции Split");
+        Skip.If(runner.GetDatabaseType() is not  DatabaseType.PostgreSql, $"{runner.GetDatabaseType()} не имеет реализацию функции Split");
+        return Test(expr, expected);
+    }
+    
+    [SkippableTheory(DisplayName = "ExcludeChars")]
+    [InlineData("ExcludeChars('a1b2c3', '123')", "abc")] // Удаление цифр
+    [InlineData("ExcludeChars('hello world', 'aeiou')", "hll wrld")] // Удаление гласных
+    [InlineData("ExcludeChars('привет123', '123')", "привет")] // Unicode с цифрами
+    [InlineData("ExcludeChars('abc123', '')", "abc123")] // Пустая строка символов для удаления
+    [InlineData("ExcludeChars('', '123')", "")] // Пустая исходная строка
+    [InlineData("ExcludeChars('aaaa', 'a')", "")] // Все символы удаляются
+    [InlineData("ExcludeChars('abc', 'xyz')", "abc")] // Нет совпадений
+    [InlineData("ExcludeChars('aAbBcC', 'A')", "abBcC")] // Case sensitive
+    [InlineData("ExcludeChars('😀a👍b', 'a')", "😀👍b")] // Emoji и текст
+    [InlineData("ExcludeChars('a b c', ' ')", "abc")] // Удаление пробелов
+    [InlineData("ExcludeChars(null, '123')", null)]
+    [InlineData("ExcludeChars('abc', null)", null)]
+    public Task FuncExcludeCharsTests(string expr, object? expected)
+    {
+        Skip.If(runner.GetDatabaseType() is not  DatabaseType.PostgreSql, $"{runner.GetDatabaseType()} не имеет реализацию функции ExcludeChars");
+        return Test(expr, expected);
+    }
+
+    [SkippableTheory(DisplayName = "KeepChars")]
+    [InlineData("KeepChars('a1b2c3', '123')", "123")] // Основной пример
+    [InlineData("KeepChars('hello world', 'aeiou')", "eoo")] // Оставляем гласные
+    [InlineData("KeepChars('привет123', '123')", "123")] // Unicode с цифрами
+    [InlineData("KeepChars('abc123', '')", "")] // Пустая строка символов для оставления
+    [InlineData("KeepChars('', '123')", "")] // Пустая исходная строка
+    [InlineData("KeepChars('aaaa', 'a')", "aaaa")] // Все символы остаются
+    [InlineData("KeepChars('abc', 'xyz')", "")] // Нет совпадений
+    [InlineData("KeepChars('aAbBcC', 'A')", "A")] // Case sensitive
+    [InlineData("KeepChars('😀a👍b', 'a')", "a")] // Emoji и текст (оставляем только букву)
+    [InlineData("KeepChars('a b c', 'abc')", "abc")] // Удаление пробелов, оставляем буквы
+    [InlineData("KeepChars('1a2b3c', '1234567890')", "123")] // Оставляем только цифры
+    [InlineData("KeepChars(null, '123')", null)]
+    [InlineData("KeepChars('abc', null)", null)]
+    public Task FuncKeepCharsTests(string expr, object? expected)
+    {
+        Skip.If(runner.GetDatabaseType() is not  DatabaseType.PostgreSql, $"{runner.GetDatabaseType()} не имеет реализацию функции ExcludeChars");
         return Test(expr, expected);
     }
 

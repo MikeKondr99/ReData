@@ -31,7 +31,11 @@ public class ImplicitConversionFunctions : FunctionsDescriptor
             .ImplicitCast(1)
             .Arg("input", Null)
             .Returns(Integer)
-            .Template($"SIGN({0})");
+            .Templates(new()
+            {
+                [PostgreSql] = $"({0}::integer)",
+                [All] = $"SIGN({0})",
+            });
         
         
         Function("NumberFromNull")
