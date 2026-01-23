@@ -4,11 +4,14 @@ using ReData.Query.Core;
 
 namespace ReData.DemoApp.Transformations;
 
-public class WhereTransformation : ITransformation
+/// <summary>
+/// $type = "where"
+/// </summary>
+public class WhereTransformation : Transformation
 {
     public required string Condition { get; set; }
 
-    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         return builder.Where(Condition);
     }

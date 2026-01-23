@@ -34,7 +34,7 @@ export type StandardDataType =
   ;
 
 /**
- * Standard {@link DataType2}s plus your own types/classes.
+ * Standard {@link DataType}s plus your own types/classes.
  */
 export type DataType2 = StandardDataType | string;
 

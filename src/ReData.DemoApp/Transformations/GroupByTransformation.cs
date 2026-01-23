@@ -4,12 +4,15 @@ using ReData.Query.Core;
 
 namespace ReData.DemoApp.Transformations;
 
-public class GroupByTransformation : ITransformation
+/// <summary>
+/// $type = "groupBy"
+/// </summary>
+public class GroupByTransformation : Transformation
 {
     public required SelectItem[] Groups { get; init; }
     public required SelectItem[] Items { get; init; }
 
-    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         var select = Groups.Concat(Items).ToDictionary(a => a.Field, a => a.Expression);
         var groups = Groups.Select(a => a.Expression);

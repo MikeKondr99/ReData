@@ -16,6 +16,7 @@ import { CreateDataSetResponse } from '../model/models';
 import { DataSetListItem } from '../model/models';
 import { DataSetResponse } from '../model/models';
 import { ErrorResponse } from '../model/models';
+import { ExportFileType } from '../model/models';
 import { UpdateDataSetRequest } from '../model/models';
 import { UpdateDataSetResponse } from '../model/models';
 
@@ -29,6 +30,11 @@ export interface CreateDatasetRequestParams {
 
 export interface DeleteDatasetRequestParams {
     id: string;
+}
+
+export interface ExportDatasetRequestParams {
+    id: string;
+    fileType: ExportFileType;
 }
 
 export interface GetDatasetByIdRequestParams {
@@ -60,6 +66,14 @@ export interface DatasetsServiceInterface {
 * @param requestParameters
      */
     deleteDataset(requestParameters: DeleteDatasetRequestParams, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
+     * Экспортировать данные набора
+     * Возвращает данные набора файлом в указанном формате
+     * @endpoint get /api/datasets/{id}/export
+* @param requestParameters
+     */
+    exportDataset(requestParameters: ExportDatasetRequestParams, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Получить все наборы

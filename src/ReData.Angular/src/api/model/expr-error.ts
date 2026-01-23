@@ -7,13 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ExprSpan } from './expr-span';
 
 
-/**
- * Коннектор данных
- */
-export interface DataConnectorListItem { 
-    id?: string;
-    name?: string;
+export interface ExprError { 
+    span: ExprSpan;
+    /**
+     * Сообщение об ошибке
+     */
+    message: string;
 }
 

@@ -18,6 +18,7 @@ public class GetAllDatasetsEndpoint : EndpointWithoutRequest<
 {
     public required ApplicationDatabaseContext Db { get; init; }
 
+    /// <inheritdoc />
     public override void Configure()
     {
         Get("/");

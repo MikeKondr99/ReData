@@ -7,10 +7,15 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Transformation } from './transformation';
+import { SelectRestOptions } from './select-rest-options';
+import { SelectItem } from './select-item';
 
 
-export interface LimitOffsetTransformation { 
+export interface LimitOffsetTransformation extends Transformation { 
     limit?: number | null;
     offset?: number | null;
 }
+
+
 

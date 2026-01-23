@@ -4,11 +4,14 @@ using ReData.Query.Core;
 
 namespace ReData.DemoApp.Transformations;
 
-public class OrderByTransformation : ITransformation
+/// <summary>
+/// $type = "orderBy"
+/// </summary>
+public class OrderByTransformation : Transformation
 {
     public required OrderItem[] Items { get; init; }
 
-    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         return builder.OrderBy(Items.Select(i => (i.Expression, i.Descending ? Query.Core.Types.OrderItem.Type.Desc : Query.Core.Types.OrderItem.Type.Asc)).ToArray());
     }

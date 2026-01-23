@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:ReData.Angular": "node dist/re-data.angular/server/server.mjs",
-    "generate": "openapi-generator-cli generate -i server/openapi.json -g typescript-angular -o src/app/modules/openapi --additional-properties fileNaming=kebab-case,withInterfaces=true --generate-alias-as-model"
+    "generate": "node ./src/api/scripts/sync.js"
   },
   "private": true,
   "dependencies": {

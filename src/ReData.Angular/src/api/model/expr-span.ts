@@ -9,11 +9,10 @@
  */
 
 
-/**
- * Коннектор данных
- */
-export interface DataConnectorListItem { 
-    id?: string;
-    name?: string;
+export interface ExprSpan { 
+    startRow?: number;
+    startColumn?: number;
+    endRow?: number;
+    endColumn?: number;
 }
 

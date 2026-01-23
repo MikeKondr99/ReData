@@ -13,6 +13,8 @@
   "paths": {
     "/api/transform": {
       "post": {
+        "summary": "Трансформации",
+        "description": "Выполняет трансформации от заданного коннектора\nИ выдает постранично полученные данные",
         "operationId": "Transform",
         "requestBody": {
           "x-name": "TransformRequest",
@@ -97,40 +99,6 @@
       }
     },
     "/api/datasets/{id}": {
-      "get": {
-        "tags": [
-          "Datasets"
-        ],
-        "summary": "Получить набор данных по id",
-        "description": "Возвращает набор данных с его трансформациями",
-        "operationId": "GetDatasetById",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataSetResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      },
       "put": {
         "tags": [
           "Datasets"
@@ -179,6 +147,40 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Получить набор данных по id",
+        "description": "Возвращает набор данных с его трансформациями",
+        "operationId": "GetDatasetById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataSetResponse"
                 }
               }
             }
@@ -294,15 +296,81 @@
         }
       }
     },
+    "/api/datasets/{id}/export": {
+      "get": {
+        "tags": [
+          "Datasets"
+        ],
+        "summary": "Экспортировать данные набора",
+        "description": "Возвращает данные набора файлом в указанном формате",
+        "operationId": "ExportDataset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            }
+          },
+          {
+            "name": "fileType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ExportFileType"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/api/data-connectors": {
+      "get": {
+        "tags": [
+          "Data connectors"
+        ],
+        "summary": "Получить все коннекторы данных",
+        "description": "Возвращает список всех коннекторов данных",
+        "operationId": "GetAllDataConnectors",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DataConnectorListItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
-        "summary": "Создать коннектор данных (файл)",
+        "tags": [
+          "Data connectors"
+        ],
+        "summary": "Создать коннектор данных",
+        "description": "Создаёт коннектор данных из поданного CSV файла и конфигурации",
         "operationId": "CreateDataConnector",
         "parameters": [
           {
             "name": "name",
             "in": "query",
             "required": true,
+            "description": "Название нового коннектора данных",
             "schema": {
               "type": "string"
             }
@@ -311,6 +379,7 @@
             "name": "separator",
             "in": "query",
             "required": true,
+            "description": "Знак разделитель ожидаемого в CSV файле",
             "schema": {
               "type": "string"
             }
@@ -319,6 +388,7 @@
             "name": "withHeader",
             "in": "query",
             "required": true,
+            "description": "Содержит ли поданный CSV файл заголовок",
             "schema": {
               "type": "boolean"
             }
@@ -359,24 +429,6 @@
             }
           }
         }
-      },
-      "get": {
-        "operationId": "GetAllDataConnectors",
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/DataConnectorListItem"
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
   },
@@ -384,6 +436,7 @@
     "schemas": {
       "TransformResponse": {
         "type": "object",
+        "description": "Ответ после применения трансформаций",
         "additionalProperties": false,
         "required": [
           "fields",
@@ -393,17 +446,20 @@
         "properties": {
           "fields": {
             "type": "array",
+            "description": "Полученные поля после применения трансформаций",
             "items": {
               "$ref": "#/components/schemas/TransformFieldViewModel"
             }
           },
           "total": {
             "type": "integer",
+            "description": "Общее количество данных подходящих под составленный запрос",
             "format": "int64",
             "nullable": true
           },
           "data": {
             "type": "array",
+            "description": "Одна страница данных соответствующих запросу",
             "items": {
               "type": "object",
               "additionalProperties": {
@@ -415,6 +471,7 @@
       },
       "TransformFieldViewModel": {
         "type": "object",
+        "description": "Информация по полю полученных данных",
         "additionalProperties": false,
         "required": [
           "alias",
@@ -423,13 +480,20 @@
         ],
         "properties": {
           "alias": {
-            "type": "string"
+            "type": "string",
+            "description": "Наименование поля"
           },
           "type": {
-            "$ref": "#/components/schemas/DataType"
+            "description": "Тип поля",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/DataType"
+              }
+            ]
           },
           "canBeNull": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Может ли поле быть `null`"
           }
         }
       },
@@ -480,18 +544,69 @@
         "properties": {
           "index": {
             "type": "integer",
+            "description": "Номер включенной трансформации в которой была обнаружена ошибка",
             "format": "int32"
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "Сообщение об найденной ошибке"
           },
           "errors": {
-            "nullable": true
+            "type": "array",
+            "description": "Ошибки найденные при работе с выражениями",
+            "nullable": true,
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ExprError"
+              }
+            }
+          }
+        }
+      },
+      "ExprError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "span",
+          "message"
+        ],
+        "properties": {
+          "span": {
+            "description": "Диапазон где была найдена ошибка",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ExprSpan"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Сообщение об ошибке"
+          }
+        }
+      },
+      "ExprSpan": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "startRow": {
+            "type": "integer"
+          },
+          "startColumn": {
+            "type": "integer"
+          },
+          "endRow": {
+            "type": "integer"
+          },
+          "endColumn": {
+            "type": "integer"
           }
         }
       },
       "TransformRequest": {
         "type": "object",
+        "description": "Запрос на выполнение трансформаций",
         "additionalProperties": false,
         "required": [
           "transformations",
@@ -502,16 +617,20 @@
         "properties": {
           "dataConnectorId": {
             "type": "string",
+            "description": "Id коннектора данных выбранного как источник данных",
             "format": "guid"
           },
           "pageNumber": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Номер страницы для пагинации"
           },
           "pageSize": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Размер страницы для пагинации"
           },
           "orderByName": {
             "type": "string",
+            "description": "Имя по поля по которому нужно отсортировать конечные данные",
             "nullable": true
           },
           "orderByDescending": {
@@ -520,19 +639,37 @@
           },
           "transformations": {
             "type": "array",
+            "description": "Лист трансформаций выполняемых по очереди",
             "nullable": false,
             "items": {
-              "$ref": "#/components/schemas/ITransformation"
+              "$ref": "#/components/schemas/Transformation"
             }
           }
         }
       },
-      "ITransformation": {
+      "Transformation": {
         "type": "object",
         "discriminator": {
-          "propertyName": "$type"
+          "propertyName": "$type",
+          "mapping": {
+            "select": "#/components/schemas/SelectTransformation",
+            "where": "#/components/schemas/WhereTransformation",
+            "orderBy": "#/components/schemas/OrderByTransformation",
+            "limit": "#/components/schemas/LimitOffsetTransformation",
+            "groupBy": "#/components/schemas/GroupByTransformation"
+          }
         },
         "x-abstract": true,
+        "example": {
+          "$type": "select",
+          "items": [
+            {
+              "field": "field",
+              "expression": "expression"
+            }
+          ],
+          "restOptions": 1
+        },
         "additionalProperties": false,
         "required": [
           "$type"
@@ -541,25 +678,47 @@
           "$type": {
             "type": "string"
           }
-        }
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SelectTransformation"
+          },
+          {
+            "$ref": "#/components/schemas/WhereTransformation"
+          },
+          {
+            "$ref": "#/components/schemas/OrderByTransformation"
+          },
+          {
+            "$ref": "#/components/schemas/LimitOffsetTransformation"
+          },
+          {
+            "$ref": "#/components/schemas/GroupByTransformation"
+          }
+        ]
       },
       "SelectTransformation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SelectItem"
-            }
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transformation"
           },
-          "restOptions": {
-            "$ref": "#/components/schemas/SelectRestOptions"
+          {
+            "type": "object",
+            "description": "$type = \"select\"",
+            "additionalProperties": false,
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SelectItem"
+                }
+              },
+              "restOptions": {
+                "$ref": "#/components/schemas/SelectRestOptions"
+              }
+            }
           }
-        }
+        ]
       },
       "SelectItem": {
         "type": "object",
@@ -594,31 +753,41 @@
         ]
       },
       "WhereTransformation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "condition"
-        ],
-        "properties": {
-          "condition": {
-            "type": "string"
-          }
-        }
-      },
-      "OrderByTransformation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/OrderItem"
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transformation"
+          },
+          {
+            "type": "object",
+            "description": "$type = \"where\"",
+            "additionalProperties": false,
+            "properties": {
+              "condition": {
+                "type": "string"
+              }
             }
           }
-        }
+        ]
+      },
+      "OrderByTransformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transformation"
+          },
+          {
+            "type": "object",
+            "description": "$type = \"orderBy\"",
+            "additionalProperties": false,
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderItem"
+                }
+              }
+            }
+          }
+        ]
       },
       "OrderItem": {
         "type": "object",
@@ -637,40 +806,52 @@
         }
       },
       "LimitOffsetTransformation": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "limit": {
-            "type": "integer",
-            "nullable": true
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transformation"
           },
-          "offset": {
-            "type": "integer",
-            "nullable": true
+          {
+            "type": "object",
+            "description": "$type = \"limit\"",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "nullable": true
+              },
+              "offset": {
+                "type": "integer",
+                "nullable": true
+              }
+            }
           }
-        }
+        ]
       },
       "GroupByTransformation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "groups",
-          "items"
-        ],
-        "properties": {
-          "groups": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SelectItem"
-            }
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transformation"
           },
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SelectItem"
+          {
+            "type": "object",
+            "description": "$type = \"groupBy\"",
+            "additionalProperties": false,
+            "properties": {
+              "groups": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SelectItem"
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/SelectItem"
+                }
+              }
             }
           }
-        }
+        ]
       },
       "FunctionResponse": {
         "type": "object",
@@ -893,7 +1074,7 @@
           }
         }
       },
-      "DataSetResponse": {
+      "UpdateDataSetResponse": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -939,40 +1120,7 @@
             "nullable": true
           },
           "transformation": {
-            "$ref": "#/components/schemas/ITransformation"
-          }
-        }
-      },
-      "GetDatasetByIdRequest": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "UpdateDataSetResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "name",
-          "dataConnectorId",
-          "transformations"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "dataConnectorId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "transformations": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TransformationBlockResponse"
-            }
+            "$ref": "#/components/schemas/Transformation"
           }
         }
       },
@@ -1016,7 +1164,7 @@
             "type": "boolean"
           },
           "transformation": {
-            "$ref": "#/components/schemas/ITransformation"
+            "$ref": "#/components/schemas/Transformation"
           }
         }
       },
@@ -1047,6 +1195,39 @@
             }
           }
         }
+      },
+      "DataSetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "dataConnectorId",
+          "transformations"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "dataConnectorId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "transformations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformationBlockResponse"
+            }
+          }
+        }
+      },
+      "GetDatasetByIdRequest": {
+        "type": "object",
+        "additionalProperties": false
       },
       "DataSetListItem": {
         "type": "object",
@@ -1115,6 +1296,29 @@
             "type": "boolean"
           }
         }
+      },
+      "ExportDataSetRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ExportFileType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Csv",
+          "Excel",
+          "Json"
+        ],
+        "enum": [
+          0,
+          1,
+          2
+        ],
+        "x-enum-varnames": [
+          "Csv",
+          "Excel",
+          "Json"
+        ]
       },
       "DeleteDataSetRequest": {
         "type": "object",
@@ -1200,8 +1404,23 @@
           }
         }
       },
+      "DataConnectorListItem": {
+        "type": "object",
+        "description": "Коннектор данных",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "CreateDataConnectorResponse": {
         "type": "object",
+        "description": "Данные",
         "additionalProperties": false,
         "required": [
           "id",
@@ -1210,15 +1429,18 @@
         "properties": {
           "id": {
             "type": "string",
+            "description": "Id нового коннектора данных",
             "format": "guid"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Имя нового коннектора данных"
           }
         }
       },
       "CreateDataConnectorRequest": {
         "type": "object",
+        "description": "Запрос на создание загрузку файла и создания коннектора данных из CSV файла",
         "additionalProperties": false,
         "required": [
           "file"
@@ -1226,20 +1448,8 @@
         "properties": {
           "file": {
             "type": "string",
+            "description": "CSV файл из которого будут взяты данные для нового коннектора данных",
             "format": "binary"
-          }
-        }
-      },
-      "DataConnectorListItem": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "name": {
-            "type": "string"
           }
         }
       }

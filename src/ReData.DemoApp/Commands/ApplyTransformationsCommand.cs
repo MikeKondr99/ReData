@@ -17,7 +17,7 @@ public record ApplyTransformationsCommand : ICommand<Result<QueryBuilder, ApplyT
 {
     public required Guid DataConnectorId { get; init; }
 
-    public required IReadOnlyList<ITransformation> Transformations { get; init; }
+    public required IReadOnlyList<Transformation> Transformations { get; init; }
 }
 
 public record struct ApplyTransformationError
@@ -67,7 +67,7 @@ public class ApplyTransformationsCommandHandler(DwhService dwhService)
     }
 
     private static bool ApplyTransformation(
-        ITransformation transformation,
+        Transformation transformation,
         ref QueryBuilder query,
         out IEnumerable<IReadOnlyList<ExprError>>? error)
     {

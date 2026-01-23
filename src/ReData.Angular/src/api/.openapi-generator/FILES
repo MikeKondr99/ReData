@@ -3,6 +3,8 @@ README.md
 api.base.service.ts
 api.module.ts
 api/api.ts
+api/data-connectors.service.ts
+api/data-connectors.serviceInterface.ts
 api/datasets.service.ts
 api/datasets.serviceInterface.ts
 api/default.service.ts
@@ -20,13 +22,15 @@ model/data-set-list-item.ts
 model/data-set-response.ts
 model/data-type.ts
 model/error-response.ts
+model/export-file-type.ts
+model/expr-error.ts
+model/expr-span.ts
 model/function-argument-type.ts
 model/function-argument.ts
 model/function-kind.ts
 model/function-response.ts
 model/function-return-type.ts
 model/group-by-transformation.ts
-model/i-transformation.ts
 model/limit-offset-transformation.ts
 model/models.ts
 model/order-by-transformation.ts
@@ -42,6 +46,7 @@ model/transform-request.ts
 model/transform-response.ts
 model/transformation-block-response.ts
 model/transformation-block.ts
+model/transformation.ts
 model/update-data-set-request.ts
 model/update-data-set-response.ts
 model/where-transformation.ts

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
-using ReData.DemoApp.Endpoints.DataSets;
 using ReData.DemoApp.Endpoints.Groups;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Delete;

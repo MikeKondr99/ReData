@@ -10,10 +10,14 @@
 
 
 /**
- * Коннектор данных
+ * 
  */
-export interface DataConnectorListItem { 
-    id?: string;
-    name?: string;
+export enum ExportFileType {
+
+    Csv = 0,
+
+    Excel = 1,
+
+    Json = 2
 }
 

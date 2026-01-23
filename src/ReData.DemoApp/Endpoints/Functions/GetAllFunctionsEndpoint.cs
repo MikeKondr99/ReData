@@ -21,6 +21,7 @@ public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     public override void Configure()
     {
         Get("/functions");
+        Tags("Functions");
         AllowAnonymous();
 
         Options(x => x.CacheOutput(p =>

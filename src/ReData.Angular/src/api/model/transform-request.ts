@@ -7,15 +7,33 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ITransformation } from './i-transformation';
+import { Transformation } from './transformation';
 
 
+/**
+ * Запрос на выполнение трансформаций
+ */
 export interface TransformRequest { 
+    /**
+     * Id коннектора данных выбранного как источник данных
+     */
     dataConnectorId: string;
+    /**
+     * Номер страницы для пагинации
+     */
     pageNumber: number;
+    /**
+     * Размер страницы для пагинации
+     */
     pageSize: number;
+    /**
+     * Имя по поля по которому нужно отсортировать конечные данные
+     */
     orderByName?: string | null;
     orderByDescending?: boolean | null;
-    transformations: Array<ITransformation>;
+    /**
+     * Лист трансформаций выполняемых по очереди
+     */
+    transformations: Array<Transformation>;
 }
 

@@ -7,12 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { ITransformation } from './i-transformation';
+import { Transformation } from './transformation';
 
 
 export interface TransformationBlockResponse { 
     enabled: boolean;
     description: string | null;
-    transformation: ITransformation;
+    transformation: Transformation;
 }
 

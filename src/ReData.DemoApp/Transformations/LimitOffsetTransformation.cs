@@ -4,12 +4,15 @@ using ReData.Query.Core;
 
 namespace ReData.DemoApp.Transformations;
 
-public class LimitOffsetTransformation : ITransformation
+/// <summary>
+/// $type = "limit"
+/// </summary>
+public class LimitOffsetTransformation : Transformation
 {
     public uint? Limit { get; set; }
     public uint? Offset { get; set; }
 
-    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         if (Offset.HasValue)
         {

@@ -2,21 +2,25 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
-using ReData.DemoApp.Endpoints.DataSets;
-using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.Datasets;
+using ReData.DemoApp.Endpoints.Groups;
 
-namespace ReData.DemoApp.Endpoints.DataConnectors;
+namespace ReData.DemoApp.Endpoints.DataConnectors.GetAll;
 
-public class GetAllDataConnectorsEndpoint : EndpointWithoutRequest<
-    Ok<List<DataConnectorListItem>>
->
+/// <summary>
+/// Получить все коннекторы данных
+/// </summary>
+/// <remarks>
+/// Возвращает список всех коннекторов данных
+/// </remarks>
+public class GetAllDataConnectorsEndpoint : EndpointWithoutRequest<Ok<List<DataConnectorListItem>>>
 {
     public required ApplicationDatabaseContext Db { get; init; }
 
+    /// <inheritdoc />
     public override void Configure()
     {
-        Get("/data-connectors");
+        Get("/");
+        Group<DataConnectorsGroup>();
         AllowAnonymous();
         
         Options(x => x.CacheOutput(p => p

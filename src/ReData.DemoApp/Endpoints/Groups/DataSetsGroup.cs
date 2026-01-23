@@ -3,6 +3,7 @@ using FastEndpoints.Swagger;
 
 namespace ReData.DemoApp.Endpoints.Groups;
 
+/// <inheritdoc />
 public class DataSetsGroup : Group
 {
     public DataSetsGroup()
@@ -14,5 +15,4 @@ public class DataSetsGroup : Group
                 ep.Description(d => d.WithTags("Datasets"));
             });
     }
-    
 }

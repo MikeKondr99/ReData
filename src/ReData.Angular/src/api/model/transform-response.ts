@@ -10,9 +10,21 @@
 import { TransformFieldViewModel } from './transform-field-view-model';
 
 
+/**
+ * Ответ после применения трансформаций
+ */
 export interface TransformResponse { 
+    /**
+     * Полученные поля после применения трансформаций
+     */
     fields: Array<TransformFieldViewModel>;
+    /**
+     * Общее количество данных подходящих под составленный запрос
+     */
     total: number | null;
+    /**
+     * Одна страница данных соответствующих запросу
+     */
     data: Array<{ [key: string]: object | undefined; }>;
 }
 

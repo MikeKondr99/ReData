@@ -26,8 +26,8 @@ public sealed class TransformationConfiguration : IEntityTypeConfiguration<Trans
         builder.ToTable("Transformations");
 
         builder.Property(t => t.Data).HasConversion(
-            d => JsonSerializer.Serialize<ITransformation>(d, jsonSerializerOptions),
-            j => JsonSerializer.Deserialize<ITransformation>(j, jsonSerializerOptions)!
+            d => JsonSerializer.Serialize<Transformation>(d, jsonSerializerOptions),
+            j => JsonSerializer.Deserialize<Transformation>(j, jsonSerializerOptions)!
         );
 
         builder.Property(t => t.Data).HasColumnType("jsonb");

@@ -17,6 +17,13 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Factory = ReData.Query.Factory;
 
 
+/// <summary>
+/// Трансформации
+/// </summary>
+/// <remarks>
+/// Выполняет трансформации от заданного коннектора
+/// И выдает постранично полученные данные
+/// </remarks>
 public class TransformEndpoint : Endpoint<
     TransformRequest,
     Results<Ok<TransformResponse>, BadRequest<TransformErrorResponse>, InternalServerError<TransformErrorResponse>>>
@@ -26,6 +33,7 @@ public class TransformEndpoint : Endpoint<
     public override void Configure()
     {
         Post("/transform");
+        Tags("Transform");
         AllowAnonymous();
     }
 

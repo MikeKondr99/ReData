@@ -5,9 +5,9 @@ using ReData.Query.Core.Types;
 
 namespace ReData.DemoApp.Transformations;
 
-public class AggInfoTransformation : ITransformation
+public class AggInfoTransformation : Transformation
 {
-    public Result<QueryBuilder,IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder,IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         var fields = builder.Build().Fields();
         Dictionary<string, string> select = new();

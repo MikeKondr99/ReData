@@ -11,8 +11,6 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { CreateDataConnectorResponse } from '../model/models';
-import { DataConnectorListItem } from '../model/models';
 import { FunctionResponse } from '../model/models';
 import { ProblemDetails } from '../model/models';
 import { TransformErrorResponse } from '../model/models';
@@ -22,13 +20,6 @@ import { TransformResponse } from '../model/models';
 
 import { Configuration }                                     from '../configuration';
 
-
-export interface CreateDataConnectorRequestParams {
-    name: string;
-    separator: string;
-    withHeader: boolean;
-    file: Blob;
-}
 
 export interface TransformRequestParams {
     transformRequest: TransformRequest;
@@ -40,21 +31,6 @@ export interface DefaultServiceInterface {
     configuration: Configuration;
 
     /**
-     * Создать коннектор данных (файл)
-     * 
-     * @endpoint post /api/data-connectors
-* @param requestParameters
-     */
-    createDataConnector(requestParameters: CreateDataConnectorRequestParams, extraHttpRequestParams?: any): Observable<CreateDataConnectorResponse>;
-
-    /**
-     * 
-     * 
-     * @endpoint get /api/data-connectors
-*/
-    getAllDataConnectors(extraHttpRequestParams?: any): Observable<Array<DataConnectorListItem>>;
-
-    /**
      * Получить все функции
      * Возвращает полный список доступных для провайдера PostgreSql функций
      * @endpoint get /api/functions
@@ -62,8 +38,8 @@ export interface DefaultServiceInterface {
     getAllFunctions(extraHttpRequestParams?: any): Observable<Array<FunctionResponse>>;
 
     /**
-     * 
-     * 
+     * Трансформации
+     * Выполняет трансформации от заданного коннектора И выдает постранично полученные данные
      * @endpoint post /api/transform
 * @param requestParameters
      */

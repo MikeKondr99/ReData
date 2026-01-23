@@ -1,10 +1,11 @@
-﻿import {Component, input, output} from '@angular/core';
+﻿import {Component, computed, inject, input, output, SecurityContext} from '@angular/core';
 import {NzTableModule, NzTableQueryParams} from 'ng-zorro-antd/table';
 import {ApiResponse, DataType, Field} from '../types';
 import {TableCellComponent} from './table-cell.component';
 import {NzDropDownModule} from 'ng-zorro-antd/dropdown';
 import {NzInputModule} from 'ng-zorro-antd/input';
 import {FormsModule} from '@angular/forms';
+import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
   selector: 'app-data-table',
@@ -16,7 +17,6 @@ import {FormsModule} from '@angular/forms';
   template: `
     @let data = dataResponse().data;
     @let total = dataResponse().total;
-    @let fields = dataResponse().fields;
 
     <ng-template #rangeTemplate let-range="range" let-total>
       {{ range[0] }}-{{ range[1] }} of {{ total }} items
@@ -37,7 +37,7 @@ import {FormsModule} from '@angular/forms';
       [nzScroll]="{ y: height() }">
       <thead>
       <tr>
-        @for (field of fields; track field.alias) {
+        @for (field of fields(); track field.alias) {
           <th [nzWidth]="'174px'" [nzSortFn]="true" [nzShowSort]="field.type !== 'bool'" [nzFilterFn]="true" >
             <div class="flex flex-row flex-nowrap">
               <span class="text-blue-700">
@@ -54,8 +54,8 @@ import {FormsModule} from '@angular/forms';
       <tbody>
       <ng-template nz-virtual-scroll let-data let-index="index">
         <tr>
-          @for (field of fields; track field) {
-            <td class="" appTableCell [value]="data[field.alias]" [field]="field">
+          @for (field of fields(); track field) {
+            <td class="" appTableCell [value]="data[field.alias]" [field]="field" [style.background]="domSanitizer.sanitize(SecurityContext.STYLE, data[field.alias + '!bg'])">
             </td>
           }
         </tr>
@@ -69,6 +69,12 @@ export class DataTableComponent {
 
   dataResponse = input.required<ApiResponse>();
   height = input.required<string>();
+  domSanitizer = inject(DomSanitizer);
+
+
+  public fields = computed(() => {
+    return this.dataResponse().fields.filter(f => !f.alias.includes('!bg'));
+  })
 
   tableQueryParamsChange = output<NzTableQueryParams>();
 
@@ -99,5 +105,6 @@ export class DataTableComponent {
     return `[${field.alias}]`
   }
 
+  protected readonly SecurityContext = SecurityContext;
 }
 

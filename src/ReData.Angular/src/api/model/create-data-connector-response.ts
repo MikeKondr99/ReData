@@ -9,8 +9,17 @@
  */
 
 
+/**
+ * Данные
+ */
 export interface CreateDataConnectorResponse { 
+    /**
+     * Id нового коннектора данных
+     */
     id: string;
+    /**
+     * Имя нового коннектора данных
+     */
     name: string;
 }
 

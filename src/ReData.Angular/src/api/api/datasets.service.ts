@@ -27,6 +27,8 @@ import { DataSetResponse } from '../model/data-set-response';
 // @ts-ignore
 import { ErrorResponse } from '../model/error-response';
 // @ts-ignore
+import { ExportFileType } from '../model/export-file-type';
+// @ts-ignore
 import { UpdateDataSetRequest } from '../model/update-data-set-request';
 // @ts-ignore
 import { UpdateDataSetResponse } from '../model/update-data-set-response';
@@ -39,6 +41,7 @@ import {
     DatasetsServiceInterface,
     CreateDatasetRequestParams,
     DeleteDatasetRequestParams,
+    ExportDatasetRequestParams,
     GetDatasetByIdRequestParams,
     UpdateDatasetRequestParams
 } from './datasets.serviceInterface';
@@ -167,6 +170,71 @@ export class DatasetsService extends BaseService implements DatasetsServiceInter
         return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Экспортировать данные набора
+     * Возвращает данные набора файлом в указанном формате
+     * @endpoint get /api/datasets/{id}/export
+     * @param requestParameters
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public exportDataset(requestParameters: ExportDatasetRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any>;
+    public exportDataset(requestParameters: ExportDatasetRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
+    public exportDataset(requestParameters: ExportDatasetRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<any>>;
+    public exportDataset(requestParameters: ExportDatasetRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        const id = requestParameters?.id;
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling exportDataset.');
+        }
+        const fileType = requestParameters?.fileType;
+        if (fileType === null || fileType === undefined) {
+            throw new Error('Required parameter fileType was null or undefined when calling exportDataset.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+          <any>fileType, 'fileType');
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/datasets/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "guid"})}/export`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

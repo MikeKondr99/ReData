@@ -11,5 +11,5 @@ public sealed record TransformationEntity
     public required bool Enabled { get; init; }
     
     public required string? Description { get; init; }
-    public required ITransformation Data { get; init; }
+    public required Transformation Data { get; init; }
 }

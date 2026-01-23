@@ -17,10 +17,6 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { CreateDataConnectorResponse } from '../model/create-data-connector-response';
-// @ts-ignore
-import { DataConnectorListItem } from '../model/data-connector-list-item';
-// @ts-ignore
 import { FunctionResponse } from '../model/function-response';
 // @ts-ignore
 import { ProblemDetails } from '../model/problem-details';
@@ -37,7 +33,6 @@ import { Configuration }                                     from '../configurat
 import { BaseService } from '../api.base.service';
 import {
     DefaultServiceInterface,
-    CreateDataConnectorRequestParams,
     TransformRequestParams
 } from './default.serviceInterface';
 
@@ -50,156 +45,6 @@ export class DefaultService extends BaseService implements DefaultServiceInterfa
 
     constructor(protected httpClient: HttpClient, @Optional() @Inject(BASE_PATH) basePath: string|string[], @Optional() configuration?: Configuration) {
         super(basePath, configuration);
-    }
-
-    /**
-     * Создать коннектор данных (файл)
-     * @endpoint post /api/data-connectors
-     * @param requestParameters
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public createDataConnector(requestParameters: CreateDataConnectorRequestParams, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CreateDataConnectorResponse>;
-    public createDataConnector(requestParameters: CreateDataConnectorRequestParams, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CreateDataConnectorResponse>>;
-    public createDataConnector(requestParameters: CreateDataConnectorRequestParams, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CreateDataConnectorResponse>>;
-    public createDataConnector(requestParameters: CreateDataConnectorRequestParams, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-        const name = requestParameters?.name;
-        if (name === null || name === undefined) {
-            throw new Error('Required parameter name was null or undefined when calling createDataConnector.');
-        }
-        const separator = requestParameters?.separator;
-        if (separator === null || separator === undefined) {
-            throw new Error('Required parameter separator was null or undefined when calling createDataConnector.');
-        }
-        const withHeader = requestParameters?.withHeader;
-        if (withHeader === null || withHeader === undefined) {
-            throw new Error('Required parameter withHeader was null or undefined when calling createDataConnector.');
-        }
-        const file = requestParameters?.file;
-        if (file === null || file === undefined) {
-            throw new Error('Required parameter file was null or undefined when calling createDataConnector.');
-        }
-
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>name, 'name');
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>separator, 'separator');
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>withHeader, 'withHeader');
-
-        let localVarHeaders = this.defaultHeaders;
-
-        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'application/json'
-        ]);
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-        const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-        // to determine the Content-Type header
-        const consumes: string[] = [
-            'multipart/form-data'
-        ];
-
-        const canConsumeForm = this.canConsumeForm(consumes);
-
-        let localVarFormParams: { append(param: string, value: any): any; };
-        let localVarUseForm = false;
-        let localVarConvertFormParamsToString = false;
-        // use FormData to transmit files using content-type "multipart/form-data"
-        // see https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
-        localVarUseForm = canConsumeForm;
-        if (localVarUseForm) {
-            localVarFormParams = new FormData();
-        } else {
-            localVarFormParams = new HttpParams({encoder: this.encoder});
-        }
-
-        if (file !== undefined) {
-            localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;
-        }
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/data-connectors`;
-        const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<CreateDataConnectorResponse>('post', `${basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
-                params: localVarQueryParameters,
-                responseType: <any>responseType_,
-                ...(withCredentials ? { withCredentials } : {}),
-                headers: localVarHeaders,
-                observe: observe,
-                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * @endpoint get /api/data-connectors
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getAllDataConnectors(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DataConnectorListItem>>;
-    public getAllDataConnectors(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DataConnectorListItem>>>;
-    public getAllDataConnectors(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DataConnectorListItem>>>;
-    public getAllDataConnectors(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
-
-        let localVarHeaders = this.defaultHeaders;
-
-        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
-            'application/json'
-        ]);
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
-
-        const localVarTransferCache: boolean = options?.transferCache ?? true;
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/data-connectors`;
-        const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<DataConnectorListItem>>('get', `${basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                ...(withCredentials ? { withCredentials } : {}),
-                headers: localVarHeaders,
-                observe: observe,
-                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
-                reportProgress: reportProgress
-            }
-        );
     }
 
     /**
@@ -256,6 +101,8 @@ export class DefaultService extends BaseService implements DefaultServiceInterfa
     }
 
     /**
+     * Трансформации
+     * Выполняет трансформации от заданного коннектора И выдает постранично полученные данные
      * @endpoint post /api/transform
      * @param requestParameters
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

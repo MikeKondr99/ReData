@@ -10,9 +10,18 @@
 import { DataType } from './data-type';
 
 
+/**
+ * Информация по полю полученных данных
+ */
 export interface TransformFieldViewModel { 
+    /**
+     * Наименование поля
+     */
     alias: string;
     type: DataType;
+    /**
+     * Может ли поле быть `null`
+     */
     canBeNull: boolean;
 }
 

@@ -7,13 +7,16 @@ using ReData.Query.Lang.Expressions;
 
 namespace ReData.DemoApp.Transformations;
 
-public class SelectTransformation : ITransformation
+/// <summary>
+/// $type = "select"
+/// </summary>
+public class SelectTransformation : Transformation
 {
     public required SelectItem[] Items { get; init; }
 
     public SelectRestOptions RestOptions { get; init; } = SelectRestOptions.Delete;
 
-    public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
+    public override Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder)
     {
         var dict = new Dictionary<string, string>();
 

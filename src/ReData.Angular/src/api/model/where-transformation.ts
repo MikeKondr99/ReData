@@ -7,9 +7,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Transformation } from './transformation';
+import { SelectRestOptions } from './select-rest-options';
+import { SelectItem } from './select-item';
 
 
-export interface WhereTransformation { 
-    condition: string;
+export interface WhereTransformation extends Transformation { 
+    condition?: string;
 }
+
+
 

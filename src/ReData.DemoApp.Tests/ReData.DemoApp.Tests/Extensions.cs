@@ -5,7 +5,7 @@ namespace ReData.DemoApp.Tests;
 
 public static class Extensions
 {
-    public static TransformationBlock Block(this ITransformation transformation, bool enabled = true)
+    public static TransformationBlock Block(this Transformation transformation, bool enabled = true)
     {
         return new TransformationBlock()
         {

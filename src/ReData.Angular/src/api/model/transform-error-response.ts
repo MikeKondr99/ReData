@@ -7,11 +7,21 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { ExprError } from './expr-error';
 
 
 export interface TransformErrorResponse { 
+    /**
+     * Номер включенной трансформации в которой была обнаружена ошибка
+     */
     index: number;
+    /**
+     * Сообщение об найденной ошибке
+     */
     message: string;
-    errors: any | null;
+    /**
+     * Ошибки найденные при работе с выражениями
+     */
+    errors: Array<Array<ExprError>> | null;
 }
 

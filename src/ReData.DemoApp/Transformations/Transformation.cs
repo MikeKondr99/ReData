@@ -10,7 +10,7 @@ namespace ReData.DemoApp.Transformations;
 [JsonDerivedType(typeof(OrderByTransformation), typeDiscriminator: "orderBy")]
 [JsonDerivedType(typeof(LimitOffsetTransformation), typeDiscriminator: "limit")]
 [JsonDerivedType(typeof(GroupByTransformation), typeDiscriminator: "groupBy")]
-public interface ITransformation
+public abstract class Transformation
 {
-    Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder);
+    public abstract Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Apply(QueryBuilder builder);
 }

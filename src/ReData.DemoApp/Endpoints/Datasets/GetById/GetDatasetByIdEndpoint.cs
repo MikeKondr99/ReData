@@ -1,14 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FastEndpoints;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Endpoints.Datasets;
-using ReData.DemoApp.Endpoints.Datasets.GetById;
 using ReData.DemoApp.Endpoints.Groups;
 
-namespace ReData.DemoApp.Endpoints.Datasets;
-
-using FastEndpoints;
-using Microsoft.AspNetCore.Http.HttpResults;
+namespace ReData.DemoApp.Endpoints.Datasets.GetById;
 
 /// <summary>
 /// Получить набор данных по id
