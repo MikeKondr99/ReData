@@ -181,7 +181,7 @@ public class ConversionFunctions : FunctionsDescriptor
             .Doc("Парсит строку как дату (формат ISO)")
             .Templates(new()
             {
-                [ClickHouse] = $"parseDateTimeBestEffort({0})",
+                [ClickHouse] = $"CASE WHEN {0} IS NOT NULL THEN parseDateTimeBestEffort({0}) ELSE NULL END",
                 [SqlServer] = $"CONVERT(DATETIME, {0}, 120)", // Using ODBC canonical format
                 [MySql] = $"STR_TO_DATE({0}, '%Y-%m-%d %H:%i:%s')",
                 [Oracle] = $"TO_DATE({0}, 'YYYY-MM-DD HH24:MI:SS')",

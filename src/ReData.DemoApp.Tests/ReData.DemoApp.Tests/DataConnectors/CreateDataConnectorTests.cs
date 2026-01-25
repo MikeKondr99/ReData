@@ -863,7 +863,7 @@ public class CreateDataConnectorTests(App App) : DemoAppTestBase<App>(App)
                 """
                     id,count,negative
                     1,2,-3
-                    0,10,-999
+                    2,10,-999
                     ,,
                     """.ToStream()
         };

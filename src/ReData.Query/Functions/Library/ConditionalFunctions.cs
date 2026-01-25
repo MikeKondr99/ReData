@@ -26,6 +26,29 @@ public class ConditionalFunctions : FunctionsDescriptor
                 {
                     [All] = $"CASE WHEN {0} THEN {1} ELSE {2} END",
                 });
+            
+            Function("Case")
+                .Doc("")
+                .Arg("condition", Bool)
+                .ReqArg("then", type)
+                .Returns(type)
+                .CustomNullPropagation(_ => true)
+                .Templates(new()
+                {
+                    [All] = $"CASE WHEN {0} THEN {1} ELSE NULL END",
+                });
+            
+            Method("Case")
+                .Doc("")
+                .Arg("input", type)
+                .Arg("condition", Bool)
+                .ReqArg("alt", type)
+                .Returns(type)
+                .CustomNullPropagation(_ => true)
+                .Templates(new()
+                {
+                    [All] = $"COALESCE({0}, CASE WHEN {1} THEN {2} ELSE NULL END)",
+                });
 
             Method("Alt")
                 .Doc("Возвращает первое значение, если оно не NULL, иначе возвращает альтернативное значение")
@@ -62,5 +85,9 @@ public class ConditionalFunctions : FunctionsDescriptor
                     [All] = $"({value} IS NOT NULL)",
                 });
         }
+        
+        
+        
+        
     }
 }

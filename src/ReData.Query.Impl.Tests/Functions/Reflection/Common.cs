@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using System.Text.RegularExpressions;
+using FluentAssertions;
 using Mysqlx.Resultset;
 using ReData.Common;
 using ReData.Query.Core;
@@ -11,10 +12,30 @@ namespace ReData.Query.Impl.Tests.Functions.Reflection;
 
 public abstract partial class Сommon(IDatabaseFixture db) : ExprTests(db)
 {
+    
+    [Fact(DisplayName = "DbName")]
+    public async Task FuncDbNameTests()
+    {
+        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
+        qb = qb.Select(new()
+            {
+                ["test"] = "DbName()",
+            })
+            .Expect(e => e.JoinBy(", "));
+
+        var result = await GetScalarAsync(qb);
+
+        if (result is not TextValue(var text))
+        {
+            throw new Exception("Результат должен быть строкой");
+        }
+
+        text.Should().Be(db.GetDatabaseType().ToString());
+    }
+    
      [Fact]
      public async Task FuncDbVersionTests()
      {
-        var runner = await db.GetRunnerAsync();
         QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
         qb = qb.Select(new()
         {

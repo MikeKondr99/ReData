@@ -14,12 +14,13 @@ public abstract class ExprTests(IDatabaseFixture db)
     
     public async Task Test(string expr, object? expected)
     {
+        Console.WriteLine($"{db.GetDatabaseType()}: {expr}");
         PrepareBoolTests(ref expected, ref expr);
         QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
         qb = qb.Select(new()
         {
             ["test"] = expr,
-        }).Expect(e => e.JoinBy("\n"));
+        }).Expect(e => e.Select(l => l.JoinBy("\n")).JoinBy("\n\n"));
         var result = await GetScalarAsync(qb);
         Compare(result, ExpectedValue(expected));
     }

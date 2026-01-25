@@ -13,12 +13,11 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
-    private static DataSetField TextField(string name) => new()
-    {
-        Alias = name,
-        DataType = DataType.Text,
-        CanBeNull = true,
-    };
+    private static DataSetField TextField(string name) => Field(name, DataType.Text);
+    private static DataSetField IntField(string name) => Field(name, DataType.Integer);
+    
+    private static DataSetField BoolField(string name) => Field(name, DataType.Bool);
+    private static DataSetField NumField(string name) => Field(name, DataType.Number);
 
     private static DataSetField Field(string name, DataType type, bool canBeNull = true) => new()
     {
@@ -297,7 +296,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(1);
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("single"),
+            BoolField("single"),
         ]);
     }
 
@@ -323,7 +322,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(1000);
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -362,7 +361,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(0);
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -401,7 +400,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(100);
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -448,7 +447,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(101); // 400, 401, ..., 500
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -495,7 +494,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(100); // Only first filter applied
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -533,7 +532,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(10); // Limited to 10 rows
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("id"),
+            IntField("id"),
         ]);
     }
 
@@ -568,7 +567,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(1000);
         dataset.FieldList.Should().BeEquivalentTo([
-            TextField("ID"),
+            IntField("ID"),
         ]);
     }
 
@@ -584,7 +583,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
                 {
                     Items =
                     [
-                        "id.Alt('')".As("not_null_id"),
+                        "id.Alt(0)".As("not_null_id"),
                     ]
                 }.Block()
             ],
@@ -602,7 +601,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
         dataset.Should().NotBeNull();
         dataset!.RowsCount.Should().Be(2);
         dataset.FieldList.Should().BeEquivalentTo([
-            Field("not_null_id", DataType.Text, false),
+            Field("not_null_id", DataType.Integer, false),
         ]);
     }
 

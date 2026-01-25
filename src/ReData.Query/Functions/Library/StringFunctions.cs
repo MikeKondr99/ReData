@@ -352,7 +352,24 @@ public class StringFunctions : FunctionsDescriptor
             {
                 [PostgreSql] = $"TRANSLATE({input}, TRANSLATE({input}, {charset}, ''), '')",
             });
-        
+
+        int code = 0;
+        Method("Chr")
+            .Doc("Преобразует числовой код символа в символ Unicode")
+            .Arg("code", Integer)
+            .Returns(Text)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                // SQL Server (natively supports Unicode)
+                [SqlServer] = $"NCHAR({code})",
+                // MySQL (supports Unicode via CHAR with USING utf32)
+                [MySql] = $"NULLIF(CHAR({code} USING utf32),'')",
+                // PostgreSQL (native Unicode support)
+                [PostgreSql] = $"CHR({code})",
+                // ClickHouse - правильная реализация через decodeXMLComponent
+                [ClickHouse] = $"CASE WHEN {code} BETWEEN 1 AND 1114111 THEN decodeXMLComponent(concat('&#', toString({code}), ';')) ELSE NULL END",
+            });
     }
 
 }

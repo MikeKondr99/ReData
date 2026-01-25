@@ -8,14 +8,10 @@
  * Do not edit the class manually.
  */
 import { Transformation } from './transformation';
-import { SelectRestOptions } from './select-rest-options';
-import { SelectItem } from './select-item';
 import { OrderItem } from './order-item';
 
 
 export interface OrderByTransformation extends Transformation { 
     items?: Array<OrderItem>;
 }
-
-
 

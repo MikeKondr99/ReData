@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System.Buffers;
+using System.Globalization;
+using System.Text;
+using Microsoft.Extensions.Primitives;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
@@ -12,7 +15,7 @@ public sealed class PostgresLiteralResolver : BasicSqlLiteralResolver
     {
         (TemplateInterpolatedStringHandler template, ExprType type) temp = literal switch
         {
-            StringLiteral(var v) => ($"'{v}'", ExprType.Text()),
+            StringLiteral(var v) => (EscapeString(v), ExprType.Text()),
             NumberLiteral(var v) => (v.ToString("0.0###############", CultureInfo.InvariantCulture), ExprType.Number()),
             IntegerLiteral(var v) => (v.ToString(CultureInfo.InvariantCulture), ExprType.Int()),
             BooleanLiteral(var v) => (v ? "TRUE" : "FALSE", ExprType.Boolean()),
@@ -24,5 +27,32 @@ public sealed class PostgresLiteralResolver : BasicSqlLiteralResolver
             Template = Template.Create(temp.template),
             Type = temp.type.Const(),
         };
+    }
+
+    private static SearchValues<char> escapeValues = SearchValues.Create("'\n\r");
+
+    private static string EscapeString(string text)
+    {
+        if (!text.AsSpan().ContainsAny(escapeValues))
+        {
+            return $"'{text}'";
+        }
+
+        StringBuilder sb = new StringBuilder(text.Length + 5);
+        sb.Append("E'");
+        foreach (var symbol in text)
+        {
+            sb = symbol switch
+            {
+                '\\' => sb.Append(@"\\"),
+                '\'' => sb.Append(@"\'"),
+                '\n' => sb.Append(@"\n"),
+                '\r' => sb.Append(@"\r"),
+                _ => sb.Append(symbol),
+            };
+        }
+
+        sb.Append('\'');
+        return sb.ToString();
     }
 }

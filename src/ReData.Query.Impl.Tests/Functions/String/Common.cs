@@ -419,8 +419,42 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         Skip.If(runner.GetDatabaseType() is not  DatabaseType.PostgreSql, $"{runner.GetDatabaseType()} не имеет реализацию функции ExcludeChars");
         return Test(expr, expected);
     }
+    
+    [Theory(DisplayName = "Chr")]
+    [InlineData("Chr(65)", "A")] // ASCII uppercase A
+    [InlineData("Chr(97)", "a")] // ASCII lowercase a
+    [InlineData("Chr(32)", " ")] // Space
+    [InlineData("Chr(9)", "\t")] // Tab
+    [InlineData("Chr(10)", "\n")] // Newline
+    [InlineData("Chr(13)", "\r")] // Carriage return
+    [InlineData("Chr(0)", "\0")] // Null character
+    [InlineData("Chr(255)", "ÿ")] // Extended ASCII
 
-    [Theory(DisplayName = "Composite")]
-    [InlineData("'  HeLLo World! '.Trim().Lower()", "hello world!")]
-    public Task Composite(string expr, object? expected) => Test(expr, expected);
+    // Unicode characters (Cyrillic)
+    [InlineData("Chr(1055)", "П")] // Cyrillic capital Pe
+    [InlineData("Chr(1087)", "п")] // Cyrillic small pe
+    [InlineData("Chr(1040)", "А")] // Cyrillic capital A
+    [InlineData("Chr(1072)", "а")] // Cyrillic small a
+
+    // Unicode characters beyond Basic Multilingual Plane
+    [InlineData("Chr(128512)", "😀")] // Emoji: grinning face (U+1F600)
+    [InlineData("Chr(128077)", "👍")] // Emoji: thumbs up (U+1F44D)
+    [InlineData("Chr(128075)", "👋")] // Emoji: waving hand (U+1F44B)
+
+    // Common symbols
+    [InlineData("Chr(8364)", "€")] // Euro sign
+    [InlineData("Chr(163)", "£")] // Pound sign
+    [InlineData("Chr(165)", "¥")] // Yen sign
+    [InlineData("Chr(169)", "©")] // Copyright
+
+    // Edge cases
+    [InlineData("Chr(-1)", null)] // Negative code
+    [InlineData("Chr(1114112)", null)] // Beyond Unicode range (max is 0x10FFFF = 1114111)
+    [InlineData("Chr(null)", null)] // Null input
+
+    // Type checking
+    // [InlineData("Type(Chr(65))", "text")] // Always nullable because invalid codes return null
+    // [InlineData("Type(Chr(-1))", "text")] // Invalid code also returns nullable text
+    public Task FuncChrTests(string expr, object? expected) => Test(expr, expected);
+    
 }

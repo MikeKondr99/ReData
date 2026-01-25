@@ -119,12 +119,13 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
                  var chr = part.GetText()[1];
                  var value = chr switch
                  {
-                     'r' => "\r",
-                     'n' => "\n",
-                     't' => "\t",
                      '\'' => "'",
                      '\\' => "\\",
-                     _ => chr.ToString()
+                     'n' => "\n",
+                     'r' => "\r",
+                     't' => "\t",
+                     '$' => "$",
+                     _ => $"\\{chr.ToString()}",
                  };
                  Append(new StringLiteral(value, Span(part)));
             }

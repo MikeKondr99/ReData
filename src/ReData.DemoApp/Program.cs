@@ -93,7 +93,7 @@ services.SwaggerDocument(options =>
         };
     };
     // Для работы требуется что бы базой был класс или абстрактный класс
-    options.UseOneOfForPolymorphism = true;
+    // options.UseOneOfForPolymorphism = true;
     options.ExcludeNonFastEndpoints = true;
 });
 
@@ -199,9 +199,9 @@ app.UseSwaggerGen(options =>
 
 app.UseTickerQ();
 
-if (builder.Environment.IsDevelopment())
-{
+// if (builder.Environment.IsDevelopment())
+// {
     app.MapScalarApiReference("api/docs");
-}
+// }
 
 app.Run();

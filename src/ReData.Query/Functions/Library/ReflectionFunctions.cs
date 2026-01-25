@@ -30,7 +30,7 @@ public class ReflectionFunctions : FunctionsDescriptor
                 {
                     [All] = $"'{TypeMapping(type)}'",
                 });
-
+            
             // null! не существует и нет смысла для такой функции
             if (type is not Null)
             {
@@ -45,8 +45,20 @@ public class ReflectionFunctions : FunctionsDescriptor
             }
         }
 
+        Function("DbName")
+            .Doc("Возвращает название текущей используемой внутри базы данных")
+            .Returns(Text, ConstPropagation.AlwaysTrue)
+            .Templates(new()
+            {
+                [SqlServer] = $"N'SqlServer'",
+                [MySql] = $"'MySql'",
+                [PostgreSql] = $"'PostgreSql'",
+                [Oracle] = $"'Oracle'",
+                [ClickHouse] = $"'ClickHouse'",
+            });
 
         Function("DbVersion")
+            .Doc("Возвращает версию текущей используемой внутри базы данных")
             .Returns(Text)
             .Templates(new()
             {

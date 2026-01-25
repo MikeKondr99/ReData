@@ -660,16 +660,6 @@
           }
         },
         "x-abstract": true,
-        "example": {
-          "$type": "select",
-          "items": [
-            {
-              "field": "field",
-              "expression": "expression"
-            }
-          ],
-          "restOptions": 1
-        },
         "additionalProperties": false,
         "required": [
           "$type"
@@ -678,24 +668,7 @@
           "$type": {
             "type": "string"
           }
-        },
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/SelectTransformation"
-          },
-          {
-            "$ref": "#/components/schemas/WhereTransformation"
-          },
-          {
-            "$ref": "#/components/schemas/OrderByTransformation"
-          },
-          {
-            "$ref": "#/components/schemas/LimitOffsetTransformation"
-          },
-          {
-            "$ref": "#/components/schemas/GroupByTransformation"
-          }
-        ]
+        }
       },
       "SelectTransformation": {
         "allOf": [

@@ -8,7 +8,6 @@
  * Do not edit the class manually.
  */
 import { Transformation } from './transformation';
-import { SelectRestOptions } from './select-rest-options';
 import { SelectItem } from './select-item';
 
 
@@ -16,6 +15,4 @@ export interface GroupByTransformation extends Transformation {
     groups?: Array<SelectItem>;
     items?: Array<SelectItem>;
 }
-
-
 

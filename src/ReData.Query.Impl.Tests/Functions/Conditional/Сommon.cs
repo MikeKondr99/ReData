@@ -32,9 +32,10 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("If(true, Date(2023,1,1), Date(2023,12,31))", "@2023-01-01 00:00:00")]
     [InlineData("If(false, Date(2023,1,1), Date(2023,12,31))", "@2023-12-31 00:00:00")]
     [InlineData("If(null, Date(2023,1,1), Date(2023,12,31))", "@2023-12-31 00:00:00")]
+    // Тест на short circuit
+    [InlineData("If(true, 0, 12/0)", 0)]
     public Task IfFunction(string expr, object? expected) => Test(expr, expected);
-
-
+    
     [Theory(DisplayName = "Функция Alt")]
     [InlineData("2.Alt(3).Type()", "int!")]
     [InlineData("Int(null).Alt(3).Type()", "int!")]
@@ -105,4 +106,50 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         Skip.If(expr is "NotNull('')" && runner.GetDatabaseType() is DatabaseType.Oracle);
         return Test(expr, expected);
     }
+    
+    [Theory(DisplayName = "Case(condition, value)")]
+    [InlineData("Case(true, 'text')", "text")]
+    [InlineData("Case(false, 'text')", null)]
+    [InlineData("Case(null, 'text')", null)]
+    [InlineData("Case(true, 42)", 42)]
+    [InlineData("Case(false, 42)", null)]
+    [InlineData("Case(true, 3.14)", 3.14)]
+    [InlineData("Case(false, 3.14)", null)]
+    [InlineData("Case(true, Date(2023,1,1))", "@2023-01-01 00:00:00")]
+    [InlineData("Case(false, Date(2023,1,1))", null)]
+    [InlineData("Type(Case(true, 'text'))", "text")]
+    [InlineData("Type(Case(false, 'text'))", "text")]
+    [InlineData("Type(Case(true, 42))", "int")]
+    [InlineData("Type(Case(false, 42))", "int")]
+    public Task FuncCaseConditionTests(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Case(input, condition, value)")]
+    [InlineData("Case('input', true, 'other')", "input")]
+    [InlineData("Case('input', false, 'other')", "input")]
+    [InlineData("Case(null, true, 'other')", "other")]
+    [InlineData("Case(null, false, 'other')", null)]
+    [InlineData("Case(42, true, 100)", 42)]
+    [InlineData("Case(42, false, 100)", 42)]
+    [InlineData("Case(null, true, 100)", 100)]
+    [InlineData("Case(null, false, 100)", null)]
+    [InlineData("Case(3.14, true, 2.71)", 3.14)]
+    [InlineData("Case(null, true, 2.71)", 2.71)]
+    [InlineData("Case(Date(2023,1,1), true, Date(2023,12,31))", "@2023-01-01 00:00:00")]
+    [InlineData("Type(Case('input', true, 'other'))", "text")]
+    [InlineData("Type(Case(null, true, 'other'))", "text")]
+    [InlineData("Type(Case(null, false, 'other'))", "text")]
+    [InlineData("Type(Case(42, true, 100))", "int")]
+    public Task FuncCaseInputTests(string expr, object? expected) => Test(expr, expected);
+
+    [Theory(DisplayName = "Chained Case with Alt")]
+    [InlineData("Case(true, 'young').Case(true, 'adult').Alt('old')", "young")]
+    [InlineData("Case(false, 'young').Case(true, 'adult').Alt('old')", "adult")]
+    [InlineData("Case(false, 'young').Case(false, 'adult').Alt('old')", "old")]
+    [InlineData("Case(null, 'young').Case(true, 'adult').Alt('old')", "adult")]
+    [InlineData("Type(Case(false, 1).Case(false, 2).Alt(3))", "int!")]
+    [InlineData("Type(Case(false, 1).Case(false, 2).Alt(null))", "int")]
+    [InlineData("Type(Case(true, 'text').Case(false, 'other').Alt('default'))", "text!")]
+    public Task FuncChainedCaseTests(string expr, object? expected) => Test(expr, expected);
+    
+    
 }
