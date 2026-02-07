@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using ReData.Query.Core.Types;
+﻿using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
@@ -10,7 +9,6 @@ public class ConditionalFunctions : FunctionsDescriptor
 {
     protected override void Functions()
     {
-        int value = 0;
         foreach (var type in new[]
                  {
                      Number, Text, Integer, DateTime
@@ -22,9 +20,9 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Arg("then", type)
                 .Arg("else", type)
                 .Returns(type)
-                .Templates(new()
+                .TemplatesX((condition, then, @else) => new()
                 {
-                    [All] = $"CASE WHEN {0} THEN {1} ELSE {2} END",
+                    [All] = $"CASE WHEN {condition} THEN {then} ELSE {@else} END",
                 });
             
             Function("Case")
@@ -33,9 +31,9 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .ReqArg("then", type)
                 .Returns(type)
                 .CustomNullPropagation(_ => true)
-                .Templates(new()
+                .TemplatesX((condition, then) => new()
                 {
-                    [All] = $"CASE WHEN {0} THEN {1} ELSE NULL END",
+                    [All] = $"CASE WHEN {condition} THEN {then} ELSE NULL END",
                 });
             
             Method("Case")
@@ -45,9 +43,9 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .ReqArg("alt", type)
                 .Returns(type)
                 .CustomNullPropagation(_ => true)
-                .Templates(new()
+                .TemplatesX((input, condition, alt) => new()
                 {
-                    [All] = $"COALESCE({0}, CASE WHEN {1} THEN {2} ELSE NULL END)",
+                    [All] = $"COALESCE({input}, CASE WHEN {condition} THEN {alt} ELSE NULL END)",
                 });
 
             Method("Alt")
@@ -56,9 +54,9 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Arg("alt", type)
                 .Returns(type)
                 .CustomNullPropagation(nulls => nulls.All(x => x))
-                .Templates(new()
+                .TemplatesX((input, alt) => new()
                 {
-                    [All] = $"COALESCE({0}, {1})",
+                    [All] = $"COALESCE({input}, {alt})",
                 });
         }
 
@@ -71,7 +69,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Doc("Проверяет, является ли значение NULL")
                 .Arg("value", type)
                 .ReturnsNotNull(Bool)
-                .Templates(new()
+                .TemplatesX((value) => new()
                 {
                     [All] = $"({value} IS NULL)",
                 });
@@ -80,7 +78,7 @@ public class ConditionalFunctions : FunctionsDescriptor
                 .Doc("Проверяет, что значение не NULL")
                 .Arg("value", type)
                 .ReturnsNotNull(Bool)
-                .Templates(new()
+                .TemplatesX((value) => new()
                 {
                     [All] = $"({value} IS NOT NULL)",
                 });

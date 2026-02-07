@@ -420,7 +420,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
         return Test(expr, expected);
     }
     
-    [Theory(DisplayName = "Chr")]
+    [SkippableTheory(DisplayName = "Chr")]
     [InlineData("Chr(65)", "A")] // ASCII uppercase A
     [InlineData("Chr(97)", "a")] // ASCII lowercase a
     [InlineData("Chr(32)", " ")] // Space
@@ -455,6 +455,11 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     // Type checking
     // [InlineData("Type(Chr(65))", "text")] // Always nullable because invalid codes return null
     // [InlineData("Type(Chr(-1))", "text")] // Invalid code also returns nullable text
-    public Task FuncChrTests(string expr, object? expected) => Test(expr, expected);
+    public Task FuncChrTests(string expr, object? expected)
+    {
+        Skip.If(runner.GetDatabaseType() is DatabaseType.PostgreSql && expr is "Chr(0)",
+            "PostgreSQL не поддерживает \\0 в text");
+        return Test(expr, expected);
+    }
     
 }

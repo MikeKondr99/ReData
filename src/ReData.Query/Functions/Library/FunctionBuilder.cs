@@ -227,6 +227,21 @@ public record FunctionBuilder
         });
         return this;
     }
+    
+    public FunctionBuilder TemplatesX(Func<int, Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler>> templates)
+    {
+        return Templates(templates(0));
+    }
+    
+    public FunctionBuilder TemplatesX(Func<int, int, Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler>> templates)
+    {
+        return Templates(templates(0, 1));
+    }
+    
+    public FunctionBuilder TemplatesX(Func<int, int, int, Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler>> templates)
+    {
+        return Templates(templates(0, 1, 2));
+    }
 
     public FunctionBuilder Template(TemplateInterpolatedStringHandler template)
     {

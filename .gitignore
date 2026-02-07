@@ -9,3 +9,7 @@ riderModule.iml
 .idea/**
 
 **/wwwroot
+
+
+**/TestResults.trx
+ReData.sln.DotSettings.user
