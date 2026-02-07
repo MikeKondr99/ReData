@@ -47,11 +47,11 @@ public class StringFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                [SqlServer] = $"RIGHT(SPACE({count}) + {input}, {count})",
+                [SqlServer] = $"CASE WHEN {count} < 0 THEN '' WHEN {count} <= LEN({input}) THEN LEFT({input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END) ELSE RIGHT(SPACE(CASE WHEN {count} < 0 THEN 0 ELSE {count} END) + {input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END) END",
                 [MySql] = $"CASE WHEN {count} >=  0 THEN LPAD({input}, {count}, ' ') ELSE '' END",
                 [PostgreSql] = $"LPAD({input}, {count}, ' ')",
                 [Oracle] = $"LPAD({input}, {count})",
-                [ClickHouse] = $"if({count} >= 0, substringUTF8(concat(repeat(' ', {count}), {input}), -{count}, {count}), '')",
+                [ClickHouse] = $"if({count} >= 0, if(lengthUTF8({input}) >= {count}, substringUTF8({input}, 1, {count}), substringUTF8(concat(repeat(' ', {count}), {input}), -{count}, {count})), '')",
             });
         
         Method("PadRight")
@@ -61,7 +61,7 @@ public class StringFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                [SqlServer] = $"LEFT({input} + SPACE({count}), {count})",
+                [SqlServer] = $"CASE WHEN {count} < 0 THEN '' ELSE LEFT({input} + SPACE(CASE WHEN {count} < 0 THEN 0 ELSE {count} END), CASE WHEN {count} < 0 THEN 0 ELSE {count} END) END",
                 [MySql] = $"CASE WHEN {count} >= 0 THEN RPAD({input}, {count}, ' ') ELSE '' END",
                 [PostgreSql] = $"RPAD({input}, {count}, ' ')",
                 [Oracle] = $"RPAD({input}, {count})",
@@ -76,11 +76,11 @@ public class StringFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                [SqlServer] = $"RIGHT(REPLICATE({symbol}, {count}) + {input}, {count})",
-                [MySql] = $"CASE WHEN {count} >= 0 THEN LPAD({input}, {count}, {symbol}) ELSE '' END",
+                [SqlServer] = $"CASE WHEN {count} < 0 THEN '' WHEN {count} <= LEN({input}) THEN LEFT({input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END) ELSE RIGHT(REPLICATE({symbol}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END) + {input}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END) END",
+                [MySql] = $"CASE WHEN {count} < 0 THEN '' WHEN {symbol} = '' THEN {input} ELSE LPAD({input}, {count}, {symbol}) END",
                 [PostgreSql] = $"LPAD({input}, {count}, {symbol})",
                 [Oracle] = $"LPAD({input}, {count}, {symbol})",
-                [ClickHouse] = $"if({count} >= 0, substringUTF8(concat(repeat({symbol}, {count}), {input}), -{count}, {count}), '')",
+                [ClickHouse] = $"if({count} >= 0, if(lengthUTF8({input}) >= {count}, substringUTF8({input}, 1, {count}), substringUTF8(concat(repeat({symbol}, {count}), {input}), -{count}, {count})), '')",
             });
         
         Method("PadRight")
@@ -91,8 +91,8 @@ public class StringFunctions : FunctionsDescriptor
             .Returns(Text)
             .Templates(new()
             {
-                [SqlServer] = $"LEFT({input} + REPLICATE({symbol}, {count}), {count})",
-                [MySql] = $"CASE WHEN {count} >= 0 THEN RPAD({input}, {count}, {symbol}) ELSE '' END",
+                [SqlServer] = $"CASE WHEN {count} < 0 THEN '' ELSE LEFT({input} + REPLICATE({symbol}, CASE WHEN {count} < 0 THEN 0 ELSE {count} END), CASE WHEN {count} < 0 THEN 0 ELSE {count} END) END",
+                [MySql] = $"CASE WHEN {count} < 0 THEN '' WHEN {symbol} = '' THEN {input} ELSE RPAD({input}, {count}, {symbol}) END",
                 [PostgreSql] = $"RPAD({input}, {count}, {symbol})",
                 [Oracle] = $"RPAD({input}, {count}, {symbol})",
                 [ClickHouse] = $"if({count} >= 0, substringUTF8(concat({input}, repeat({symbol}, {count})), 1, {count}), '')",
@@ -316,7 +316,7 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 // [SqlServer] = $"(select value from STRING_SPLIT(REPLACE({input},{delimiter}, 'ඞ'), 'ඞ') order by (select 1) offset {position} - 1 rows fetch next 1 row only)",
-                [PostgreSql] = $"SPLIT_PART({input}, {delimiter}, {position})",
+                [PostgreSql] = $"CASE WHEN {position} < 1 THEN NULL WHEN {delimiter} = '' THEN {input} WHEN {position} > array_length(string_to_array({input}, {delimiter}), 1) THEN NULL ELSE SPLIT_PART({input}, {delimiter}, {position}) END",
                 // [MySql] = $"""
                            // REPLACE(
                                     // SUBSTRING(
@@ -362,13 +362,13 @@ public class StringFunctions : FunctionsDescriptor
             .Templates(new()
             {
                 // SQL Server (natively supports Unicode)
-                [SqlServer] = $"NCHAR({code})",
+                [SqlServer] = $"CASE WHEN {code} IS NULL THEN NULL WHEN {code} BETWEEN 0 AND 65535 THEN CONVERT(NVARCHAR(MAX), NCHAR(CAST({code} AS INT))) WHEN {code} BETWEEN 65536 AND 1114111 THEN CONVERT(NVARCHAR(MAX), NCHAR(((CAST({code} AS INT) - 65536) / 1024) + 55296) + NCHAR(((CAST({code} AS INT) - 65536) % 1024) + 56320)) ELSE NULL END",
                 // MySQL (supports Unicode via CHAR with USING utf32)
-                [MySql] = $"NULLIF(CHAR({code} USING utf32),'')",
+                [MySql] = $"CASE WHEN {code} IS NULL OR {code} < 0 OR {code} > 1114111 THEN NULL ELSE CHAR({code} USING utf32) END",
                 // PostgreSQL (native Unicode support)
-                [PostgreSql] = $"CHR({code})",
+                [PostgreSql] = $"CASE WHEN {code} BETWEEN 1 AND 1114111 THEN CHR({code}) ELSE NULL END",
                 // ClickHouse - правильная реализация через decodeXMLComponent
-                [ClickHouse] = $"CASE WHEN {code} BETWEEN 1 AND 1114111 THEN decodeXMLComponent(concat('&#', toString({code}), ';')) ELSE NULL END",
+                [ClickHouse] = $"CASE WHEN {code} = 0 THEN char(0) WHEN {code} BETWEEN 1 AND 1114111 THEN decodeXMLComponent(concat('&#', toString({code}), ';')) ELSE NULL END",
             });
     }
 

@@ -74,7 +74,7 @@ public class MathFunctions : FunctionsDescriptor
                 [PostgreSql | SqlServer] = $"({0} / {1})", 
                 [MySql] = $"({0} DIV {1})", 
                 [Oracle] = $"FLOOR({0} / {1})", 
-                [ClickHouse] = $"intDiv({0}, {1})" 
+                [ClickHouse] = $"intDiv({0}, nullIf({1}, 0))" 
             });
 
         Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> powTemplates = new()

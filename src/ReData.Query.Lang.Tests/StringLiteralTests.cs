@@ -39,8 +39,8 @@ public class StringLiteralTests
     [InlineData(@"'(\t)'","(\t)")]
     [InlineData(@"'(\r)'","(\r)")]
     [InlineData(@"'(\n)'","(\n)")]
-    [InlineData(@"'(\c)'","(c)")] // Не найденный Escape символ игнорируется
-    [InlineData(@"'(\{age})'","({age})")]
+    [InlineData(@"'(\c)'", @"(\c)")] // Неизвестный escape сохраняется
+    [InlineData(@"'(\{age})'", @"(\{age})")]
     public void StringLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
