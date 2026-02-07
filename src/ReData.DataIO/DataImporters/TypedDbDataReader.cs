@@ -48,7 +48,7 @@ public sealed class TypedDbDataReader : DbDataReader
             }
             var alias = columnNames[i];
             var counter = 1;
-            while (columnNames[..i].Contains(columnNames[i]))
+            while (columnNames.AsSpan(..i).Contains(columnNames[i]))
             {
                 columnNames[i] = $"{alias}_{++counter}";
             }
