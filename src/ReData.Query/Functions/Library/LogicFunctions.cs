@@ -33,5 +33,16 @@ public class LogicFunctions : FunctionsDescriptor
             {
                 [All] = $"(NOT {0})",
             });
+
+
+        Function("Xor")
+            .Doc("Исключающее ИЛИ: возвращает true, если ровно один из аргументов равен true")
+            .Arg("a", Bool)
+            .Arg("b", Bool)
+            .Returns(Bool)
+            .TemplatesX((a, b) => new()
+            {
+                [All] = $"(({a} AND NOT {b}) OR (NOT {a} AND {b}))",
+            });
     }
 }

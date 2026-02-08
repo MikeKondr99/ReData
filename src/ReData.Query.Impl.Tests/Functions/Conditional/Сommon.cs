@@ -17,6 +17,20 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("false or false", false)]
     public Task BasicLogic(string expr, object? expected) => Test(expr, expected);
 
+    [Theory(DisplayName = "Функция Xor")]
+    [InlineData("Xor(true, true)", false)]
+    [InlineData("Xor(true, false)", true)]
+    [InlineData("Xor(false, true)", true)]
+    [InlineData("Xor(false, false)", false)]
+    [InlineData("Xor(null, true)", null)]
+    [InlineData("Xor(true, null)", null)]
+    [InlineData("Xor(null, false)", null)]
+    [InlineData("Xor(false, null)", null)]
+    [InlineData("Xor(null, null)", null)]
+    [InlineData("Type(Xor(true, false))", "bool!")]
+    [InlineData("Type(Xor(Bool(null), true))", "bool")]
+    public Task XorFunction(string expr, object? expected) => Test(expr, expected);
+
     [Theory(DisplayName = "Функция If")]
     [InlineData("If(true, null,0).Type()", "int")]
     [InlineData("If(true, null,0.0).Type()", "num")]
