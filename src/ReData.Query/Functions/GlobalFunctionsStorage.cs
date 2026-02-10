@@ -37,30 +37,35 @@ public class GlobalFunctionsStorage
         }
 
         var newStorage = new FunctionStorage(
-            Functions.Select(f => new ReData.Query.Core.Types.FunctionDefinition()
-            {
-                Doc = f.Doc,
-                Name = f.Name,
-                Arguments = f.Arguments,
-                Template = ResolveTemplate(f, database),
-                ReturnType = f.ReturnType,
-                Kind = f.Kind,
-                ImplicitCast = f.ImplicitCast,
-                CustomNullPropagation = f.CustomNullPropagation,
-                ConstPropagation = f.ConstPropagation,
-            }));
+            Functions
+                .Select(f =>
+                {
+                    var template = ResolveTemplate(f, database);
+                    if (template is null)
+                    {
+                        return null;
+                    }
+
+                    return new ReData.Query.Core.Types.FunctionDefinition()
+                    {
+                        Doc = f.Doc,
+                        Name = f.Name,
+                        Arguments = f.Arguments,
+                        Template = template,
+                        ReturnType = f.ReturnType,
+                        Kind = f.Kind,
+                        ImplicitCast = f.ImplicitCast,
+                        CustomNullPropagation = f.CustomNullPropagation,
+                        ConstPropagation = f.ConstPropagation,
+                    };
+                })
+                .OfType<ReData.Query.Core.Types.FunctionDefinition>());
         storages[database] = newStorage;
         return newStorage;
     }
 
-    private static IFunctionTemplate ResolveTemplate(FunctionDefinition definition, DatabaseTypes database)
+    private static IFunctionTemplate? ResolveTemplate(FunctionDefinition definition, DatabaseTypes database)
     {
-        var template = definition.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value;
-        if (template is not null)
-        {
-            return template;
-        }
-
-        throw new ArgumentException($"Template not found for function {definition.Name} and database {database}");
+        return definition.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value;
     }
 }
