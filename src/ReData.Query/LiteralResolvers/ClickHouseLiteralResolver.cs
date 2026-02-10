@@ -24,7 +24,7 @@ public sealed class ClickHouseLiteralResolver : BasicSqlLiteralResolver
         {
             Expression = literal,
             Template = Template.Create(temp.template),
-            Type = temp.type.Const(),
+            Type = temp.type.Literal(),
         };
     }
 
