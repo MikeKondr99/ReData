@@ -134,11 +134,39 @@ public sealed class ExpressionResolver
         }
 
         var function = definition.Function;
+        IReadOnlyList<IValue?>? constArguments = null;
+
+        if (function.Arguments.Any(a => a.IsConstRequired))
+        {
+            constArguments = funcExpr.Arguments.Select(a => TryGetConstValue(a, context)).ToArray();
+
+            for (var i = 0; i < function.Arguments.Count; i++)
+            {
+                if (function.Arguments[i].IsConstRequired && constArguments[i] is null)
+                {
+                    context.Errors.Add(new ExprError()
+                    {
+                        Span = funcExpr.Arguments[i].Span,
+                        Message = $"Функция {function.Name} требует что бы {ArgOrdinal(i)} аргумент был константой"
+                    });
+                    return null;
+                }
+            }
+        }
+
+        var templateContext = new TemplateContext()
+        {
+            Fields = context.QuerySource.Fields().ToArray(),
+            Arguments = constArguments ?? Array.Empty<IValue?>(),
+            Variables = context.Variables,
+        };
+
+        var template = function.Template.GetTemplate(templateContext);
 
         return new ResolvedExpr()
         {
             Expression = funcExpr,
-            Template = function.Template,
+            Template = template,
             Type = new ExprType()
             {
                 DataType = function.ReturnType.DataType,
@@ -148,7 +176,7 @@ public sealed class ExpressionResolver
             },
             Arguments = args.Zip(definition.Casts).Select(t => t.First with
             {
-                Template = t.Second.Template,
+                Template = t.Second.Template.GetTemplate(templateContext),
                 Arguments = [t.First]
             }).ToArray(),
         };
@@ -167,4 +195,29 @@ public sealed class ExpressionResolver
     {
         return LiteralResolver.ResolveName(path);
     }
+
+    private static IValue? TryGetConstValue(Expr expr, ResolutionContext context)
+    {
+        return expr switch
+        {
+            IntegerLiteral(var v) => new IntegerValue(v),
+            NumberLiteral(var v) => new NumberValue(v),
+            BooleanLiteral(var v) => new BoolValue(v),
+            StringLiteral(var v) => new TextValue(v),
+            NullLiteral => default(NullValue),
+            NameExpr varName when context.Variables.TryGetValue(varName.Value, out var value) => value,
+            _ => null
+        };
+    }
+
+    private static string ArgOrdinal(int index) => index switch
+    {
+        0 => "первый",
+        1 => "второй",
+        2 => "третий",
+        3 => "четвертый",
+        4 => "пятый",
+        _ => $"{index + 1}-й",
+    };
+
 }

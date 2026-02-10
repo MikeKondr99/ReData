@@ -280,7 +280,7 @@ public record QueryBuilder
         {
             Errors = [],
             Functions = Functions,
-            Variables = new() { ["user_id"] = new TextValue("Demonmiker") },
+            Variables = new() { ["$user_id"] = new TextValue("Demonmiker") },
             QuerySource = Query.From
         };
         var res = Resolver.ResolveExpr(expression, context);

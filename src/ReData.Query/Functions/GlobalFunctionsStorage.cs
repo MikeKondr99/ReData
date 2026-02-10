@@ -1,5 +1,6 @@
 ﻿using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Impl.Functions.Library;
+using ReData.Query.Core.Template;
 
 namespace ReData.Query.Impl.Functions;
 
@@ -41,7 +42,7 @@ public class GlobalFunctionsStorage
                 Doc = f.Doc,
                 Name = f.Name,
                 Arguments = f.Arguments,
-                Template = f.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value,
+                Template = ResolveTemplate(f, database),
                 ReturnType = f.ReturnType,
                 Kind = f.Kind,
                 ImplicitCast = f.ImplicitCast,
@@ -50,5 +51,16 @@ public class GlobalFunctionsStorage
             }));
         storages[database] = newStorage;
         return newStorage;
+    }
+
+    private static IFunctionTemplate ResolveTemplate(FunctionDefinition definition, DatabaseTypes database)
+    {
+        var template = definition.Templates.FirstOrDefault(t => t.Key.HasFlag(database)).Value;
+        if (template is not null)
+        {
+            return template;
+        }
+
+        throw new ArgumentException($"Template not found for function {definition.Name} and database {database}");
     }
 }

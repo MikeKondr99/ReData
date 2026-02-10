@@ -37,7 +37,7 @@ public sealed record FunctionDefinition
     /// <summary>
     /// Шаблон выполнения функции. Во что компилируется функция.
     /// </summary>
-    public required ITemplate Template { get; init; }
+    public required IFunctionTemplate Template { get; init; }
 
     /// <summary>
     /// Метаданные неявного приведения типов. Если не null функция является функцией неявного приведения.

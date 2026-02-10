@@ -22,6 +22,11 @@ public record FunctionArgument
     /// </summary>
     public required bool PropagateNull { get; init; }
 
+    /// <summary>
+    /// Требует константный аргумент (литерал или переменная).
+    /// </summary>
+    public bool IsConstRequired { get; init; }
+
     /// <inheritdoc />
     public override string ToString()
     {

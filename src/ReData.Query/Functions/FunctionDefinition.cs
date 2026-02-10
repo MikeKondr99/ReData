@@ -15,7 +15,7 @@ public record FunctionDefinition
     
     public required FunctionKind Kind { get; init; }
     
-    public required IReadOnlyDictionary<DatabaseTypes, ITemplate> Templates { get; init; }
+    public required IReadOnlyDictionary<DatabaseTypes, IFunctionTemplate> Templates { get; init; }
     
     public ImplicitCastMetadata? ImplicitCast { get; init; }
     

@@ -19,7 +19,7 @@ public record FunctionSignature
         }
         if (Kind is FunctionKind.Unary)
         {
-            return $"({Name} {ArgumentTypes[1]})";
+            return $"({Name} {ArgumentTypes[0]})";
         }
         if (Kind is FunctionKind.Method)
         {

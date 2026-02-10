@@ -73,10 +73,10 @@ public sealed class FunctionStorage : IFunctionStorage
                     Aggregated = false,
                 },
                 Kind = FunctionKind.Default,
-                Template = new Template.Template()
+                Template = new StaticFunctionTemplate(new Template.Template()
                 {
                     Tokens = [new ArgToken(0)]
-                },
+                }),
                 ImplicitCast = new ImplicitCastMetadata()
                 {
                     Cost = 0,
