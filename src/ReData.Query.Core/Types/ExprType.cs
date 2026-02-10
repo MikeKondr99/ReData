@@ -4,13 +4,30 @@ namespace ReData.Query.Core.Types;
 
 public record struct ExprType
 {
+    /// <summary>
+    /// Базовый тип данных выражения.
+    /// </summary>
     public required DataType DataType { get; init; }
 
+    /// <summary>
+    /// Может ли выражение быть NULL.
+    /// </summary>
     public bool CanBeNull { get; init; }
 
+    /// <summary>
+    /// Признак агрегированного выражения.
+    /// </summary>
     public bool Aggregated { get; init; }
 
+    /// <summary>
+    /// Признак константного выражения в SQL.
+    /// </summary>
     public bool IsConstant { get; init; }
+
+    /// <summary>
+    /// Признак литерала, доступного как константный аргумент.
+    /// </summary>
+    public bool IsLiteral { get; init; }
 
 
     public static ExprType Unknown()
@@ -82,19 +99,41 @@ public record struct ExprType
         };
     }
 
+    /// <summary>
+    /// Помечает выражение как допускающее NULL.
+    /// </summary>
+    /// <returns>Тип с признаком nullable.</returns>
     public ExprType Optional() => this with
     {
         CanBeNull = true
     };
 
+    /// <summary>
+    /// Помечает выражение как агрегированное.
+    /// </summary>
+    /// <returns>Тип с признаком агрегации.</returns>
     public ExprType Aggr() => this with
     {
         Aggregated = true,
     };
 
+    /// <summary>
+    /// Помечает выражение как константное в SQL.
+    /// </summary>
+    /// <returns>Тип с признаком константы.</returns>
     public ExprType Const() => this with
     {
         IsConstant = true,
+    };
+
+    /// <summary>
+    /// Помечает выражение как литерал.
+    /// </summary>
+    /// <returns>Тип, помеченный как литерал.</returns>
+    public ExprType Literal() => this with
+    {
+        IsConstant = true,
+        IsLiteral = true,
     };
 
     public override string ToString()

@@ -106,7 +106,7 @@ public record FunctionBuilder
 
     private bool IsAggregated { get; set; }
 
-    private IReadOnlyDictionary<DatabaseTypes, ITemplate>? templates;
+    private IReadOnlyDictionary<DatabaseTypes, IFunctionTemplate>? templates;
 
     private uint? ImplicitCastCost { get; set; }
 
@@ -159,7 +159,7 @@ public record FunctionBuilder
         return this;
     }
 
-    public FunctionBuilder Arg(string name, DataType type, bool propagateNull = true)
+    public FunctionBuilder Arg(string name, DataType type, bool propagateNull = true, bool isConst = false)
     {
         this.Arguments.Add(new FunctionArgument()
         {
@@ -170,11 +170,12 @@ public record FunctionBuilder
                 CanBeNull = true,
             },
             PropagateNull = propagateNull,
+            IsConstRequired = isConst,
         });
         return this;
     }
 
-    public FunctionBuilder ReqArg(string name, DataType type)
+    public FunctionBuilder ReqArg(string name, DataType type, bool isConst = false)
     {
         this.Arguments.Add(new FunctionArgument()
         {
@@ -185,6 +186,7 @@ public record FunctionBuilder
                 CanBeNull = false,
             },
             PropagateNull = false,
+            IsConstRequired = isConst,
         });
         return this;
     }
@@ -221,10 +223,31 @@ public record FunctionBuilder
 
     public FunctionBuilder Templates(Dictionary<DatabaseTypes, TemplateInterpolatedStringHandler> templates)
     {
-        this.templates = templates.ToDictionary(kv => kv.Key, kv => (ITemplate)new Template()
-        {
-            Tokens = kv.Value.Tokens
-        });
+        this.templates = templates.ToDictionary(
+            kv => kv.Key,
+            kv => (IFunctionTemplate)new StaticFunctionTemplate(new Template()
+            {
+                Tokens = kv.Value.Tokens
+            }));
+        return this;
+    }
+
+    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>> templates)
+    {
+        this.templates = templates.ToDictionary(
+            kv => kv.Key,
+            kv => (IFunctionTemplate)new DynamicFunctionTemplate(kv.Value));
+        return this;
+    }
+
+    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, TemplateInterpolatedStringHandler>> templates)
+    {
+        this.templates = templates.ToDictionary(
+            kv => kv.Key,
+            kv => (IFunctionTemplate)new DynamicFunctionTemplate(ctx => new Template()
+            {
+                Tokens = kv.Value(ctx).Tokens
+            }));
         return this;
     }
     
@@ -245,10 +268,14 @@ public record FunctionBuilder
 
     public FunctionBuilder Template(TemplateInterpolatedStringHandler template)
     {
-        return Templates(new()
+        templates = new Dictionary<DatabaseTypes, IFunctionTemplate>()
         {
-            [All] = template
-        });
+            [All] = new StaticFunctionTemplate(new Template()
+            {
+                Tokens = template.Tokens
+            })
+        };
+        return this;
     }
 
     public FunctionBuilder CustomNullPropagation(Func<IEnumerable<bool>, bool> func)
@@ -260,7 +287,11 @@ public record FunctionBuilder
     public FunctionDefinition Build()
     {
         ArgumentNullException.ThrowIfNull(ReturnType);
-        ArgumentNullException.ThrowIfNull(templates);
+        if (templates is null)
+        {
+            throw new ArgumentNullException(nameof(templates));
+        }
+
         return new FunctionDefinition
         {
             Name = Name,
