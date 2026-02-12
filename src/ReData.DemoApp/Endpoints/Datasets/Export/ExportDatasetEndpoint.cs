@@ -65,7 +65,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
 
             var rawReader = await runner.GetDataReaderAsync(qb.Build(), connection);
-            await using var reader = rawReader = new MyDbDataReader(rawReader, qb.Build().Fields());
+            await using var reader = rawReader = new FieldAliasDbDataReader(rawReader, qb.Build().Fields());
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = GetContentType(req.FileType);

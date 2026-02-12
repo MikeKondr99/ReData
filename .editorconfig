@@ -62,6 +62,15 @@ dotnet_diagnostic.CA1310.severity = warning
 
 ### Спорные стили
 
+# Тернарники:
+# - избегаем вложенных/цепочных тернарных операторов;
+# - для множественных веток предпочитаем switch/switch-expression или if/else.
+# Полного встроенного правила на "запрет nested ternary" в Roslyn нет,
+# поэтому усиливаем смежные проверки:
+dotnet_diagnostic.IDE0066.severity = warning
+dotnet_diagnostic.IDE0075.severity = warning
+csharp_style_prefer_switch_expression = true:warning
+
 dotnet_diagnostic.SA1128.severity = warning
 dotnet_diagnostic.SA1122.severity = warning
 dotnet_diagnostic.SA1201.severity = error

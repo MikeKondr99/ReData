@@ -26,7 +26,6 @@ public interface IQueryRunner
     //         for (int i = 0; i < fields.Length; i++)
     //         {
     //             var value = dbReader.GetValue(i);
-    //             recordDict[fields[i].Alias] = DatabaseValuesMapper.MapField(value, fields[i].Type);
     //         }
     //
     //         result.Add(recordDict);
@@ -41,7 +40,6 @@ public interface IQueryRunner
     //     if (await dbReader.ReadAsync())
     //     {
     //         var value = dbReader.GetValue(0);
-    //         return DatabaseValuesMapper.MapField(value, query.Fields().First().Type);
     //     }
     //
     //     throw new Exception("Query не вернул значения хотя ожидался скаляр");

@@ -52,7 +52,7 @@ public class CsvExportBenchmarks
         await using var connection = DatabaseInitializer.GetConnection();
         await connection.OpenAsync();
         var reader = await GetDataReaderAsync(connection, rowsToExport);
-        reader = new MyDbDataReader(reader, Enumerable.Range(1, 10).Select(i => new Field()
+            reader = new FieldAliasDbDataReader(reader, Enumerable.Range(1, 10).Select(i => new Field()
         {
             Alias = $"column{i}",
             Template = null,
