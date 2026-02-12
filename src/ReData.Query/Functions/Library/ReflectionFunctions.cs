@@ -70,43 +70,54 @@ public class ReflectionFunctions : FunctionsDescriptor
         return TextTemplate(database, field.Type.Type, field.Template);
     }
 
-    private static ITemplate TextTemplate(DatabaseTypes database, DataType type, ITemplate input) => type switch
+    private static ITemplate TextTemplate(DatabaseTypes database, DataType type, ITemplate input)
     {
-        Text => input,
-        Bool => database == SqlServer
-            ? Template.Create($"CASE WHEN {input} THEN N'true' ELSE N'false' END")
-            : Template.Create($"CASE WHEN {input} THEN 'true' ELSE 'false' END"),
-        Number => database == MySql
-            ? Template.Create($"CAST({input} AS CHAR)")
-            : database == Oracle
-                ? Template.Create($"REPLACE(TO_CHAR({input}),',','.')")
-                : Template.Create($"CAST({input} AS VARCHAR)"),
-        Integer => database == MySql
-            ? Template.Create($"CAST({input} AS CHAR)")
-            : database == Oracle
-                ? Template.Create($"TO_CHAR({input})")
-                : Template.Create($"CAST({input} AS VARCHAR)"),
-        DateTime => database switch
+        if (type is Text)
         {
-            SqlServer => Template.Create($"CONVERT(NVARCHAR(20), {input}, 120)"),
-            ClickHouse => Template.Create($"formatDateTime({input}, '%Y-%m-%d %H:%i:%S')"),
-            MySql => Template.Create($"DATE_FORMAT({input}, '%Y-%m-%d %H:%i:%S')"),
-            PostgreSql => Template.Create($"TO_CHAR({input}, 'YYYY-MM-DD HH24:MI:SS')"),
-            Oracle => Template.Create($"TO_CHAR({input}, 'YYYY-MM-DD HH24:MI:SS')"),
-            _ => Template.Create($"{input}"),
-        },
-        Null => Template.Create($"LOWER({input})"),
-        Unknown => database switch
+            return input;
+        }
+        
+        TemplateInterpolatedStringHandler template = type switch
         {
-            PostgreSql => Template.Create($"({input}::text)"),
-            SqlServer => Template.Create($"CAST({input} AS NVARCHAR(MAX))"),
-            MySql => Template.Create($"CAST({input} AS CHAR)"),
-            Oracle => Template.Create($"TO_CHAR({input})"),
-            ClickHouse => Template.Create($"toString({input})"),
-            _ => Template.Create($"{input}"),
-        },
-        _ => Template.Create($"{input}"),
-    };
+            Bool => database switch
+            {
+                SqlServer => $"CASE WHEN {input} THEN N'true' ELSE N'false' END",
+                PostgreSql or MySql or ClickHouse or Oracle => $"CASE WHEN {input} THEN 'true' ELSE 'false' END",
+            },
+            Number => database switch
+            {
+                MySql => $"CAST({input} AS CHAR)",
+                Oracle => $"REPLACE(TO_CHAR({input}),',','.')",
+                PostgreSql or SqlServer or ClickHouse => $"CAST({input} AS VARCHAR)"
+            },
+            Integer => database switch
+            {
+                MySql => $"CAST({input} AS CHAR)",
+                Oracle => $"TO_CHAR({input})",
+                PostgreSql or SqlServer or ClickHouse => $"CAST({input} AS VARCHAR)"
+            },
+            DateTime => database switch
+            {
+                SqlServer => $"CONVERT(NVARCHAR(20), {input}, 120)",
+                ClickHouse => $"formatDateTime({input}, '%Y-%m-%d %H:%i:%S')",
+                MySql => $"DATE_FORMAT({input}, '%Y-%m-%d %H:%i:%S')",
+                PostgreSql => $"TO_CHAR({input}, 'YYYY-MM-DD HH24:MI:SS')",
+                Oracle => $"TO_CHAR({input}, 'YYYY-MM-DD HH24:MI:SS')",
+            },
+            Null => $"LOWER({input})",
+            Unknown => database switch
+            {
+                PostgreSql => $"({input}::text)",
+                SqlServer => $"CAST({input} AS NVARCHAR(MAX))",
+                MySql => $"CAST({input} AS CHAR)",
+                Oracle => $"TO_CHAR({input})",
+                ClickHouse => $"toString({input})",
+                _ => $"{input}",
+            },
+            _ => throw new NotSupportedException($"type: {type}, database: {database}"),
+        };
+        return Template.Create(template);
+    }
 
     protected override void Functions()
     {

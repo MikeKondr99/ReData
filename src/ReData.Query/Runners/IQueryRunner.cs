@@ -1,14 +1,11 @@
 ﻿using System.Data.Common;
-using ReData.Query.Core.Value;
-using ReData.Query.Runners.Value;
-
 namespace ReData.Query.Runners;
 
 public interface IQueryRunner
 {
     // Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query);
 
-    Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection);
+    Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection);
 
     // async Task<IReadOnlyList<Dictionary<string, IValue>>> RunQueryAsObjectAsync(Core.Query query,
     //     DbConnection connection)
@@ -26,7 +23,6 @@ public interface IQueryRunner
     //         for (int i = 0; i < fields.Length; i++)
     //         {
     //             var value = dbReader.GetValue(i);
-    //             recordDict[fields[i].Alias] = DatabaseValuesMapper.MapField(value, fields[i].Type);
     //         }
     //
     //         result.Add(recordDict);
@@ -41,7 +37,6 @@ public interface IQueryRunner
     //     if (await dbReader.ReadAsync())
     //     {
     //         var value = dbReader.GetValue(0);
-    //         return DatabaseValuesMapper.MapField(value, query.Fields().First().Type);
     //     }
     //
     //     throw new Exception("Query не вернул значения хотя ожидался скаляр");

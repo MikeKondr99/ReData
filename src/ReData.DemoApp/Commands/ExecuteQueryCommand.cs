@@ -28,7 +28,7 @@ public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler
             
             var data = await runner
                 .GetDataReaderAsync(query, connection)
-                .CollectToObjects(query.Fields());
+                .CollectToObjects();
 
             var response = new TransformResponse
             {

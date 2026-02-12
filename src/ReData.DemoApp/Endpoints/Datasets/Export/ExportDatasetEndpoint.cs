@@ -3,7 +3,6 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Org.BouncyCastle.Ocsp;
 using ReData.DataIO.DataExporters;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
@@ -61,11 +60,11 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             }.ExecuteAsync(ct);
 
             QueryBuilder qb = applyResult.Expect("Нет проверки если трансформации с ошибкой");
+            var query = qb.Build();
             var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
 
-            var rawReader = await runner.GetDataReaderAsync(qb.Build(), connection);
-            await using var reader = rawReader = new MyDbDataReader(rawReader, qb.Build().Fields());
+            await using var reader = await runner.GetDataReaderAsync(query, connection);
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = GetContentType(req.FileType);
@@ -74,7 +73,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
                 $"attachment; filename=\"{Uri.EscapeDataString(dataset.Name)}{GetExtension(req.FileType)}\";");
             var bodyStream = HttpContext.Response.Body;
             var exporter = GetExporter(req.FileType);
-            await exporter.ExportAsync(rawReader, bodyStream, ct);
+            await exporter.ExportAsync(reader, bodyStream, ct);
         }
         catch (Exception)
         {

@@ -6,35 +6,43 @@ namespace ReData.Query.Runners;
 
 public static class DbReaderExtensions
 {
-    public static async Task<IReadOnlyList<Dictionary<string, IValue>>> CollectToObjects(this Task<DbDataReader> readerTask, IEnumerable<Field> fields)
+
+    public static DomainDbDataReader ToDomain(this DbDataReader reader, IEnumerable<Field> fields)
+    {
+        ArgumentNullException.ThrowIfNull(reader);
+        ArgumentNullException.ThrowIfNull(fields);
+        return new DomainDbDataReader(reader, fields);
+    }
+
+    public static async Task<IReadOnlyList<Dictionary<string, IValue>>> CollectToObjects(
+        this Task<DomainDbDataReader> readerTask)
     {
         await using var reader = await readerTask;
-        var fieldsArr = fields.ToArray();
+        await using var valueReader = new LegacyIValueDbDataReader(reader);
         List<Dictionary<string, IValue>> result = new List<Dictionary<string, IValue>>();
 
-        while (await reader.ReadAsync())
+        while (await valueReader.ReadAsync())
         {
-            var recordDict = new Dictionary<string, IValue>();
-
-            for (int i = 0; i < fieldsArr.Length; i++)
+            var record = new Dictionary<string, IValue>();
+            for (var i = 0; i < valueReader.FieldCount; i++)
             {
-                var value = reader.GetValue(i);
-                recordDict[fieldsArr[i].Alias] = DatabaseValuesMapper.MapField(value, fieldsArr[i].Type);
+                record[valueReader.GetName(i)] = (IValue)valueReader.GetValue(i);
             }
 
-            result.Add(recordDict);
+            result.Add(record);
         }
 
         return result;
     }
-    
-    public static async Task<IValue> CollectToScalar(this Task<DbDataReader> readerTask, IEnumerable<Field> fields)
+
+    public static async Task<IValue> CollectToScalar(this Task<DomainDbDataReader> readerTask)
     {
         await using var reader = await readerTask;
-        if (await reader.ReadAsync())
+        await using var valueReader = new LegacyIValueDbDataReader(reader);
+
+        if (await valueReader.ReadAsync())
         {
-            var value = reader.GetValue(0);
-            return DatabaseValuesMapper.MapField(value, fields.First().Type);
+            return (IValue)valueReader.GetValue(0);
         }
 
         throw new Exception("Query не вернул значения хотя ожидался скаляр");
