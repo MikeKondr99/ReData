@@ -25,6 +25,6 @@ public sealed class PostgresRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using NpgsqlCommand command = new NpgsqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return new ClrMappedDbDataReader(reader, query.Fields());
+        return reader.ClrNormalize(query.Fields());
     }
 }

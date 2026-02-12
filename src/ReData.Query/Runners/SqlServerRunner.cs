@@ -24,6 +24,6 @@ public class SqlServerRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using SqlCommand command = new SqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return new ClrMappedDbDataReader(reader, query.Fields());
+        return reader.ClrNormalize(query.Fields());
     }
 }

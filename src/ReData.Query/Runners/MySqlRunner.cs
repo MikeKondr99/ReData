@@ -25,6 +25,6 @@ public class MySqlRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using MySqlCommand command = new MySqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return new ClrMappedDbDataReader(reader, query.Fields());
+        return reader.ClrNormalize(query.Fields());
     }
 }

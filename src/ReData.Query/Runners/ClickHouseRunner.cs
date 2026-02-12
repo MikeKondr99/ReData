@@ -18,6 +18,6 @@ public class ClickHouseRunner : IQueryRunner
 
         var sql = QueryCompiler.Compile(query);
         var reader = await connection.ExecuteReaderAsync(sql);
-        return new ClrMappedDbDataReader(reader, query.Fields());
+        return reader.ClrNormalize(query.Fields());
     }
 }

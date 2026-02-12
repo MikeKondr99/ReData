@@ -28,6 +28,6 @@ public class OracleRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using OracleCommand command = new OracleCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return new ClrMappedDbDataReader(reader, query.Fields());
+        return reader.ClrNormalize(query.Fields());
     }
 }

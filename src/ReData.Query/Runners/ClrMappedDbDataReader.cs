@@ -24,6 +24,9 @@ namespace ReData.Query.Runners;
 /// <item><description><see cref="DateTime"/> (UTC для входного <see cref="DateTimeOffset"/>).</description></item>
 /// <item><description><see cref="string"/>.</description></item>
 /// </list>
+/// Если ожидается <see cref="DataType.Integer"/>, а провайдер возвращает число с плавающей точкой
+/// (<see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>, <see cref="ClickHouseDecimal"/>),
+/// значение приводится к <see cref="long"/> с усечением дробной части к нулю.
 /// Для неподдерживаемых типов или несовместимости с ожидаемым <see cref="FieldType"/> выбрасывается исключение.
 /// </summary>
 #pragma warning disable CA1010
@@ -76,14 +79,18 @@ public sealed class ClrMappedDbDataReader : DbDataReaderDecorator
         {
             sbyte v => (long)v,
             byte v => (long)v,
-            short v => v,
-            ushort v => v,
-            int v => v,
-            uint v => v,
+            short v => (long)v,
+            ushort v => (long)v,
+            int v => (long)v,
+            uint v => (long)v,
             long v => v,
             ulong v when v <= long.MaxValue => (long)v,
             ulong v => throw new OverflowException($"Значение ulong '{v}' не помещается в Int64."),
-            float v => v,
+            float v when expectedType.Type == DataType.Integer => ToInt64Checked(v),
+            double v when expectedType.Type == DataType.Integer => ToInt64Checked(v),
+            decimal v when expectedType.Type == DataType.Integer => checked((long)v),
+            ClickHouseDecimal v when expectedType.Type == DataType.Integer => ToInt64Checked((double)v),
+            float v => (double)v,
             double v => v,
             decimal v => (double)v,
             ClickHouseDecimal v => (double)v,
@@ -121,6 +128,21 @@ public sealed class ClrMappedDbDataReader : DbDataReaderDecorator
             throw new InvalidCastException(
                 $"Значение типа '{value.GetType().FullName}' несовместимо с ожидаемым типом поля '{expectedType.Type}'.");
         }
+    }
+
+    private static long ToInt64Checked(double value)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+        {
+            throw new OverflowException($"Значение '{value}' не может быть приведено к Int64.");
+        }
+
+        if (value > long.MaxValue || value < long.MinValue)
+        {
+            throw new OverflowException($"Значение '{value}' не помещается в Int64.");
+        }
+
+        return checked((long)value);
     }
 }
 #pragma warning restore CA1010
