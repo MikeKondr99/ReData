@@ -14,9 +14,19 @@ public sealed class LegacyIValueDbDataReader : DbDataReaderDecorator
     private readonly FieldType[] fieldTypes;
 
     public LegacyIValueDbDataReader(DbDataReader inner, IEnumerable<Field> fields)
+        : this(inner, fields.Select(f => f.Type))
+    {
+    }
+
+    public LegacyIValueDbDataReader(DbDataReader inner, IEnumerable<FieldType> fieldTypes)
         : base(inner)
     {
-        fieldTypes = fields.Select(f => f.Type).ToArray();
+        this.fieldTypes = fieldTypes.ToArray();
+    }
+
+    public LegacyIValueDbDataReader(DomainDbDataReader inner)
+        : this((DbDataReader)inner, inner.DomainFieldTypes)
+    {
     }
 
     public override object GetValue(int ordinal)

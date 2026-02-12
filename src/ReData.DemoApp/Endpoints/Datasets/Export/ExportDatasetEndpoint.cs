@@ -64,7 +64,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
 
-            await using var reader = (await runner.GetDataReaderAsync(query, connection)).MapFields(query.Fields());
+            await using var reader = await runner.GetDataReaderAsync(query, connection);
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = GetContentType(req.FileType);

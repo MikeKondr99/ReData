@@ -9,7 +9,7 @@ public class SqlServerRunner : IQueryRunner
 {
     public required IQueryCompiler QueryCompiler { private get; init; }
 
-    public async Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
+    public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
         if (connection is not SqlConnection conn)
         {
@@ -24,6 +24,6 @@ public class SqlServerRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using SqlCommand command = new SqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return reader.ClrNormalize(query.Fields());
+        return reader.ToDomain(query.Fields());
     }
 }

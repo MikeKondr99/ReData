@@ -1,14 +1,11 @@
 ﻿using System.Data.Common;
-using ReData.Query.Core.Value;
-using ReData.Query.Runners.Value;
-
 namespace ReData.Query.Runners;
 
 public interface IQueryRunner
 {
     // Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query);
 
-    Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection);
+    Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection);
 
     // async Task<IReadOnlyList<Dictionary<string, IValue>>> RunQueryAsObjectAsync(Core.Query query,
     //     DbConnection connection)

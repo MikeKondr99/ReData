@@ -10,7 +10,7 @@ public sealed class PostgresRunner : IQueryRunner
     public required IQueryCompiler QueryCompiler { private get; init; }
     
     
-    public async Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
+    public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
         if (connection is not NpgsqlConnection conn)
         {
@@ -25,6 +25,6 @@ public sealed class PostgresRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using NpgsqlCommand command = new NpgsqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return reader.ClrNormalize(query.Fields());
+        return reader.ToDomain(query.Fields());
     }
 }

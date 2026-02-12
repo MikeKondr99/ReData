@@ -9,7 +9,7 @@ public class ClickHouseRunner : IQueryRunner
 {
     public required IQueryCompiler QueryCompiler { private get; init; }
 
-    public async Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
+    public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
         if (connection.State is not ConnectionState.Open)
         {
@@ -18,6 +18,6 @@ public class ClickHouseRunner : IQueryRunner
 
         var sql = QueryCompiler.Compile(query);
         var reader = await connection.ExecuteReaderAsync(sql);
-        return reader.ClrNormalize(query.Fields());
+        return reader.ToDomain(query.Fields());
     }
 }

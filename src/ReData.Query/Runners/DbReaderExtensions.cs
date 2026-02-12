@@ -6,60 +6,43 @@ namespace ReData.Query.Runners;
 
 public static class DbReaderExtensions
 {
-public static DbDataReader MapFields(this DbDataReader reader, IEnumerable<Field> fields)
+
+    public static DomainDbDataReader ToDomain(this DbDataReader reader, IEnumerable<Field> fields)
     {
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(fields);
-        return new FieldAliasDbDataReader(reader, fields);
+        return new DomainDbDataReader(reader, fields);
     }
 
-    public static DbDataReader ClrNormalize(this DbDataReader reader, IEnumerable<Field> fields)
+    public static async Task<IReadOnlyList<Dictionary<string, IValue>>> CollectToObjects(
+        this Task<DomainDbDataReader> readerTask)
     {
-        ArgumentNullException.ThrowIfNull(reader);
-        ArgumentNullException.ThrowIfNull(fields);
-        return new ClrMappedDbDataReader(reader, fields);
-    }
-
-    [Obsolete("Use ClrNormalize")]
-    public static DbDataReader ClrNormilize(this DbDataReader reader, IEnumerable<Field> fields) => ClrNormalize(reader, fields);
-
-    public static DbDataReader WrapInValue(this DbDataReader reader, IEnumerable<Field> fields)
-    {
-        ArgumentNullException.ThrowIfNull(reader);
-        ArgumentNullException.ThrowIfNull(fields);
-        return new LegacyIValueDbDataReader(reader, fields);
-    }
-
-    public static async Task<IReadOnlyList<Dictionary<string, IValue>>> CollectToObjects(this Task<DbDataReader> readerTask, IEnumerable<Field> fields)
-    {
-        var fieldsArr = fields.ToArray();
-        await using var mappedReader = (await readerTask).WrapInValue(fieldsArr);
+        await using var reader = await readerTask;
+        await using var valueReader = new LegacyIValueDbDataReader(reader);
         List<Dictionary<string, IValue>> result = new List<Dictionary<string, IValue>>();
 
-        while (await mappedReader.ReadAsync())
+        while (await valueReader.ReadAsync())
         {
-            var recordDict = new Dictionary<string, IValue>();
-
-            for (int i = 0; i < fieldsArr.Length; i++)
+            var record = new Dictionary<string, IValue>();
+            for (var i = 0; i < valueReader.FieldCount; i++)
             {
-                var value = mappedReader.GetValue(i);
-                recordDict[fieldsArr[i].Alias] = (IValue)value;
+                record[valueReader.GetName(i)] = (IValue)valueReader.GetValue(i);
             }
 
-            result.Add(recordDict);
+            result.Add(record);
         }
 
         return result;
     }
-    
-    public static async Task<IValue> CollectToScalar(this Task<DbDataReader> readerTask, IEnumerable<Field> fields)
+
+    public static async Task<IValue> CollectToScalar(this Task<DomainDbDataReader> readerTask)
     {
-        var fieldsArr = fields.ToArray();
-        await using var mappedReader = (await readerTask).WrapInValue(fieldsArr);
-        if (await mappedReader.ReadAsync())
+        await using var reader = await readerTask;
+        await using var valueReader = new LegacyIValueDbDataReader(reader);
+
+        if (await valueReader.ReadAsync())
         {
-            var value = mappedReader.GetValue(0);
-            return (IValue)value;
+            return (IValue)valueReader.GetValue(0);
         }
 
         throw new Exception("Query не вернул значения хотя ожидался скаляр");

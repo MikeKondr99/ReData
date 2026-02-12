@@ -73,7 +73,13 @@ public abstract class DbDataReaderDecorator : DbDataReader
 
     public override bool NextResult() => Inner.NextResult();
 
+    public override Task<bool> NextResultAsync(CancellationToken cancellationToken) =>
+        Inner.NextResultAsync(cancellationToken);
+
     public override bool Read() => Inner.Read();
+
+    public override Task<bool> ReadAsync(CancellationToken cancellationToken) =>
+        Inner.ReadAsync(cancellationToken);
 
     public override int Depth => Inner.Depth;
 
@@ -89,4 +95,3 @@ public abstract class DbDataReaderDecorator : DbDataReader
 }
 
 #pragma warning restore CA1010
-

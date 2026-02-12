@@ -30,7 +30,7 @@ public abstract class ExprTests(IDatabaseFixture db)
         var runner = await db.GetRunnerAsync();
         var query = qb.Build();
         // Act
-        IValue result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToScalar(query.Fields());
+        IValue result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToScalar();
         return result;
     }
     
@@ -39,7 +39,7 @@ public abstract class ExprTests(IDatabaseFixture db)
         var runner = await db.GetRunnerAsync();
         var query = qb.Build();
         // Act
-        var result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToObjects(query.Fields());
+        var result = await runner.GetDataReaderAsync(query, db.GetConnection()).CollectToObjects();
         return result;
     }
 

@@ -13,7 +13,7 @@ public class OracleRunner : IQueryRunner
     // public required IFunctionStorage FunctionStorage { private get; init; }
 
 
-    public async Task<DbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
+    public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
         if (connection is not OracleConnection conn)
         {
@@ -28,6 +28,6 @@ public class OracleRunner : IQueryRunner
         var sql = QueryCompiler.Compile(query);
         await using OracleCommand command = new OracleCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
-        return reader.ClrNormalize(query.Fields());
+        return reader.ToDomain(query.Fields());
     }
 }
