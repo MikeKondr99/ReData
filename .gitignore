@@ -13,3 +13,5 @@ riderModule.iml
 
 **/TestResults.trx
 ReData.sln.DotSettings.user
+# Local QA artifacts
+/docs/tests/
