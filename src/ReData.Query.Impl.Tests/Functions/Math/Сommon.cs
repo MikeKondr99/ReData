@@ -35,6 +35,12 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [Theory(DisplayName = "Division")]
     [InlineData("10 / 2", 5)]
     [InlineData("10 / 6", 1)]
+    [InlineData("-5 / 2", -2)]
+    [InlineData("5 / -2", -2)]
+    [InlineData("-5 / -2", 2)]
+    [InlineData("If((100 / 3) > 33.2, 'fail', 'success')", "success")]
+    [InlineData("If((10 / 3) > 3.4, 1, 0)", 0)]
+    [InlineData("If((-5 / 2) > -2.5, 1, 0)", 1)]
     [InlineData("10.0 / 4.0", 10.0 / 4.0)]
     public Task Div(string expr, object? expected) => Test(expr, expected);
 

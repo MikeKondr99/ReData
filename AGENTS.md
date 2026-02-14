@@ -36,6 +36,13 @@
 - Не использовать вложенные/цепочные тернарные операторы (пример из `src/ReData.Query/Functions/Library/ReflectionFunctions.cs`): при нескольких ветках использовать `switch`/`switch expression` или `if/else`.
 - Все изменения, вносимые агентом (и результаты ревью, если затрагивают код), должны быть достаточно полно покрыты тестами.
 
+## Стиль коммитов
+- Использовать Conventional Commits.
+- Разрешенные типы: `feat`, `fix`, `refactor`.
+- Формат: `<type>(<scope>): <subject>`.
+- Разрешенные scope: `functions`, `qb`, `api`, `gui`, `test`.
+- Для остальных изменений использовать scope `core`.
+
 ## Полезные ссылки
 - `docs/function-coverage-report.md`
 ## Обновление документации (обязательно)

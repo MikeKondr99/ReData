@@ -8,6 +8,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
      [InlineData("Int(25)", 25)]
      [InlineData("Int('25')", 25)]
      [InlineData("Int(2.6)", 2)]
+     [InlineData("If(Int(3.9) > 3.4, 1, 0)", 0)]
      [InlineData("Int(false)", 0)]
      [InlineData("Int(true)", 1)]
      [InlineData("Int(null)", null)]
