@@ -33,6 +33,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     public Task Mul(string expr, object? expected) => Test(expr, expected);
 
     [Theory(DisplayName = "Division")]
+    [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/111")]
     [InlineData("10 / 2", 5)]
     [InlineData("10 / 6", 1)]
     [InlineData("-5 / 2", -2)]
@@ -42,6 +43,11 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("If((10 / 3) > 3.4, 1, 0)", 0)]
     [InlineData("If((-5 / 2) > -2.5, 1, 0)", 1)]
     [InlineData("10.0 / 4.0", 10.0 / 4.0)]
+    // Regression test for GH-111.
+    [InlineData("1 / 0", null)]
+    [InlineData("1.0 / 0.0", null)]
+    [InlineData("If((1 / 0) > 1, 1, 0)", 0)]
+    [InlineData("If((1.0 / 0.0) > 1.0, 1, 0)", 0)]
     public Task Div(string expr, object? expected) => Test(expr, expected);
 
     // [Theory(DisplayName = "Power Function")]

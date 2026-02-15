@@ -61,19 +61,23 @@ public class MathFunctions : FunctionsDescriptor
         Binary("/", Number, Number)
             .Doc("Деление дробных чисел")
             .Returns(Number)
+            .CustomNullPropagation(_ => true)
             .Templates(new()
             {
-                [All] = $"({0} / {1})", 
+                [PostgreSql | SqlServer | Oracle] = $"({0} / NULLIF({1}, 0))",
+                [MySql] = $"({0} / NULLIF({1}, 0))",
+                [ClickHouse] = $"({0} / nullIf({1}, 0))",
             });
         
         Binary("/", Integer, Integer)
             .Doc("Целочисленное деление (с отбрасыванием остатка)")
             .Returns(Integer)
+            .CustomNullPropagation(_ => true)
             .Templates(new()
             {
-                [PostgreSql | SqlServer] = $"(CAST({0} AS BIGINT) / CAST({1} AS BIGINT))", 
-                [MySql] = $"({0} DIV {1})", 
-                [Oracle] = $"TRUNC({0} / {1})", 
+                [PostgreSql | SqlServer] = $"(CAST({0} AS BIGINT) / NULLIF(CAST({1} AS BIGINT), 0))",
+                [MySql] = $"(CAST({0} AS SIGNED) DIV NULLIF(CAST({1} AS SIGNED), 0))",
+                [Oracle] = $"TRUNC({0} / NULLIF({1}, 0))",
                 [ClickHouse] = $"intDiv({0}, nullIf({1}, 0))" 
             });
 
