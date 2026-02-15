@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using ReData.DataIO.DataExporters;
@@ -31,6 +30,13 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         Get("/{Id}/export");
         Group<DataSetsGroup>();
+        Description(d => d
+            .Produces(StatusCodes.Status200OK, contentType: "text/csv")
+            .Produces(StatusCodes.Status200OK, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            .Produces(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces<ExportDatasetErrorResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status500InternalServerError));
         AllowAnonymous();
     }
 
@@ -59,7 +65,20 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
                     .ToArray(),
             }.ExecuteAsync(ct);
 
-            QueryBuilder qb = applyResult.Expect("Нет проверки если трансформации с ошибкой");
+            if (applyResult.UnwrapErr(out var transformationError, out var qb))
+            {
+                await Send.ResponseAsync(
+                    new ExportDatasetErrorResponse
+                    {
+                        Message = "Набор не может быть экспортирован: содержит невалидные трансформации.",
+                        Index = transformationError.Index,
+                        Errors = transformationError.Errors,
+                    },
+                    (int)HttpStatusCode.BadRequest,
+                    ct);
+                return;
+            }
+
             var query = qb.Build();
             var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
@@ -68,7 +87,6 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             HttpContext.MarkResponseStart();
             HttpContext.Response.StatusCode = 200;
             HttpContext.Response.ContentType = GetContentType(req.FileType);
-            // application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
             HttpContext.Response.Headers.Append("Content-Disposition",
                 $"attachment; filename=\"{Uri.EscapeDataString(dataset.Name)}{GetExtension(req.FileType)}\";");
             var bodyStream = HttpContext.Response.Body;
@@ -101,7 +119,4 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
         ExportFileType.Excel => new SylvanExcelExporter(),
         ExportFileType.Json => new JsonDataExporter(),
     };
-
-
-
 }
