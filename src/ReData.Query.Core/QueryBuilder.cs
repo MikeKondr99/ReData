@@ -121,7 +121,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Where(string condition)
     {
         var qb = this;
-        if (Query.Select is not null || Query.Limit.HasValue || Query.Offset.HasValue)
+        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
         {
             qb = CreateCte();
         }
@@ -145,7 +145,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
     {
         var qb = this;
-        if (Query.Select is not null || Query.Limit.HasValue || Query.Offset.HasValue)
+        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
         {
             qb = CreateCte();
         }
@@ -237,7 +237,11 @@ public record QueryBuilder
     
     public QueryBuilder Take(uint take)
     {
-        var limit = Query.Limit.HasValue ? Math.Min(Query.Limit.Value, take) : take;
+        if (take == 0)
+        {
+            return this;
+        }
+        var limit = Query.Limit > 0 ? Math.Min(Query.Limit, take) : take;
 
         return this with
         {
@@ -250,18 +254,20 @@ public record QueryBuilder
     
     public QueryBuilder Skip(uint skip)
     {
-        var offset = (Query.Offset ?? 0) + skip;
-        var limit = Query.Limit;
-        if (limit.HasValue)
+        if (skip == 0)
         {
-            limit = skip >= limit.Value ? 0 : limit.Value - skip;
+            return this;
         }
+        var offset = Query.Offset + skip;
+        var limit = Query.Limit > 0
+            ? (skip >= Query.Limit ? 0 : Query.Limit - skip)
+            : 0;
 
         return this with
         {
             Query = Query with
             {
-                Offset = Query.Offset.HasValue || skip > 0 ? offset : null,
+                Offset = offset,
                 Limit = limit,
             }
         };

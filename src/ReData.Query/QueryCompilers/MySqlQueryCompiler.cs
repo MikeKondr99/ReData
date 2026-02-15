@@ -6,21 +6,21 @@ public class MySqlQueryCompiler : SqlQueryCompiler
 {
     protected override void WriteLimitOffset(StringBuilder res, Core.Query query)
     {
-        if (query.Limit.HasValue && query.Offset is > 0)
+        if (query.Limit > 0 && query.Offset > 0)
         {
-            res.Append($"LIMIT {query.Limit.Value}\n OFFSET {query.Offset.Value}\n");
+            res.Append($"LIMIT {query.Limit}\n OFFSET {query.Offset}\n");
             return;
         }
 
-        if (query.Limit.HasValue)
+        if (query.Limit > 0)
         {
-            res.Append($"LIMIT {query.Limit.Value}\n");
+            res.Append($"LIMIT {query.Limit}\n");
             return;
         }
 
-        if (query.Offset is > 0)
+        if (query.Offset > 0)
         {
-            res.Append($"LIMIT 18446744073709551615\n OFFSET {query.Offset.Value}\n");
+            res.Append($"LIMIT 18446744073709551615\n OFFSET {query.Offset}\n");
         }
     }
 }

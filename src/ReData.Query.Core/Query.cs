@@ -13,9 +13,9 @@ public sealed record Query : IQuerySource
     public IReadOnlyList<OrderItem>? OrderBy { get; init; }
     public IReadOnlyList<ResolvedExpr>? GroupBy { get; init; }
 
-    public uint? Limit { get; init; }
+    public uint Limit { get; init; }
 
-    public uint? Offset { get; init; }
+    public uint Offset { get; init; }
 
     public required IResolvedTemplate Name { get; init; }
 

@@ -391,9 +391,9 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
-    [Fact(DisplayName = "Sequential limitOffset should return empty page when offset reaches limit")]
+    [Fact(DisplayName = "Sequential limitOffset should treat zero-limit state as no explicit limit")]
     [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/113")]
-    public async Task LimitOffsetAfterLimitOffset_WithOffsetBeyondLimitedData_ShouldReturnEmpty()
+    public async Task LimitOffsetAfterLimitOffset_WithOffsetBeyondLimitedData_ShouldFollowCurrentZeroAsNoLimitContract()
     {
         // Regression test for GH-113.
         // Arrange
@@ -407,7 +407,6 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
 
         // Assert
         var expect = assets.UsersDynamicArray
-            .Take(10)
             .Skip(10)
             .Take(10)
             .PrepareRecords();

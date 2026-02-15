@@ -6,22 +6,6 @@ using Query = Core.Query;
 
 public class SqlServerQueryCompiler : SqlQueryCompiler
 {
-    protected override void WriteWhere(StringBuilder res, Query query)
-    {
-        base.WriteWhere(res, query);
-        if (query.Limit == 0)
-        {
-            if (query.Where is null)
-            {
-                res.Append("WHERE 1 = 0\n");
-            }
-            else
-            {
-                res.Append("AND 1 = 0\n");
-            }
-        }
-    }
-
     protected override void WriteLimitOffset(StringBuilder res, Query query)
     {
         // var a = (query.Limit, query.Offset) switch
@@ -32,16 +16,15 @@ public class SqlServerQueryCompiler : SqlQueryCompiler
         //     (0,0) => res,
         // }
             
-        if (query.Offset.HasValue || query.Limit.HasValue || query.OrderBy?.Count > 0)
+        if (query.Offset > 0 || query.Limit > 0 || query.OrderBy?.Count > 0)
         {
-            res.Append($"OFFSET {query.Offset ?? 0} ROWS\n");
+            res.Append($"OFFSET {query.Offset} ROWS\n");
         }
         
         
-        if (query.Limit.HasValue)
+        if (query.Limit > 0)
         {
-            var fetchRows = query.Limit.Value == 0 ? 1 : query.Limit.Value;
-            res.Append($"FETCH FIRST {fetchRows} ROWS ONLY\n");
+            res.Append($"FETCH FIRST {query.Limit} ROWS ONLY\n");
         }
         else if (query is { OrderBy.Count: > 0 })
         {
@@ -54,7 +37,7 @@ public class SqlServerQueryCompiler : SqlQueryCompiler
         if (query.OrderBy?.Count is 0 or null)
         {
             // MsSql требует наличия ORDER BY для лимита
-            if (query.Limit.HasValue || query.Offset.HasValue)
+            if (query.Limit > 0 || query.Offset > 0)
             {
                 res.Append("ORDER BY (SELECT NULL)\n");
             }
