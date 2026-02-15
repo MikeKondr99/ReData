@@ -12,78 +12,34 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
     private Task<TestResult<ExportDatasetErrorResponse>> ExportEndpoint(ExportDataSetRequest req) =>
         App.Client.GETAsync<ExportDatasetEndpoint, ExportDataSetRequest, ExportDatasetErrorResponse>(req);
 
-    public static TheoryData<string, TransformationBlock, string> InvalidTransformationConfigurations => new()
+    public static TheoryData<string, string> InvalidTransformationConfigurations => new()
     {
         {
             "groupBy.items = null",
-            new GroupByTransformation
-            {
-                Groups =
-                [
-                    new ReData.DemoApp.Transformations.SelectItem
-                    {
-                        Field = "id",
-                        Expression = "id",
-                    }
-                ],
-                Items = null!,
-            }.Block(),
             "\"items\":null"
         },
         {
             "groupBy.groups = null",
-            new GroupByTransformation
-            {
-                Groups = null!,
-                Items =
-                [
-                    new ReData.DemoApp.Transformations.SelectItem
-                    {
-                        Field = "id",
-                        Expression = "id",
-                    }
-                ],
-            }.Block(),
             "\"groups\":null"
         },
         {
             "orderBy.items = null",
-            new OrderByTransformation
-            {
-                Items = null!,
-            }.Block(),
             "\"items\":null"
         },
         {
             "select.items = null",
-            new SelectTransformation
-            {
-                Items = null!,
-            }.Block(),
             "\"items\":null"
         },
         {
             "select.items = []",
-            new SelectTransformation
-            {
-                Items = [],
-            }.Block(),
             "\"items\":[]"
         },
         {
             "orderBy.items = []",
-            new OrderByTransformation
-            {
-                Items = [],
-            }.Block(),
             "\"items\":[]"
         },
         {
             "where.condition = \"\"",
-            new WhereTransformation
-            {
-                Condition = string.Empty,
-            }.Block(),
             "\"condition\":\"\""
         },
     };
@@ -144,8 +100,7 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
     [MemberData(nameof(InvalidTransformationConfigurations))]
     public async Task ExportDataset_WithInvalidTransformationConfiguration_ShouldReturnBadRequest(
         string caseName,
-        TransformationBlock transformation,
-        string expectedNullJsonFragment)
+        string expectedJsonFragment)
     {
         // Regression test for GH-116:
         // https://github.com/MikeKondr99/ReData/issues/116
@@ -158,7 +113,7 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                transformation,
+                BuildInvalidTransformation(caseName),
             ],
         };
 
@@ -169,7 +124,7 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
         var getRsp = await App.Client.GetAsync($"/api/datasets/{createdDataset.Id}");
         getRsp.StatusCode.Should().Be(HttpStatusCode.OK, caseName);
         var getBody = await getRsp.Content.ReadAsStringAsync();
-        getBody.Should().Contain(expectedNullJsonFragment, caseName);
+        getBody.Should().Contain(expectedJsonFragment, caseName);
 
         var exportReq = new ExportDataSetRequest
         {
@@ -184,4 +139,53 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
         exportRsp.StatusCode.Should().Be(HttpStatusCode.BadRequest, caseName);
         exportError.Message.Should().NotBeNullOrWhiteSpace(caseName);
     }
+
+    private static TransformationBlock BuildInvalidTransformation(string caseName) => caseName switch
+    {
+        "groupBy.items = null" => new GroupByTransformation
+        {
+            Groups =
+            [
+                new ReData.DemoApp.Transformations.SelectItem
+                {
+                    Field = "id",
+                    Expression = "id",
+                }
+            ],
+            Items = null!,
+        }.Block(),
+        "groupBy.groups = null" => new GroupByTransformation
+        {
+            Groups = null!,
+            Items =
+            [
+                new ReData.DemoApp.Transformations.SelectItem
+                {
+                    Field = "id",
+                    Expression = "id",
+                }
+            ],
+        }.Block(),
+        "orderBy.items = null" => new OrderByTransformation
+        {
+            Items = null!,
+        }.Block(),
+        "select.items = null" => new SelectTransformation
+        {
+            Items = null!,
+        }.Block(),
+        "select.items = []" => new SelectTransformation
+        {
+            Items = [],
+        }.Block(),
+        "orderBy.items = []" => new OrderByTransformation
+        {
+            Items = [],
+        }.Block(),
+        "where.condition = \"\"" => new WhereTransformation
+        {
+            Condition = string.Empty,
+        }.Block(),
+        _ => throw new ArgumentOutOfRangeException(nameof(caseName), caseName, "Unknown test case"),
+    };
 }
