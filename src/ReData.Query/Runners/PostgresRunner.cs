@@ -14,7 +14,7 @@ public sealed class PostgresRunner : IQueryRunner
     {
         if (connection is not NpgsqlConnection conn)
         {
-            throw new ArgumentException("Требуется SqlServerConnection");
+            throw new ArgumentException("Требуется PostgresConnection");
         }
         
         if (conn.State is not ConnectionState.Open)

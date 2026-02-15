@@ -5,6 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 **/**/appsettings.Development.json
 **/.env.local
+*.local.env
 
 .idea/**
 
