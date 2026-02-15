@@ -52,6 +52,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Mod(-4, 3)", -1)]
     [InlineData("Mod(4, -3)", 1)]
     [InlineData("Mod(-4, -3)", -1)]
+    [InlineData("If(Mod(10, 3) > 1.4, 1, 0)", 0)]
     public async Task Mod(string expr, object? expected)
     {
         await Test(expr, expected);
@@ -63,6 +64,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Rem(-9, 5)", 4)]
     [InlineData("Rem(0, 5)", 0)]
     [InlineData("Rem(10, -3)", 1)]
+    [InlineData("If(Rem(-10, 3) > 1.4, 1, 0)", 0)]
     public async Task Rem(string expr, object? expected)
     {
         await Test(expr, expected);
@@ -100,6 +102,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Sign(0.0)", 0)]
     [InlineData("Sign(2.1)", 1)]
     [InlineData("(-2.1).Sign()", -1)]
+    [InlineData("If(Sign(2.1) > 1.4, 1, 0)", 0)]
     [InlineData("Sign(null)", null)]
     public Task Sign(string expr, object? expected) => Test(expr, expected);
     

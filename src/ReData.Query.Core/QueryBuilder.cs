@@ -256,7 +256,7 @@ public record QueryBuilder
         var limit = Query.Limit;
         if (limit > 0)
         {
-            limit = Math.Min(limit, skip);
+            limit = Math.Max(limit - skip, 0);
         }
         return this with
         {

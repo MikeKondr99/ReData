@@ -71,9 +71,9 @@ public class MathFunctions : FunctionsDescriptor
             .Returns(Integer)
             .Templates(new()
             {
-                [PostgreSql | SqlServer] = $"({0} / {1})", 
+                [PostgreSql | SqlServer] = $"(CAST({0} AS BIGINT) / CAST({1} AS BIGINT))", 
                 [MySql] = $"({0} DIV {1})", 
-                [Oracle] = $"FLOOR({0} / {1})", 
+                [Oracle] = $"TRUNC({0} / {1})", 
                 [ClickHouse] = $"intDiv({0}, nullIf({1}, 0))" 
             });
 

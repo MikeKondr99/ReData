@@ -28,7 +28,6 @@ public class TransformEndpoint : Endpoint<
     TransformRequest,
     Results<Ok<TransformResponse>, BadRequest<TransformErrorResponse>, InternalServerError<TransformErrorResponse>>>
 {
-    public IQueryCompiler Compiler { get; } = Factory.CreateQueryCompiler(DatabaseType.PostgreSql);
 
     public override void Configure()
     {

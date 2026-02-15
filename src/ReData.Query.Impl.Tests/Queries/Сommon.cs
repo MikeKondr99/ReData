@@ -659,6 +659,35 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
+    public async Task GroupByIntegerDivisionInHavingUsesIntegerSemantics()
+    {
+        // Arrange
+        var qb = assets.UsersQuery
+            .GroupBy(["Mod(UserId, 2)"], new()
+            {
+                ["Bucket"] = "Mod(UserId, 2)",
+                ["ratio"] = "SUM(Age) / COUNT()",
+            })
+            .Where("ratio > 31.5")
+            .Expect("Valid query");
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        dynamic[] expect =
+        [
+            new
+            {
+                Bucket = 1,
+                ratio = 32,
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expect.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact]
     public async Task GroupByWithWhereBefore()
     {
         // Arrange
