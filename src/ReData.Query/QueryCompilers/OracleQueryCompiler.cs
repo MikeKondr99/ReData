@@ -9,11 +9,11 @@ public class OracleQueryCompiler : SqlQueryCompiler
     protected override void WriteLimitOffset(StringBuilder res, Query query)
     {
         // OFFSET 50 ROWS FETCH NEXT 100 ROWS ONLY;
-        if (query.Offset > 0 || query.Limit > 0)
+        if (query.Offset.HasValue || query.Limit.HasValue)
         {
-            res.Append($"OFFSET {query.Offset} ROWS\n");
+            res.Append($"OFFSET {query.Offset ?? 0} ROWS\n");
         }
-        if (query.Limit > 0)
+        if (query.Limit.HasValue)
         {
             res.Append($"FETCH NEXT {query.Limit} ROWS ONLY\n");
         }
@@ -37,7 +37,7 @@ public class OracleQueryCompiler : SqlQueryCompiler
     {
         if (query.OrderBy?.Count is 0 or null)
         {
-            if (query.Limit > 0)
+            if (query.Limit.HasValue)
             {
                 res.Append("ORDER BY ROWNUM\n");
             }

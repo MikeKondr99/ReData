@@ -70,12 +70,12 @@ public abstract class SqlQueryCompiler : IQueryCompiler
 
     protected virtual void WriteLimitOffset(StringBuilder res, Query query)
     {
-        if (query.Limit > 0)
+        if (query.Limit.HasValue)
         {
             res.Append($"LIMIT {query.Limit}\n");
         }
         
-        if (query.Offset > 0)
+        if (query.Offset is > 0)
         {
             res.Append($"OFFSET {query.Offset}\n");
         }

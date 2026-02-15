@@ -121,7 +121,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Where(string condition)
     {
         var qb = this;
-        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
+        if (Query.Select is not null || Query.Limit.HasValue || Query.Offset.HasValue)
         {
             qb = CreateCte();
         }
@@ -145,7 +145,7 @@ public record QueryBuilder
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> OrderBy(IReadOnlyList<(string expr, OrderItem.Type type)> order)
     {
         var qb = this;
-        if (Query.Select is not null || Query.Limit > 0 || Query.Offset > 0)
+        if (Query.Select is not null || Query.Limit.HasValue || Query.Offset.HasValue)
         {
             qb = CreateCte();
         }
@@ -237,34 +237,32 @@ public record QueryBuilder
     
     public QueryBuilder Take(uint take)
     {
-        var qb = this;
-        if (qb.Query.Limit > 0 || qb.Query.Offset > 0)
-        {
-            qb = qb.CreateCte();
-        }
+        var limit = Query.Limit.HasValue ? Math.Min(Query.Limit.Value, take) : take;
 
-        return qb with
+        return this with
         {
-            Query = qb.Query with
+            Query = Query with
             {
-                Limit = take
+                Limit = limit,
             }
         };
     }
     
     public QueryBuilder Skip(uint skip)
     {
-        var qb = this;
-        if (qb.Query.Limit > 0 || qb.Query.Offset > 0)
+        var offset = (Query.Offset ?? 0) + skip;
+        var limit = Query.Limit;
+        if (limit.HasValue)
         {
-            qb = qb.CreateCte();
+            limit = skip >= limit.Value ? 0 : limit.Value - skip;
         }
 
-        return qb with
+        return this with
         {
-            Query = qb.Query with
+            Query = Query with
             {
-                Offset = qb.Query.Offset + skip,
+                Offset = Query.Offset.HasValue || skip > 0 ? offset : null,
+                Limit = limit,
             }
         };
     }
