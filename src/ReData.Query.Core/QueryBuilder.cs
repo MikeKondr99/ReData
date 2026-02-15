@@ -237,27 +237,32 @@ public record QueryBuilder
     
     public QueryBuilder Take(uint take)
     {
-        if (Query.Limit > 0)
+        if (take == 0)
         {
-            take = Math.Min(Query.Limit, take);
+            return this;
         }
+        var limit = Query.Limit > 0 ? Math.Min(Query.Limit, take) : take;
+
         return this with
         {
             Query = Query with
             {
-                Limit = take
+                Limit = limit,
             }
         };
     }
     
     public QueryBuilder Skip(uint skip)
     {
-        var offset = skip + Query.Offset;
-        var limit = Query.Limit;
-        if (limit > 0)
+        if (skip == 0)
         {
-            limit = Math.Max(limit - skip, 0);
+            return this;
         }
+        var offset = Query.Offset + skip;
+        var limit = Query.Limit > 0
+            ? (skip >= Query.Limit ? 0 : Query.Limit - skip)
+            : 0;
+
         return this with
         {
             Query = Query with
