@@ -365,6 +365,56 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
+    [Fact(DisplayName = "Sequential limitOffset should preserve slicing semantics")]
+    [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/113")]
+    public async Task LimitOffsetAfterLimitOffset_ShouldApplySequentially()
+    {
+        // Regression test for GH-113.
+        // Arrange
+        var qb = assets.UsersQuery
+            .Skip(5)
+            .Take(10)
+            .Skip(7)
+            .Take(10);
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .Skip(5)
+            .Take(10)
+            .Skip(7)
+            .Take(10)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "Sequential limitOffset should return empty page when offset reaches limit")]
+    [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/113")]
+    public async Task LimitOffsetAfterLimitOffset_WithOffsetBeyondLimitedData_ShouldReturnEmpty()
+    {
+        // Regression test for GH-113.
+        // Arrange
+        var qb = assets.UsersQuery
+            .Take(10)
+            .Skip(10)
+            .Take(10);
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .Take(10)
+            .Skip(10)
+            .Take(10)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
     [Fact]
     public async Task BugWhereLeak()
     {

@@ -237,13 +237,15 @@ public record QueryBuilder
     
     public QueryBuilder Take(uint take)
     {
-        if (Query.Limit > 0)
+        var qb = this;
+        if (qb.Query.Limit > 0 || qb.Query.Offset > 0)
         {
-            take = Math.Min(Query.Limit, take);
+            qb = qb.CreateCte();
         }
-        return this with
+
+        return qb with
         {
-            Query = Query with
+            Query = qb.Query with
             {
                 Limit = take
             }
@@ -252,18 +254,17 @@ public record QueryBuilder
     
     public QueryBuilder Skip(uint skip)
     {
-        var offset = skip + Query.Offset;
-        var limit = Query.Limit;
-        if (limit > 0)
+        var qb = this;
+        if (qb.Query.Limit > 0 || qb.Query.Offset > 0)
         {
-            limit = Math.Max(limit - skip, 0);
+            qb = qb.CreateCte();
         }
-        return this with
+
+        return qb with
         {
-            Query = Query with
+            Query = qb.Query with
             {
-                Offset = offset,
-                Limit = limit,
+                Offset = qb.Query.Offset + skip,
             }
         };
     }
