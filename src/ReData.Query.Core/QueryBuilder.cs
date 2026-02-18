@@ -7,6 +7,7 @@ using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Value;
 using ReData.Query.Lang.Expressions;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Core;
 
@@ -17,6 +18,7 @@ public record QueryBuilder
     public IFunctionStorage Functions { get; set; }
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
+    private IReadOnlyDictionary<string, IValue> Variables { get; init; } = new Dictionary<string, IValue>();
     private IEnumerable<Field> Fields => Query.Fields();
 
     public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions)
@@ -126,7 +128,14 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = qb.Resolve(condition).NotAggregated().Bool();
+        var resolvedScript = qb.ResolveScript(condition);
+        if (resolvedScript.UnwrapErr(out var scriptErrors, out var scriptResult))
+        {
+            return Result.Error(Once.From(scriptErrors).AsEnumerable<IReadOnlyList<ExprError>>());
+        }
+
+        ResolutionResult res = scriptResult.Expression;
+        res = res.NotAggregated().Bool();
 
         if (res.UnwrapErr(out var err, out var where))
         {
@@ -138,7 +147,8 @@ public record QueryBuilder
             Query = qb.Query with
             {
                 Where = [..qb.Query.Where ?? [], where]
-            }
+            },
+            Variables = MergeVariables(qb.Variables, scriptResult.Variables),
         };
     }
     
@@ -275,26 +285,53 @@ public record QueryBuilder
     
     private Result<ResolvedExpr, IReadOnlyList<ExprError>> Resolve(string expr)
     {
-        var resExpr = Expr.Parse(expr);
-        if (!resExpr.Unwrap(out var expression, out var error))
+        return ResolveScript(expr).Map(r => r.Expression);
+    }
+
+    private Result<ResolvedScriptExpr, IReadOnlyList<ExprError>> ResolveScript(string expr)
+    {
+        var resScript = Expr.ParseScript(expr);
+        if (!resScript.Unwrap(out var script, out var error))
         {
             return Result.Error<IReadOnlyList<ExprError>>([error]);
+        }
+
+        var scopedVariables = new Dictionary<string, IValue>()
+        {
+            ["$user_id"] = new TextValue("Demonmiker"),
+        };
+        foreach (var variable in Variables)
+        {
+            scopedVariables[variable.Key] = variable.Value;
         }
 
         var context = new ResolutionContext()
         {
             Errors = [],
             Functions = Functions,
-            Variables = new() { ["$user_id"] = new TextValue("Demonmiker") },
+            Variables = scopedVariables,
             QuerySource = Query.From
         };
-        var res = Resolver.ResolveExpr(expression, context);
-        if (res.HasValue)
+        var res = Resolver.ResolveScript(script, context);
+        if (res is not null)
         {
             return res;
         }
 
         return context.Errors;
+    }
+
+    private static IReadOnlyDictionary<string, IValue> MergeVariables(
+        IReadOnlyDictionary<string, IValue> globalVariables,
+        IReadOnlyDictionary<string, IValue> newVariables)
+    {
+        var merged = new Dictionary<string, IValue>(globalVariables);
+        foreach (var variable in newVariables)
+        {
+            merged[variable.Key] = variable.Value;
+        }
+
+        return merged;
     }
 
     public Query Build()

@@ -26,6 +26,13 @@ public record ResolutionContext
     public required Dictionary<string, IValue> Variables { get; init; }
 }
 
+public sealed record ResolvedScriptExpr
+{
+    public required ResolvedExpr Expression { get; init; }
+
+    public required IReadOnlyDictionary<string, IValue> Variables { get; init; }
+}
+
 public sealed class ExpressionResolver
 {
     public required ILiteralResolver LiteralResolver { private get; init; }
@@ -47,6 +54,83 @@ public sealed class ExpressionResolver
         return result;
     }
 
+    public ResolvedScriptExpr? ResolveScript(ExpressionScript script, ResolutionContext context)
+    {
+        // 1) Собираем локальные переменные из script.Variables.
+        var localVariables = ResolveLocalVariables(script, context);
+
+        if (context.Errors.Count > 0)
+        {
+            return null;
+        }
+
+        // 2) Формируем область видимости: глобальные + локальные.
+        var scopeVariables = MergeVariables(context.Variables, localVariables);
+
+        // 3) Резолвим финальное выражение в локальном скоупе.
+        var localContext = context with
+        {
+            Variables = scopeVariables,
+        };
+
+        var resolved = RecursiveResolveExpr(script.Expression, localContext);
+        if (!resolved.HasValue)
+        {
+            return null;
+        }
+
+        return new ResolvedScriptExpr
+        {
+            Expression = resolved.Value,
+            Variables = localVariables,
+        };
+    }
+
+    private static Dictionary<string, IValue> ResolveLocalVariables(ExpressionScript script, ResolutionContext context)
+    {
+        var localVariables = new Dictionary<string, IValue>();
+        foreach (var declaration in script.Variables)
+        {
+            if (context.Variables.ContainsKey(declaration.Name) || localVariables.ContainsKey(declaration.Name))
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Переменная '{declaration.Name}' уже существует"
+                });
+                continue;
+            }
+
+            var value = TryGetDirectLiteralValue(declaration.Expression);
+            if (value is null)
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Переменная '{declaration.Name}' должна быть литералом"
+                });
+                continue;
+            }
+
+            localVariables[declaration.Name] = value;
+        }
+
+        return localVariables;
+    }
+
+    private static Dictionary<string, IValue> MergeVariables(
+        IReadOnlyDictionary<string, IValue> globalVariables,
+        IReadOnlyDictionary<string, IValue> localVariables)
+    {
+        var merged = new Dictionary<string, IValue>(globalVariables);
+        foreach (var local in localVariables)
+        {
+            merged[local.Key] = local.Value;
+        }
+
+        return merged;
+    }
+
     private ResolvedExpr? RecursiveResolveExpr(Expr expr, ResolutionContext context)
     {
         return expr switch
@@ -66,10 +150,9 @@ public sealed class ExpressionResolver
 
     private ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
-        if (context.Variables.Get(name.Value) is ISome<IValue>(var vr))
+        if (TryResolveVariableExpr(name, context.Variables, out var variableExpr))
         {
-            Expr expr = Expr.Parse(vr.ToReDataLiteral()).Unwrap();
-            ResolvedExpr rexpr = RecursiveResolveExpr(expr, context)!.Value;
+            ResolvedExpr rexpr = RecursiveResolveExpr(variableExpr, context)!.Value;
 
             return rexpr with
             {
@@ -208,6 +291,31 @@ public sealed class ExpressionResolver
             NameExpr varName when context.Variables.TryGetValue(varName.Value, out var value) => value,
             _ => null
         };
+    }
+
+    private static IValue? TryGetDirectLiteralValue(Expr expr)
+    {
+        return expr switch
+        {
+            IntegerLiteral(var v) => new IntegerValue(v),
+            NumberLiteral(var v) => new NumberValue(v),
+            BooleanLiteral(var v) => new BoolValue(v),
+            StringLiteral(var v) => new TextValue(v),
+            NullLiteral => default(NullValue),
+            _ => null
+        };
+    }
+
+    private static bool TryResolveVariableExpr(NameExpr name, IReadOnlyDictionary<string, IValue> variables, out Expr expr)
+    {
+        expr = default!;
+        if (!variables.TryGetValue(name.Value, out var value))
+        {
+            return false;
+        }
+
+        expr = Expr.Parse(value.ToReDataLiteral()).Unwrap();
+        return true;
     }
 
     private static string ArgOrdinal(int index) => index switch

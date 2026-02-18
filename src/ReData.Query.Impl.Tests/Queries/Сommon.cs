@@ -71,6 +71,35 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
+    [Fact]
+    public async Task WhereVariableShouldBeAvailableInNextBlocks()
+    {
+        // Arrange
+        var qb = assets.UsersQuery
+            .Where("var threshold = 5; UserId > threshold")
+            .Select(new()
+            {
+                ["UserId"] = "UserId",
+                ["ThresholdPlusOne"] = "threshold + 1",
+            })
+            .Expect("Valid query");
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        var expect = assets.UsersDynamicArray
+            .Where(u => u.UserId > 5)
+            .Select(u => new
+            {
+                u.UserId,
+                ThresholdPlusOne = 6,
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
 
     [Fact]
     public async Task OrderBySelectComboQuery()

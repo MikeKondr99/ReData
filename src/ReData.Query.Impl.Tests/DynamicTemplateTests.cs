@@ -5,6 +5,7 @@ using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 using ReData.Query.Impl.Functions;
 using ReData.Query.Impl.LiteralBuilders;
 using ReData.Query.Lang.Expressions;
@@ -65,6 +66,47 @@ public class DynamicTemplateTests
 
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle().Which.Message.Should().Contain("Функция Field");
+    }
+
+    [Fact]
+    public void ResolveScript_UsesLocalLiteralVariable()
+    {
+        var (resolver, context) = BuildContext();
+        var script = Expr.ParseScript("var a = 10; a + 1").Unwrap();
+
+        var resolved = resolver.ResolveScript(script, context);
+
+        resolved.Should().NotBeNull();
+        resolved!.Variables.Should().ContainKey("a");
+        context.Variables.Should().NotContainKey("a");
+        context.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ResolveScript_ShouldFailWhenVariableDuplicatesGlobalOne()
+    {
+        var (resolver, context) = BuildContext();
+        context.Variables["a"] = new IntegerValue(100);
+        var script = Expr.ParseScript("var a = 10; a + 1").Unwrap();
+
+        var resolved = resolver.ResolveScript(script, context);
+
+        resolved.Should().BeNull();
+        context.Errors.Should().ContainSingle();
+        context.Errors[0].Message.Should().Contain("уже существует");
+    }
+
+    [Fact]
+    public void ResolveScript_ShouldFailWhenVariableIsNotLiteral()
+    {
+        var (resolver, context) = BuildContext();
+        var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
+
+        var resolved = resolver.ResolveScript(script, context);
+
+        resolved.Should().BeNull();
+        context.Errors.Should().ContainSingle();
+        context.Errors[0].Message.Should().Contain("должна быть литералом");
     }
 
     private static (ExpressionResolver Resolver, ResolutionContext Context) BuildContext()
