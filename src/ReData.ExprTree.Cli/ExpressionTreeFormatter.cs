@@ -80,8 +80,7 @@ public static class ExpressionTreeFormatter
                 graph.Elements.Add(new DotEdge()
                     .From(bendNodeId)
                     .To(childId)
-                    .WithAttribute("tailport", "s")
-                    .WithAttribute("headport", "n"));
+                    .WithAttribute("tailport", "s"));
                 continue;
             }
 
@@ -114,8 +113,7 @@ public static class ExpressionTreeFormatter
 
                 graph.Elements.Add(new DotEdge()
                     .From(bendNodeId)
-                    .To(childId)
-                    .WithAttribute("headport", "n"));
+                    .To(childId));
                 continue;
             }
 
@@ -145,15 +143,13 @@ public static class ExpressionTreeFormatter
 
                 graph.Elements.Add(new DotEdge()
                     .From(bendNodeId)
-                    .To(childId)
-                    .WithAttribute("headport", "n"));
+                    .To(childId));
                 continue;
             }
 
             var directEdge = new DotEdge()
                 .From(currentId)
-                .To(childId)
-                .WithAttribute("headport", "n");
+                .To(childId);
 
             if (func.Arguments.Count > 1)
             {
@@ -184,15 +180,17 @@ public static class ExpressionTreeFormatter
     private static void AddSourceNode(string sourceText, DotGraph graph, string rootNodeId)
     {
         var sourceId = "source";
-        var sourceLabel = sourceText.Replace("\r", string.Empty).Replace("\n", "\\n");
+        var sourceLabel = sourceText
+            .Replace("\r", string.Empty)
+            .Replace("\\r\\n", "\n")
+            .Replace("\\n", "\n");
         graph.Elements.Add(new DotNode()
             .WithIdentifier(sourceId)
             .WithLabel(sourceLabel)
             .WithAttribute("shape", "box"));
         graph.Elements.Add(new DotEdge()
             .From(sourceId)
-            .To(rootNodeId)
-            .WithAttribute("headport", "n"));
+            .To(rootNodeId));
     }
 
     private static void AddSqlLayer(
@@ -265,18 +263,23 @@ public static class ExpressionTreeFormatter
                 continue;
             }
 
-            var anchorTokenIndex = ResolveAnchorTokenIndex(expr, tokenIndices);
-            graph.Elements.Add(new DotEdge()
-                .From(exprNodeId)
-                .To(tokenNodes[anchorTokenIndex])
-                .WithStyle("dashed")
-                .WithColor("steelblue4")
-                .WithAttribute("headport", "n")
-                .WithAttribute("weight", "20"));
+            var primaryTokenIndices = ResolvePrimaryTokenIndices(expr, tokenIndices, sqlTrace.Tokens);
+            foreach (var tokenIndex in primaryTokenIndices)
+            {
+                graph.Elements.Add(new DotEdge()
+                    .From(exprNodeId)
+                    .To(tokenNodes[tokenIndex])
+                    .WithStyle("dashed")
+                    .WithColor("steelblue4")
+                    .WithAttribute("headport", "n")
+                    .WithAttribute("weight", "20"));
+            }
+
+            var primaryTokenSet = primaryTokenIndices.ToHashSet();
 
             foreach (var tokenIndex in tokenIndices)
             {
-                if (tokenIndex == anchorTokenIndex)
+                if (primaryTokenSet.Contains(tokenIndex))
                 {
                     continue;
                 }
@@ -292,14 +295,53 @@ public static class ExpressionTreeFormatter
         }
     }
 
-    private static int ResolveAnchorTokenIndex(Expr expr, IReadOnlyList<int> tokenIndices)
+    private static IReadOnlyList<int> ResolvePrimaryTokenIndices(
+        Expr expr,
+        IReadOnlyList<int> tokenIndices,
+        IReadOnlyList<SqlTokenTrace> tokens)
     {
-        if (expr is FuncExpr { Kind: FuncExprKind.Binary })
+        var exprLabel = NormalizeForMatch(GetLabel(expr));
+        var matchingIndices = tokenIndices
+            .Where(i => string.Equals(NormalizeForMatch(tokens[i].Token), exprLabel, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        if (matchingIndices.Length > 0)
         {
-            return tokenIndices[tokenIndices.Count / 2];
+            return matchingIndices;
         }
 
-        return tokenIndices[0];
+        if (expr is FuncExpr { Kind: FuncExprKind.Binary })
+        {
+            return [tokenIndices[tokenIndices.Count / 2]];
+        }
+
+        if (expr is FuncExpr)
+        {
+            var firstToken = NormalizeForMatch(tokens[tokenIndices[0]].Token);
+            var repeatedStartTokens = tokenIndices
+                .Where(i => string.Equals(NormalizeForMatch(tokens[i].Token), firstToken, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            if (repeatedStartTokens.Length > 1)
+            {
+                return repeatedStartTokens;
+            }
+
+            return [tokenIndices[0]];
+        }
+
+        return [tokenIndices[0]];
+    }
+
+    private static string NormalizeForMatch(string token)
+    {
+        var normalized = token.Trim();
+        if (normalized.Length >= 2 && normalized[0] == '"' && normalized[^1] == '"')
+        {
+            normalized = normalized[1..^1];
+        }
+
+        normalized = normalized.Trim('(', ')', '[', ']', '{', '}', ',', ';');
+
+        return normalized;
     }
 
     private static string EscapeSqlTokenLabel(string token)
