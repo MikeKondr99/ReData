@@ -62,6 +62,50 @@ public abstract record Expr
         }
     }
 
+    public static Result<ExpressionScript, ExprError> ParseScript(string s)
+    {
+        if (Global.MemoryCache.TryGetValue<ExpressionScript>(s, out var result))
+        {
+            return result;
+        }
+
+        using var act = activitySource.StartActivity("expression script parsing");
+        act?.SetTag("expression", s);
+        try
+        {
+            var chars = new AntlrInputStream(s);
+            var lexer = new LangLexer(chars);
+            lexer.AddErrorListener(new TokenErrorListener());
+            var tokens = new CommonTokenStream(lexer);
+            tokens.Fill();
+            var parser = new LangParser(tokens);
+            parser.AddErrorListener(new ErrorListener());
+            var script = new ExpressionParser().VisitScript(parser.start());
+            Global.MemoryCache.GetOrCreate<ExpressionScript>(s, (c) =>
+            {
+                c.SlidingExpiration = TimeSpan.FromMinutes(30);
+                return script;
+            });
+            return Result.Ok(script);
+        }
+        catch (ExprErrorException e)
+        {
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
+            return e.Error;
+        }
+        catch (Exception e)
+        {
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
+            return new ExprError()
+            {
+                Span = new ExprSpan(1, 1, 100, 100),
+                Message = e.Message
+            };
+        }
+    }
+
     public override int GetHashCode()
     {
         return 17;

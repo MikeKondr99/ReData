@@ -145,4 +145,31 @@ public class ParsingTests
         }, options);
 
     }
+
+    [Fact]
+    public void ShouldIgnoreVariableDeclarationsAndReturnFinalExpression()
+    {
+        var expr = Expr.Parse("var a = 12; var b = 'x'; 1 + 2").UnwrapOk().Value;
+        expr.ToString().Should().Be("(1 + 2)");
+    }
+
+    [Fact]
+    public void ShouldAllowAnyExpressionInVariableValue()
+    {
+        var expr = Expr.Parse("var a = 1 + 2; 3").UnwrapOk().Value;
+        expr.ToString().Should().Be("3");
+    }
+
+    [Fact]
+    public void ShouldExposeVariablesInScriptResponse()
+    {
+        var script = Expr.ParseScript("var a = 1 + 2; var b = AVG(age); a + b").UnwrapOk().Value;
+
+        script.Variables.Should().HaveCount(2);
+        script.Variables[0].Name.Should().Be("a");
+        script.Variables[0].Expression.ToString().Should().Be("(1 + 2)");
+        script.Variables[1].Name.Should().Be("b");
+        script.Variables[1].Expression.ToString().Should().Be("AVG([age])");
+        script.Expression.ToString().Should().Be("([a] + [b])");
+    }
 }

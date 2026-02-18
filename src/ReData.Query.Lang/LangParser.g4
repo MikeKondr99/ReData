@@ -2,7 +2,10 @@
 options { tokenVocab=LangLexer; }
 
 start:
-    expr EOF;
+    varDecl* expr EOF;
+
+varDecl
+    : VAR name EQUAL expr SEMICOLON;
 
 expr
     : MINUS expr #unary

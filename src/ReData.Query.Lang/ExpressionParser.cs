@@ -10,9 +10,26 @@ namespace ReData.Query.Lang;
 
 internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 {
+    public ExpressionScript VisitScript(LangParser.StartContext context)
+    {
+        var variables = context.varDecl()
+            .Select(declaration => new VariableDeclaration
+            {
+                Name = UnescapeName(declaration.name().GetText()),
+                Expression = Visit(declaration.expr()),
+            })
+            .ToArray();
+
+        return new ExpressionScript
+        {
+            Variables = variables,
+            Expression = VisitStart(context),
+        };
+    }
+
     public override Expr VisitStart(LangParser.StartContext context)
     {
-        return Visit(context.children[0]);
+        return Visit(context.children[^2]);
     }
 
     public override Expr VisitUnary(LangParser.UnaryContext context)
@@ -65,13 +82,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 
     public override Expr VisitName(LangParser.NameContext context)
     {
-        var name = context.GetText();
-        if (name[0] is '[' && name[^1] is ']')
-        {
-            name = name[1..^1];
-        }
-
-        name = EscapeRegex().Replace(name, "]");
+        var name = UnescapeName(context.GetText());
 
         return new NameExpr(name)
         {
@@ -207,4 +218,14 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 
     [GeneratedRegex(@"\\\]")]
     private static partial Regex EscapeRegex();
+
+    private static string UnescapeName(string name)
+    {
+        if (name[0] is '[' && name[^1] is ']')
+        {
+            name = name[1..^1];
+        }
+
+        return EscapeRegex().Replace(name, "]");
+    }
 }
