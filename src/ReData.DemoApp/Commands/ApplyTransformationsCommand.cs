@@ -1,6 +1,7 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.Extensions;
+using Npgsql;
 using Pattern.Unions;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Database.Migrations;
@@ -8,7 +9,10 @@ using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
+using ReData.Query;
 using ReData.Query.Common;
+using ReData.Query.Runners;
+using Factory = ReData.Query.Factory;
 using QueryBuilder = ReData.Query.Core.QueryBuilder;
 
 namespace ReData.DemoApp.Commands;
@@ -39,7 +43,12 @@ public class ApplyTransformationsCommandHandler(DwhService dwhService)
         var i = 0;
         try
         {
-            var query = dwhService.GetQueryBuilder(command.DataConnectorId);
+            await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
+            var variableRuntime = new RunnerVariableRuntime(
+                Factory.CreateQueryRunner(DatabaseType.PostgreSql),
+                connection);
+
+            var query = dwhService.GetQueryBuilder(command.DataConnectorId, variableRuntime);
             for (i = 0; i < command.Transformations.Count; i++)
             {
                 var transformation = command.Transformations[i];

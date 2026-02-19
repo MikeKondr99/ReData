@@ -18,28 +18,37 @@ public record QueryBuilder
     public IFunctionStorage Functions { get; set; }
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
-    private IReadOnlyDictionary<string, IValue> Variables { get; init; } = new Dictionary<string, IValue>();
+    private IReadOnlyDictionary<string, QueryVariable> Variables { get; init; } =
+        new Dictionary<string, QueryVariable>();
+    private IVariableRuntime VariableRuntime { get; init; } = DisabledVariableRuntime.Instance;
     private IEnumerable<Field> Fields => Query.Fields();
 
-    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions)
+    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions, IVariableRuntime? variableRuntime = null)
     {
         Query = query;
         Resolver = resolver;
         Functions = functions;
+        VariableRuntime = variableRuntime ?? DisabledVariableRuntime.Instance;
     }
 
-    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions)
+    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions, IVariableRuntime? variableRuntime = null)
     {
         return new QueryBuilder(new Query()
             {
                 Name = resolver.ResolveName(["DualQuery"]),
             },
             resolver,
-            functions
+            functions,
+            variableRuntime
         );
     }
     
-    public static QueryBuilder FromTable(ExpressionResolver resolver, IFunctionStorage functions, ReadOnlySpan<string> path, IReadOnlyList<(string name, string column, FieldType type)> fields)
+    public static QueryBuilder FromTable(
+        ExpressionResolver resolver,
+        IFunctionStorage functions,
+        ReadOnlySpan<string> path,
+        IReadOnlyList<(string name, string column, FieldType type)> fields,
+        IVariableRuntime? variableRuntime = null)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -75,7 +84,8 @@ public record QueryBuilder
             }).ToArray()
         },
         resolver,
-        functions);
+        functions,
+        variableRuntime);
     }
 
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Select(Dictionary<string, string> select)
@@ -296,9 +306,9 @@ public record QueryBuilder
             return Result.Error<IReadOnlyList<ExprError>>([error]);
         }
 
-        var scopedVariables = new Dictionary<string, IValue>()
+        var scopedVariables = new Dictionary<string, QueryVariable>()
         {
-            ["$user_id"] = new TextValue("Demonmiker"),
+            ["$user_id"] = QueryVariable.FromValue("$user_id", new TextValue("Demonmiker")),
         };
         foreach (var variable in Variables)
         {
@@ -310,7 +320,9 @@ public record QueryBuilder
             Errors = [],
             Functions = Functions,
             Variables = scopedVariables,
-            QuerySource = Query.From
+            VariableRuntime = VariableRuntime,
+            QuerySource = Query.From ?? Query,
+            VariableQuerySource = Query,
         };
         var res = Resolver.ResolveScript(script, context);
         if (res is not null)
@@ -321,11 +333,11 @@ public record QueryBuilder
         return context.Errors;
     }
 
-    private static IReadOnlyDictionary<string, IValue> MergeVariables(
-        IReadOnlyDictionary<string, IValue> globalVariables,
-        IReadOnlyDictionary<string, IValue> newVariables)
+    private static IReadOnlyDictionary<string, QueryVariable> MergeVariables(
+        IReadOnlyDictionary<string, QueryVariable> globalVariables,
+        IReadOnlyDictionary<string, QueryVariable> newVariables)
     {
-        var merged = new Dictionary<string, IValue>(globalVariables);
+        var merged = new Dictionary<string, QueryVariable>(globalVariables);
         foreach (var variable in newVariables)
         {
             merged[variable.Key] = variable.Value;

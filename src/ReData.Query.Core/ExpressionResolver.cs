@@ -19,18 +19,22 @@ public record ResolutionContext
 {
     public required IQuerySource QuerySource { get; init; }
 
+    public Query? VariableQuerySource { get; init; }
+
     public required List<ExprError> Errors { get; init; }
 
     public required IFunctionStorage Functions { get; init; }
 
-    public required Dictionary<string, IValue> Variables { get; init; }
+    public required Dictionary<string, QueryVariable> Variables { get; init; }
+
+    public required IVariableRuntime VariableRuntime { get; init; }
 }
 
 public sealed record ResolvedScriptExpr
 {
     public required ResolvedExpr Expression { get; init; }
 
-    public required IReadOnlyDictionary<string, IValue> Variables { get; init; }
+    public required IReadOnlyDictionary<string, QueryVariable> Variables { get; init; }
 }
 
 public sealed class ExpressionResolver
@@ -86,12 +90,14 @@ public sealed class ExpressionResolver
         };
     }
 
-    private static Dictionary<string, IValue> ResolveLocalVariables(ExpressionScript script, ResolutionContext context)
+    private Dictionary<string, QueryVariable> ResolveLocalVariables(ExpressionScript script, ResolutionContext context)
     {
-        var localVariables = new Dictionary<string, IValue>();
+        var localVariables = new Dictionary<string, QueryVariable>();
+        var scopeVariables = new Dictionary<string, QueryVariable>(context.Variables);
+
         foreach (var declaration in script.Variables)
         {
-            if (context.Variables.ContainsKey(declaration.Name) || localVariables.ContainsKey(declaration.Name))
+            if (scopeVariables.ContainsKey(declaration.Name))
             {
                 context.Errors.Add(new ExprError()
                 {
@@ -101,28 +107,64 @@ public sealed class ExpressionResolver
                 continue;
             }
 
-            var value = TryGetDirectLiteralValue(declaration.Expression);
-            if (value is null)
+            var scopeContext = context with
+            {
+                Variables = scopeVariables,
+            };
+
+            var declarationContext = scopeContext with
+            {
+                QuerySource = context.VariableQuerySource ?? context.QuerySource,
+            };
+
+            var resolved = RecursiveResolveExpr(declaration.Expression, declarationContext);
+            if (!resolved.HasValue)
+            {
+                continue;
+            }
+
+            if (!resolved.Value.Type.IsConstant && !resolved.Value.Type.Aggregated)
             {
                 context.Errors.Add(new ExprError()
                 {
                     Span = declaration.Expression.Span,
-                    Message = $"Переменная '{declaration.Name}' должна быть литералом"
+                    Message = $"Переменная '{declaration.Name}' должна быть константой или агрегацией"
                 });
                 continue;
             }
 
-            localVariables[declaration.Name] = value;
+            var literalValue = TryGetDirectLiteralValue(declaration.Expression);
+            if (literalValue is not null)
+            {
+                var valueVariable = QueryVariable.FromValue(declaration.Name, literalValue);
+                localVariables[declaration.Name] = valueVariable;
+                scopeVariables[declaration.Name] = valueVariable;
+                continue;
+            }
+
+            if (context.VariableQuerySource is null)
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Переменная '{declaration.Name}' не может быть вычислена в текущем контексте"
+                });
+                continue;
+            }
+
+            var variable = context.VariableRuntime.Create(declaration.Name, context.VariableQuerySource, resolved.Value);
+            localVariables[declaration.Name] = variable;
+            scopeVariables[declaration.Name] = variable;
         }
 
         return localVariables;
     }
 
-    private static Dictionary<string, IValue> MergeVariables(
-        IReadOnlyDictionary<string, IValue> globalVariables,
-        IReadOnlyDictionary<string, IValue> localVariables)
+    private static Dictionary<string, QueryVariable> MergeVariables(
+        IReadOnlyDictionary<string, QueryVariable> globalVariables,
+        IReadOnlyDictionary<string, QueryVariable> localVariables)
     {
-        var merged = new Dictionary<string, IValue>(globalVariables);
+        var merged = new Dictionary<string, QueryVariable>(globalVariables);
         foreach (var local in localVariables)
         {
             merged[local.Key] = local.Value;
@@ -150,32 +192,14 @@ public sealed class ExpressionResolver
 
     private ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
-        if (TryResolveVariableExpr(name, context.Variables, out var variableExpr))
+        if (TryResolveVariable(name, context, out var variableResolved))
         {
-            ResolvedExpr rexpr = RecursiveResolveExpr(variableExpr, context)!.Value;
-
-            return rexpr with
-            {
-                Expression = name,
-            };
+            return variableResolved;
         }
 
-        var source = context.QuerySource;
-        var fieldOption = source.Fields().Get(name.Value);
-        if (fieldOption is ISome<Field>(var field))
+        if (TryResolveField(name, context, out var fieldResolved))
         {
-            return new ResolvedExpr
-            {
-                Expression = name,
-                Template = Template.Template.Create($"{source.Name?.Template}.{field.Template}"),
-                Type = new ExprType()
-                {
-                    DataType = field.Type.Type,
-                    CanBeNull = field.Type.CanBeNull,
-                    IsConstant = false,
-                    Aggregated = false,
-                },
-            };
+            return fieldResolved;
         }
 
         context.Errors.Add(new ExprError()
@@ -184,6 +208,68 @@ public sealed class ExpressionResolver
             Message = $"Поле '{name.Value}' не найдено"
         });
         return null;
+    }
+
+    private bool TryResolveVariable(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
+    {
+        resolved = null;
+        if (!context.Variables.TryGetValue(name.Value, out var variable))
+        {
+            return false;
+        }
+
+        var resolvedValue = context.VariableRuntime.Resolve(variable);
+        if (resolvedValue.UnwrapErr(out var error, out var value))
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = name.Span,
+                Message = error,
+            });
+            return true;
+        }
+
+        variable.Value = value;
+        context.Variables[name.Value] = variable;
+
+        var valueExpr = Expr.Parse(value.ToReDataLiteral()).Unwrap();
+        var resolvedExpr = RecursiveResolveExpr(valueExpr, context);
+        if (!resolvedExpr.HasValue)
+        {
+            return true;
+        }
+
+        resolved = resolvedExpr.Value with
+        {
+            Expression = name,
+        };
+
+        return true;
+    }
+
+    private static bool TryResolveField(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
+    {
+        resolved = null;
+        var source = context.QuerySource;
+        var fieldOption = source.Fields().Get(name.Value);
+        if (fieldOption is not ISome<Field>(var field))
+        {
+            return false;
+        }
+
+        resolved = new ResolvedExpr
+        {
+            Expression = name,
+            Template = Template.Template.Create($"{source.Name?.Template}.{field.Template}"),
+            Type = new ExprType()
+            {
+                DataType = field.Type.Type,
+                CanBeNull = field.Type.CanBeNull,
+                IsConstant = false,
+                Aggregated = false,
+            },
+        };
+        return true;
     }
 
 
@@ -241,7 +327,9 @@ public sealed class ExpressionResolver
         {
             Fields = context.QuerySource.Fields().ToArray(),
             Arguments = constArguments ?? Array.Empty<IValue?>(),
-            Variables = context.Variables,
+            Variables = context.Variables
+                .Where(v => v.Value.Value is not null)
+                .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
 
         var template = function.Template.GetTemplate(templateContext);
@@ -288,7 +376,7 @@ public sealed class ExpressionResolver
             BooleanLiteral(var v) => new BoolValue(v),
             StringLiteral(var v) => new TextValue(v),
             NullLiteral => default(NullValue),
-            NameExpr varName when context.Variables.TryGetValue(varName.Value, out var value) => value,
+            NameExpr varName when context.Variables.TryGetValue(varName.Value, out var variable) => variable.Value,
             _ => null
         };
     }
@@ -304,18 +392,6 @@ public sealed class ExpressionResolver
             NullLiteral => default(NullValue),
             _ => null
         };
-    }
-
-    private static bool TryResolveVariableExpr(NameExpr name, IReadOnlyDictionary<string, IValue> variables, out Expr expr)
-    {
-        expr = default!;
-        if (!variables.TryGetValue(name.Value, out var value))
-        {
-            return false;
-        }
-
-        expr = Expr.Parse(value.ToReDataLiteral()).Unwrap();
-        return true;
     }
 
     private static string ArgOrdinal(int index) => index switch

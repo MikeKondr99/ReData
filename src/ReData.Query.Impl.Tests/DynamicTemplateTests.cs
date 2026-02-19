@@ -86,7 +86,7 @@ public class DynamicTemplateTests
     public void ResolveScript_ShouldFailWhenVariableDuplicatesGlobalOne()
     {
         var (resolver, context) = BuildContext();
-        context.Variables["a"] = new IntegerValue(100);
+        context.Variables["a"] = QueryVariable.FromValue("a", new IntegerValue(100));
         var script = Expr.ParseScript("var a = 10; a + 1").Unwrap();
 
         var resolved = resolver.ResolveScript(script, context);
@@ -97,7 +97,7 @@ public class DynamicTemplateTests
     }
 
     [Fact]
-    public void ResolveScript_ShouldFailWhenVariableIsNotLiteral()
+    public void ResolveScript_ShouldFailWhenComplexVariableRuntimeIsDisabled()
     {
         var (resolver, context) = BuildContext();
         var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
@@ -106,7 +106,7 @@ public class DynamicTemplateTests
 
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
-        context.Errors[0].Message.Should().Contain("должна быть литералом");
+        context.Errors[0].Message.Should().Contain("Вычисление сложных переменных выключено");
     }
 
     private static (ExpressionResolver Resolver, ResolutionContext Context) BuildContext()
@@ -121,7 +121,8 @@ public class DynamicTemplateTests
         {
             Errors = [],
             Functions = GlobalFunctionsStorage.GetFunctions(DatabaseTypes.PostgreSql),
-            Variables = new Dictionary<string, IValue>(),
+            Variables = new Dictionary<string, QueryVariable>(),
+            VariableRuntime = DisabledVariableRuntime.Instance,
             QuerySource = querySource,
         };
         return (resolver, context);
