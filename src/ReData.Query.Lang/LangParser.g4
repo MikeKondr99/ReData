@@ -5,7 +5,7 @@ start:
     varDecl* expr EOF;
 
 varDecl
-    : VAR name EQUAL expr SEMICOLON;
+    : VAR NAME EQUAL expr SEMICOLON;
 
 expr
     : MINUS expr #unary

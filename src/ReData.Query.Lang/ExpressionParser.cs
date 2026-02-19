@@ -15,7 +15,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         var variables = context.varDecl()
             .Select(declaration => new VariableDeclaration
             {
-                Name = UnescapeName(declaration.name().GetText()),
+                Name = declaration.NAME().GetText(),
                 Expression = Visit(declaration.expr()),
             })
             .ToArray();

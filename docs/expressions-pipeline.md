@@ -97,11 +97,26 @@ flowchart
 - `DatabaseValuesMapper` (`src/ReData.Query/Runners/DatabaseValuesMapper.cs`)
   - Преобразует значения БД в `IValue`.
 
-## Подстановка переменных
+## Переменные в скрипте
 
-`ExpressionResolver.ResolveName` сначала проверяет `ResolutionContext.Variables`.
-Если переменная найдена, ее `IValue` превращается в литерал ReData
-(`ValueExtensions.ToReDataLiteral`), снова парсится и разрешается как константа.
+Обработка переменных выполняется на этапе `ExpressionResolver.ResolveScript`:
+
+1. Парсер возвращает `ExpressionScript` (`varDecl* + финальное expr`).
+2. `ResolveLocalVariables` проходит объявления сверху вниз.
+3. Для каждого `var`:
+   - проверяется отсутствие дубликата в локальном/глобальном scope;
+   - выражение переменной резолвится;
+   - допускаются только `const` или `aggregated` выражения;
+   - если это прямой литерал, значение кладется сразу в `QueryVariable.Value`;
+   - иначе используется `IVariableRuntime.Create(...)`.
+4. Финальное выражение скрипта резолвится в объединенном scope.
+
+При использовании имени переменной:
+
+- `ResolveName` сначала вызывает `TryResolveVariable`;
+- `IVariableRuntime.Resolve(...)` возвращает значение (из кеша или через вычисление);
+- значение переводится в ReData-литерал (`ToReDataLiteral`), затем снова парсится и резолвится;
+- если переменная не найдена, выполняется fallback на поле (`TryResolveField`).
 
 ## Библиотека функций и различия БД
 
