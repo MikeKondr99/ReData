@@ -37,7 +37,7 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
 
     public Result<IValue, string> Resolve(QueryVariable variable)
     {
-        using var variableSpan = Tracing.Source.StartActivity("VariableRuntimeResolve");
+        using var variableSpan = Tracing.Source.StartActivity("VariableResolve");
         variableSpan?.SetTag("variable.name", variable.Name);
         variableSpan?.SetTag("variable.cached_before", variable.Value is not null);
 
@@ -56,7 +56,6 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
         try
         {
             variableSpan?.SetTag("variable.resolve_mode", "computed");
-            variableSpan?.SetTag("variable.query_name", variable.Query.Name.Template.ToString());
 
             var value = queryRunner
                 .GetDataReaderAsync(variable.Query, connection)

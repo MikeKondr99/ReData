@@ -218,16 +218,9 @@ public sealed class ExpressionResolver
             return false;
         }
 
-        using var variableSpan = Tracing.Source.StartActivity("VariableResolve");
-        variableSpan?.SetTag("variable.name", name.Value);
-        var cachedBeforeResolve = variable.Value is not null;
-        variableSpan?.SetTag("variable.cached_before", cachedBeforeResolve);
-
         var resolvedValue = context.VariableRuntime.Resolve(variable);
         if (resolvedValue.UnwrapErr(out var error, out var value))
         {
-            variableSpan?.SetStatus(ActivityStatusCode.Error);
-            variableSpan?.SetTag("error", error);
             context.Errors.Add(new ExprError()
             {
                 Span = name.Span,
@@ -236,7 +229,6 @@ public sealed class ExpressionResolver
             return true;
         }
 
-        variableSpan?.SetTag("variable.resolve_mode", cachedBeforeResolve ? "value" : "computed");
         variable.Value = value;
         context.Variables[name.Value] = variable;
 
