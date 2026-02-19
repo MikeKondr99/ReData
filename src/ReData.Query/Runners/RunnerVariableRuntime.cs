@@ -1,4 +1,5 @@
 ﻿using System.Data.Common;
+using System.Diagnostics;
 using Pattern.Unions;
 using ReData.Query.Core;
 using ReData.Query.Core.Template;
@@ -36,18 +37,27 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
 
     public Result<IValue, string> Resolve(QueryVariable variable)
     {
+        using var variableSpan = Tracing.Source.StartActivity("VariableRuntimeResolve");
+        variableSpan?.SetTag("variable.name", variable.Name);
+        variableSpan?.SetTag("variable.cached_before", variable.Value is not null);
+
         if (variable.Value is not null)
         {
+            variableSpan?.SetTag("variable.resolve_mode", "value");
             return Result.Ok(variable.Value);
         }
 
         if (variable.Query is null)
         {
+            variableSpan?.SetStatus(ActivityStatusCode.Error);
             return $"Переменная '{variable.Name}' не может быть вычислена в текущем контексте";
         }
 
         try
         {
+            variableSpan?.SetTag("variable.resolve_mode", "computed");
+            variableSpan?.SetTag("variable.query_name", variable.Query.Name.Template.ToString());
+
             var value = queryRunner
                 .GetDataReaderAsync(variable.Query, connection)
                 .CollectToScalar()
@@ -59,6 +69,8 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
         }
         catch (Exception ex)
         {
+            variableSpan?.SetStatus(ActivityStatusCode.Error);
+            variableSpan?.SetTag("error", ex.Message);
             return $"Ошибка вычисления переменной '{variable.Name}': {ex.Message}";
         }
     }
