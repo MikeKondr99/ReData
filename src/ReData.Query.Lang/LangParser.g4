@@ -43,4 +43,6 @@ integer: INTEGER;
 
 number: NUMBER;
 
-func : NAME LEFT_PARENTHESIS (expr (COMMA expr)*)? RIGHT_PARENTHESIS;
+funcName: NAME | CONST;
+
+func : funcName LEFT_PARENTHESIS (expr (COMMA expr)*)? RIGHT_PARENTHESIS;

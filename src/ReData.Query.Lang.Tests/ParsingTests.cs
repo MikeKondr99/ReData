@@ -160,6 +160,31 @@ public class ParsingTests
         expr.ToString().Should().Be("3");
     }
 
+    [Fact(DisplayName = "Вызов const(...) должен парситься как обычная функция")]
+    public void ShouldParseInlineConstFunction()
+    {
+        var expr = Expr.Parse("const(1 + 2)").UnwrapOk().Value;
+
+        expr.Should().BeEquivalentTo(new FuncExpr()
+        {
+            Name = "const",
+            Kind = FuncExprKind.Default,
+            Arguments =
+            [
+                new FuncExpr()
+                {
+                    Name = "+",
+                    Kind = FuncExprKind.Binary,
+                    Arguments =
+                    [
+                        new IntegerLiteral(1),
+                        new IntegerLiteral(2),
+                    ]
+                }
+            ]
+        }, options);
+    }
+
     [Fact(DisplayName = "Парсер скрипта должен возвращать список объявленных констант")]
     public void ShouldExposeConstantsInScriptResponse()
     {

@@ -213,6 +213,61 @@ public class DynamicTemplateTests
         sql.Should().NotContain("CAST(\"a\" AS VARCHAR)");
     }
 
+    [Fact(DisplayName = "inline const для константного неагрегатного выражения не должен использовать runtime")]
+    public void ResolveExpr_InlineConstForConstExpression_ShouldNotUseRuntime()
+    {
+        var (resolver, context) = BuildContext();
+        var runtime = new StubConstantRuntime(new IntegerValue(3));
+        context = context with
+        {
+            ConstantRuntime = runtime,
+            ConstantQuerySource = new ReData.Query.Core.Query()
+            {
+                Name = resolver.ResolveName(["q"]),
+            },
+        };
+
+        var sql = ResolveSql("const(1 + 2)", resolver, context);
+
+        sql.Should().Contain("1");
+        sql.Should().Contain("2");
+        context.Errors.Should().BeEmpty();
+        runtime.CreateCalls.Should().Be(0);
+        runtime.ResolveCalls.Should().Be(0);
+    }
+
+    [Fact(DisplayName = "inline const для агрегатного выражения должен вычисляться через runtime")]
+    public void ResolveExpr_InlineConstForAggregatedExpression_ShouldUseRuntime()
+    {
+        var (resolver, context) = BuildContext();
+        var runtime = new StubConstantRuntime(new IntegerValue(3));
+        context = context with
+        {
+            ConstantRuntime = runtime,
+            ConstantQuerySource = new ReData.Query.Core.Query()
+            {
+                Name = resolver.ResolveName(["q"]),
+            },
+        };
+
+        var sql = ResolveSql("const(AVG(a)) + 1", resolver, context);
+
+        sql.Should().Contain("3");
+        context.Errors.Should().BeEmpty();
+        runtime.CreateCalls.Should().Be(1);
+        runtime.ResolveCalls.Should().Be(1);
+    }
+
+    [Fact(DisplayName = "inline const должен отклонять неагрегатные и неконстантные аргументы")]
+    public void ResolveExpr_InlineConstForField_ShouldReturnError()
+    {
+        var (resolver, context) = BuildContext();
+        var resolved = resolver.ResolveExpr(Expr.Parse("const(a)").Unwrap(), context);
+
+        resolved.Should().BeNull();
+        context.Errors.Should().ContainSingle().Which.Message.Should().Contain("const");
+    }
+
     private static (ExpressionResolver Resolver, ResolutionContext Context) BuildContext()
     {
         var literalResolver = new PostgresLiteralResolver();

@@ -35,6 +35,59 @@ public abstract partial class Сommon
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
+    [Fact(DisplayName = "inline const должен работать в Where без сохранения в следующий блок")]
+    public async Task InlineConstInWhere_ShouldNotLeakToNextBlocks()
+    {
+        // Arrange
+        var withInlineConst = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("UserId > const(5)")
+            .Expect("Valid query");
+
+        // Act
+        var failed = withInlineConst.Where("avgAge > 0");
+        var errors = failed.UnwrapErr();
+
+        // Assert
+        errors
+            .SelectMany(e => e)
+            .Should()
+            .Contain(e => e.Message.Contains("'avgAge'"));
+    }
+
+    [Fact(DisplayName = "inline const с агрегатом должен вычисляться в Select")]
+    public async Task InlineConstWithAggregateInSelect_ShouldWork()
+    {
+        // Arrange
+        var selectResult = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["TotalAge"] = "const(SUM(Age))",
+            });
+
+        if (selectResult.UnwrapErr(out var selectErrors, out var qbBase))
+        {
+            var message = string.Join(" | ", selectErrors.SelectMany(e => e).Select(e => e.Message));
+            throw new InvalidOperationException(message);
+        }
+
+        var qb = qbBase.Take(1);
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        var expected = assets.UsersDynamicArray.Sum(u => (double)u.Age);
+        dynamic[] expectData =
+        [
+            new
+            {
+                TotalAge = expected
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
     [Fact(DisplayName = "Переменная со средним значением должна фильтровать записи в блоке Where")]
     public async Task WhereConstantWithAvgAggregationFiltersRows()
     {
@@ -902,4 +955,6 @@ public abstract partial class Сommon
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 }
+
+
 
