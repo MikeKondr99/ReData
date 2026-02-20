@@ -306,7 +306,7 @@ public sealed class ExpressionResolver
 
         if (function.Arguments.Any(a => a.IsConstRequired))
         {
-            constArguments = funcExpr.Arguments.Select(a => TryGetConstValue(a, context)).ToArray();
+            constArguments = args.Select(a => TryGetConstValue(a.Expression, context)).ToArray();
 
             for (var i = 0; i < function.Arguments.Count; i++)
             {
@@ -364,36 +364,45 @@ public sealed class ExpressionResolver
             return null;
         }
 
+        var value = ResolveInlineConstValue(funcExpr, context);
+        if (value is null)
+        {
+            return null;
+        }
+
+        return ResolveValueAsExpr(funcExpr, value, context, preserveSourceExpression: false);
+    }
+
+    private IValue? ResolveInlineConstValue(FuncExpr funcExpr, ResolutionContext context)
+    {
+        if (funcExpr.Arguments.Count != 1)
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Span,
+                Message = "Функция const требует ровно один аргумент"
+            });
+            return null;
+        }
+
+        var literalValue = TryGetDirectLiteralValue(funcExpr.Arguments[0]);
+        if (literalValue is not null)
+        {
+            return literalValue;
+        }
+
         var argument = RecursiveResolveExpr(funcExpr.Arguments[0], context);
         if (!argument.HasValue)
         {
             return null;
         }
 
-        if (argument.Value.Type.IsConstant && !argument.Value.Type.Aggregated)
-        {
-            return argument.Value with
-            {
-                Expression = funcExpr,
-            };
-        }
-
-        if (!argument.Value.Type.Aggregated)
+        if (!argument.Value.Type.IsConstant && !argument.Value.Type.Aggregated)
         {
             context.Errors.Add(new ExprError()
             {
                 Span = funcExpr.Arguments[0].Span,
                 Message = "const принимает только константное или агрегатное выражение"
-            });
-            return null;
-        }
-
-        if (context.ConstantQuerySource is null)
-        {
-            context.Errors.Add(new ExprError()
-            {
-                Span = funcExpr.Arguments[0].Span,
-                Message = "const не может быть вычислен в текущем контексте"
             });
             return null;
         }
@@ -421,7 +430,7 @@ public sealed class ExpressionResolver
             return null;
         }
 
-        return ResolveValueAsExpr(funcExpr, value, context);
+        return value;
     }
 
     private static FunctionKind MapFunctionKind(FuncExprKind kind) => kind switch
@@ -475,7 +484,11 @@ public sealed class ExpressionResolver
         _ => $"{index + 1}-й",
     };
 
-    private ResolvedExpr? ResolveValueAsExpr(Expr sourceExpr, IValue value, ResolutionContext context)
+    private ResolvedExpr? ResolveValueAsExpr(
+        Expr sourceExpr,
+        IValue value,
+        ResolutionContext context,
+        bool preserveSourceExpression = true)
     {
         var literal = value.ToReDataLiteral();
         var parsed = Expr.Parse(literal);
@@ -495,10 +508,12 @@ public sealed class ExpressionResolver
             return null;
         }
 
-        return resolvedExpr.Value with
-        {
-            Expression = sourceExpr,
-        };
+        return preserveSourceExpression
+            ? resolvedExpr.Value with
+            {
+                Expression = sourceExpr,
+            }
+            : resolvedExpr.Value;
     }
 
 }

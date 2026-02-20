@@ -137,4 +137,67 @@ public class FailureQueries
             ["Test"] = "const avgAge = AVG(Age); avgAge",
         }).ExpectErr("Должен упасть с ошибкой");
     }
+
+    [Fact(DisplayName = "inline const от поля должен завершаться ошибкой")]
+    public void InlineConstFromFieldInSelectShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "const(Age)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "вложенный inline const от поля должен завершаться ошибкой")]
+    public void NestedInlineConstFromFieldInSelectShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "const(const(Age))",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "Field(const(field)) должен завершаться ошибкой")]
+    public void FieldWithInlineConstFromFieldShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "Field(const(Age))",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "const= с inline от неагрегатного поля должен завершаться ошибкой")]
+    public void ConstDeclarationWithInlineFromFieldShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Where("const x = const(Age); x > 0")
+            .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "inline const внутри inline const с невалидным inner должен завершаться ошибкой")]
+    public void MultiInlineWithInvalidInnerShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "const(const(const(Age)))",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "(1 + 2).const() не должен поддерживаться")]
+    public void MethodStyleConstCallShouldFail()
+    {
+        new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "(1 + 2).const()",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+    }
 }
