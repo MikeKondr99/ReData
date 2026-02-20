@@ -54,7 +54,7 @@ flowchart
     - `IQuerySource` для поиска полей.
     - `IFunctionStorage` для выбора перегрузки.
     - `ILiteralResolver` для литералов.
-    - `Variables` для подстановки значений.
+    - `Constants` для подстановки значений.
   - Шаги разрешения:
     1. `Literal` -> `ILiteralResolver.Resolve` (шаблон + тип).
     2. `NameExpr` -> поиск в `IQuerySource.Fields()`.
@@ -101,20 +101,20 @@ flowchart
 
 Обработка констант выполняется на этапе `ExpressionResolver.ResolveScript`:
 
-1. Парсер возвращает `ExpressionScript` (`varDecl* + финальное expr`).
-2. `ResolveLocalVariables` проходит объявления сверху вниз.
-3. Для каждого `var`:
+1. Парсер возвращает `ExpressionScript` (`constDecl* + финальное expr`).
+2. `ResolveLocalConstants` проходит объявления сверху вниз.
+3. Для каждого `const`:
    - проверяется отсутствие дубликата в локальном/глобальном scope;
-   - выражение переменной резолвится;
+   - выражение константы резолвится;
    - допускаются только `const` или `aggregated` выражения;
-   - если это прямой литерал, значение кладется сразу в `QueryVariable.Value`;
-   - иначе используется `IVariableRuntime.Create(...)`.
+   - если это прямой литерал, значение кладется сразу в `QueryConstant.Value`;
+   - иначе используется `IConstantRuntime.Create(...)`.
 4. Финальное выражение скрипта резолвится в объединенном scope.
 
-При использовании имени переменной:
+При использовании имени константы:
 
-- `ResolveName` сначала вызывает `TryResolveVariable`;
-- `IVariableRuntime.Resolve(...)` возвращает значение (из кеша или через вычисление);
+- `ResolveName` сначала вызывает `TryResolveConstant`;
+- `IConstantRuntime.Resolve(...)` возвращает значение (из кеша или через вычисление);
 - значение переводится в ReData-литерал (`ToReDataLiteral`), затем снова парсится и резолвится;
 - если константа не найдена, выполняется fallback на поле (`TryResolveField`).
 

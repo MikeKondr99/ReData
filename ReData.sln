@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6B4D3E35-1
 		docs\expressions-spec.md = docs\expressions-spec.md
 		docs\variable-runtime-flow.md = docs\variable-runtime-flow.md
 		docs\dbdatareader-decorators-flow.md = docs\dbdatareader-decorators-flow.md
+		docs\constant-runtime-flow.md = docs\constant-runtime-flow.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19AC12A0-0EE2-4BF5-B640-607429F7BEA8}"
