@@ -40,7 +40,7 @@ public abstract class BaseTestAssets : ITestAssets
 
     public abstract DatabaseType DatabaseType { get; }
 
-    public QueryBuilder CreateUsersQuery(IVariableRuntime? variableRuntime = null)
+    public QueryBuilder CreateUsersQuery(IConstantRuntime? contantRuntime = null)
     {
         IReadOnlyList<(string name, string column, FieldType type)> fields = [
             ("UserId", "UserId", new FieldType(DataType.Integer, false)),
@@ -59,7 +59,7 @@ public abstract class BaseTestAssets : ITestAssets
             Factory.CreateFunctionStorage(DatabaseType),
             ["User"],
             fields,
-            variableRuntime
+            contantRuntime
         );
     }
 

@@ -18,20 +18,20 @@ public record QueryBuilder
     public IFunctionStorage Functions { get; set; }
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
-    private IReadOnlyDictionary<string, QueryVariable> Variables { get; init; } =
-        new Dictionary<string, QueryVariable>();
-    private IVariableRuntime VariableRuntime { get; init; } = DisabledVariableRuntime.Instance;
+    private IReadOnlyDictionary<string, QueryConstant> Constants { get; init; } =
+        new Dictionary<string, QueryConstant>();
+    private IConstantRuntime ConstantRuntime { get; init; } = DisabledConstantRuntime.Instance;
     private IEnumerable<Field> Fields => Query.Fields();
 
-    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions, IVariableRuntime? variableRuntime = null)
+    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions, IConstantRuntime? constantRuntime = null)
     {
         Query = query;
         Resolver = resolver;
         Functions = functions;
-        VariableRuntime = variableRuntime ?? DisabledVariableRuntime.Instance;
+        ConstantRuntime = constantRuntime ?? DisabledConstantRuntime.Instance;
     }
 
-    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions, IVariableRuntime? variableRuntime = null)
+    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions, IConstantRuntime? constantRuntime = null)
     {
         return new QueryBuilder(new Query()
             {
@@ -39,7 +39,7 @@ public record QueryBuilder
             },
             resolver,
             functions,
-            variableRuntime
+            constantRuntime
         );
     }
     
@@ -48,7 +48,7 @@ public record QueryBuilder
         IFunctionStorage functions,
         ReadOnlySpan<string> path,
         IReadOnlyList<(string name, string column, FieldType type)> fields,
-        IVariableRuntime? variableRuntime = null)
+        IConstantRuntime? constantRuntime = null)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -85,7 +85,7 @@ public record QueryBuilder
         },
         resolver,
         functions,
-        variableRuntime);
+        constantRuntime);
     }
 
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Select(Dictionary<string, string> select)
@@ -158,7 +158,7 @@ public record QueryBuilder
             {
                 Where = [..qb.Query.Where ?? [], where]
             },
-            Variables = MergeVariables(qb.Variables, scriptResult.Variables),
+            Constants = MergeConstants(qb.Constants, scriptResult.Constants),
         };
     }
     
@@ -306,23 +306,23 @@ public record QueryBuilder
             return Result.Error<IReadOnlyList<ExprError>>([error]);
         }
 
-        var scopedVariables = new Dictionary<string, QueryVariable>()
+        var scopedConstants = new Dictionary<string, QueryConstant>()
         {
-            ["$user_id"] = QueryVariable.FromValue("$user_id", new TextValue("Demonmiker")),
+            ["$user_id"] = QueryConstant.FromValue("$user_id", new TextValue("Demonmiker")),
         };
-        foreach (var variable in Variables)
+        foreach (var constant in Constants)
         {
-            scopedVariables[variable.Key] = variable.Value;
+            scopedConstants[constant.Key] = constant.Value;
         }
 
         var context = new ResolutionContext()
         {
             Errors = [],
             Functions = Functions,
-            Variables = scopedVariables,
-            VariableRuntime = VariableRuntime,
+            Constants = scopedConstants,
+            ConstantRuntime = ConstantRuntime,
             QuerySource = Query.From ?? Query,
-            VariableQuerySource = Query,
+            ConstantQuerySource = Query,
         };
         var res = Resolver.ResolveScript(script, context);
         if (res is not null)
@@ -333,14 +333,14 @@ public record QueryBuilder
         return context.Errors;
     }
 
-    private static IReadOnlyDictionary<string, QueryVariable> MergeVariables(
-        IReadOnlyDictionary<string, QueryVariable> globalVariables,
-        IReadOnlyDictionary<string, QueryVariable> newVariables)
+    private static IReadOnlyDictionary<string, QueryConstant> MergeConstants(
+        IReadOnlyDictionary<string, QueryConstant> globalConstants,
+        IReadOnlyDictionary<string, QueryConstant> newConstants)
     {
-        var merged = new Dictionary<string, QueryVariable>(globalVariables);
-        foreach (var variable in newVariables)
+        var merged = new Dictionary<string, QueryConstant>(globalConstants);
+        foreach (var constant in newConstants)
         {
-            merged[variable.Key] = variable.Value;
+            merged[constant.Key] = constant.Value;
         }
 
         return merged;

@@ -19,7 +19,8 @@ public abstract record Expr
     
     public static Result<Expr, ExprError> Parse(string s)
     {
-        if (Global.MemoryCache.TryGetValue<Expr>(s, out var result))
+        var cacheKey = $"expr::{s}";
+        if (Global.MemoryCache.TryGetValue<Expr>(cacheKey, out var result))
         {
             return result;
         }
@@ -37,7 +38,7 @@ public abstract record Expr
             parser.AddErrorListener(new ErrorListener());
             Expr expr = new ExpressionParser().VisitStart(parser.start());
             // Cache.TryAdd(s, expr);
-            Global.MemoryCache.GetOrCreate<Expr>(s, (c) =>
+            Global.MemoryCache.GetOrCreate<Expr>(cacheKey, (c) =>
             {
                 c.SlidingExpiration = TimeSpan.FromMinutes(30);
                 return expr;
@@ -64,7 +65,8 @@ public abstract record Expr
 
     public static Result<ExpressionScript, ExprError> ParseScript(string s)
     {
-        if (Global.MemoryCache.TryGetValue<ExpressionScript>(s, out var result))
+        var cacheKey =  $"script::{s}";
+        if (Global.MemoryCache.TryGetValue<ExpressionScript>(cacheKey, out var result))
         {
             return result;
         }
@@ -81,7 +83,7 @@ public abstract record Expr
             var parser = new LangParser(tokens);
             parser.AddErrorListener(new ErrorListener());
             var script = new ExpressionParser().VisitScript(parser.start());
-            Global.MemoryCache.GetOrCreate<ExpressionScript>(s, (c) =>
+            Global.MemoryCache.GetOrCreate<ExpressionScript>(cacheKey, (c) =>
             {
                 c.SlidingExpiration = TimeSpan.FromMinutes(30);
                 return script;

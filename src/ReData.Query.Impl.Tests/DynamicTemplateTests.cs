@@ -69,26 +69,26 @@ public class DynamicTemplateTests
         context.Errors.Should().ContainSingle().Which.Message.Should().Contain("Функция Field");
     }
 
-    [Fact(DisplayName = "Локальная литеральная переменная должна быть доступна только внутри скрипта")]
-    public void ResolveScript_UsesLocalLiteralVariable()
+    [Fact(DisplayName = "Локальная литеральная константа должна быть доступна только внутри скрипта")]
+    public void ResolveScript_UsesLocalLiteralConstant()
     {
         var (resolver, context) = BuildContext();
-        var script = Expr.ParseScript("var a = 10; a + 1").Unwrap();
+        var script = Expr.ParseScript("const a = 10; a + 1").Unwrap();
 
         var resolved = resolver.ResolveScript(script, context);
 
         resolved.Should().NotBeNull();
-        resolved!.Variables.Should().ContainKey("a");
-        context.Variables.Should().NotContainKey("a");
+        resolved!.Constants.Should().ContainKey("a");
+        context.Constants.Should().NotContainKey("a");
         context.Errors.Should().BeEmpty();
     }
 
-    [Fact(DisplayName = "Повторное объявление локальной переменной с именем из глобального контекста должно завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenVariableDuplicatesGlobalOne()
+    [Fact(DisplayName = "Повторное объявление локальной константы с именем из глобального контекста должно завершаться ошибкой")]
+    public void ResolveScript_ShouldFailWhenConstantDuplicatesGlobalOne()
     {
         var (resolver, context) = BuildContext();
-        context.Variables["a"] = QueryVariable.FromValue("a", new IntegerValue(100));
-        var script = Expr.ParseScript("var a = 10; a + 1").Unwrap();
+        context.Constants["a"] = QueryConstant.FromValue("a", new IntegerValue(100));
+        var script = Expr.ParseScript("const a = 10; a + 1").Unwrap();
 
         var resolved = resolver.ResolveScript(script, context);
 
@@ -97,96 +97,96 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Contain("уже существует");
     }
 
-    [Fact(DisplayName = "Сложная переменная должна завершаться ошибкой при отключенном runtime")]
-    public void ResolveScript_ShouldFailWhenComplexVariableRuntimeIsDisabled()
+    [Fact(DisplayName = "Сложная константа должна завершаться ошибкой при отключенном runtime")]
+    public void ResolveScript_ShouldFailWhenComplexConstantRuntimeIsDisabled()
     {
         var (resolver, context) = BuildContext();
         context = context with
         {
-            VariableQuerySource = new ReData.Query.Core.Query()
+            ConstantQuerySource = new ReData.Query.Core.Query()
             {
                 Name = resolver.ResolveName(["q"]),
             },
         };
-        var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
+        var script = Expr.ParseScript("const a = 1 + 2; a + 1").Unwrap();
         var resolved = resolver.ResolveScript(script, context);
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
-        var expectedError = DisabledVariableRuntime.Instance
-            .Resolve(new QueryVariable()
+        var expectedError = DisabledConstantRuntime.Instance
+            .Resolve(new QueryConstant()
             {
                 Name = "a",
             })
             .UnwrapErr();
         context.Errors[0].Message.Should().Be(expectedError);
     }
-    [Fact(DisplayName = "Ссылка на переменную, объявленную ниже, должна завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenVariableReferencesFutureDeclaration()
+    [Fact(DisplayName = "Ссылка на константу, объявленную ниже, должна завершаться ошибкой")]
+    public void ResolveScript_ShouldFailWhenConstantReferencesFutureDeclaration()
     {
         var (resolver, context) = BuildContext();
-        var script = Expr.ParseScript("var a = c; var c = 1; a").Unwrap();
+        var script = Expr.ParseScript("const a = c; const c = 1; a").Unwrap();
         var resolved = resolver.ResolveScript(script, context);
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'c'");
     }
-    [Fact(DisplayName = "Константно вычислимое выражение в переменной без QuerySource должно завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenNonLiteralConstVariableAndVariableQuerySourceIsMissing()
+    [Fact(DisplayName = "Константно вычислимое выражение в константы без QuerySource должно завершаться ошибкой")]
+    public void ResolveScript_ShouldFailWhenNonLiteralConstConstantAndConstantQuerySourceIsMissing()
     {
         var (resolver, context) = BuildContext();
-        var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
+        var script = Expr.ParseScript("const a = 1 + 2; a + 1").Unwrap();
         var resolved = resolver.ResolveScript(script, context);
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'a'");
     }
-    [Fact(DisplayName = "Агрегатная переменная без QuerySource должна завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenAggregatedVariableAndVariableQuerySourceIsMissing()
+    [Fact(DisplayName = "Агрегатная константа без QuerySource должна завершаться ошибкой")]
+    public void ResolveScript_ShouldFailWhenAggregatedConstantAndConstantQuerySourceIsMissing()
     {
         var (resolver, context) = BuildContext();
-        var script = Expr.ParseScript("var a = AVG(a); a").Unwrap();
+        var script = Expr.ParseScript("const a = AVG(a); a").Unwrap();
         var resolved = resolver.ResolveScript(script, context);
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'a'");
     }
-    [Fact(DisplayName = "При наличии QuerySource сложная переменная с отключенным runtime должна завершаться ошибкой runtime")]
-    public void ResolveScript_ShouldFailWithDisabledRuntimeWhenVariableQuerySourceIsProvided()
+    [Fact(DisplayName = "При наличии QuerySource сложная константа с отключенным runtime должна завершаться ошибкой runtime")]
+    public void ResolveScript_ShouldFailWithDisabledRuntimeWhenConstantQuerySourceIsProvided()
     {
         var (resolver, context) = BuildContext();
         context = context with
         {
-            VariableQuerySource = new ReData.Query.Core.Query()
+            ConstantQuerySource = new ReData.Query.Core.Query()
             {
                 Name = resolver.ResolveName(["q"]),
             },
         };
-        var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
+        var script = Expr.ParseScript("const a = 1 + 2; a + 1").Unwrap();
         var resolved = resolver.ResolveScript(script, context);
         resolved.Should().BeNull();
         context.Errors.Should().ContainSingle();
-        var expectedError = DisabledVariableRuntime.Instance
-            .Resolve(new QueryVariable()
+        var expectedError = DisabledConstantRuntime.Instance
+            .Resolve(new QueryConstant()
             {
                 Name = "a",
             })
             .UnwrapErr();
         context.Errors[0].Message.Should().Be(expectedError);
     }
-    [Fact(DisplayName = "Константно вычислимое выражение в переменной должно успешно резолвиться при включенном runtime")]
-    public void ResolveScript_ShouldResolveNonLiteralConstVariableWhenRuntimeEnabled()
+    [Fact(DisplayName = "Константно вычислимое выражение в константы должно успешно резолвиться при включенном runtime")]
+    public void ResolveScript_ShouldResolveNonLiteralConstConstantWhenRuntimeEnabled()
     {
         var (resolver, context) = BuildContext();
-        var runtime = new StubVariableRuntime(new IntegerValue(3));
+        var runtime = new StubConstantRuntime(new IntegerValue(3));
         context = context with
         {
-            VariableRuntime = runtime,
-            VariableQuerySource = new ReData.Query.Core.Query()
+            ConstantRuntime = runtime,
+            ConstantQuerySource = new ReData.Query.Core.Query()
             {
                 Name = resolver.ResolveName(["q"]),
             },
         };
-        var script = Expr.ParseScript("var a = 1 + 2; a + 1").Unwrap();
+        var script = Expr.ParseScript("const a = 1 + 2; a + 1").Unwrap();
 
         var resolved = resolver.ResolveScript(script, context);
 
@@ -201,11 +201,11 @@ public class DynamicTemplateTests
         builder.ToString().Should().Contain("3");
     }
 
-    [Fact(DisplayName = "При совпадении имени переменной и поля должен использоваться приоритет переменной")]
-    public void ResolveExpr_ShouldPreferVariableOverFieldWhenNamesConflict()
+    [Fact(DisplayName = "При совпадении имени константы и поля должен использоваться приоритет константы")]
+    public void ResolveExpr_ShouldPreferConstantOverFieldWhenNamesConflict()
     {
         var (resolver, context) = BuildContext();
-        context.Variables["a"] = QueryVariable.FromValue("a", new IntegerValue(10));
+        context.Constants["a"] = QueryConstant.FromValue("a", new IntegerValue(10));
 
         var sql = ResolveSql("a + 1", resolver, context);
 
@@ -225,8 +225,8 @@ public class DynamicTemplateTests
         {
             Errors = [],
             Functions = GlobalFunctionsStorage.GetFunctions(DatabaseTypes.PostgreSql),
-            Variables = new Dictionary<string, QueryVariable>(),
-            VariableRuntime = DisabledVariableRuntime.Instance,
+            Constants = new Dictionary<string, QueryConstant>(),
+            ConstantRuntime = DisabledConstantRuntime.Instance,
             QuerySource = querySource,
         };
         return (resolver, context);
@@ -272,23 +272,23 @@ public class DynamicTemplateTests
         public IEnumerable<Field> Fields() => fields;
     }
 
-    private sealed class StubVariableRuntime(IValue resolvedValue) : IVariableRuntime
+    private sealed class StubConstantRuntime(IValue resolvedValue) : IConstantRuntime
     {
         public int CreateCalls { get; private set; }
 
         public int ResolveCalls { get; private set; }
 
-        public QueryVariable Create(string name, ReData.Query.Core.Query query, ResolvedExpr resolvedExpr)
+        public QueryConstant Create(string name, ReData.Query.Core.Query query, ResolvedExpr resolvedExpr)
         {
             CreateCalls++;
-            return new QueryVariable
+            return new QueryConstant
             {
                 Name = name,
                 Query = query,
             };
         }
 
-        public Result<IValue, string> Resolve(QueryVariable variable)
+        public Result<IValue, string> Resolve(QueryConstant constant)
         {
             ResolveCalls++;
             return Result.Ok(resolvedValue);

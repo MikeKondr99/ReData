@@ -6,7 +6,7 @@ namespace ReData.Query.Impl.Tests.Queries;
 public interface ITestAssets : IAsyncLifetime
 {
 
-    public QueryBuilder CreateUsersQuery(IVariableRuntime? variableRuntime = null);
+    public QueryBuilder CreateUsersQuery(IConstantRuntime? contantRuntime = null);
     
     public DatabaseType DatabaseType { get;  }
     

@@ -44,11 +44,11 @@ public class ApplyTransformationsCommandHandler(DwhService dwhService)
         try
         {
             await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
-            var variableRuntime = new RunnerVariableRuntime(
+            var constantRuntime = new RunnerConstantRuntime(
                 Factory.CreateQueryRunner(DatabaseType.PostgreSql),
                 connection);
 
-            var query = dwhService.GetQueryBuilder(command.DataConnectorId, variableRuntime);
+            var query = dwhService.GetQueryBuilder(command.DataConnectorId, constantRuntime);
             for (i = 0; i < command.Transformations.Count; i++)
             {
                 var transformation = command.Transformations[i];

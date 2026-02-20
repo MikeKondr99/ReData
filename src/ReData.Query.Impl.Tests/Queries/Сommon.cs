@@ -18,7 +18,7 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
     private async Task<QueryBuilder> CreateUsersQueryWithRuntimeAsync()
     {
         var runner = await db.GetRunnerAsync();
-        var runtime = new RunnerVariableRuntime(runner, db.GetConnection());
+        var runtime = new RunnerConstantRuntime(runner, db.GetConnection());
         return assets.CreateUsersQuery(runtime);
     }
 

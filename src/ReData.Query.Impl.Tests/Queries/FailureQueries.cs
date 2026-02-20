@@ -91,50 +91,50 @@ public class FailureQueries
             .ExpectErr("Должен упасть с ошибкой");
     }
 
-    [Fact(DisplayName = "Ссылка на переменную, объявленную ниже в Select, должна завершаться ошибкой")]
-    public void SelectVariableForwardReferenceShouldFail()
+    [Fact(DisplayName = "Ссылка на константу, объявленную ниже в Select, должна завершаться ошибкой")]
+    public void SelectConstantForwardReferenceShouldFail()
     {
         new PostgresAssets().CreateUsersQuery().Select(new()
         {
-            ["Test"] = "var a = b; var b = 1; a",
+            ["Test"] = "const a = b; const b = 1; a",
         }).ExpectErr("Должен упасть с ошибкой");
     }
 
-    [Fact(DisplayName = "Повторное объявление переменной в одном выражении Select должно завершаться ошибкой")]
-    public void SelectVariableDuplicateNameShouldFail()
+    [Fact(DisplayName = "Повторное объявление константой в одном выражении Select должно завершаться ошибкой")]
+    public void SelectConstantDuplicateNameShouldFail()
     {
         new PostgresAssets().CreateUsersQuery().Select(new()
         {
-            ["Test"] = "var a = 1; var a = 2; a",
+            ["Test"] = "const a = 1; const a = 2; a",
         }).ExpectErr("Должен упасть с ошибкой");
     }
 
-    [Fact(DisplayName = "Использование неизвестной переменной в OrderBy должно завершаться ошибкой")]
-    public void OrderByUnknownVariableShouldFail()
+    [Fact(DisplayName = "Использование неизвестной константой в OrderBy должно завершаться ошибкой")]
+    public void OrderByUnknownConstantShouldFail()
     {
         new PostgresAssets().CreateUsersQuery()
             .OrderBy([("missingVar + 1", OrderItem.Type.Asc)])
             .ExpectErr("Должен упасть с ошибкой");
     }
 
-    [Fact(DisplayName = "Ссылка на переменную, объявленную позже в GroupBy, должна завершаться ошибкой")]
-    public void GroupByVariableForwardReferenceShouldFail()
+    [Fact(DisplayName = "Ссылка на константу, объявленную позже в GroupBy, должна завершаться ошибкой")]
+    public void GroupByConstantForwardReferenceShouldFail()
     {
         new PostgresAssets().CreateUsersQuery()
-            .GroupBy(["var a = b; var b = Age; a"], new()
+            .GroupBy(["const a = b; const b = Age; a"], new()
             {
-                ["A"] = "var a = b; var b = Age; a",
+                ["A"] = "const a = b; const b = Age; a",
                 ["Count"] = "COUNT()",
             })
             .ExpectErr("Должен упасть с ошибкой");
     }
 
-    [Fact(DisplayName = "Агрегатная переменная в Select без runtime должна завершаться ошибкой")]
-    public void SelectAggregationVariableWithoutRuntimeShouldFail()
+    [Fact(DisplayName = "Агрегатная константа в Select без runtime должна завершаться ошибкой")]
+    public void SelectAggregationConstantWithoutRuntimeShouldFail()
     {
         new PostgresAssets().CreateUsersQuery().Select(new()
         {
-            ["Test"] = "var avgAge = AVG(Age); avgAge",
+            ["Test"] = "const avgAge = AVG(Age); avgAge",
         }).ExpectErr("Должен упасть с ошибкой");
     }
 }

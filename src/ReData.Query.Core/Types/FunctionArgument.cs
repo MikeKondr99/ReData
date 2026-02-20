@@ -23,7 +23,7 @@ public record FunctionArgument
     public required bool PropagateNull { get; init; }
 
     /// <summary>
-    /// Требует константный аргумент (литерал или переменная).
+    /// Требует константный аргумент (литерал или константа).
     /// </summary>
     public bool IsConstRequired { get; init; }
 

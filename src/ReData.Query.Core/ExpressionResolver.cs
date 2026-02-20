@@ -19,22 +19,22 @@ public record ResolutionContext
 {
     public required IQuerySource QuerySource { get; init; }
 
-    public Query? VariableQuerySource { get; init; }
+    public Query? ConstantQuerySource { get; init; }
 
     public required List<ExprError> Errors { get; init; }
 
     public required IFunctionStorage Functions { get; init; }
 
-    public required Dictionary<string, QueryVariable> Variables { get; init; }
+    public required Dictionary<string, QueryConstant> Constants { get; init; }
 
-    public required IVariableRuntime VariableRuntime { get; init; }
+    public required IConstantRuntime ConstantRuntime { get; init; }
 }
 
 public sealed record ResolvedScriptExpr
 {
     public required ResolvedExpr Expression { get; init; }
 
-    public required IReadOnlyDictionary<string, QueryVariable> Variables { get; init; }
+    public required IReadOnlyDictionary<string, QueryConstant> Constants { get; init; }
 }
 
 public sealed class ExpressionResolver
@@ -60,8 +60,8 @@ public sealed class ExpressionResolver
 
     public ResolvedScriptExpr? ResolveScript(ExpressionScript script, ResolutionContext context)
     {
-        // 1) Собираем локальные переменные из script.Variables.
-        var localVariables = ResolveLocalVariables(script, context);
+        // 1) Собираем локальные константы из script.Contants.
+        var localConstants = ResolveLocalConstants(script, context);
 
         if (context.Errors.Count > 0)
         {
@@ -69,12 +69,12 @@ public sealed class ExpressionResolver
         }
 
         // 2) Формируем область видимости: глобальные + локальные.
-        var scopeVariables = MergeVariables(context.Variables, localVariables);
+        var scopeConstants = MergeConstants(context.Constants, localConstants);
 
         // 3) Резолвим финальное выражение в локальном скоупе.
         var localContext = context with
         {
-            Variables = scopeVariables,
+            Constants = scopeConstants,
         };
 
         var resolved = RecursiveResolveExpr(script.Expression, localContext);
@@ -86,35 +86,35 @@ public sealed class ExpressionResolver
         return new ResolvedScriptExpr
         {
             Expression = resolved.Value,
-            Variables = localVariables,
+            Constants = localConstants,
         };
     }
 
-    private Dictionary<string, QueryVariable> ResolveLocalVariables(ExpressionScript script, ResolutionContext context)
+    private Dictionary<string, QueryConstant> ResolveLocalConstants(ExpressionScript script, ResolutionContext context)
     {
-        var localVariables = new Dictionary<string, QueryVariable>();
-        var scopeVariables = new Dictionary<string, QueryVariable>(context.Variables);
+        var localConstants = new Dictionary<string, QueryConstant>();
+        var scopeConstants = new Dictionary<string, QueryConstant>(context.Constants);
 
-        foreach (var declaration in script.Variables)
+        foreach (var declaration in script.Contants)
         {
-            if (scopeVariables.ContainsKey(declaration.Name))
+            if (scopeConstants.ContainsKey(declaration.Name))
             {
                 context.Errors.Add(new ExprError()
                 {
                     Span = declaration.Expression.Span,
-                    Message = $"Переменная '{declaration.Name}' уже существует"
+                    Message = $"Константа '{declaration.Name}' уже существует"
                 });
                 continue;
             }
 
             var scopeContext = context with
             {
-                Variables = scopeVariables,
+                Constants = scopeConstants,
             };
 
             var declarationContext = scopeContext with
             {
-                QuerySource = context.VariableQuerySource ?? context.QuerySource,
+                QuerySource = context.ConstantQuerySource ?? context.QuerySource,
             };
 
             var resolved = RecursiveResolveExpr(declaration.Expression, declarationContext);
@@ -128,7 +128,7 @@ public sealed class ExpressionResolver
                 context.Errors.Add(new ExprError()
                 {
                     Span = declaration.Expression.Span,
-                    Message = $"Переменная '{declaration.Name}' должна быть константой или агрегацией"
+                    Message = $"Константа '{declaration.Name}' должна быть константой или агрегацией"
                 });
                 continue;
             }
@@ -136,36 +136,36 @@ public sealed class ExpressionResolver
             var literalValue = TryGetDirectLiteralValue(declaration.Expression);
             if (literalValue is not null)
             {
-                var valueVariable = QueryVariable.FromValue(declaration.Name, literalValue);
-                localVariables[declaration.Name] = valueVariable;
-                scopeVariables[declaration.Name] = valueVariable;
+                var valueConstant = QueryConstant.FromValue(declaration.Name, literalValue);
+                localConstants[declaration.Name] = valueConstant;
+                scopeConstants[declaration.Name] = valueConstant;
                 continue;
             }
 
-            if (context.VariableQuerySource is null)
+            if (context.ConstantQuerySource is null)
             {
                 context.Errors.Add(new ExprError()
                 {
                     Span = declaration.Expression.Span,
-                    Message = $"Переменная '{declaration.Name}' не может быть вычислена в текущем контексте"
+                    Message = $"Константа '{declaration.Name}' не может быть вычислена в текущем контексте"
                 });
                 continue;
             }
 
-            var variable = context.VariableRuntime.Create(declaration.Name, context.VariableQuerySource, resolved.Value);
-            localVariables[declaration.Name] = variable;
-            scopeVariables[declaration.Name] = variable;
+            var constant = context.ConstantRuntime.Create(declaration.Name, context.ConstantQuerySource, resolved.Value);
+            localConstants[declaration.Name] = constant;
+            scopeConstants[declaration.Name] = constant;
         }
 
-        return localVariables;
+        return localConstants;
     }
 
-    private static Dictionary<string, QueryVariable> MergeVariables(
-        IReadOnlyDictionary<string, QueryVariable> globalVariables,
-        IReadOnlyDictionary<string, QueryVariable> localVariables)
+    private static Dictionary<string, QueryConstant> MergeConstants(
+        IReadOnlyDictionary<string, QueryConstant> globalConstants,
+        IReadOnlyDictionary<string, QueryConstant> localConstants)
     {
-        var merged = new Dictionary<string, QueryVariable>(globalVariables);
-        foreach (var local in localVariables)
+        var merged = new Dictionary<string, QueryConstant>(globalConstants);
+        foreach (var local in localConstants)
         {
             merged[local.Key] = local.Value;
         }
@@ -192,9 +192,9 @@ public sealed class ExpressionResolver
 
     private ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
-        if (TryResolveVariable(name, context, out var variableResolved))
+        if (TryResolveConstant(name, context, out var constantResolved))
         {
-            return variableResolved;
+            return constantResolved;
         }
 
         if (TryResolveField(name, context, out var fieldResolved))
@@ -210,15 +210,15 @@ public sealed class ExpressionResolver
         return null;
     }
 
-    private bool TryResolveVariable(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
+    private bool TryResolveConstant(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
     {
         resolved = null;
-        if (!context.Variables.TryGetValue(name.Value, out var variable))
+        if (!context.Constants.TryGetValue(name.Value, out var constant))
         {
             return false;
         }
 
-        var resolvedValue = context.VariableRuntime.Resolve(variable);
+        var resolvedValue = context.ConstantRuntime.Resolve(constant);
         if (resolvedValue.UnwrapErr(out var error, out var value))
         {
             context.Errors.Add(new ExprError()
@@ -229,10 +229,11 @@ public sealed class ExpressionResolver
             return true;
         }
 
-        variable.Value = value;
-        context.Variables[name.Value] = variable;
+        constant.Value = value;
+        context.Constants[name.Value] = constant;
 
-        var valueExpr = Expr.Parse(value.ToReDataLiteral()).Unwrap();
+        var literal = value.ToReDataLiteral();
+        var valueExpr = Expr.Parse(literal).Expect(e => $"не удалось распарсить литерал `{literal}`\n потому что: {e.Message}");
         var resolvedExpr = RecursiveResolveExpr(valueExpr, context);
         if (!resolvedExpr.HasValue)
         {
@@ -327,7 +328,7 @@ public sealed class ExpressionResolver
         {
             Fields = context.QuerySource.Fields().ToArray(),
             Arguments = constArguments ?? Array.Empty<IValue?>(),
-            Variables = context.Variables
+            Constants = context.Constants
                 .Where(v => v.Value.Value is not null)
                 .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
@@ -376,7 +377,7 @@ public sealed class ExpressionResolver
             BooleanLiteral(var v) => new BoolValue(v),
             StringLiteral(var v) => new TextValue(v),
             NullLiteral => default(NullValue),
-            NameExpr varName when context.Variables.TryGetValue(varName.Value, out var variable) => variable.Value,
+            NameExpr varName when context.Constants.TryGetValue(varName.Value, out var constant) => constant.Value,
             _ => null
         };
     }

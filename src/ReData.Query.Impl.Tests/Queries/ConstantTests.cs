@@ -7,11 +7,11 @@ namespace ReData.Query.Impl.Tests.Queries;
 public abstract partial class Сommon
 {
     [Fact(DisplayName = "Переменная из блока Where должна быть доступна в последующих блоках")]
-    public async Task WhereVariableShouldBeAvailableInNextBlocks()
+    public async Task WhereConstantShouldBeAvailableInNextBlocks()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var threshold = 5; UserId > threshold")
+            .Where("const threshold = 5; UserId > threshold")
             .Select(new()
             {
                 ["UserId"] = "UserId",
@@ -36,11 +36,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная со средним значением должна фильтровать записи в блоке Where")]
-    public async Task WhereVariableWithAvgAggregationFiltersRows()
+    public async Task WhereConstantWithAvgAggregationFiltersRows()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); Age >= avgAge")
+            .Where("const avgAge = AVG(Age); Age >= avgAge")
             .Expect("Valid query");
 
         // Act
@@ -56,11 +56,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с суммой должна использоваться в блоке Select")]
-    public async Task WhereVariableWithSumAggregationCanBeUsedInSelect()
+    public async Task WhereConstantWithSumAggregationCanBeUsedInSelect()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var totalSalary = SUM(Salary); true")
+            .Where("const totalSalary = SUM(Salary); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -87,11 +87,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна использоваться в блоке Select")]
-    public async Task WhereVariableWithCountAggregationCanBeUsedInSelect()
+    public async Task WhereConstantWithCountAggregationCanBeUsedInSelect()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -117,11 +117,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с минимальным значением должна фильтровать записи в блоке Where")]
-    public async Task WhereVariableWithMinAggregationFiltersRows()
+    public async Task WhereConstantWithMinAggregationFiltersRows()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var minUserId = MIN(UserId); UserId = minUserId")
+            .Where("const minUserId = MIN(UserId); UserId = minUserId")
             .Expect("Valid query");
 
         // Act
@@ -137,11 +137,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с максимальным значением должна фильтровать записи в блоке Where")]
-    public async Task WhereVariableWithMaxAggregationFiltersRows()
+    public async Task WhereConstantWithMaxAggregationFiltersRows()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var maxSalary = MAX(Salary); Salary = maxSalary")
+            .Where("const maxSalary = MAX(Salary); Salary = maxSalary")
             .Expect("Valid query");
 
         // Act
@@ -157,11 +157,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Цепочка агрегатных переменных должна корректно работать в блоке Where")]
-    public async Task WhereVariableChainedAggregationsCanBeUsedInWhere()
+    public async Task WhereConstantChainedAggregationsCanBeUsedInWhere()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); var threshold = avgAge + 5; Age >= threshold")
+            .Where("const avgAge = AVG(Age); const threshold = avgAge + 5; Age >= threshold")
             .Expect("Valid query");
 
         // Act
@@ -178,11 +178,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Цепочка агрегатных переменных должна корректно работать в блоке Select")]
-    public async Task WhereVariableChainedAggregationsCanBeUsedInSelect()
+    public async Task WhereConstantChainedAggregationsCanBeUsedInSelect()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgSalary = AVG(Salary); var adjusted = avgSalary - 1000; true")
+            .Where("const avgSalary = AVG(Salary); const adjusted = avgSalary - 1000; true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -209,12 +209,12 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная должна вычисляться в контексте после предыдущего блока Where")]
-    public async Task WhereVariableUsesContextAfterPreviousWhere()
+    public async Task WhereConstantUsesContextAfterPreviousWhere()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("Age >= 30")
-            .Where("var avgAge = AVG(Age); Age >= avgAge")
+            .Where("const avgAge = AVG(Age); Age >= avgAge")
             .Expect("Valid query");
 
         // Act
@@ -231,11 +231,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная, объявленная в одном Where, должна использоваться в следующем Where")]
-    public async Task WhereVariableCanBeUsedAcrossWhereBlocks()
+    public async Task WhereConstantCanBeUsedAcrossWhereBlocks()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); true")
+            .Where("const avgAge = AVG(Age); true")
             .Where("Age >= avgAge")
             .Expect("Valid query");
 
@@ -252,11 +252,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная из блока Where должна использоваться в блоке OrderBy")]
-    public async Task WhereVariableCanBeUsedInOrderBy()
+    public async Task WhereConstantCanBeUsedInOrderBy()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); true")
+            .Where("const avgAge = AVG(Age); true")
             .Select(new()
             {
                 ["UserId"] = "UserId",
@@ -289,11 +289,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная со средним значением через сумму и количество должна вычисляться корректно")]
-    public async Task WhereVariableManualAverageViaSumAndCount()
+    public async Task WhereConstantManualAverageViaSumAndCount()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var totalAge = SUM(Age); var cnt = COUNT(); true")
+            .Where("const totalAge = SUM(Age); const cnt = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -319,33 +319,45 @@ public abstract partial class Сommon
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 
-    [Fact(DisplayName = "Смешивание литеральной и агрегатной переменных из разных контекстов должно завершаться ошибкой")]
-    public async Task WhereVariableCanMixLiteralAndAggregation()
+    [Fact(DisplayName = "Смешивание литеральной и агрегатной констант из разных блоков должно работать")]
+    public async Task WhereConstantCanMixLiteralAndAggregation()
     {
         // Arrange
-        var qb = await CreateUsersQueryWithRuntimeAsync();
-        Action act = () => qb
-            .Where("var extra = 10; true")
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("const extra = 10; true")
             .Expect("Valid query")
-            .Where("var avgAge = AVG(Age); true")
+            .Where("const avgAge = AVG(Age); true")
             .Expect("Valid query")
             .Select(new()
             {
                 ["AvgPlusExtra"] = "avgAge + extra",
             })
-            .Expect("Valid query");
+            .Expect("Valid query")
+            .Take(1);
+
+        // Act
+        var result = await GetObjectsAsync(qb);
 
         // Assert
-        act.Should().Throw<Exception>();
+        var expected = assets.UsersDynamicArray.Average(u => (double)u.Age) + 10;
+        dynamic[] expectData =
+        [
+            new
+            {
+                AvgPlusExtra = expected
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна учитывать уже отфильтрованный контекст")]
-    public async Task WhereVariableCountUsesFilteredContext()
+    public async Task WhereConstantCountUsesFilteredContext()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("Age > 30")
-            .Where("var adultsCount = COUNT(); true")
+            .Where("const adultsCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -372,11 +384,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с минимальной зарплатой должна использоваться в строгом сравнении")]
-    public async Task WhereVariableMinSalaryCanBeUsedForInequality()
+    public async Task WhereConstantMinSalaryCanBeUsedForInequality()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var minSalary = MIN(Salary); Salary > minSalary")
+            .Where("const minSalary = MIN(Salary); Salary > minSalary")
             .Expect("Valid query");
 
         // Act
@@ -392,11 +404,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с максимальной зарплатой должна использоваться в строгом сравнении")]
-    public async Task WhereVariableMaxSalaryCanBeUsedForInequality()
+    public async Task WhereConstantMaxSalaryCanBeUsedForInequality()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var maxSalary = MAX(Salary); Salary < maxSalary")
+            .Where("const maxSalary = MAX(Salary); Salary < maxSalary")
             .Expect("Valid query");
 
         // Act
@@ -412,11 +424,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с минимальным значением должна использоваться в выражении блока Select")]
-    public async Task WhereVariableCanUseMinAggregationInSelect()
+    public async Task WhereConstantCanUseMinAggregationInSelect()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var minUserId = MIN(UserId); true")
+            .Where("const minUserId = MIN(UserId); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -443,11 +455,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная из блока Where должна использоваться в выборке после GroupBy")]
-    public async Task WhereVariableCanBeUsedInsideGroupBySelect()
+    public async Task WhereConstantCanBeUsedInsideGroupBySelect()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); true")
+            .Where("const avgAge = AVG(Age); true")
             .GroupBy(["Notes"], new()
             {
                 ["Note"] = "Notes",
@@ -474,7 +486,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная должна вычисляться по полям после промежуточной проекции Select")]
-    public async Task WhereVariableCanBeUsedAfterSelectProjection()
+    public async Task WhereConstantCanBeUsedAfterSelectProjection()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
@@ -483,7 +495,7 @@ public abstract partial class Сommon
                 ["AgePlusOne"] = "Age + 1",
                 ["UserId"] = "UserId",
             })
-            .Where("var avgAgePlusOne = AVG(AgePlusOne); AgePlusOne >= avgAgePlusOne")
+            .Where("const avgAgePlusOne = AVG(AgePlusOne); AgePlusOne >= avgAgePlusOne")
             .Expect("Valid query");
 
         // Act
@@ -504,11 +516,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная со средним значением должна использоваться в фильтре по отклонению")]
-    public async Task WhereVariableCanBeUsedForDistanceToAverageFilter()
+    public async Task WhereConstantCanBeUsedForDistanceToAverageFilter()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgSalary = AVG(Salary); Abs(Salary - avgSalary) < 10000")
+            .Where("const avgSalary = AVG(Salary); Abs(Salary - avgSalary) < 10000")
             .Expect("Valid query");
 
         // Act
@@ -524,11 +536,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна корректно работать вместе с ограничением Take")]
-    public async Task WhereVariableCountCanDriveTakeBoundedByDataset()
+    public async Task WhereConstantCountCanDriveTakeBoundedByDataset()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Take((uint)assets.UsersDynamicArray.Length)
             .Select(new()
@@ -555,11 +567,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна корректно преобразовываться в текст")]
-    public async Task WhereVariableCountCanBeConvertedToText()
+    public async Task WhereConstantCountCanBeConvertedToText()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -586,11 +598,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменные с минимумом и максимумом должны задавать внутренний диапазон фильтра")]
-    public async Task WhereVariableMinAndMaxCanDefineInnerRange()
+    public async Task WhereConstantMinAndMaxCanDefineInnerRange()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var minAge = MIN(Age); var maxAge = MAX(Age); Age > minAge and Age < maxAge")
+            .Where("const minAge = MIN(Age); const maxAge = MAX(Age); Age > minAge and Age < maxAge")
             .Expect("Valid query");
 
         // Act
@@ -607,11 +619,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Одна переменная должна использоваться сразу в нескольких колонках блока Select")]
-    public async Task WhereVariableCanBeUsedInMultipleSelectColumns()
+    public async Task WhereConstantCanBeUsedInMultipleSelectColumns()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -640,11 +652,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная должна подставляться в строковую интерполяцию")]
-    public async Task WhereVariableCanBeUsedInStringInterpolation()
+    public async Task WhereConstantCanBeUsedInStringInterpolation()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -670,11 +682,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная должна использоваться в математических функциях")]
-    public async Task WhereVariableCanBeUsedInMathFunctions()
+    public async Task WhereConstantCanBeUsedInMathFunctions()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgAge = AVG(Age); true")
+            .Where("const avgAge = AVG(Age); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -701,12 +713,12 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна учитывать ограниченный контекст выборки")]
-    public async Task WhereVariableCountRespectsLimitedContext()
+    public async Task WhereConstantCountRespectsLimitedContext()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Take(5)
-            .Where("var limitedCount = COUNT(); true")
+            .Where("const limitedCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -732,11 +744,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная должна использоваться в нескольких последовательных блоках Where")]
-    public async Task WhereVariableCanBeUsedAcrossMultipleWhereBlocksAfterDeclaration()
+    public async Task WhereConstantCanBeUsedAcrossMultipleWhereBlocksAfterDeclaration()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var avgSalary = AVG(Salary); true")
+            .Where("const avgSalary = AVG(Salary); true")
             .Where("Salary >= avgSalary")
             .Where("Age >= 30")
             .Expect("Valid query");
@@ -755,12 +767,12 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная из уже отфильтрованного контекста должна использоваться в последующем Where")]
-    public async Task WhereVariableFromFilteredScopeCanBeUsedInLaterWhere()
+    public async Task WhereConstantFromFilteredScopeCanBeUsedInLaterWhere()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("Age > 30")
-            .Where("var avgSalary = AVG(Salary); true")
+            .Where("const avgSalary = AVG(Salary); true")
             .Where("Salary >= avgSalary")
             .Expect("Valid query");
 
@@ -778,11 +790,11 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Переменная с количеством записей должна использоваться в проекции перед сортировкой")]
-    public async Task WhereVariableCountCanBeUsedInOrderByProjection()
+    public async Task WhereConstantCountCanBeUsedInOrderByProjection()
     {
         // Arrange
         var qb = (await CreateUsersQueryWithRuntimeAsync())
-            .Where("var userCount = COUNT(); true")
+            .Where("const userCount = COUNT(); true")
             .Expect("Valid query")
             .Select(new()
             {
@@ -811,13 +823,13 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Локальная константная переменная должна использоваться в том же выражении Select")]
-    public async Task SelectVariableCanBeDeclaredAndUsedInSameExpression()
+    public async Task SelectConstantCanBeDeclaredAndUsedInSameExpression()
     {
         // Arrange
         var qb = CreateUsersQuery()
             .Select(new()
             {
-                ["ShiftedAge"] = "var shift = 2; Age + shift",
+                ["ShiftedAge"] = "const shift = 2; Age + shift",
                 ["UserId"] = "UserId",
             })
             .Expect("Valid query");
@@ -838,13 +850,13 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Локальная константная переменная должна влиять на сортировку в блоке OrderBy")]
-    public async Task OrderByVariableCanBeDeclaredAndUsedInSameExpression()
+    public async Task OrderByConstantCanBeDeclaredAndUsedInSameExpression()
     {
         // Arrange
         var qb = CreateUsersQuery()
             .OrderBy(
             [
-                ("var m = 3; Mod(UserId, m)", OrderItem.Type.Asc),
+                ("const m = 3; Mod(UserId, m)", OrderItem.Type.Asc),
                 ("UserId", OrderItem.Type.Asc),
             ])
             .Expect("Valid query");
@@ -862,13 +874,13 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Локальная константная переменная должна работать в ключе группы и в выборке GroupBy")]
-    public async Task GroupByVariableCanBeDeclaredAndUsedInSameExpression()
+    public async Task GroupByConstantCanBeDeclaredAndUsedInSameExpression()
     {
         // Arrange
         var qb = CreateUsersQuery()
-            .GroupBy(["var shift = 1; Age + shift"], new()
+            .GroupBy(["const shift = 1; Age + shift"], new()
             {
-                ["ShiftedAge"] = "var shift = 1; Age + shift",
+                ["ShiftedAge"] = "const shift = 1; Age + shift",
                 ["UserCount"] = "COUNT()",
             })
             .Expect("Valid query");

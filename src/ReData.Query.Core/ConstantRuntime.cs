@@ -6,7 +6,7 @@ using SqlTemplate = ReData.Query.Core.Template.Template;
 
 namespace ReData.Query.Core;
 
-public sealed record QueryVariable
+public sealed record QueryConstant
 {
     public required string Name { get; init; }
 
@@ -14,9 +14,9 @@ public sealed record QueryVariable
 
     public IValue? Value { get; set; }
 
-    public static QueryVariable FromValue(string name, IValue value)
+    public static QueryConstant FromValue(string name, IValue value)
     {
-        return new QueryVariable
+        return new QueryConstant
         {
             Name = name,
             Value = value,
@@ -24,28 +24,28 @@ public sealed record QueryVariable
     }
 }
 
-public interface IVariableRuntime
+public interface IConstantRuntime
 {
-    QueryVariable Create(string name, Query query, ResolvedExpr resolvedExpr);
+    QueryConstant Create(string name, Query query, ResolvedExpr resolvedExpr);
 
-    Result<IValue, string> Resolve(QueryVariable variable);
+    Result<IValue, string> Resolve(QueryConstant constant);
 }
 
-public sealed class DisabledVariableRuntime : IVariableRuntime
+public sealed class DisabledConstantRuntime : IConstantRuntime
 {
-    public static readonly DisabledVariableRuntime Instance = new();
+    public static readonly DisabledConstantRuntime Instance = new();
 
-    private DisabledVariableRuntime()
+    private DisabledConstantRuntime()
     {
     }
 
-    public QueryVariable Create(string name, Query query, ResolvedExpr resolvedExpr)
+    public QueryConstant Create(string name, Query query, ResolvedExpr resolvedExpr)
     {
         var scalarQuery = resolvedExpr.Type is { IsConstant: true, Aggregated: false }
             ? BuildConstScalarQuery(resolvedExpr)
             : BuildScalarQuery(query, resolvedExpr);
 
-        return new QueryVariable
+        return new QueryConstant
         {
             Name = name,
             Query = scalarQuery,
@@ -53,21 +53,21 @@ public sealed class DisabledVariableRuntime : IVariableRuntime
         };
     }
 
-    public Result<IValue, string> Resolve(QueryVariable variable)
+    public Result<IValue, string> Resolve(QueryConstant constant)
     {
-        if (variable.Value is not null)
+        if (constant.Value is not null)
         {
-            return Result.Ok(variable.Value);
+            return Result.Ok(constant.Value);
         }
 
-        return "Вычисление сложных переменных выключено в данном контексте";
+        return "Вычисление сложных констант выключено в данном контексте";
     }
 
     private static Query BuildScalarQuery(Query query, ResolvedExpr expr)
     {
         return new Query
         {
-            Name = new ResolvedTemplate(SqlTemplate.Create("VariableRuntimeQuery")),
+            Name = new ResolvedTemplate(SqlTemplate.Create("ConstQuery")),
             From = query,
             Select =
             [
@@ -83,7 +83,7 @@ public sealed class DisabledVariableRuntime : IVariableRuntime
     {
         return new Query
         {
-            Name = new ResolvedTemplate(SqlTemplate.Create("VariableRuntimeConstQuery")),
+            Name = new ResolvedTemplate(SqlTemplate.Create("ConstQuery")),
             Select =
             [
                 new SelectItem(

@@ -12,8 +12,8 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 {
     public ExpressionScript VisitScript(LangParser.StartContext context)
     {
-        var variables = context.varDecl()
-            .Select(declaration => new VariableDeclaration
+        var constants = context.constDecl()
+            .Select(declaration => new ConstantDeclaration
             {
                 Name = declaration.NAME().GetText(),
                 Expression = Visit(declaration.expr()),
@@ -22,7 +22,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 
         return new ExpressionScript
         {
-            Variables = variables,
+            Contants = constants,
             Expression = VisitStart(context),
         };
     }

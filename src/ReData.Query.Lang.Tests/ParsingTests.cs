@@ -146,37 +146,37 @@ public class ParsingTests
 
     }
 
-    [Fact(DisplayName = "При парсинге скрипта должны игнорироваться объявления переменных и возвращаться финальное выражение")]
-    public void ShouldIgnoreVariableDeclarationsAndReturnFinalExpression()
+    [Fact(DisplayName = "При парсинге скрипта должны игнорироваться объявления констант и возвращаться финальное выражение")]
+    public void ShouldIgnoreConstantDeclarationsAndReturnFinalExpression()
     {
-        var expr = Expr.Parse("var a = 12; var b = 'x'; 1 + 2").UnwrapOk().Value;
+        var expr = Expr.Parse("const a = 12; const b = 'x'; 1 + 2").UnwrapOk().Value;
         expr.ToString().Should().Be("(1 + 2)");
     }
 
-    [Fact(DisplayName = "В объявлении переменной должно поддерживаться любое выражение")]
-    public void ShouldAllowAnyExpressionInVariableValue()
+    [Fact(DisplayName = "В объявлении константы должно поддерживаться любое выражение")]
+    public void ShouldAllowAnyExpressionInConstantValue()
     {
-        var expr = Expr.Parse("var a = 1 + 2; 3").UnwrapOk().Value;
+        var expr = Expr.Parse("const a = 1 + 2; 3").UnwrapOk().Value;
         expr.ToString().Should().Be("3");
     }
 
-    [Fact(DisplayName = "Парсер скрипта должен возвращать список объявленных переменных")]
-    public void ShouldExposeVariablesInScriptResponse()
+    [Fact(DisplayName = "Парсер скрипта должен возвращать список объявленных констант")]
+    public void ShouldExposeConstantsInScriptResponse()
     {
-        var script = Expr.ParseScript("var a = 1 + 2; var b = AVG(age); a + b").UnwrapOk().Value;
+        var script = Expr.ParseScript("const a = 1 + 2; const b = AVG(age); a + b").UnwrapOk().Value;
 
-        script.Variables.Should().HaveCount(2);
-        script.Variables[0].Name.Should().Be("a");
-        script.Variables[0].Expression.ToString().Should().Be("(1 + 2)");
-        script.Variables[1].Name.Should().Be("b");
-        script.Variables[1].Expression.ToString().Should().Be("AVG([age])");
+        script.Contants.Should().HaveCount(2);
+        script.Contants[0].Name.Should().Be("a");
+        script.Contants[0].Expression.ToString().Should().Be("(1 + 2)");
+        script.Contants[1].Name.Should().Be("b");
+        script.Contants[1].Expression.ToString().Should().Be("AVG([age])");
         script.Expression.ToString().Should().Be("([a] + [b])");
     }
 
-    [Fact(DisplayName = "Объявление переменной через blocked_name должно завершаться ошибкой парсинга")]
-    public void VariableDeclarationWithBlockedNameShouldFail()
+    [Fact(DisplayName = "Объявление константы через blocked_name должно завершаться ошибкой парсинга")]
+    public void ConstantDeclarationWithBlockedNameShouldFail()
     {
-        var result = Expr.ParseScript("var [a] = 1; [a]");
+        var result = Expr.ParseScript("const [a] = 1; [a]");
 
         result.UnwrapErr().Message.Should().NotBeNullOrWhiteSpace();
     }

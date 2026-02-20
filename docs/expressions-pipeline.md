@@ -97,9 +97,9 @@ flowchart
 - `DatabaseValuesMapper` (`src/ReData.Query/Runners/DatabaseValuesMapper.cs`)
   - Преобразует значения БД в `IValue`.
 
-## Переменные в скрипте
+## Константы в скрипте
 
-Обработка переменных выполняется на этапе `ExpressionResolver.ResolveScript`:
+Обработка констант выполняется на этапе `ExpressionResolver.ResolveScript`:
 
 1. Парсер возвращает `ExpressionScript` (`varDecl* + финальное expr`).
 2. `ResolveLocalVariables` проходит объявления сверху вниз.
@@ -116,7 +116,7 @@ flowchart
 - `ResolveName` сначала вызывает `TryResolveVariable`;
 - `IVariableRuntime.Resolve(...)` возвращает значение (из кеша или через вычисление);
 - значение переводится в ReData-литерал (`ToReDataLiteral`), затем снова парсится и резолвится;
-- если переменная не найдена, выполняется fallback на поле (`TryResolveField`).
+- если константа не найдена, выполняется fallback на поле (`TryResolveField`).
 
 ## Библиотека функций и различия БД
 

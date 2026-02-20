@@ -18,11 +18,11 @@ public abstract class ExprTests(IDatabaseFixture db)
         PrepareBoolTests(ref expected, ref expr);
         var runner = await db.GetRunnerAsync();
         var connection = db.GetConnection();
-        var variableRuntime = new RunnerVariableRuntime(runner, connection);
+        var constantRuntime = new RunnerConstantRuntime(runner, connection);
         QueryBuilder qb = QueryBuilder.FromDual(
             Factory.CreateExpressionResolver(db.GetDatabaseType()),
             Factory.CreateFunctionStorage(db.GetDatabaseType()),
-            variableRuntime);
+            constantRuntime);
         qb = qb.Select(new()
         {
             ["test"] = expr,

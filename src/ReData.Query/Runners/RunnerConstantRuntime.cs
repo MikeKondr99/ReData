@@ -10,24 +10,24 @@ using SqlTemplate = ReData.Query.Core.Template.Template;
 
 namespace ReData.Query.Runners;
 
-public sealed class RunnerVariableRuntime : IVariableRuntime
+public sealed class RunnerConstantRuntime : IConstantRuntime
 {
     private readonly IQueryRunner queryRunner;
     private readonly DbConnection connection;
 
-    public RunnerVariableRuntime(IQueryRunner queryRunner, DbConnection connection)
+    public RunnerConstantRuntime(IQueryRunner queryRunner, DbConnection connection)
     {
         this.queryRunner = queryRunner;
         this.connection = connection;
     }
 
-    public QueryVariable Create(string name, QueryModel query, ResolvedExpr resolvedExpr)
+    public QueryConstant Create(string name, QueryModel query, ResolvedExpr resolvedExpr)
     {
         var scalarQuery = resolvedExpr.Type is { IsConstant: true, Aggregated: false }
             ? BuildConstScalarQuery(resolvedExpr)
             : BuildScalarQuery(query, resolvedExpr);
 
-        return new QueryVariable
+        return new QueryConstant
         {
             Name = name,
             Query = scalarQuery,
@@ -35,42 +35,42 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
         };
     }
 
-    public Result<IValue, string> Resolve(QueryVariable variable)
+    public Result<IValue, string> Resolve(QueryConstant constant)
     {
-        using var variableSpan = Tracing.Source.StartActivity("VariableResolve");
-        variableSpan?.SetTag("variable.name", variable.Name);
-        variableSpan?.SetTag("variable.cached_before", variable.Value is not null);
+        using var constantSpan = Tracing.Source.StartActivity("ConstantResolve");
+        constantSpan?.SetTag("constant.name", constant.Name);
+        constantSpan?.SetTag("constant.cached_before", constant.Value is not null);
 
-        if (variable.Value is not null)
+        if (constant.Value is not null)
         {
-            variableSpan?.SetTag("variable.resolve_mode", "value");
-            return Result.Ok(variable.Value);
+            constantSpan?.SetTag("constant.resolve_mode", "value");
+            return Result.Ok(constant.Value);
         }
 
-        if (variable.Query is null)
+        if (constant.Query is null)
         {
-            variableSpan?.SetStatus(ActivityStatusCode.Error);
-            return $"Переменная '{variable.Name}' не может быть вычислена в текущем контексте";
+            constantSpan?.SetStatus(ActivityStatusCode.Error);
+            return $"Переменная '{constant.Name}' не может быть вычислена в текущем контексте";
         }
 
         try
         {
-            variableSpan?.SetTag("variable.resolve_mode", "computed");
+            constantSpan?.SetTag("constant.resolve_mode", "computed");
 
             var value = queryRunner
-                .GetDataReaderAsync(variable.Query, connection)
+                .GetDataReaderAsync(constant.Query, connection)
                 .CollectToScalar()
                 .GetAwaiter()
                 .GetResult();
 
-            variable.Value = value;
+            constant.Value = value;
             return Result.Ok(value);
         }
         catch (Exception ex)
         {
-            variableSpan?.SetStatus(ActivityStatusCode.Error);
-            variableSpan?.SetTag("error", ex.Message);
-            return $"Ошибка вычисления переменной '{variable.Name}': {ex.Message}";
+            constantSpan?.SetStatus(ActivityStatusCode.Error);
+            constantSpan?.SetTag("error", ex.Message);
+            return $"Ошибка вычисления переменной '{constant.Name}': {ex.Message}";
         }
     }
 
@@ -78,7 +78,7 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
     {
         return new QueryModel
         {
-            Name = new ResolvedTemplate(SqlTemplate.Create("VariableRuntimeQuery")),
+            Name = new ResolvedTemplate(SqlTemplate.Create("ConstQuery")),
             From = query,
             Select =
             [
@@ -94,7 +94,7 @@ public sealed class RunnerVariableRuntime : IVariableRuntime
     {
         return new QueryModel
         {
-            Name = new ResolvedTemplate(SqlTemplate.Create("VariableRuntimeConstQuery")),
+            Name = new ResolvedTemplate(SqlTemplate.Create("ConstQuery")),
             Select =
             [
                 new SelectItem(

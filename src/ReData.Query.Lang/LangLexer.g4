@@ -2,7 +2,7 @@
 
 AND: [a] [n] [d];
 OR: [o] [r];
-VAR: [v] [a] [r];
+CONST: [c] [o] [n] [s] [t];
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
 HAT: '^';

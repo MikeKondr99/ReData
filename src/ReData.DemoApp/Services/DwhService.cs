@@ -19,7 +19,7 @@ public class DwhService
     }
 
     // Этот метод здесь очень не в тему
-    public QueryBuilder GetQueryBuilder(Guid dataConnectorId, IVariableRuntime? variableRuntime = null)
+    public QueryBuilder GetQueryBuilder(Guid dataConnectorId, IConstantRuntime? constantRuntime = null)
     {
         var dataConnector = db.DataConnectors.Find(dataConnectorId);
 
@@ -39,7 +39,7 @@ public class DwhService
             Factory.CreateFunctionStorage(DatabaseType.PostgreSql),
             [dataConnector.TableName],
             fields,
-            variableRuntime
+            constantRuntime
         );
     }
 }

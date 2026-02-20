@@ -75,6 +75,7 @@ public class LiteralsTest
     
     [Theory]
     [InlineData("0", 0)]
+    [InlineData("10", 10)]
     [InlineData("123", 123)]
     [InlineData("4567", 4567)]
     [InlineData("9999", 9999)]
