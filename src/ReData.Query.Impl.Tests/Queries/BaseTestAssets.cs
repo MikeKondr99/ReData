@@ -40,31 +40,27 @@ public abstract class BaseTestAssets : ITestAssets
 
     public abstract DatabaseType DatabaseType { get; }
 
-    public ExpressionResolver ExpressionResolver => Factory.CreateExpressionResolver(this.DatabaseType);
-
-    public QueryBuilder UsersQuery
+    public QueryBuilder CreateUsersQuery(IConstantRuntime? contantRuntime = null)
     {
-        get
-        {
-            IReadOnlyList<(string name, string column, FieldType type)> fields = [
-                ("UserId", "UserId", new FieldType(DataType.Integer, false)),
-                ("FirstName", "FirstName", new FieldType(DataType.Text, false)),
-                ("LastName", "LastName", new FieldType(DataType.Text, false)),
-                ("Age", "Age", new FieldType(DataType.Integer, false)),
-                ("Salary", "Salary", new FieldType(DataType.Number, false)),
-                ("DateOfBirth", "DateOfBirth", new FieldType(DataType.DateTime, false)),
-                ("JoinDate", "JoinDate", new FieldType(DataType.DateTime, false)),
-                ("LastLoginDate", "LastLoginDate", new FieldType(DataType.DateTime, false)),
-                ("Notes", "Notes", new FieldType(DataType.Text, false)),
-            ];
-            
-            return QueryBuilder.FromTable(
-                Factory.CreateExpressionResolver(DatabaseType),
-                Factory.CreateFunctionStorage(DatabaseType),
-                ["User"],
-                fields
-            );
-        }
+        IReadOnlyList<(string name, string column, FieldType type)> fields = [
+            ("UserId", "UserId", new FieldType(DataType.Integer, false)),
+            ("FirstName", "FirstName", new FieldType(DataType.Text, false)),
+            ("LastName", "LastName", new FieldType(DataType.Text, false)),
+            ("Age", "Age", new FieldType(DataType.Integer, false)),
+            ("Salary", "Salary", new FieldType(DataType.Number, false)),
+            ("DateOfBirth", "DateOfBirth", new FieldType(DataType.DateTime, false)),
+            ("JoinDate", "JoinDate", new FieldType(DataType.DateTime, false)),
+            ("LastLoginDate", "LastLoginDate", new FieldType(DataType.DateTime, false)),
+            ("Notes", "Notes", new FieldType(DataType.Text, false)),
+        ];
+        
+        return QueryBuilder.FromTable(
+            Factory.CreateExpressionResolver(DatabaseType),
+            Factory.CreateFunctionStorage(DatabaseType),
+            ["User"],
+            fields,
+            contantRuntime
+        );
     }
 
     public dynamic[] UsersDynamicArray { get; } =

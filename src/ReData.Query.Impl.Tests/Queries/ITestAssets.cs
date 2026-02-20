@@ -5,11 +5,10 @@ namespace ReData.Query.Impl.Tests.Queries;
 
 public interface ITestAssets : IAsyncLifetime
 {
-    public QueryBuilder UsersQuery { get; }
+
+    public QueryBuilder CreateUsersQuery(IConstantRuntime? contantRuntime = null);
     
     public DatabaseType DatabaseType { get;  }
-    
-    public IReadOnlyList<Dictionary<string,IValue>> UsersData { get; }
     
     public dynamic[] UsersDynamicArray { get; }
         

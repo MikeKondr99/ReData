@@ -3,6 +3,7 @@ using ReData.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using ReData.Query.Impl.Tests.Fixtures;
+using ReData.Query.Runners;
 
 // ReSharper disable PossibleMultipleEnumeration
 
@@ -10,13 +11,22 @@ namespace ReData.Query.Impl.Tests.Queries;
 
 #pragma warning disable SA1118
 
-public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
+public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
+    private QueryBuilder CreateUsersQuery() => assets.CreateUsersQuery();
+
+    private async Task<QueryBuilder> CreateUsersQueryWithRuntimeAsync()
+    {
+        var runner = await db.GetRunnerAsync();
+        var runtime = new RunnerConstantRuntime(runner, db.GetConnection());
+        return assets.CreateUsersQuery(runtime);
+    }
+
     [Fact]
     public async Task TableQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery;
+        var qb = CreateUsersQuery();
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -31,7 +41,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task WhereQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Where("UserId > 5")
             .Expect("Valid query");
 
@@ -48,7 +58,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task WhereSelectComboQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Where("UserId > 5")
             .Select(new()
             {
@@ -76,7 +86,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task OrderBySelectComboQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([("UserId", OrderItem.Type.Asc)])
             .Select(new()
             {
@@ -102,7 +112,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task SelectQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery.Select(new()
+        var qb = CreateUsersQuery().Select(new()
         {
             ["id"] = "UserId",
             ["Name"] = "Upper(FirstName + LastName)",
@@ -130,7 +140,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task QueryWithInterpolation()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Select(new()
             {
                 ["FullName"] = "'{FirstName} {LastName}'",
@@ -157,7 +167,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task OrderByQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([("Salary", OrderItem.Type.Desc)])
             .Expect("Valid query");
 
@@ -174,7 +184,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task OrderByOverride()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([("Salary", OrderItem.Type.Desc)])
             .OrderBy([("FirstName", OrderItem.Type.Asc)])
             .Expect("Valid query");
@@ -192,7 +202,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task OrderByMultipleQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([
                 ("Notes", OrderItem.Type.Asc),
                 ("FirstName", OrderItem.Type.Asc)
@@ -221,7 +231,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task OrderByNegOne(string expr)
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([(expr, OrderItem.Type.Asc)])
             .Expect("Valid query");
 
@@ -239,7 +249,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task Limit()
     {
         // Arrange
-        var qb = assets.UsersQuery.Take(5);
+        var qb = CreateUsersQuery().Take(5);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -254,7 +264,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitGetOne()
     {
         // Arrange
-        var qb = assets.UsersQuery.Take(1);
+        var qb = CreateUsersQuery().Take(1);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -269,7 +279,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitMoreLimitLess()
     {
         // Arrange
-        var qb = assets.UsersQuery.Take(5).Take(3);
+        var qb = CreateUsersQuery().Take(5).Take(3);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -284,7 +294,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitLessLimitMore()
     {
         // Arrange
-        var qb = assets.UsersQuery.Take(3).Take(5);
+        var qb = CreateUsersQuery().Take(3).Take(5);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -299,7 +309,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitThenOrderBy()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Take(5)
             .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Expect("Valid query");
@@ -317,7 +327,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitThenWhere()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Take(5)
             .Where("Mod(UserId,2) = 0")
             .Expect("Valid query");
@@ -339,7 +349,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task Offset()
     {
         // Arrange
-        var qb = assets.UsersQuery.Skip(5);
+        var qb = CreateUsersQuery().Skip(5);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -354,7 +364,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task LimitOffsetQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery.Skip(5).Take(5);
+        var qb = CreateUsersQuery().Skip(5).Take(5);
 
         // Act
         var result = await GetObjectsAsync(qb);
@@ -371,7 +381,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Regression test for GH-113.
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Skip(5)
             .Take(10)
             .Skip(7)
@@ -397,7 +407,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         // Regression test for GH-113.
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Take(10)
             .Skip(10)
             .Take(10);
@@ -418,7 +428,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task BugWhereLeak()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Where("UserId > 5")
             .Select(new()
             {
@@ -446,7 +456,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task SequencialSelect()
     {
         // Arrange
-        var qb = assets.UsersQuery.Select(new()
+        var qb = CreateUsersQuery().Select(new()
             {
                 ["id"] = "UserId",
                 ["Name"] = "FirstName",
@@ -518,7 +528,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task SubqueryWithOrderAndWithoutLimit()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Select(new()
             {
@@ -549,7 +559,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task FullQuery()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([("UserId", OrderItem.Type.Desc)])
             .Where("Salary > 30000.0").UnwrapOk().Value
             .Skip(2)
@@ -586,7 +596,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithOnlyGroup()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new()
             {
                 ["TEST"] = "Notes"
@@ -613,7 +623,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithAggregations()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new()
             {
                 ["TEST"] = "Notes",
@@ -647,7 +657,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByMultipleKeys()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["FirstName", "LastName"], new()
             {
                 ["FirstName"] = "FirstName",
@@ -682,7 +692,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithHaving()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new()
             {
                 ["Note"] = "Notes",
@@ -711,7 +721,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByIntegerDivisionInHavingUsesIntegerSemantics()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Mod(UserId, 2)"], new()
             {
                 ["Bucket"] = "Mod(UserId, 2)",
@@ -740,7 +750,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithWhereBefore()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["FirstName"], new()
             {
                 ["Name"] = "FirstName",
@@ -771,7 +781,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithOrderBy()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new()
             {
                 ["Note"] = "Notes",
@@ -801,7 +811,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     {
         Skip.If(assets.DatabaseType == DatabaseType.Oracle, "TODO починить позже");
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new()
             {
                 ["Note"] = "Notes",
@@ -830,7 +840,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithDatePart()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Year(JoinDate)"], new()
             {
                 ["JoinYear"] = "Year(JoinDate)",
@@ -859,7 +869,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithCaseExpression()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["If(Age > 30,'Senior','Junior')"], new()
             {
                 ["AgeGroup"] = "If(Age > 30,'Senior','Junior')",
@@ -888,7 +898,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task ConcatWithOrder()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .Select(new ()
             {
                ["concat"] = "CONCAT(FirstName,', ', Age)"
@@ -909,7 +919,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task GroupByWithConcatWithOrder()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .GroupBy(["Notes"], new ()
             {
                ["concat"] = "CONCAT(FirstName,', ', Age)"
@@ -939,7 +949,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     public async Task TestToTrackBug85()
     {
         // Arrange
-        var qb = assets.UsersQuery
+        var qb = CreateUsersQuery()
             .OrderBy([
                 ("UserId", OrderItem.Type.Desc)
             ]).Expect(e => e.JoinBy(", "))
@@ -958,3 +968,4 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     
     
 }
+

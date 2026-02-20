@@ -19,7 +19,8 @@ public abstract record Expr
     
     public static Result<Expr, ExprError> Parse(string s)
     {
-        if (Global.MemoryCache.TryGetValue<Expr>(s, out var result))
+        var cacheKey = $"expr::{s}";
+        if (Global.MemoryCache.TryGetValue<Expr>(cacheKey, out var result))
         {
             return result;
         }
@@ -37,12 +38,57 @@ public abstract record Expr
             parser.AddErrorListener(new ErrorListener());
             Expr expr = new ExpressionParser().VisitStart(parser.start());
             // Cache.TryAdd(s, expr);
-            Global.MemoryCache.GetOrCreate<Expr>(s, (c) =>
+            Global.MemoryCache.GetOrCreate<Expr>(cacheKey, (c) =>
             {
                 c.SlidingExpiration = TimeSpan.FromMinutes(30);
                 return expr;
             });
             return Result.Ok(expr);
+        }
+        catch (ExprErrorException e)
+        {
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
+            return e.Error;
+        }
+        catch (Exception e)
+        {
+            act?.SetStatus(ActivityStatusCode.Error);
+            act?.AddException(e);
+            return new ExprError()
+            {
+                Span = new ExprSpan(1, 1, 100, 100),
+                Message = e.Message
+            };
+        }
+    }
+
+    public static Result<ExpressionScript, ExprError> ParseScript(string s)
+    {
+        var cacheKey =  $"script::{s}";
+        if (Global.MemoryCache.TryGetValue<ExpressionScript>(cacheKey, out var result))
+        {
+            return result;
+        }
+
+        using var act = activitySource.StartActivity("expression script parsing");
+        act?.SetTag("expression", s);
+        try
+        {
+            var chars = new AntlrInputStream(s);
+            var lexer = new LangLexer(chars);
+            lexer.AddErrorListener(new TokenErrorListener());
+            var tokens = new CommonTokenStream(lexer);
+            tokens.Fill();
+            var parser = new LangParser(tokens);
+            parser.AddErrorListener(new ErrorListener());
+            var script = new ExpressionParser().VisitScript(parser.start());
+            Global.MemoryCache.GetOrCreate<ExpressionScript>(cacheKey, (c) =>
+            {
+                c.SlidingExpiration = TimeSpan.FromMinutes(30);
+                return script;
+            });
+            return Result.Ok(script);
         }
         catch (ExprErrorException e)
         {

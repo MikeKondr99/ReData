@@ -2,6 +2,7 @@
 
 AND: [a] [n] [d];
 OR: [o] [r];
+CONST: [c] [o] [n] [s] [t];
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
 HAT: '^';
@@ -17,6 +18,7 @@ EQUAL: '=';
 NOT_EQUAL: '!=';
 DOT: '.';
 COMMA: ',';
+SEMICOLON: ';';
 QUOTE: ['] -> pushMode(IN_STRING);
 CURLY_CLOSE: '}' -> popMode;
 

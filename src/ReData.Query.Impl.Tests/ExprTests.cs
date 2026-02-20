@@ -16,12 +16,19 @@ public abstract class ExprTests(IDatabaseFixture db)
     {
         Console.WriteLine($"{db.GetDatabaseType()}: {expr}");
         PrepareBoolTests(ref expected, ref expr);
-        QueryBuilder qb = QueryBuilder.FromDual(Factory.CreateExpressionResolver(db.GetDatabaseType()), Factory.CreateFunctionStorage(db.GetDatabaseType()));
+        var runner = await db.GetRunnerAsync();
+        var connection = db.GetConnection();
+        var constantRuntime = new RunnerConstantRuntime(runner, connection);
+        QueryBuilder qb = QueryBuilder.FromDual(
+            Factory.CreateExpressionResolver(db.GetDatabaseType()),
+            Factory.CreateFunctionStorage(db.GetDatabaseType()),
+            constantRuntime);
         qb = qb.Select(new()
         {
             ["test"] = expr,
         }).Expect(e => e.Select(l => l.JoinBy("\n")).JoinBy("\n\n"));
-        var result = await GetScalarAsync(qb);
+        var query = qb.Build();
+        IValue result = await runner.GetDataReaderAsync(query, connection).CollectToScalar();
         Compare(result, ExpectedValue(expected));
     }
 

@@ -7,6 +7,7 @@ using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Value;
 using ReData.Query.Lang.Expressions;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Core;
 
@@ -17,27 +18,37 @@ public record QueryBuilder
     public IFunctionStorage Functions { get; set; }
     private Query Query { get; init; }
     private ExpressionResolver Resolver { get; init; }
+    private IReadOnlyDictionary<string, QueryConstant> Constants { get; init; } =
+        new Dictionary<string, QueryConstant>();
+    private IConstantRuntime ConstantRuntime { get; init; } = DisabledConstantRuntime.Instance;
     private IEnumerable<Field> Fields => Query.Fields();
 
-    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions)
+    public QueryBuilder(Query query, ExpressionResolver resolver, IFunctionStorage functions, IConstantRuntime? constantRuntime = null)
     {
         Query = query;
         Resolver = resolver;
         Functions = functions;
+        ConstantRuntime = constantRuntime ?? DisabledConstantRuntime.Instance;
     }
 
-    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions)
+    public static QueryBuilder FromDual(ExpressionResolver resolver, IFunctionStorage functions, IConstantRuntime? constantRuntime = null)
     {
         return new QueryBuilder(new Query()
             {
                 Name = resolver.ResolveName(["DualQuery"]),
             },
             resolver,
-            functions
+            functions,
+            constantRuntime
         );
     }
     
-    public static QueryBuilder FromTable(ExpressionResolver resolver, IFunctionStorage functions, ReadOnlySpan<string> path, IReadOnlyList<(string name, string column, FieldType type)> fields)
+    public static QueryBuilder FromTable(
+        ExpressionResolver resolver,
+        IFunctionStorage functions,
+        ReadOnlySpan<string> path,
+        IReadOnlyList<(string name, string column, FieldType type)> fields,
+        IConstantRuntime? constantRuntime = null)
     {
         var queryName = "TableQuery";
         return new QueryBuilder(new Query()
@@ -73,7 +84,8 @@ public record QueryBuilder
             }).ToArray()
         },
         resolver,
-        functions);
+        functions,
+        constantRuntime);
     }
 
     public Result<QueryBuilder, IEnumerable<IReadOnlyList<ExprError>>> Select(Dictionary<string, string> select)
@@ -126,7 +138,14 @@ public record QueryBuilder
             qb = CreateCte();
         }
 
-        var res = qb.Resolve(condition).NotAggregated().Bool();
+        var resolvedScript = qb.ResolveScript(condition);
+        if (resolvedScript.UnwrapErr(out var scriptErrors, out var scriptResult))
+        {
+            return Result.Error(Once.From(scriptErrors).AsEnumerable<IReadOnlyList<ExprError>>());
+        }
+
+        ResolutionResult res = scriptResult.Expression;
+        res = res.NotAggregated().Bool();
 
         if (res.UnwrapErr(out var err, out var where))
         {
@@ -138,7 +157,8 @@ public record QueryBuilder
             Query = qb.Query with
             {
                 Where = [..qb.Query.Where ?? [], where]
-            }
+            },
+            Constants = MergeConstants(qb.Constants, scriptResult.Constants),
         };
     }
     
@@ -275,26 +295,55 @@ public record QueryBuilder
     
     private Result<ResolvedExpr, IReadOnlyList<ExprError>> Resolve(string expr)
     {
-        var resExpr = Expr.Parse(expr);
-        if (!resExpr.Unwrap(out var expression, out var error))
+        return ResolveScript(expr).Map(r => r.Expression);
+    }
+
+    private Result<ResolvedScriptExpr, IReadOnlyList<ExprError>> ResolveScript(string expr)
+    {
+        var resScript = Expr.ParseScript(expr);
+        if (!resScript.Unwrap(out var script, out var error))
         {
             return Result.Error<IReadOnlyList<ExprError>>([error]);
+        }
+
+        var scopedConstants = new Dictionary<string, QueryConstant>()
+        {
+            ["$user_id"] = QueryConstant.FromValue("$user_id", new TextValue("Demonmiker")),
+        };
+        foreach (var constant in Constants)
+        {
+            scopedConstants[constant.Key] = constant.Value;
         }
 
         var context = new ResolutionContext()
         {
             Errors = [],
             Functions = Functions,
-            Variables = new() { ["$user_id"] = new TextValue("Demonmiker") },
-            QuerySource = Query.From
+            Constants = scopedConstants,
+            ConstantRuntime = ConstantRuntime,
+            QuerySource = Query.From ?? Query,
+            ConstantQuerySource = Query,
         };
-        var res = Resolver.ResolveExpr(expression, context);
-        if (res.HasValue)
+        var res = Resolver.ResolveScript(script, context);
+        if (res is not null)
         {
             return res;
         }
 
         return context.Errors;
+    }
+
+    private static IReadOnlyDictionary<string, QueryConstant> MergeConstants(
+        IReadOnlyDictionary<string, QueryConstant> globalConstants,
+        IReadOnlyDictionary<string, QueryConstant> newConstants)
+    {
+        var merged = new Dictionary<string, QueryConstant>(globalConstants);
+        foreach (var constant in newConstants)
+        {
+            merged[constant.Key] = constant.Value;
+        }
+
+        return merged;
     }
 
     public Query Build()

@@ -9,7 +9,7 @@ public class ParsingTests
     private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
         options.Excluding(e => e.Span);
     
-    [Fact]
+    [Fact(DisplayName = "Парсер должен строить бинарное выражение для сложения имени и константы")]
     public void BinaryOp()
     {
         var expr = Expr.Parse("number + 3").UnwrapOk().Value;
@@ -27,7 +27,7 @@ public class ParsingTests
         }, options);
     }
     
-    [Fact]
+    [Fact(DisplayName = "Парсер должен учитывать приоритет операций умножения над сложением")]
     public void ShouldGivePriority()
     {
         var expr = Expr.Parse("a + b * c").UnwrapOk().Value;
@@ -53,7 +53,7 @@ public class ParsingTests
     }
     
     
-    [Fact]
+    [Fact(DisplayName = "Парсер не должен захватывать бинарный оператор внутрь объектного вызова")]
     public void ShouldParseWithoutCapturingBinary()
     {
         var expr = Expr.Parse("a + c.Call()").UnwrapOk().Value;
@@ -78,7 +78,7 @@ public class ParsingTests
 
     }
     
-    [Fact]
+    [Fact(DisplayName = "Парсер должен корректно разбирать строковые литералы в бинарном выражении")]
     public void ShouldParseStringNonGreedy()
     {
         var expr = Expr.Parse("'a' + 'b'").UnwrapOk().Value;
@@ -96,7 +96,7 @@ public class ParsingTests
 
     }
     
-    [Fact]
+    [Fact(DisplayName = "Парсер должен корректно разбирать blocked-name в бинарном выражении")]
     public void ShouldParseNameNonGreedy()
     {
         var expr = Expr.Parse("[a] + [b]").UnwrapOk().Value;
@@ -114,7 +114,7 @@ public class ParsingTests
         }, options);
     }
     
-    [Fact]
+    [Fact(DisplayName = "Парсер должен корректно разбирать строки внутри аргументов функции")]
     public void ShouldParseStringNonGreedyInArguments()
     {
         var expr = Expr.Parse("If(10 > 5 and null, 'then', 'else')").UnwrapOk().Value;
@@ -144,5 +144,40 @@ public class ParsingTests
             ]
         }, options);
 
+    }
+
+    [Fact(DisplayName = "При парсинге скрипта должны игнорироваться объявления констант и возвращаться финальное выражение")]
+    public void ShouldIgnoreConstantDeclarationsAndReturnFinalExpression()
+    {
+        var expr = Expr.Parse("const a = 12; const b = 'x'; 1 + 2").UnwrapOk().Value;
+        expr.ToString().Should().Be("(1 + 2)");
+    }
+
+    [Fact(DisplayName = "В объявлении константы должно поддерживаться любое выражение")]
+    public void ShouldAllowAnyExpressionInConstantValue()
+    {
+        var expr = Expr.Parse("const a = 1 + 2; 3").UnwrapOk().Value;
+        expr.ToString().Should().Be("3");
+    }
+
+    [Fact(DisplayName = "Парсер скрипта должен возвращать список объявленных констант")]
+    public void ShouldExposeConstantsInScriptResponse()
+    {
+        var script = Expr.ParseScript("const a = 1 + 2; const b = AVG(age); a + b").UnwrapOk().Value;
+
+        script.Contants.Should().HaveCount(2);
+        script.Contants[0].Name.Should().Be("a");
+        script.Contants[0].Expression.ToString().Should().Be("(1 + 2)");
+        script.Contants[1].Name.Should().Be("b");
+        script.Contants[1].Expression.ToString().Should().Be("AVG([age])");
+        script.Expression.ToString().Should().Be("([a] + [b])");
+    }
+
+    [Fact(DisplayName = "Объявление константы через blocked_name должно завершаться ошибкой парсинга")]
+    public void ConstantDeclarationWithBlockedNameShouldFail()
+    {
+        var result = Expr.ParseScript("const [a] = 1; [a]");
+
+        result.UnwrapErr().Message.Should().NotBeNullOrWhiteSpace();
     }
 }

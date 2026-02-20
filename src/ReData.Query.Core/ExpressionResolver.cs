@@ -19,11 +19,22 @@ public record ResolutionContext
 {
     public required IQuerySource QuerySource { get; init; }
 
+    public Query? ConstantQuerySource { get; init; }
+
     public required List<ExprError> Errors { get; init; }
 
     public required IFunctionStorage Functions { get; init; }
 
-    public required Dictionary<string, IValue> Variables { get; init; }
+    public required Dictionary<string, QueryConstant> Constants { get; init; }
+
+    public required IConstantRuntime ConstantRuntime { get; init; }
+}
+
+public sealed record ResolvedScriptExpr
+{
+    public required ResolvedExpr Expression { get; init; }
+
+    public required IReadOnlyDictionary<string, QueryConstant> Constants { get; init; }
 }
 
 public sealed class ExpressionResolver
@@ -47,6 +58,121 @@ public sealed class ExpressionResolver
         return result;
     }
 
+    public ResolvedScriptExpr? ResolveScript(ExpressionScript script, ResolutionContext context)
+    {
+        // 1) Собираем локальные константы из script.Contants.
+        var localConstants = ResolveLocalConstants(script, context);
+
+        if (context.Errors.Count > 0)
+        {
+            return null;
+        }
+
+        // 2) Формируем область видимости: глобальные + локальные.
+        var scopeConstants = MergeConstants(context.Constants, localConstants);
+
+        // 3) Резолвим финальное выражение в локальном скоупе.
+        var localContext = context with
+        {
+            Constants = scopeConstants,
+        };
+
+        var resolved = RecursiveResolveExpr(script.Expression, localContext);
+        if (!resolved.HasValue)
+        {
+            return null;
+        }
+
+        return new ResolvedScriptExpr
+        {
+            Expression = resolved.Value,
+            Constants = localConstants,
+        };
+    }
+
+    private Dictionary<string, QueryConstant> ResolveLocalConstants(ExpressionScript script, ResolutionContext context)
+    {
+        var localConstants = new Dictionary<string, QueryConstant>();
+        var scopeConstants = new Dictionary<string, QueryConstant>(context.Constants);
+
+        foreach (var declaration in script.Contants)
+        {
+            if (scopeConstants.ContainsKey(declaration.Name))
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Константа '{declaration.Name}' уже существует"
+                });
+                continue;
+            }
+
+            var scopeContext = context with
+            {
+                Constants = scopeConstants,
+            };
+
+            var declarationContext = scopeContext with
+            {
+                QuerySource = context.ConstantQuerySource ?? context.QuerySource,
+            };
+
+            var resolved = RecursiveResolveExpr(declaration.Expression, declarationContext);
+            if (!resolved.HasValue)
+            {
+                continue;
+            }
+
+            if (!resolved.Value.Type.IsConstant && !resolved.Value.Type.Aggregated)
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Константа '{declaration.Name}' должна быть константой или агрегацией"
+                });
+                continue;
+            }
+
+            var literalValue = TryGetDirectLiteralValue(declaration.Expression);
+            if (literalValue is not null)
+            {
+                var valueConstant = QueryConstant.FromValue(declaration.Name, literalValue);
+                localConstants[declaration.Name] = valueConstant;
+                scopeConstants[declaration.Name] = valueConstant;
+                continue;
+            }
+
+            if (context.ConstantQuerySource is null)
+            {
+                context.Errors.Add(new ExprError()
+                {
+                    Span = declaration.Expression.Span,
+                    Message = $"Константа '{declaration.Name}' не может быть вычислена в текущем контексте"
+                });
+                continue;
+            }
+
+            var constant = context.ConstantRuntime.Create(declaration.Name, context.ConstantQuerySource, resolved.Value);
+            localConstants[declaration.Name] = constant;
+            scopeConstants[declaration.Name] = constant;
+        }
+
+        return localConstants;
+    }
+
+    private static Dictionary<string, QueryConstant> MergeConstants(
+        IReadOnlyDictionary<string, QueryConstant> globalConstants,
+        IReadOnlyDictionary<string, QueryConstant> localConstants)
+    {
+        var merged = new Dictionary<string, QueryConstant>(globalConstants);
+        foreach (var local in localConstants)
+        {
+            merged[local.Key] = local.Value;
+        }
+
+        return merged;
+    }
+
     private ResolvedExpr? RecursiveResolveExpr(Expr expr, ResolutionContext context)
     {
         return expr switch
@@ -66,33 +192,14 @@ public sealed class ExpressionResolver
 
     private ResolvedExpr? ResolveName(NameExpr name, ResolutionContext context)
     {
-        if (context.Variables.Get(name.Value) is ISome<IValue>(var vr))
+        if (TryResolveConstant(name, context, out var constantResolved))
         {
-            Expr expr = Expr.Parse(vr.ToReDataLiteral()).Unwrap();
-            ResolvedExpr rexpr = RecursiveResolveExpr(expr, context)!.Value;
-
-            return rexpr with
-            {
-                Expression = name,
-            };
+            return constantResolved;
         }
 
-        var source = context.QuerySource;
-        var fieldOption = source.Fields().Get(name.Value);
-        if (fieldOption is ISome<Field>(var field))
+        if (TryResolveField(name, context, out var fieldResolved))
         {
-            return new ResolvedExpr
-            {
-                Expression = name,
-                Template = Template.Template.Create($"{source.Name?.Template}.{field.Template}"),
-                Type = new ExprType()
-                {
-                    DataType = field.Type.Type,
-                    CanBeNull = field.Type.CanBeNull,
-                    IsConstant = false,
-                    Aggregated = false,
-                },
-            };
+            return fieldResolved;
         }
 
         context.Errors.Add(new ExprError()
@@ -101,6 +208,69 @@ public sealed class ExpressionResolver
             Message = $"Поле '{name.Value}' не найдено"
         });
         return null;
+    }
+
+    private bool TryResolveConstant(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
+    {
+        resolved = null;
+        if (!context.Constants.TryGetValue(name.Value, out var constant))
+        {
+            return false;
+        }
+
+        var resolvedValue = context.ConstantRuntime.Resolve(constant);
+        if (resolvedValue.UnwrapErr(out var error, out var value))
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = name.Span,
+                Message = error,
+            });
+            return true;
+        }
+
+        constant.Value = value;
+        context.Constants[name.Value] = constant;
+
+        var literal = value.ToReDataLiteral();
+        var valueExpr = Expr.Parse(literal).Expect(e => $"не удалось распарсить литерал `{literal}`\n потому что: {e.Message}");
+        var resolvedExpr = RecursiveResolveExpr(valueExpr, context);
+        if (!resolvedExpr.HasValue)
+        {
+            return true;
+        }
+
+        resolved = resolvedExpr.Value with
+        {
+            Expression = name,
+        };
+
+        return true;
+    }
+
+    private static bool TryResolveField(NameExpr name, ResolutionContext context, out ResolvedExpr? resolved)
+    {
+        resolved = null;
+        var source = context.QuerySource;
+        var fieldOption = source.Fields().Get(name.Value);
+        if (fieldOption is not ISome<Field>(var field))
+        {
+            return false;
+        }
+
+        resolved = new ResolvedExpr
+        {
+            Expression = name,
+            Template = Template.Template.Create($"{source.Name?.Template}.{field.Template}"),
+            Type = new ExprType()
+            {
+                DataType = field.Type.Type,
+                CanBeNull = field.Type.CanBeNull,
+                IsConstant = false,
+                Aggregated = false,
+            },
+        };
+        return true;
     }
 
 
@@ -158,7 +328,9 @@ public sealed class ExpressionResolver
         {
             Fields = context.QuerySource.Fields().ToArray(),
             Arguments = constArguments ?? Array.Empty<IValue?>(),
-            Variables = context.Variables,
+            Constants = context.Constants
+                .Where(v => v.Value.Value is not null)
+                .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
 
         var template = function.Template.GetTemplate(templateContext);
@@ -205,7 +377,20 @@ public sealed class ExpressionResolver
             BooleanLiteral(var v) => new BoolValue(v),
             StringLiteral(var v) => new TextValue(v),
             NullLiteral => default(NullValue),
-            NameExpr varName when context.Variables.TryGetValue(varName.Value, out var value) => value,
+            NameExpr varName when context.Constants.TryGetValue(varName.Value, out var constant) => constant.Value,
+            _ => null
+        };
+    }
+
+    private static IValue? TryGetDirectLiteralValue(Expr expr)
+    {
+        return expr switch
+        {
+            IntegerLiteral(var v) => new IntegerValue(v),
+            NumberLiteral(var v) => new NumberValue(v),
+            BooleanLiteral(var v) => new BoolValue(v),
+            StringLiteral(var v) => new TextValue(v),
+            NullLiteral => default(NullValue),
             _ => null
         };
     }

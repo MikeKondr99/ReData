@@ -14,12 +14,12 @@ public sealed record TemplateContext
     public required IReadOnlyList<Field> Fields { get; init; }
 
     /// <summary>
-    /// Constant arguments (literals or variables) for the function.
+    /// Constant arguments (literals or constants) for the function.
     /// </summary>
     public required IReadOnlyList<IValue?> Arguments { get; init; }
 
     /// <summary>
-    /// Variables available in the resolution environment.
+    /// Contants available in the resolution environment.
     /// </summary>
-    public required IReadOnlyDictionary<string, IValue> Variables { get; init; }
+    public required IReadOnlyDictionary<string, IValue> Constants { get; init; }
 }
