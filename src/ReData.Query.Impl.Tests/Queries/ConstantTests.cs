@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Globalization;
+using FluentAssertions;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 
@@ -6,7 +7,7 @@ namespace ReData.Query.Impl.Tests.Queries;
 
 public abstract partial class Сommon
 {
-    [Fact(DisplayName = "Переменная из блока Where должна быть доступна в последующих блоках")]
+    [Fact(DisplayName = "Константа из блока Where должна быть доступна в последующих блоках")]
     public async Task WhereConstantShouldBeAvailableInNextBlocks()
     {
         // Arrange
@@ -33,6 +34,272 @@ public abstract partial class Сommon
             .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "inline const должен работать в Where без сохранения в следующий блок")]
+    public async Task InlineConstInWhere_ShouldNotLeakToNextBlocks()
+    {
+        // Arrange
+        var withInlineConst = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("UserId > const(5)")
+            .Expect("Valid query");
+
+        // Act
+        var failed = withInlineConst.Where("avgAge > 0");
+        var errors = failed.UnwrapErr();
+
+        // Assert
+        errors
+            .SelectMany(e => e)
+            .Should()
+            .Contain(e => e.Message.Contains("'avgAge'"));
+    }
+
+    [Fact(DisplayName = "inline const с агрегатом должен вычисляться в Select")]
+    public async Task InlineConstWithAggregateInSelect_ShouldWork()
+    {
+        // Arrange
+        var selectResult = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["TotalAge"] = "const(SUM(Age))",
+            });
+
+        if (selectResult.UnwrapErr(out var selectErrors, out var qbBase))
+        {
+            var message = string.Join(" | ", selectErrors.SelectMany(e => e).Select(e => e.Message));
+            throw new InvalidOperationException(message);
+        }
+
+        var qb = qbBase.Take(1);
+
+        // Act
+        var result = await GetObjectsAsync(qb);
+
+        // Assert
+        var expected = assets.UsersDynamicArray.Sum(u => (double)u.Age);
+        dynamic[] expectData =
+        [
+            new
+            {
+                TotalAge = expected
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "inline const с константной арифметикой должен вычисляться в literal")]
+    public async Task InlineConstWithConstArithmeticInSelect_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["Value"] = "const(1 + 2 + 3)",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 6
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "Field(const('a' + 'g' + 'e')) должен работать как const-аргумент")]
+    public async Task InlineConstInsideFieldArgument_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["AgeText"] = "Field(const('a' + 'g' + 'e'))",
+            })
+            .Expect("Valid query");
+
+        var result = await GetObjectsAsync(qb);
+
+        var expect = assets.UsersDynamicArray
+            .Select(u => new
+            {
+                AgeText = ((int)u.Age).ToString(CultureInfo.InvariantCulture),
+            })
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "вложенный inline const в inline const должен вычисляться корректно")]
+    public async Task InlineConstNestedInInlineConst_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["Value"] = "const(const(1 + 2) + const(3 + 4))",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 10
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "многоуровневый inline const должен вычисляться корректно")]
+    public async Task InlineConstDeeplyNested_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["Value"] = "const(const(const(1 + 1) + const(2 + 2)) + const(3))",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 9
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "const= внутри которого inline const должен работать")]
+    public async Task ConstDeclarationContainingInlineConst_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("const a = const(1 + 2 + 3); true")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["Value"] = "a",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 6
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "inline const внутри которого используется const= должен работать")]
+    public async Task InlineConstUsingDeclaredConstant_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("const a = 5; true")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["Value"] = "const(a + 1)",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 6
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "const= с inline от агрегата должен работать")]
+    public async Task ConstDeclarationWithInlineAggregate_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("const avgAge = const(AVG(Age)); Age >= avgAge")
+            .Expect("Valid query");
+
+        var result = await GetObjectsAsync(qb);
+
+        var avgAge = assets.UsersDynamicArray.Average(u => (double)u.Age);
+        var expect = assets.UsersDynamicArray
+            .Where(u => (double)u.Age >= avgAge)
+            .PrepareRecords();
+
+        result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "inline const с использованием ранее объявленной агрегатной const= должен работать")]
+    public async Task InlineConstUsingDeclaredAggregateConstant_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Where("const avgAge = AVG(Age); true")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["Value"] = "const(avgAge + 1)",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = assets.UsersDynamicArray.Average(u => (double)u.Age) + 1
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
+    }
+
+    [Fact(DisplayName = "много inline const в одном выражении должны работать")]
+    public async Task ManyInlineConstsInSingleExpression_ShouldWork()
+    {
+        var qb = (await CreateUsersQueryWithRuntimeAsync())
+            .Select(new()
+            {
+                ["Value"] = "const(1) + const(2) + const(3) + const(4)",
+            })
+            .Expect("Valid query")
+            .Take(1);
+
+        var result = await GetObjectsAsync(qb);
+
+        dynamic[] expectData =
+        [
+            new
+            {
+                Value = 10
+            }
+        ];
+
+        result.Should().BeEquivalentTo(expectData.PrepareRecords(), o => o.WithStrictOrdering());
     }
 
     [Fact(DisplayName = "Переменная со средним значением должна фильтровать записи в блоке Where")]
@@ -902,4 +1169,7 @@ public abstract partial class Сommon
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
     }
 }
+
+
+
 

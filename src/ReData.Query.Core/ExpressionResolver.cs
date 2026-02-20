@@ -232,18 +232,11 @@ public sealed class ExpressionResolver
         constant.Value = value;
         context.Constants[name.Value] = constant;
 
-        var literal = value.ToReDataLiteral();
-        var valueExpr = Expr.Parse(literal).Expect(e => $"не удалось распарсить литерал `{literal}`\n потому что: {e.Message}");
-        var resolvedExpr = RecursiveResolveExpr(valueExpr, context);
-        if (!resolvedExpr.HasValue)
+        resolved = ResolveValueAsExpr(name, value, context);
+        if (!resolved.HasValue)
         {
             return true;
         }
-
-        resolved = resolvedExpr.Value with
-        {
-            Expression = name,
-        };
 
         return true;
     }
@@ -276,6 +269,11 @@ public sealed class ExpressionResolver
 
     private ResolvedExpr? ResolveFunction(FuncExpr funcExpr, ResolutionContext context)
     {
+        if (funcExpr is { Kind: FuncExprKind.Default, Name: "const" })
+        {
+            return ResolveInlineConst(funcExpr, context);
+        }
+
         var arguments = funcExpr.Arguments.Select(a => RecursiveResolveExpr(a, context)).ToArray();
 
         var args = arguments.Where(a => a.HasValue).Select(a => a!.Value).ToArray();
@@ -308,7 +306,7 @@ public sealed class ExpressionResolver
 
         if (function.Arguments.Any(a => a.IsConstRequired))
         {
-            constArguments = funcExpr.Arguments.Select(a => TryGetConstValue(a, context)).ToArray();
+            constArguments = args.Select(a => TryGetConstValue(a.Expression, context)).ToArray();
 
             for (var i = 0; i < function.Arguments.Count; i++)
             {
@@ -352,6 +350,87 @@ public sealed class ExpressionResolver
                 Arguments = [t.First]
             }).ToArray(),
         };
+    }
+
+    private ResolvedExpr? ResolveInlineConst(FuncExpr funcExpr, ResolutionContext context)
+    {
+        if (funcExpr.Arguments.Count != 1)
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Span,
+                Message = "Функция const требует ровно один аргумент"
+            });
+            return null;
+        }
+
+        var value = ResolveInlineConstValue(funcExpr, context);
+        if (value is null)
+        {
+            return null;
+        }
+
+        return ResolveValueAsExpr(funcExpr, value, context, preserveSourceExpression: false);
+    }
+
+    private IValue? ResolveInlineConstValue(FuncExpr funcExpr, ResolutionContext context)
+    {
+        if (funcExpr.Arguments.Count != 1)
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Span,
+                Message = "Функция const требует ровно один аргумент"
+            });
+            return null;
+        }
+
+        var literalValue = TryGetDirectLiteralValue(funcExpr.Arguments[0]);
+        if (literalValue is not null)
+        {
+            return literalValue;
+        }
+
+        var argument = RecursiveResolveExpr(funcExpr.Arguments[0], context);
+        if (!argument.HasValue)
+        {
+            return null;
+        }
+
+        if (!argument.Value.Type.IsConstant && !argument.Value.Type.Aggregated)
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Arguments[0].Span,
+                Message = "const принимает только константное или агрегатное выражение"
+            });
+            return null;
+        }
+
+        var constantQuery = context.QuerySource as Query ?? context.ConstantQuerySource;
+        if (constantQuery is null)
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Arguments[0].Span,
+                Message = "const не может быть вычислен в текущем контексте"
+            });
+            return null;
+        }
+
+        var constant = context.ConstantRuntime.Create("$const_eval", constantQuery, argument.Value);
+        var resolvedValue = context.ConstantRuntime.Resolve(constant);
+        if (resolvedValue.UnwrapErr(out var error, out var value))
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = funcExpr.Arguments[0].Span,
+                Message = error,
+            });
+            return null;
+        }
+
+        return value;
     }
 
     private static FunctionKind MapFunctionKind(FuncExprKind kind) => kind switch
@@ -404,5 +483,37 @@ public sealed class ExpressionResolver
         4 => "пятый",
         _ => $"{index + 1}-й",
     };
+
+    private ResolvedExpr? ResolveValueAsExpr(
+        Expr sourceExpr,
+        IValue value,
+        ResolutionContext context,
+        bool preserveSourceExpression = true)
+    {
+        var literal = value.ToReDataLiteral();
+        var parsed = Expr.Parse(literal);
+        if (!parsed.Unwrap(out var valueExpr, out var error))
+        {
+            context.Errors.Add(new ExprError()
+            {
+                Span = sourceExpr.Span,
+                Message = $"Не удалось распарсить вычисленное значение '{literal}': {error.Message}",
+            });
+            return null;
+        }
+
+        var resolvedExpr = RecursiveResolveExpr(valueExpr, context);
+        if (!resolvedExpr.HasValue)
+        {
+            return null;
+        }
+
+        return preserveSourceExpression
+            ? resolvedExpr.Value with
+            {
+                Expression = sourceExpr,
+            }
+            : resolvedExpr.Value;
+    }
 
 }

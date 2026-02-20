@@ -38,8 +38,8 @@ ace.define("ace/mode/relang_highlight_rules", ["require", "exports", "module", "
         token: "keyword.operator", // mathematical operators
         regex: "[+\\-*/^]"
       }, {
-        token: "keyword", // let
-        regex: "\\blet\\b"
+        token: "keyword", // let, const
+        regex: "\\b(let|const)\\b"
       }, {
         token: "keyword.operator.comparison", // comparison operators
         regex: "<|>|<=|>=|!=|="
