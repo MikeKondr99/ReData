@@ -36,6 +36,7 @@ import {DataType, FunctionArgument, FunctionKind, FunctionResponse} from '../api
 })
 export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
+  private static readonly keywords = ['const', 'null', 'true', 'false', 'and', 'or'];
 
   public editorElement = viewChild<ElementRef>('editor',);
 
@@ -219,11 +220,21 @@ export class AceEditorComponent implements AfterViewInit, OnDestroy {
 
   }
 
+  private static getKeywordCompletions(): Ace.Completion[] {
+    return AceEditorComponent.keywords.map((keyword) => ({
+      caption: keyword,
+      value: keyword,
+      meta: "keyword",
+      score: 40,
+    }));
+  }
+
 
   getCompleter(fields: string[], functions: FunctionResponse[]): Ace.Completer {
     let completions: Ace.Completion[] = [];
 
     // completions = completions.concat(AceEditorComponent.getFieldCompletions(fields));
+    completions = completions.concat(AceEditorComponent.getKeywordCompletions())
     completions = completions.concat(AceEditorComponent.getFunctionsCompletions(functions))
 
     return {
