@@ -326,30 +326,47 @@ public sealed class ExpressionResolver
         {
             Fields = context.QuerySource.Fields().ToArray(),
             Arguments = constArguments ?? Array.Empty<IValue?>(),
+            ArgumentSpans = funcExpr.Arguments.Select(a => a.Span).ToArray(),
             Constants = context.Constants
                 .Where(v => v.Value.Value is not null)
                 .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
-
-        var template = function.Template.GetTemplate(templateContext);
-
-        return new ResolvedExpr()
+        try
         {
-            Expression = funcExpr,
-            Template = template,
-            Type = new ExprType()
+            var template = function.Template.GetTemplate(templateContext);
+
+            return new ResolvedExpr()
             {
-                DataType = function.ReturnType.DataType,
-                CanBeNull = definition.PropagatesNull,
-                IsConstant = definition.ReturnsConst,
-                Aggregated = definition.ReturnsAggregated,
-            },
-            Arguments = args.Zip(definition.Casts).Select(t => t.First with
+                Expression = funcExpr,
+                Template = template,
+                Type = new ExprType()
+                {
+                    DataType = function.ReturnType.DataType,
+                    CanBeNull = definition.PropagatesNull,
+                    IsConstant = definition.ReturnsConst,
+                    Aggregated = definition.ReturnsAggregated,
+                },
+                Arguments = args.Zip(definition.Casts).Select(t => t.First with
+                {
+                    Template = t.Second.Template.GetTemplate(templateContext),
+                    Arguments = [t.First]
+                }).ToArray(),
+            };
+        }
+        catch (TemplateExprErrorException ex)
+        {
+            context.Errors.Add(ex.Error);
+            return null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            context.Errors.Add(new ExprError()
             {
-                Template = t.Second.Template.GetTemplate(templateContext),
-                Arguments = [t.First]
-            }).ToArray(),
-        };
+                Span = funcExpr.Span,
+                Message = ex.Message,
+            });
+            return null;
+        }
     }
 
     private ResolvedExpr? ResolveInlineConst(FuncExpr funcExpr, ResolutionContext context)

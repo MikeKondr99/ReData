@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
-using Mysqlx.Expr;
 using ReData.Query.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
+using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
@@ -217,18 +217,26 @@ public class FailureQueries
             .Contain(m => m.Contains("[0, 1]") || m.Contains("второй аргумент был константой"));
     }
 
-    [Fact(DisplayName = "FRACTILE с p > 1 должен завершаться ошибкой")]
-    public void FractileShouldFailForPercentileGreaterThanOne()
+    [Fact(DisplayName = "FRACTILE с p > 1 должен возвращать ExprError со span второго аргумента")]
+    public void FractileShouldReturnExprErrorWithSecondArgSpanForPercentileGreaterThanOne()
     {
-        var act = () => new PostgresAssets().CreateUsersQuery()
+        const string expr = "FRACTILE(Salary, 1.1)";
+        var errors = new PostgresAssets().CreateUsersQuery()
             .Select(new()
             {
-                ["Test"] = "FRACTILE(Salary, 1.1)",
-            });
+                ["Test"] = expr,
+            })
+            .ExpectErr("Должен упасть с ошибкой");
 
-        act.Should()
-            .Throw<InvalidOperationException>()
-            .WithMessage("*[0, 1]*");
+        var parsed = Expr.Parse(expr).Unwrap();
+        var expectedSpan = ((FuncExpr)parsed).Arguments[1].Span;
+
+        var error = errors.SelectMany(e => e)
+            .Should()
+            .ContainSingle(e => e.Message.Contains("[0, 1]"))
+            .Subject;
+
+        error.Span.Should().Be(expectedSpan);
     }
 
     [Fact(DisplayName = "FRACTILE требует константный второй аргумент")]

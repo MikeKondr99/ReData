@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using ReData.Query.Common;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Value;
@@ -14,19 +15,31 @@ public class AggregationFunctions : FunctionsDescriptor
     {
         if (context.Arguments.Count <= 1 || context.Arguments[1] is null)
         {
-            throw new InvalidOperationException("FRACTILE требует константный второй аргумент типа num.");
+            throw new TemplateExprErrorException(new ExprError
+            {
+                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Message = "FRACTILE требует константный второй аргумент типа num.",
+            });
         }
 
         var percentileValue = context.Arguments[1] switch
         {
             NumberValue(var n) => n,
             IntegerValue(var i) => i,
-            _ => throw new InvalidOperationException("FRACTILE требует константный второй аргумент типа num."),
+            _ => throw new TemplateExprErrorException(new ExprError
+            {
+                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Message = "FRACTILE требует константный второй аргумент типа num.",
+            }),
         };
 
         if (percentileValue < 0 || percentileValue > 1)
         {
-            throw new InvalidOperationException("FRACTILE не поддерживает значения вне диапазона [0, 1].");
+            throw new TemplateExprErrorException(new ExprError
+            {
+                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Message = "FRACTILE не поддерживает значения вне диапазона [0, 1].",
+            });
         }
 
         var p = percentileValue.ToString(CultureInfo.InvariantCulture);

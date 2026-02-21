@@ -1040,6 +1040,27 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
         Compare(result, new TextValue("date"));
     }
 
+    [SkippableFact(DisplayName = "MODE(text): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeTextReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Notes)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
     [SkippableFact(DisplayName = "MEDIAN(num): базовый расчет медианы для поддерживаемых диалектов")]
     public async Task MedianNumber()
     {

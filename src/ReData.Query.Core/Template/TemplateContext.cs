@@ -1,5 +1,6 @@
 using ReData.Query.Core.Types;
 using ReData.Query.Runners.Value;
+using ReData.Query.Common;
 
 namespace ReData.Query.Core.Template;
 
@@ -17,6 +18,11 @@ public sealed record TemplateContext
     /// Constant arguments (literals or constants) for the function.
     /// </summary>
     public required IReadOnlyList<IValue?> Arguments { get; init; }
+
+    /// <summary>
+    /// Source spans for function arguments in the original expression.
+    /// </summary>
+    public required IReadOnlyList<ExprSpan> ArgumentSpans { get; init; }
 
     /// <summary>
     /// Contants available in the resolution environment.
