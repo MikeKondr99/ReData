@@ -200,4 +200,50 @@ public class FailureQueries
             })
             .ExpectErr("Должен упасть с ошибкой");
     }
+
+    [Fact(DisplayName = "FRACTILE с p < 0 должен завершаться ошибкой")]
+    public void FractileShouldFailForPercentileLessThanZero()
+    {
+        var errors = new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "FRACTILE(Salary, -0.1)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        errors.SelectMany(e => e)
+            .Select(e => e.Message)
+            .Should()
+            .Contain(m => m.Contains("[0, 1]") || m.Contains("второй аргумент был константой"));
+    }
+
+    [Fact(DisplayName = "FRACTILE с p > 1 должен завершаться ошибкой")]
+    public void FractileShouldFailForPercentileGreaterThanOne()
+    {
+        var act = () => new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "FRACTILE(Salary, 1.1)",
+            });
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*[0, 1]*");
+    }
+
+    [Fact(DisplayName = "FRACTILE требует константный второй аргумент")]
+    public void FractileShouldRequireConstSecondArgument()
+    {
+        var errors = new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "FRACTILE(Salary, Salary)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        errors.SelectMany(e => e)
+            .Select(e => e.Message)
+            .Should()
+            .Contain(m => m.Contains("второй аргумент был константой"));
+    }
 }

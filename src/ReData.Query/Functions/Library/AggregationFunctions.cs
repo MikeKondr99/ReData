@@ -1,4 +1,7 @@
-﻿using ReData.Query.Core.Types;
+﻿using System.Globalization;
+using ReData.Query.Core.Template;
+using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
 
 namespace ReData.Query.Impl.Functions.Library;
 
@@ -7,10 +10,38 @@ using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
 {
+    private static ITemplate FractileTemplate(DatabaseTypes database, TemplateContext context)
+    {
+        if (context.Arguments.Count <= 1 || context.Arguments[1] is null)
+        {
+            throw new InvalidOperationException("FRACTILE требует константный второй аргумент типа num.");
+        }
+
+        var percentileValue = context.Arguments[1] switch
+        {
+            NumberValue(var n) => n,
+            IntegerValue(var i) => i,
+            _ => throw new InvalidOperationException("FRACTILE требует константный второй аргумент типа num."),
+        };
+
+        if (percentileValue < 0 || percentileValue > 1)
+        {
+            throw new InvalidOperationException("FRACTILE не поддерживает значения вне диапазона [0, 1].");
+        }
+
+        var p = percentileValue.ToString(CultureInfo.InvariantCulture);
+        return database switch
+        {
+            PostgreSql => Template.Create($"PERCENTILE_CONT({p}) WITHIN GROUP (ORDER BY {0})"),
+            ClickHouse => Template.Create($"quantileExactInclusive({p})({0})"),
+            _ => throw new InvalidOperationException($"FRACTILE не поддерживается для {database}."),
+        };
+    }
+
     protected override void Functions()
     {
         int value = 0;
-        
+
         AggFunction("COUNT")
             .Doc("Возвращает общее количество строк в наборе данных (включая NULL-значения)")
             .ReturnsNotNull(Integer)
@@ -18,10 +49,9 @@ public class AggregationFunctions : FunctionsDescriptor
             {
                 [All] = $"COUNT(*)"
             });
-        
+
         foreach (var type in Types.AllWithoutBool)
         {
-            
             AggFunction("COUNT")
                 .Doc("Подсчитывает количество отличных от NULL значений в столбце @value")
                 .Arg("value", type)
@@ -30,8 +60,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 {
                     [All] = $"COUNT({value})"
                 });
-            
-            
+
             AggFunction("MIN")
                 .Doc("Находит минимальное значение среди отличных от NULL значений в столбце @value")
                 .Arg("value", type)
@@ -42,7 +71,7 @@ public class AggregationFunctions : FunctionsDescriptor
                     [ClickHouse] = $"MIN(toNullable({value}))",
                     [All] = $"MIN({value})"
                 });
-            
+
             AggFunction("MAX")
                 .Doc("Находит максимальное значение среди отличных от NULL значений в столбце x")
                 .Arg("value", type)
@@ -53,9 +82,20 @@ public class AggregationFunctions : FunctionsDescriptor
                     [ClickHouse] = $"MAX(toNullable({value}))",
                     [All] = $"MAX({value})"
                 });
+
+            AggFunction("MODE")
+                .Doc("Возвращает наиболее часто встречающееся значение среди отличных от NULL значений в столбце @value. Поддержка: PostgreSql, ClickHouse")
+                .Arg("value", type)
+                .Returns(type)
+                .CustomNullPropagation(_ => true)
+                .Templates(new()
+                {
+                    [PostgreSql] = $"MODE() WITHIN GROUP (ORDER BY {value})",
+                    [ClickHouse] = $"arrayElement(topK(1)({value}), 1)",
+                });
         }
 
-        foreach (var type in new [] { Number, Integer, DateTime})
+        foreach (var type in new[] { Number, Integer, DateTime })
         {
             AggFunction("COUNT_DISTINCT")
                 .Doc("Подсчитывает количество уникальных отличных от NULL значений в столбце @value")
@@ -65,7 +105,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 {
                     [All] = $"COUNT(DISTINCT {value})"
                 });
-            
+
             AggFunction("ONLY")
                 .Doc("Возвращает значение, если оно уникально в наборе данных, иначе NULL")
                 .Arg("value", type)
@@ -76,7 +116,7 @@ public class AggregationFunctions : FunctionsDescriptor
                     [All] = $"(CASE WHEN COUNT(DISTINCT {value}) = 1 THEN MAX({value}) ELSE NULL END)"
                 });
         }
-        
+
         AggFunction("COUNT_DISTINCT")
             .Doc("Подсчитывает количество уникальных отличных от NULL значений в столбце @value (Чувствительно к регистру)")
             .Arg("value", Text)
@@ -87,7 +127,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 [MySql] = $"COUNT(DISTINCT BINARY {value})",
                 [All] = $"COUNT(DISTINCT {value})"
             });
-        
+
         AggFunction("ONLY")
             .Doc("Возвращает значение, если оно уникально в наборе данных, иначе NULL (Чувствительно к регистру)")
             .Arg("value", Text)
@@ -112,7 +152,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 });
         }
 
-        foreach (var type in Types.Numbers) 
+        foreach (var type in Types.Numbers)
         {
             AggFunction("AVG")
                 .Doc("Вычисляет среднее арифметическое отличных от NULL значений в столбце @value")
@@ -125,7 +165,7 @@ public class AggregationFunctions : FunctionsDescriptor
                     [All & ~ClickHouse] = $"AVG({value})"
                 });
         }
-        
+
         AggFunction("AVG")
             .Doc("Вычисляет среднюю дату с точностью в секунду")
             .Arg("value", DateTime)
@@ -137,6 +177,29 @@ public class AggregationFunctions : FunctionsDescriptor
                 [PostgreSql] = $"to_timestamp(AVG(EXTRACT(EPOCH FROM {value})))",
                 [MySql] = $"FROM_UNIXTIME(AVG(UNIX_TIMESTAMP({value})))",
                 [ClickHouse] = $"fromUnixTimestamp(CASE WHEN isNaN(AVG(toUnixTimestamp({value}))) THEN NULL ELSE toInt64(AVG(toUnixTimestamp({value}))) END)",
+            });
+
+        AggFunction("MEDIAN")
+            .Doc("Возвращает медиану (непрерывную) среди отличных от NULL значений в столбце @value. Поддержка: PostgreSql, ClickHouse")
+            .Arg("value", Number)
+            .Returns(Number)
+            .CustomNullPropagation(_ => true)
+            .Templates(new()
+            {
+                [PostgreSql] = $"PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY {value})",
+                [ClickHouse] = $"quantileExactInclusive(0.5)({value})",
+            });
+
+        AggFunction("FRACTILE")
+            .Doc("Возвращает непрерывную квантиль для @value по константному параметру @p (0..1). Поддержка: PostgreSql, ClickHouse")
+            .Arg("value", Number)
+            .ReqArg("p", Number, isConst: true)
+            .Returns(Number)
+            .CustomNullPropagation(_ => true)
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
+            {
+                [PostgreSql] = ctx => FractileTemplate(PostgreSql, ctx),
+                [ClickHouse] = ctx => FractileTemplate(ClickHouse, ctx),
             });
 
         int delimiter = 1, sort = 2;
@@ -153,7 +216,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 [Oracle] = $"LISTAGG({value}, '') WITHIN GROUP (ORDER BY 1)",
                 [ClickHouse] = $"if(empty(groupArray({value})), NULL, arrayStringConcat(groupArray({value}), ''))",
             });
-        
+
         AggFunction("CONCAT")
             .Doc("Aggregates all non-NULL values into a single string with delimiter")
             .Arg("value", Text)
@@ -175,7 +238,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 .Doc("Aggregates values into a string with delimiter after sorting by specified column")
                 .Arg("value", Text)
                 .Arg("delimiter", Text)
-                .Arg("sort", type) // Sorting column (can be different from value)
+                .Arg("sort", type)
                 .Returns(Text)
                 .CustomNullPropagation(_ => true)
                 .Templates(new()
@@ -197,11 +260,7 @@ public class AggregationFunctions : FunctionsDescriptor
                                          {delimiter}
                                      ))
                                      """,
-                    
                 });
         }
-
-
-
     }
 }
