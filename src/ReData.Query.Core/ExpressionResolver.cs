@@ -302,15 +302,11 @@ public sealed class ExpressionResolver
         }
 
         var function = definition.Function;
-        IReadOnlyList<IValue?>? constArguments = null;
-
         if (function.Arguments.Any(a => a.IsConstRequired))
         {
-            constArguments = args.Select(a => TryGetConstValue(a.Expression, context)).ToArray();
-
             for (var i = 0; i < function.Arguments.Count; i++)
             {
-                if (function.Arguments[i].IsConstRequired && constArguments[i] is null)
+                if (function.Arguments[i].IsConstRequired && !args[i].Type.IsLiteral)
                 {
                     context.Errors.Add(new ExprError()
                     {
@@ -325,16 +321,15 @@ public sealed class ExpressionResolver
         var templateContext = new TemplateContext()
         {
             Fields = context.QuerySource.Fields().ToArray(),
-            Arguments = constArguments ?? Array.Empty<IValue?>(),
-            ArgumentSpans = funcExpr.Arguments.Select(a => a.Span).ToArray(),
+            Arguments = args,
             Constants = context.Constants
                 .Where(v => v.Value.Value is not null)
                 .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
+     
         try
         {
             var template = function.Template.GetTemplate(templateContext);
-
             return new ResolvedExpr()
             {
                 Expression = funcExpr,
@@ -356,15 +351,6 @@ public sealed class ExpressionResolver
         catch (TemplateExprErrorException ex)
         {
             context.Errors.Add(ex.Error);
-            return null;
-        }
-        catch (InvalidOperationException ex)
-        {
-            context.Errors.Add(new ExprError()
-            {
-                Span = funcExpr.Span,
-                Message = ex.Message,
-            });
             return null;
         }
     }
@@ -462,20 +448,6 @@ public sealed class ExpressionResolver
     public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
         return LiteralResolver.ResolveName(path);
-    }
-
-    private static IValue? TryGetConstValue(Expr expr, ResolutionContext context)
-    {
-        return expr switch
-        {
-            IntegerLiteral(var v) => new IntegerValue(v),
-            NumberLiteral(var v) => new NumberValue(v),
-            BooleanLiteral(var v) => new BoolValue(v),
-            StringLiteral(var v) => new TextValue(v),
-            NullLiteral => default(NullValue),
-            NameExpr varName when context.Constants.TryGetValue(varName.Value, out var constant) => constant.Value,
-            _ => null
-        };
     }
 
     private static IValue? TryGetDirectLiteralValue(Expr expr)

@@ -11,33 +11,32 @@ using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
 {
-    private static ITemplate FractileTemplate(DatabaseTypes database, TemplateContext context)
+    private static ITemplate? FractileTemplate(DatabaseTypes database, TemplateContext context)
     {
-        if (context.Arguments.Count <= 1 || context.Arguments[1] is null)
+        if (context.Arguments.Count <= 1)
         {
             throw new TemplateExprErrorException(new ExprError
             {
-                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Span = default,
                 Message = "FRACTILE требует константный второй аргумент типа num.",
             });
         }
 
-        var percentileValue = context.Arguments[1] switch
-        {
-            NumberValue(var n) => n,
-            IntegerValue(var i) => i,
-            _ => throw new TemplateExprErrorException(new ExprError
+        var percentileArg = context.Arguments[1];
+        var percentileNumber = GetConst<NumberValue>(percentileArg, context.Constants);
+        var percentileInteger = GetConst<IntegerValue>(percentileArg, context.Constants);
+        var percentileValue = percentileNumber?.Value ?? percentileInteger?.Value ??
+            throw new TemplateExprErrorException(new ExprError
             {
-                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Span = percentileArg.Expression.Span,
                 Message = "FRACTILE требует константный второй аргумент типа num.",
-            }),
-        };
+            });
 
         if (percentileValue < 0 || percentileValue > 1)
         {
             throw new TemplateExprErrorException(new ExprError
             {
-                Span = context.ArgumentSpans.Count > 1 ? context.ArgumentSpans[1] : default,
+                Span = percentileArg.Expression.Span,
                 Message = "FRACTILE не поддерживает значения вне диапазона [0, 1].",
             });
         }
@@ -47,7 +46,7 @@ public class AggregationFunctions : FunctionsDescriptor
         {
             PostgreSql => Template.Create($"PERCENTILE_CONT({p}) WITHIN GROUP (ORDER BY {0})"),
             ClickHouse => Template.Create($"quantileExactInclusive({p})({0})"),
-            _ => throw new InvalidOperationException($"FRACTILE не поддерживается для {database}."),
+            _ => null,
         };
     }
 
@@ -104,7 +103,7 @@ public class AggregationFunctions : FunctionsDescriptor
                 .Templates(new()
                 {
                     [PostgreSql] = $"MODE() WITHIN GROUP (ORDER BY {value})",
-                    [ClickHouse] = $"arrayElement(topK(1)({value}), 1)",
+                    [ClickHouse] = $"if(COUNT({value}) = 0, NULL, arrayElement(topK(1)({value}), 1))",
                 });
         }
 
@@ -209,7 +208,7 @@ public class AggregationFunctions : FunctionsDescriptor
             .ReqArg("p", Number, isConst: true)
             .Returns(Number)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
             {
                 [PostgreSql] = ctx => FractileTemplate(PostgreSql, ctx),
                 [ClickHouse] = ctx => FractileTemplate(ClickHouse, ctx),

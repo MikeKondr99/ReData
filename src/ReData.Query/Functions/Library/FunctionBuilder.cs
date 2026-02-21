@@ -1,6 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
+using ReData.Query.Core.Value;
+using ReData.Query.Lang.Expressions;
+using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Functions.Library;
 
@@ -64,6 +67,32 @@ public abstract class FunctionsDescriptor
     }
 
     protected abstract void Functions();
+
+    protected static IValue? GetConst(ResolvedExpr expr, IReadOnlyDictionary<string, IValue> constants)
+    {
+        if (!expr.Type.IsLiteral)
+        {
+            return null;
+        }
+
+        return expr.Expression switch
+        {
+            IntegerLiteral(var v) => new IntegerValue(v),
+            NumberLiteral(var v) => new NumberValue(v),
+            BooleanLiteral(var v) => new BoolValue(v),
+            StringLiteral(var v) => new TextValue(v),
+            NullLiteral => default(NullValue),
+            NameExpr varName when constants.TryGetValue(varName.Value, out var constant) => constant,
+            _ => null
+        };
+    }
+
+    protected static T? GetConst<T>(ResolvedExpr expr, IReadOnlyDictionary<string, IValue> constants)
+        where T : struct, IValue
+    {
+        var value = GetConst(expr, constants);
+        return value is T typed ? typed : null;
+    }
 
 
 #pragma warning disable SA1129
@@ -232,7 +261,7 @@ public record FunctionBuilder
         return this;
     }
 
-    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>> templates)
+    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>> templates)
     {
         this.templates = templates.ToDictionary(
             kv => kv.Key,
@@ -312,3 +341,4 @@ public record FunctionBuilder
     }
 
 }
+

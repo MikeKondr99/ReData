@@ -1061,6 +1061,69 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
         Compare(result, default(NullValue));
     }
 
+    [SkippableFact(DisplayName = "MODE(int): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeIntegerReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Age)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MODE(num): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeNumberReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Salary)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MODE(date): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeDateReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(JoinDate)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
     [SkippableFact(DisplayName = "MEDIAN(num): базовый расчет медианы для поддерживаемых диалектов")]
     public async Task MedianNumber()
     {
