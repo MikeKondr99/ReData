@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using ReData.Common;
 using ReData.Query.Core;
+using ReData.Query.Core.Value;
 using ReData.Query.Core.Types;
 using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Runners;
@@ -938,6 +939,288 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
             .PrepareRecords();
 
         result.Should().BeEquivalentTo(expect, o => o.WithStrictOrdering());
+    }
+    
+    [SkippableFact(DisplayName = "MODE(text): возвращает моду текстового поля для поддерживаемых диалектов")]
+    public async Task ModeText()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["mode"] = "MODE(Notes)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new TextValue("Active user"));
+    }
+
+    [SkippableFact(DisplayName = "MODE(int): возвращает моду числового целого поля для поддерживаемых диалектов")]
+    public async Task ModeInteger()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("Age >= 30 and Age != 40")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Age)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new IntegerValue(30));
+    }
+
+    [SkippableFact(DisplayName = "MODE(num): возвращает моду числового поля для поддерживаемых диалектов")]
+    public async Task ModeNumber()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["mode"] = "MODE(Salary)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new NumberValue(60000.0));
+    }
+
+    [SkippableFact(DisplayName = "MODE(date): возвращает моду даты для поддерживаемых диалектов")]
+    public async Task ModeDate()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("Age < 40")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(JoinDate)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new DateTimeValue(DateTime.Parse("2021-03-15")));
+    }
+
+    [SkippableFact(DisplayName = "MODE(date): имеет возвращаемый тип date")]
+    public async Task ModeDateReturnsDateType()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["type"] = "Type(MODE(JoinDate))"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new TextValue("date"));
+    }
+
+    [SkippableFact(DisplayName = "MODE(text): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeTextReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Notes)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MODE(int): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeIntegerReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Age)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MODE(num): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeNumberReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(Salary)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MODE(date): пустой набор возвращает NULL (PostgreSql/ClickHouse)")]
+    public async Task ModeDateReturnsNullOnEmptySet()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MODE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("1 = 0")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["mode"] = "MODE(JoinDate)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, default(NullValue));
+    }
+
+    [SkippableFact(DisplayName = "MEDIAN(num): базовый расчет медианы для поддерживаемых диалектов")]
+    public async Task MedianNumber()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "MEDIAN поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["median"] = "MEDIAN(Salary)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new NumberValue(60000.0));
+    }
+
+    [SkippableFact(DisplayName = "FRACTILE(num, 0.5): базовый расчет 50-го процентиля для поддерживаемых диалектов")]
+    public async Task Fractile50()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "FRACTILE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["fractile"] = "FRACTILE(Salary, 0.5)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new NumberValue(60000.0));
+    }
+    
+    [SkippableFact(DisplayName = "MEDIAN(num): непрерывная семантика возвращает промежуточное значение (PostgreSql/ClickHouse)")]
+    public async Task MedianContinuousReturnsIntermediateValue()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "Непрерывная семантика MEDIAN проверяется на PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("Age = 25 or Age = 27")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["median"] = "MEDIAN(Salary)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new NumberValue(61000.25));
+    }
+
+    [SkippableFact(DisplayName = "FRACTILE(num, p): непрерывная семантика возвращает промежуточное значение (PostgreSql/ClickHouse)")]
+    public async Task FractileContinuousReturnsIntermediateValue()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "Непрерывная семантика FRACTILE проверяется на PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Where("Age = 25 or Age = 27")
+            .Expect("Valid query")
+            .Select(new()
+            {
+                ["fractile"] = "FRACTILE(Salary, 0.25)"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new NumberValue(58000.0));
+    }
+
+    [SkippableFact(DisplayName = "FRACTILE(num, p): имеет возвращаемый тип num")]
+    public async Task FractileReturnsNumType()
+    {
+        Skip.If(
+            db.GetDatabaseType() is not (DatabaseType.PostgreSql or DatabaseType.ClickHouse),
+            "FRACTILE поддерживается только в PostgreSql и ClickHouse.");
+
+        var qb = CreateUsersQuery()
+            .Select(new()
+            {
+                ["type"] = "Type(FRACTILE(Salary, 0.5))"
+            })
+            .Expect("Valid query");
+
+        var result = await GetScalarAsync(qb);
+
+        Compare(result, new TextValue("num"));
     }
     
     
