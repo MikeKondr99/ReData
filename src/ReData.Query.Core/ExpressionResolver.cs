@@ -302,15 +302,11 @@ public sealed class ExpressionResolver
         }
 
         var function = definition.Function;
-        IReadOnlyList<IValue?>? constArguments = null;
-
         if (function.Arguments.Any(a => a.IsConstRequired))
         {
-            constArguments = args.Select(a => TryGetConstValue(a.Expression, context)).ToArray();
-
             for (var i = 0; i < function.Arguments.Count; i++)
             {
-                if (function.Arguments[i].IsConstRequired && constArguments[i] is null)
+                if (function.Arguments[i].IsConstRequired && !args[i].Type.IsLiteral)
                 {
                     context.Errors.Add(new ExprError()
                     {
@@ -325,31 +321,38 @@ public sealed class ExpressionResolver
         var templateContext = new TemplateContext()
         {
             Fields = context.QuerySource.Fields().ToArray(),
-            Arguments = constArguments ?? Array.Empty<IValue?>(),
+            Arguments = args,
             Constants = context.Constants
                 .Where(v => v.Value.Value is not null)
                 .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
-
-        var template = function.Template.GetTemplate(templateContext);
-
-        return new ResolvedExpr()
+     
+        try
         {
-            Expression = funcExpr,
-            Template = template,
-            Type = new ExprType()
+            var template = function.Template.GetTemplate(templateContext);
+            return new ResolvedExpr()
             {
-                DataType = function.ReturnType.DataType,
-                CanBeNull = definition.PropagatesNull,
-                IsConstant = definition.ReturnsConst,
-                Aggregated = definition.ReturnsAggregated,
-            },
-            Arguments = args.Zip(definition.Casts).Select(t => t.First with
-            {
-                Template = t.Second.Template.GetTemplate(templateContext),
-                Arguments = [t.First]
-            }).ToArray(),
-        };
+                Expression = funcExpr,
+                Template = template,
+                Type = new ExprType()
+                {
+                    DataType = function.ReturnType.DataType,
+                    CanBeNull = definition.PropagatesNull,
+                    IsConstant = definition.ReturnsConst,
+                    Aggregated = definition.ReturnsAggregated,
+                },
+                Arguments = args.Zip(definition.Casts).Select(t => t.First with
+                {
+                    Template = t.Second.Template.GetTemplate(templateContext),
+                    Arguments = [t.First]
+                }).ToArray(),
+            };
+        }
+        catch (TemplateExprErrorException ex)
+        {
+            context.Errors.Add(ex.Error);
+            return null;
+        }
     }
 
     private ResolvedExpr? ResolveInlineConst(FuncExpr funcExpr, ResolutionContext context)
@@ -445,20 +448,6 @@ public sealed class ExpressionResolver
     public ResolvedTemplate ResolveName(ReadOnlySpan<string> path)
     {
         return LiteralResolver.ResolveName(path);
-    }
-
-    private static IValue? TryGetConstValue(Expr expr, ResolutionContext context)
-    {
-        return expr switch
-        {
-            IntegerLiteral(var v) => new IntegerValue(v),
-            NumberLiteral(var v) => new NumberValue(v),
-            BooleanLiteral(var v) => new BoolValue(v),
-            StringLiteral(var v) => new TextValue(v),
-            NullLiteral => default(NullValue),
-            NameExpr varName when context.Constants.TryGetValue(varName.Value, out var constant) => constant.Value,
-            _ => null
-        };
     }
 
     private static IValue? TryGetDirectLiteralValue(Expr expr)

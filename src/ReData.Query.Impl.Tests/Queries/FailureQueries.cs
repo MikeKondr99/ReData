@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
-using Mysqlx.Expr;
 using ReData.Query.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
+using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Impl.Tests.Queries;
 
@@ -212,5 +212,59 @@ public class FailureQueries
                 ["Test"] = "(1 + 2).const()",
             })
             .ExpectErr("Должен упасть с ошибкой");
+    }
+
+    [Fact(DisplayName = "FRACTILE с p < 0 должен завершаться ошибкой")]
+    public void FractileShouldFailForPercentileLessThanZero()
+    {
+        var errors = new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "FRACTILE(Salary, -0.1)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        errors.SelectMany(e => e)
+            .Select(e => e.Message)
+            .Should()
+            .Contain(m => m.Contains("[0, 1]") || m.Contains("второй аргумент был константой"));
+    }
+
+    [Fact(DisplayName = "FRACTILE с p > 1 должен возвращать ExprError со span второго аргумента")]
+    public void FractileShouldReturnExprErrorWithSecondArgSpanForPercentileGreaterThanOne()
+    {
+        const string expr = "FRACTILE(Salary, 1.1)";
+        var errors = new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = expr,
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        var parsed = Expr.Parse(expr).Unwrap();
+        var expectedSpan = ((FuncExpr)parsed).Arguments[1].Span;
+
+        var error = errors.SelectMany(e => e)
+            .Should()
+            .ContainSingle(e => e.Message.Contains("[0, 1]"))
+            .Subject;
+
+        error.Span.Should().Be(expectedSpan);
+    }
+
+    [Fact(DisplayName = "FRACTILE требует константный второй аргумент")]
+    public void FractileShouldRequireConstSecondArgument()
+    {
+        var errors = new PostgresAssets().CreateUsersQuery()
+            .Select(new()
+            {
+                ["Test"] = "FRACTILE(Salary, Salary)",
+            })
+            .ExpectErr("Должен упасть с ошибкой");
+
+        errors.SelectMany(e => e)
+            .Select(e => e.Message)
+            .Should()
+            .Contain(m => m.Contains("второй аргумент был константой"));
     }
 }

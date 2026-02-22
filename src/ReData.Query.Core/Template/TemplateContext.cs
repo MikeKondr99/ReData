@@ -14,9 +14,9 @@ public sealed record TemplateContext
     public required IReadOnlyList<Field> Fields { get; init; }
 
     /// <summary>
-    /// Constant arguments (literals or constants) for the function.
+    /// Resolved function arguments.
     /// </summary>
-    public required IReadOnlyList<IValue?> Arguments { get; init; }
+    public required IReadOnlyList<ResolvedExpr> Arguments { get; init; }
 
     /// <summary>
     /// Contants available in the resolution environment.

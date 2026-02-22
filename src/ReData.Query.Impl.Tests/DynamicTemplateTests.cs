@@ -213,6 +213,23 @@ public class DynamicTemplateTests
         sql.Should().NotContain("CAST(\"a\" AS VARCHAR)");
     }
 
+    [Fact]
+    public void FractileOutOfRangeShouldReturnExprErrorWithSecondArgSpan()
+    {
+        const string expr = "FRACTILE(1.0, 1.1)";
+        var (resolver, context) = BuildContext();
+
+        var resolved = resolver.ResolveExpr(Expr.Parse(expr).Unwrap(), context);
+
+        resolved.Should().BeNull();
+        var parsed = (FuncExpr)Expr.Parse(expr).Unwrap();
+        var expectedSpan = parsed.Arguments[1].Span;
+
+        context.Errors.Should().ContainSingle();
+        context.Errors[0].Message.Should().Contain("[0, 1]");
+        context.Errors[0].Span.Should().Be(expectedSpan);
+    }
+
     private static (ExpressionResolver Resolver, ResolutionContext Context) BuildContext()
     {
         var literalResolver = new PostgresLiteralResolver();

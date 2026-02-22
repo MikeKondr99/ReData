@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using ReData.Query.Common;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Value;
@@ -28,15 +29,23 @@ public class ReflectionFunctions : FunctionsDescriptor
 
     private static ITemplate FieldTemplate(DatabaseTypes database, TemplateContext context)
     {
-        if (context.Arguments.Count == 0 || context.Arguments[0] is null)
+        if (context.Arguments.Count == 0)
         {
-            throw new InvalidOperationException("Const argument is missing.");
+            throw new TemplateExprErrorException(new ExprError()
+            {
+                Span = default,
+                Message = "Const argument is missing.",
+            });
         }
 
-        var arg = context.Arguments[0]!;
-        if (arg is not IntegerValue(var value))
+        var value = GetConst<IntegerValue>(context.Arguments[0], context.Constants)?.Value;
+        if (value is null)
         {
-            throw new InvalidOperationException("Field expects integer index.");
+            throw new TemplateExprErrorException(new ExprError()
+            {
+                Span = context.Arguments[0].Expression.Span,
+                Message = "Field expects integer index.",
+            });
         }
 
         if (value <= 0 || value > context.Fields.Count)
@@ -44,21 +53,29 @@ public class ReflectionFunctions : FunctionsDescriptor
             return NullTemplate();
         }
 
-        var field = context.Fields[(int)value - 1];
+        var field = context.Fields[(int)value.Value - 1];
         return TextTemplate(database, field.Type.Type, field.Template);
     }
 
     private static ITemplate FieldTemplateByName(DatabaseTypes database, TemplateContext context)
     {
-        if (context.Arguments.Count == 0 || context.Arguments[0] is null)
+        if (context.Arguments.Count == 0)
         {
-            throw new InvalidOperationException("Const argument is missing.");
+            throw new TemplateExprErrorException(new ExprError()
+            {
+                Span = default,
+                Message = "Const argument is missing.",
+            });
         }
 
-        var arg = context.Arguments[0]!;
-        if (arg is not TextValue(var value))
+        var value = GetConst<TextValue>(context.Arguments[0], context.Constants)?.Value;
+        if (value is null)
         {
-            throw new InvalidOperationException("Field expects text name.");
+            throw new TemplateExprErrorException(new ExprError()
+            {
+                Span = context.Arguments[0].Expression.Span,
+                Message = "Field expects text name.",
+            });
         }
 
         var field = context.Fields.FirstOrDefault(f => f.Alias == value);
@@ -151,7 +168,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             .ReqArg("input", Integer, isConst: true)
             .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
             {
                 [SqlServer] = ctx => FieldTemplate(SqlServer, ctx),
                 [MySql] = ctx => FieldTemplate(MySql, ctx),
@@ -165,7 +182,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             .ReqArg("input", Text, isConst: true)
             .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
             {
                 [SqlServer] = ctx => FieldTemplateByName(SqlServer, ctx),
                 [MySql] = ctx => FieldTemplateByName(MySql, ctx),
