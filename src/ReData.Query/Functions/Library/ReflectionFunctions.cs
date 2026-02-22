@@ -149,7 +149,7 @@ public class ReflectionFunctions : FunctionsDescriptor
         Method("Field")
             .Doc("Возвращает значение поля по индексу и приводит к тексту")
             .ReqArg("input", Integer, isConst: true)
-            .Returns(Text)
+            .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
             .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
             {
@@ -163,7 +163,7 @@ public class ReflectionFunctions : FunctionsDescriptor
         Method("Field")
             .Doc("Возвращает значение поля по имени и приводит к тексту")
             .ReqArg("input", Text, isConst: true)
-            .Returns(Text)
+            .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
             .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
             {

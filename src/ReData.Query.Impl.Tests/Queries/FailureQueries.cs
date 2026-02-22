@@ -171,6 +171,19 @@ public class FailureQueries
             .ExpectErr("Должен упасть с ошибкой");
     }
 
+    [Fact(DisplayName = "Field с const-аргументом не должен считаться константой в GroupBy")]
+    public void GroupByFieldFunctionShouldNotBeTreatedAsConst()
+    {
+        // Regression test for Field const-propagation in GroupBy.
+        new PostgresAssets().CreateUsersQuery()
+            .GroupBy(["Field('FirstName')"], new()
+            {
+                ["NameText"] = "Field('FirstName')",
+                ["Count"] = "COUNT()",
+            })
+            .Expect("Должен быть валидным запросом");
+    }
+
     [Fact(DisplayName = "const= с inline от неагрегатного поля должен завершаться ошибкой")]
     public void ConstDeclarationWithInlineFromFieldShouldFail()
     {
