@@ -193,7 +193,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
-                                        [errors]="getError(i,idx + item.transformation.groups.length) ?? getError(i,idx)"
+                                        [errors]="getError(i,idx)"
                                         [fields]="fields()[i]"
                         >
                         </app-ace-editor>
@@ -220,7 +220,7 @@ import {NzSpaceModule} from 'ng-zorro-antd/space';
                         <app-ace-editor class="w-[550px]"
                                         [(value)]="selectItem.expression"
                                         (valueChange)="onTransformationChange()"
-                                        [errors]="getError(i,item.transformation.items.length + idx)"
+                                        [errors]="getError(i, item.transformation.groups.length + idx)"
                                         [fields]="fields()[i]"
                         >
                         </app-ace-editor>
