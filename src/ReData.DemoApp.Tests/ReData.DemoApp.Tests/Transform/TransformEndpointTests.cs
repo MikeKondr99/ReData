@@ -1,10 +1,14 @@
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Transformations;
+using ReData.Query.Runners.Value;
 
 namespace ReData.DemoApp.Tests.Transform;
 
 public class TransformEndpointTests(App App) : DemoAppTestBase<App>(App)
 {
+    private Task<TestResult<TransformResponse>> EndpointOk(TransformRequest req) =>
+        App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformResponse>(req);
+
     private Task<TestResult<TransformErrorResponse>> EndpointError(TransformRequest req) =>
         App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformErrorResponse>(req);
 
@@ -116,5 +120,131 @@ public class TransformEndpointTests(App App) : DemoAppTestBase<App>(App)
         NoErrors(errors[0]).Should().BeTrue();
         NoErrors(errors[1]).Should().BeTrue();
         NoErrors(errors[2]).Should().BeTrue();
+    }
+    [Fact]
+    public async Task Transform_Select_InvalidExpression_ShouldNotProduceSpuriousConnectionErrorForConstantExpression()
+    {
+        var req = Request(
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem { Field = "total_count", Expression = "const(COUNT([id]))" },
+                    new SelectItem { Field = "broken", Expression = "[missing_field]" }
+                ]
+            });
+
+        var (rsp, error) = await EndpointError(req);
+
+        rsp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.Index.Should().Be(0);
+        error.Errors.Should().NotBeNull();
+
+        var errors = error.Errors!.ToArray();
+        var dump = string.Join(" | ", errors.Select((list, idx) =>
+            $"{idx}: {(list is null ? "null" : string.Join(" || ", list.Select(e => e.Message)))}"));
+        errors.Should().HaveCount(2);
+        NoErrors(errors[0]).Should().BeTrue($"constant expression should not get a secondary connection failure. Actual: {dump}");
+        errors[1].Should().NotBeNull();
+        errors[1]!.Should().Contain(e => e.Message.Contains("missing_field"));
+    }
+
+    [Fact]
+    public async Task Transform_Where_StoredComputedConst_ShouldBeUsableInLaterSelect()
+    {
+        var req = Request(
+            new WhereTransformation
+            {
+                Condition = "const total_rows = COUNT([id]); total_rows > 0"
+            },
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem { Field = "id", Expression = "[id]" },
+                    new SelectItem { Field = "total_rows", Expression = "total_rows" },
+                    new SelectItem { Field = "total_rows_plus_one", Expression = "total_rows + 1" }
+                ]
+            });
+
+        var (rsp, ok) = await EndpointOk(req);
+
+        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        ok.Total.Should().NotBeNull();
+        ok.Data.Should().NotBeEmpty();
+        ok.Fields.Select(f => f.Alias).Should().Contain(["id", "total_rows", "total_rows_plus_one"]);
+
+        var first = ok.Data[0];
+        first.Int("total_rows").Should().Be(ok.Total);
+        first.Int("total_rows_plus_one").Should().Be(ok.Total + 1);
+    }
+
+    [Fact]
+    public async Task Transform_Where_StoredComputedConst_WithLaterBrokenExpression_ShouldReturnOnlyActualError()
+    {
+        var req = Request(
+            new WhereTransformation
+            {
+                Condition = "const total_rows = COUNT([id]); total_rows > 0"
+            },
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem { Field = "total_rows", Expression = "total_rows" },
+                    new SelectItem { Field = "broken", Expression = "[missing_field]" }
+                ]
+            });
+
+        var (rsp, error) = await EndpointError(req);
+
+        rsp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.Index.Should().Be(1);
+        error.Errors.Should().NotBeNull();
+
+        var errors = error.Errors!.ToArray();
+        var dump = string.Join(" | ", errors.Select((list, idx) =>
+            $"{idx}: {(list is null ? "null" : string.Join(" || ", list.Select(e => e.Message)))}"));
+
+        errors.Should().HaveCount(2);
+        NoErrors(errors[0]).Should().BeTrue($"stored const should resolve without secondary connection errors. Actual: {dump}");
+        errors[1].Should().NotBeNull();
+        errors[1]!.Should().Contain(e => e.Message.Contains("missing_field"));
+    }
+
+    [Fact]
+    public async Task Transform_Where_StoredComputedConst_ShouldBeUsableInLaterOrderBy()
+    {
+        var req = Request(
+            new WhereTransformation
+            {
+                Condition = "const total_rows = COUNT([id]); total_rows > 0"
+            },
+            new OrderByTransformation
+            {
+                Items =
+                [
+                    new OrderItem
+                    {
+                        Expression = "total_rows",
+                        Descending = true
+                    }
+                ]
+            },
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem { Field = "id", Expression = "[id]" },
+                    new SelectItem { Field = "total_rows", Expression = "total_rows" }
+                ]
+            });
+
+        var (rsp, ok) = await EndpointOk(req);
+
+        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        ok.Total.Should().NotBeNull();
+        ok.Data.Should().NotBeEmpty();
+        ok.Data[0].Int("total_rows").Should().Be(ok.Total);
     }
 }

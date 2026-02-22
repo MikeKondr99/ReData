@@ -182,17 +182,39 @@ public static class QueryBuilderExtensions
     )
     {
         List<T> res = [];
+        List<E>? alignedErrors = null;
         foreach (var r in results)
         {
             if (r.Unwrap(out var ok, out var err))
             {
-                res.Add(ok);
+                if (alignedErrors is null)
+                {
+                    res.Add(ok);
+                }
+                else
+                {
+                    alignedErrors.Add(default!);
+                }
             }
             else
             {
-                errors = results.Select(r => r.UnwrapErrOrDefault()!);
-                return [];
+                if (alignedErrors is null)
+                {
+                    alignedErrors = new List<E>(res.Count + 1);
+                    for (var i = 0; i < res.Count; i++)
+                    {
+                        alignedErrors.Add(default!);
+                    }
+                }
+
+                alignedErrors.Add(err);
             }
+        }
+
+        if (alignedErrors is not null)
+        {
+            errors = alignedErrors;
+            return [];
         }
 
         errors = Array.Empty<E>();
