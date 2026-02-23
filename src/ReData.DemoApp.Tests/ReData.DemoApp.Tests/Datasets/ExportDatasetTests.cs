@@ -1,3 +1,7 @@
+using System.Text;
+using Apache.Arrow;
+using Apache.Arrow.Ipc;
+using Apache.Arrow.Types;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.Export;
@@ -138,6 +142,51 @@ public class ExportDatasetTests(App App) : DemoAppTestBase<App>(App)
         // Assert
         exportRsp.StatusCode.Should().Be(HttpStatusCode.BadRequest, caseName);
         exportError.Message.Should().NotBeNullOrWhiteSpace(caseName);
+    }
+
+    [Fact]
+    public async Task ExportDataset_AsArrow_ShouldReturnArrowFile()
+    {
+        var createReq = new CreateDataSetRequest
+        {
+            Name = FakeDatasetName(),
+            ConnectorId = App.Data.DataConnectors["numbers"].Id,
+            Transformations =
+            [
+                new SelectTransformation
+                {
+                    Items =
+                    [
+                        new ReData.DemoApp.Transformations.SelectItem
+                        {
+                            Field = "id",
+                            Expression = "id",
+                        }
+                    ],
+                }.Block(),
+            ],
+        };
+
+        var (createRsp, createdDataset) =
+            await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(createReq);
+        createRsp.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var rsp = await App.Client.GetAsync($"/api/datasets/{createdDataset.Id}/export?fileType=Arrow");
+
+        rsp.StatusCode.Should().Be(HttpStatusCode.OK);
+        rsp.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.apache.arrow.file");
+        rsp.Content.Headers.ContentDisposition?.FileName.Should().Contain(".arrow");
+
+        var bytes = await rsp.Content.ReadAsByteArrayAsync();
+        bytes.Length.Should().BeGreaterThan(6);
+        Encoding.ASCII.GetString(bytes[..6]).Should().Be("ARROW1");
+
+        await using var ms = new MemoryStream(bytes);
+        using var arrowReader = new ArrowFileReader(ms);
+        using var batch = await arrowReader.ReadNextRecordBatchAsync();
+        batch.Should().NotBeNull();
+        batch!.Schema.GetFieldByName("id").Should().NotBeNull();
+        batch.Schema.GetFieldByName("id")!.DataType.Should().BeOfType<Int64Type>();
     }
 
     private static TransformationBlock BuildInvalidTransformation(string caseName) => caseName switch

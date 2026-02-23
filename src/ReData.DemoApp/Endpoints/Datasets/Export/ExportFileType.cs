@@ -5,4 +5,5 @@ public enum ExportFileType
     Csv = 0,
     Excel = 1,
     Json = 2,
+    Arrow = 3,
 }

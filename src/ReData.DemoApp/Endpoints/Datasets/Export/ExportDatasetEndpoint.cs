@@ -32,6 +32,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             .Produces(StatusCodes.Status200OK, contentType: "text/csv")
             .Produces(StatusCodes.Status200OK, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             .Produces(StatusCodes.Status200OK, contentType: "application/json")
+            .Produces(StatusCodes.Status200OK, contentType: "application/vnd.apache.arrow.file")
             .Produces<ExportDatasetErrorResponse>(StatusCodes.Status400BadRequest, "application/json")
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError));
@@ -101,14 +102,16 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         ExportFileType.Csv => "text/csv",
         ExportFileType.Excel => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ExportFileType.Json => "application/json"
+        ExportFileType.Json => "application/json",
+        ExportFileType.Arrow => "application/vnd.apache.arrow.file",
     };
 
     private static string GetExtension(ExportFileType type) => type switch
     {
         ExportFileType.Csv => ".csv",
         ExportFileType.Excel => ".xlsx",
-        ExportFileType.Json => ".json"
+        ExportFileType.Json => ".json",
+        ExportFileType.Arrow => ".arrow",
     };
 
     private static IDataExporter GetExporter(ExportFileType type) => type switch
@@ -116,5 +119,6 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
         ExportFileType.Csv => new SylvanCsvExporter(),
         ExportFileType.Excel => new SylvanExcelExporter(),
         ExportFileType.Json => new JsonDataExporter(),
+        ExportFileType.Arrow => new ArrowFileDataExporter(),
     };
 }

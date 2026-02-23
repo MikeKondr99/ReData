@@ -94,6 +94,9 @@ import {NzPopoverModule} from 'ng-zorro-antd/popover';
                 <button nz-button nzType="link" nzShape="circle" (click)="exportDataset(dataset.id,'json')">
                   Json
                 </button>
+                <button nz-button nzType="link" nzShape="circle" (click)="exportDataset(dataset.id,'arrow')">
+                  Arrow
+                </button>
               </ng-template>
               <button nz-button nzType="link" nzShape="circle" [routerLink]="[dataset.id]">
                 <span nz-icon nzType="edit"></span>

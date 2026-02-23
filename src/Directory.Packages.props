@@ -65,6 +65,9 @@
     <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="9.0.0-9.0.0-beta.17" />
     <PackageVersion Include="TickerQ.Instrumentation.OpenTelemetry" Version="9.0.0-beta.17" />
     <PackageVersion Include="ClickHouse.Client" Version="7.9.1" />
+    <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.4.4" />
+    <PackageVersion Include="Apache.Arrow" Version="22.1.0" />
+    <PackageVersion Include="Equativ.RoaringBitmaps" Version="0.1.5" />
     <PackageVersion Include="MySql.Data" Version="9.1.0" />
     <PackageVersion Include="Npgsql" Version="9.0.1" />
     <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.6.1" />
