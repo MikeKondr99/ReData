@@ -2,7 +2,6 @@ using FastEndpoints;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Transformations;
 using ReData.Query.Core.Value;
-using ReData.Query.Runners.Value;
 
 namespace ReData.DemoApp.Commands;
 

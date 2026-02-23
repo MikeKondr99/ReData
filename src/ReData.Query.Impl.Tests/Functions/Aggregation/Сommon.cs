@@ -4,7 +4,6 @@ using ReData.Query.Core.Value;
 using ReData.Query.Impl.Tests.Fixtures;
 using ReData.Query.Impl.Tests.Queries;
 using ReData.Query.QuerySources;
-using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Functions.Aggregation;
 

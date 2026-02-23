@@ -1,9 +1,8 @@
 using System.Data.Common;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Value;
-using ReData.Query.Runners.Value;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 /// <summary>
 /// Legacy-адаптер: преобразует нормализованные CLR-значения в IValue.

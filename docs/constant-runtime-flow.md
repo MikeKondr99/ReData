@@ -72,7 +72,7 @@ sequenceDiagram
   - `Resolve`: возвращает ошибку, если `Value` еще не вычислено.
 - `RunnerConstantRuntime`:
   - `Create`: формирует scalar `QueryConstant`;
-  - `Resolve`: при пустом кеше выполняет query через `IQueryRunner`, потом кеширует `Value`.
+  - `Resolve`: при пустом кеше выполняет query через `IQueryExecutor`, потом кеширует `Value`.
 
 ## 5. Важные правила
 

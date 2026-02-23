@@ -3,9 +3,9 @@ using System.Data.Common;
 using Oracle.ManagedDataAccess.Client;
 using ReData.Query.Core.Components;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
-public class OracleRunner : IQueryRunner
+public class OracleExecutor : IQueryExecutor
 {
     // public required OracleConnection Connection { private get; init; }
     public required IQueryCompiler QueryCompiler { private get; init; }

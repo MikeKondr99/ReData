@@ -4,20 +4,20 @@ using Pattern.Unions;
 using ReData.Query.Core;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
-using ReData.Query.Runners.Value;
+using ReData.Query.Core.Value;
 using QueryModel = ReData.Query.Core.Query;
 using SqlTemplate = ReData.Query.Core.Template.Template;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 public sealed class RunnerConstantRuntime : IConstantRuntime
 {
-    private readonly IQueryRunner queryRunner;
+    private readonly IQueryExecutor queryExecutor;
     private readonly DbConnection connection;
 
-    public RunnerConstantRuntime(IQueryRunner queryRunner, DbConnection connection)
+    public RunnerConstantRuntime(IQueryExecutor queryExecutor, DbConnection connection)
     {
-        this.queryRunner = queryRunner;
+        this.queryExecutor = queryExecutor;
         this.connection = connection;
     }
 
@@ -57,7 +57,7 @@ public sealed class RunnerConstantRuntime : IConstantRuntime
         {
             constantSpan?.SetTag("constant.resolve_mode", "computed");
 
-            var value = queryRunner
+            var value = queryExecutor
                 .GetDataReaderAsync(constant.Query, connection)
                 .CollectToScalar()
                 .GetAwaiter()

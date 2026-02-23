@@ -15,7 +15,7 @@ It also fixes one important behavioral rule:
 ## Decorators
 
 - `DbDataReaderDecorator` is the base wrapper.
-- `DomainDbDataReader` is the runner output contract (`IQueryRunner.GetDataReaderAsync`).
+- `DomainDbDataReader` is the runner output contract (`IQueryExecutor.GetDataReaderAsync`).
   It composes CLR normalization + alias mapping and exposes domain metadata via `GetDomainType(...)`.
 - `LegacyIValueDbDataReader` (`WrapInValue`) maps CLR values to `IValue` for current legacy contracts.
 - `FieldAliasDbDataReader` is used inside `DomainDbDataReader` composition.

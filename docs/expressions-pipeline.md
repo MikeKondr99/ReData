@@ -18,7 +18,7 @@ flowchart
     H --> I[SQL-фрагмент]
     I --> J[SqlQueryCompiler]
     J --> K[Готовый SQL]
-    K --> L[IQueryRunner]
+    K --> L[IQueryExecutor]
     L --> M[DbDataReader]
     M --> N[DatabaseValuesMapper]
     N --> O[IValue]
@@ -92,7 +92,7 @@ flowchart
 - `SqlQueryCompiler` (`src/ReData.Query/QueryCompilers/SqlQueryCompiler.cs`)
   - Вставляет выражения в SQL-клаузы.
   - Вызывает `ExpressionCompiler.Compile` для каждого `ResolvedExpr`.
-- `IQueryRunner` (`src/ReData.Query/Runners/IQueryRunner.cs`)
+- `IQueryExecutor` (`src/ReData.Query/Runners/IQueryExecutor.cs`)
   - Выполняет SQL против подключения БД.
 - `DatabaseValuesMapper` (`src/ReData.Query/Runners/DatabaseValuesMapper.cs`)
   - Преобразует значения БД в `IValue`.

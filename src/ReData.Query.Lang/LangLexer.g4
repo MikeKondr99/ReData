@@ -3,6 +3,7 @@
 AND: [a] [n] [d];
 OR: [o] [r];
 CONST: [c] [o] [n] [s] [t];
+LET: [l] [e] [t];
 LEFT_PARENTHESIS: '(';
 RIGHT_PARENTHESIS: ')';
 HAT: '^';

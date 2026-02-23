@@ -12,17 +12,31 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 {
     public ExpressionScript VisitScript(LangParser.StartContext context)
     {
-        var constants = context.constDecl()
-            .Select(declaration => new ConstantDeclaration
+        var declarations = context.children
+            .OfType<ParserRuleContext>()
+            .Select<ParserRuleContext, ScriptDeclaration?>(node => node switch
             {
-                Name = declaration.NAME().GetText(),
-                Expression = Visit(declaration.expr()),
+                LangParser.ConstDeclContext declaration => new ScriptDeclaration
+                {
+                    Kind = ScriptDeclarationKind.Const,
+                    Name = declaration.NAME().GetText(),
+                    Expression = Visit(declaration.expr()),
+                },
+                LangParser.LetDeclContext declaration => new ScriptDeclaration
+                {
+                    Kind = ScriptDeclarationKind.Macro,
+                    Name = declaration.NAME().GetText(),
+                    Expression = Visit(declaration.expr()),
+                },
+                _ => null,
             })
+            .Where(x => x is not null)
+            .Cast<ScriptDeclaration>()
             .ToArray();
 
         return new ExpressionScript
         {
-            Contants = constants,
+            Declarations = declarations,
             Expression = VisitStart(context),
         };
     }

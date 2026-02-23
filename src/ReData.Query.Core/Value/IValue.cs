@@ -1,8 +1,6 @@
 ﻿using System.Globalization;
-using Microsoft.Extensions.Primitives;
-using ReData.Query.Core.Value;
 
-namespace ReData.Query.Runners.Value;
+namespace ReData.Query.Core.Value;
 
 public interface IValue
 {

@@ -1,30 +1,23 @@
 ﻿using System.Data;
 using System.Data.Common;
-using MySql.Data.MySqlClient;
+using ClickHouse.Client.Utility;
 using ReData.Query.Core.Components;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
-public class MySqlRunner : IQueryRunner
+public class ClickHouseExecutor : IQueryExecutor
 {
     public required IQueryCompiler QueryCompiler { private get; init; }
 
-  
     public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
-        if (connection is not MySqlConnection conn)
-        {
-            throw new ArgumentException("Требуется MySqlConnection");
-        }
-      
         if (connection.State is not ConnectionState.Open)
         {
             await connection.OpenAsync();
         }
 
         var sql = QueryCompiler.Compile(query);
-        await using MySqlCommand command = new MySqlCommand(sql, conn);
-        var reader = await command.ExecuteReaderAsync();
+        var reader = await connection.ExecuteReaderAsync(sql);
         return reader.ToDomain(query.Fields());
     }
 }

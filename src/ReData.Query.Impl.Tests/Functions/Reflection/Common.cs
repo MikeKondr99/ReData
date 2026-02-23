@@ -6,7 +6,6 @@ using ReData.Common;
 using ReData.Query.Core;
 using ReData.Query.Core.Value;
 using ReData.Query.Impl.Tests.Fixtures;
-using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Impl.Tests.Functions.Reflection;
 

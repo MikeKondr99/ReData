@@ -2,7 +2,7 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 #pragma warning disable CA1010
 

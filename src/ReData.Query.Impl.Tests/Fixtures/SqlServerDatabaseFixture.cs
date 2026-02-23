@@ -1,7 +1,6 @@
 ﻿using System.Data.Common;
 using Microsoft.Data.SqlClient;
-using Oracle.ManagedDataAccess.Client;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 using Testcontainers.MsSql;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
@@ -12,11 +11,11 @@ public class SqlServerDatabaseFixture : IDatabaseFixture
     private SqlConnection Connection { get; set; } = null!;
 
     private string ConnectionString { get; set; } = null!;
-    private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    private IQueryExecutor? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
 
-    public Task<IQueryRunner> GetRunnerAsync()
+    public Task<IQueryExecutor> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.SqlServer));
+        return Task.FromResult(runner ??= Factory.CreateQueryExecuter(DatabaseType.SqlServer));
     }
 
     public DatabaseType GetDatabaseType()

@@ -1,8 +1,8 @@
 using System.Data.Common;
 using ReData.Query.Core.Types;
-using ReData.Query.Runners.Value;
+using ReData.Query.Core.Value;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 public static class DbReaderExtensions
 {

@@ -2,7 +2,7 @@ using System.Data.Common;
 using ClickHouse.Client.Numerics;
 using ReData.Query.Core.Types;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 /// <summary>
 /// Приводит значения провайдеров БД к стабильному CLR-представлению.

@@ -1,17 +1,12 @@
 ﻿using System.Diagnostics;
-using System.Text;
-using Microsoft.Extensions.Caching.Memory;
-using Pattern;
 using Pattern.Unions;
 using ReData.Common;
 using ReData.Query.Common;
 using ReData.Query.Core.Components;
-using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Value;
 using ReData.Query.Lang.Expressions;
-using ReData.Query.Runners.Value;
 
 namespace ReData.Query.Core;
 
@@ -60,7 +55,7 @@ public sealed class ExpressionResolver
 
     public ResolvedScriptExpr? ResolveScript(ExpressionScript script, ResolutionContext context)
     {
-        // 1) Собираем локальные константы из script.Contants.
+        // 1) Собираем локальные константы из script.GetConstantDeclarations().
         var localConstants = ResolveLocalConstants(script, context);
 
         if (context.Errors.Count > 0)
@@ -95,7 +90,7 @@ public sealed class ExpressionResolver
         var localConstants = new Dictionary<string, QueryConstant>();
         var scopeConstants = new Dictionary<string, QueryConstant>(context.Constants);
 
-        foreach (var declaration in script.Contants)
+        foreach (var declaration in script.GetConstantDeclarations())
         {
             if (scopeConstants.ContainsKey(declaration.Name))
             {

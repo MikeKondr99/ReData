@@ -11,7 +11,7 @@ using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
 using ReData.Query;
 using ReData.Query.Common;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 using Factory = ReData.Query.Factory;
 using QueryBuilder = ReData.Query.Core.QueryBuilder;
 
@@ -27,7 +27,7 @@ public record ApplyTransformationsCommand : ICommand<Result<QueryBuilder, ApplyT
 public record struct ApplyTransformationError
 {
     public required int Index { get; init; }
-
+    
     public required string Message { get; init; }
 
     public IEnumerable<IReadOnlyList<ExprError>>? Errors { get; init; }
@@ -45,7 +45,7 @@ public class ApplyTransformationsCommandHandler(DwhService dwhService)
         {
             await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
             var constantRuntime = new RunnerConstantRuntime(
-                Factory.CreateQueryRunner(DatabaseType.PostgreSql),
+                Factory.CreateQueryExecuter(DatabaseType.PostgreSql),
                 connection);
 
             var query = dwhService.GetQueryBuilder(command.DataConnectorId, constantRuntime);

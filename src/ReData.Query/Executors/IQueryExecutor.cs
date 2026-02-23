@@ -1,7 +1,8 @@
 ﻿using System.Data.Common;
-namespace ReData.Query.Runners;
 
-public interface IQueryRunner
+namespace ReData.Query.Executors;
+
+public interface IQueryExecutor
 {
     // Task<IReadOnlyList<Record>> RunQueryAsync(Core.Query query);
 

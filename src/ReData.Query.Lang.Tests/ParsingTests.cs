@@ -189,13 +189,34 @@ public class ParsingTests
     public void ShouldExposeConstantsInScriptResponse()
     {
         var script = Expr.ParseScript("const a = 1 + 2; const b = AVG(age); a + b").UnwrapOk().Value;
+        var constants = script.GetConstantDeclarations();
+        var macros = script.GetMacroDeclarations();
 
-        script.Contants.Should().HaveCount(2);
-        script.Contants[0].Name.Should().Be("a");
-        script.Contants[0].Expression.ToString().Should().Be("(1 + 2)");
-        script.Contants[1].Name.Should().Be("b");
-        script.Contants[1].Expression.ToString().Should().Be("AVG([age])");
+        script.Declarations.Should().HaveCount(2);
+        constants.Should().HaveCount(2);
+        macros.Should().BeEmpty();
+        constants[0].Name.Should().Be("a");
+        constants[0].Expression.ToString().Should().Be("(1 + 2)");
+        constants[1].Name.Should().Be("b");
+        constants[1].Expression.ToString().Should().Be("AVG([age])");
         script.Expression.ToString().Should().Be("([a] + [b])");
+    }
+
+    [Fact(DisplayName = "Парсер скрипта должен возвращать let-декларации в Macros")]
+    public void ShouldExposeMacrosInScriptResponse()
+    {
+        var script = Expr.ParseScript("let isAdult = [age] > 18; const a = 1; a").UnwrapOk().Value;
+        var macros = script.GetMacroDeclarations();
+        var constants = script.GetConstantDeclarations();
+
+        script.Declarations.Should().HaveCount(2);
+        macros.Should().HaveCount(1);
+        macros[0].Kind.Should().Be(ScriptDeclarationKind.Macro);
+        macros[0].Name.Should().Be("isAdult");
+        macros[0].Expression.ToString().Should().Be("([age] > 18)");
+        constants.Should().HaveCount(1);
+        constants[0].Kind.Should().Be(ScriptDeclarationKind.Const);
+        constants[0].Name.Should().Be("a");
     }
 
     [Fact(DisplayName = "Объявление константы через blocked_name должно завершаться ошибкой парсинга")]

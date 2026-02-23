@@ -1,6 +1,4 @@
-﻿using ReData.Query.Runners.Value;
-
-namespace ReData.Query.Core.Value;
+﻿namespace ReData.Query.Core.Value;
 
 public readonly record struct TextValue(string Value) : IValue
 {

@@ -4,7 +4,7 @@ using Pattern.Unions;
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Services;
 using ReData.Query;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Commands;
@@ -23,7 +23,7 @@ public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler
         try
         {
             var query = command.Query;
-            var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
+            var runner = Factory.CreateQueryExecuter(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
             
             var data = await runner

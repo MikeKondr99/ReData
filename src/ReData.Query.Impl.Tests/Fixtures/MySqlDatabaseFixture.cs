@@ -1,7 +1,6 @@
 ﻿using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 using Testcontainers.MySql;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
@@ -13,11 +12,11 @@ public class MySqlDatabaseFixture : IAsyncLifetime, IDatabaseFixture
 
     private string ConnectionString { get; set; } = null!;
     
-    private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    private IQueryExecutor? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
     
-    public Task<IQueryRunner> GetRunnerAsync()
+    public Task<IQueryExecutor> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.MySql));
+        return Task.FromResult(runner ??= Factory.CreateQueryExecuter(DatabaseType.MySql));
     }
 
 

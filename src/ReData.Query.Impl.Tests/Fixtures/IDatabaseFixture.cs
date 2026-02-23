@@ -1,12 +1,11 @@
 ﻿using System.Data.Common;
-using ReData.Query.Impl.Tests.Queries;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
 
 public interface IDatabaseFixture : IAsyncLifetime
 {
-    public Task<IQueryRunner> GetRunnerAsync();
+    public Task<IQueryExecutor> GetRunnerAsync();
     
     public DatabaseType GetDatabaseType();
 

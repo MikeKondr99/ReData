@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using ClickHouse.Client.ADO;
 using ClickHouse.Client.Utility;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 using Testcontainers.ClickHouse;
 
 namespace ReData.Query.Impl.Tests.Fixtures;
@@ -12,11 +12,11 @@ public class ClickHouseDatabaseFixture : IDatabaseFixture
     private ClickHouseConnection Connection { get; set; } = null!;
 
     private string ConnectionString { get; set; } = null!;
-    private IQueryRunner? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
+    private IQueryExecutor? runner = null!; // Runner сохраняется должен быть один потому что он закроет Connection сам
 
-    public Task<IQueryRunner> GetRunnerAsync()
+    public Task<IQueryExecutor> GetRunnerAsync()
     {
-        return Task.FromResult(runner ??= Factory.CreateQueryRunner(DatabaseType.ClickHouse));
+        return Task.FromResult(runner ??= Factory.CreateQueryExecuter(DatabaseType.ClickHouse));
     }
 
     public DatabaseType GetDatabaseType()

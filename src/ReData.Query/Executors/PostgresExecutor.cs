@@ -1,28 +1,29 @@
 ﻿using System.Data;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using ReData.Query.Core.Components;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
-public class SqlServerRunner : IQueryRunner
+public sealed class PostgresExecutor : IQueryExecutor
 {
     public required IQueryCompiler QueryCompiler { private get; init; }
-
+    
+    
     public async Task<DomainDbDataReader> GetDataReaderAsync(Core.Query query, DbConnection connection)
     {
-        if (connection is not SqlConnection conn)
+        if (connection is not NpgsqlConnection conn)
         {
-            throw new ArgumentException("Требуется SqlServerConnection");
+            throw new ArgumentException("Требуется PostgresConnection");
         }
-
-        if (connection.State is not ConnectionState.Open)
+        
+        if (conn.State is not ConnectionState.Open)
         {
-            await connection.OpenAsync();
+            await conn.OpenAsync();
         }
 
         var sql = QueryCompiler.Compile(query);
-        await using SqlCommand command = new SqlCommand(sql, conn);
+        await using NpgsqlCommand command = new NpgsqlCommand(sql, conn);
         var reader = await command.ExecuteReaderAsync();
         return reader.ToDomain(query.Fields());
     }

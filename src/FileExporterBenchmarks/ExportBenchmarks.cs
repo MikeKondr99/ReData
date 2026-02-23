@@ -3,7 +3,7 @@ using BenchmarkDotNet.Attributes;
 using Npgsql;
 using ReData.DataIO.DataExporters;
 using ReData.Query.Core.Types;
-using ReData.Query.Runners;
+using ReData.Query.Executors;
 
 namespace FileExporterBenchmarks;
 

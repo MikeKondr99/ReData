@@ -2,10 +2,13 @@
 options { tokenVocab=LangLexer; }
 
 start:
-    constDecl* expr EOF;
+    (constDecl | letDecl)* expr EOF;
 
 constDecl
     : CONST NAME EQUAL expr SEMICOLON;
+
+letDecl
+    : LET NAME EQUAL expr SEMICOLON;
 
 expr
     : MINUS expr #unary

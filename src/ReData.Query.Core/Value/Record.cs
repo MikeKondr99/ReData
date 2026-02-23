@@ -1,6 +1,5 @@
-﻿using ReData.Query.Runners.Value;
+﻿namespace ReData.Query.Core.Value;
 
-namespace ReData.Query.Core.Value;
 public readonly record struct Record(IValue[] values)
 {
     public override string ToString() => string.Join(", ", values.AsReadOnly());

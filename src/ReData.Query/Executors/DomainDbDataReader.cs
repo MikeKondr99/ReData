@@ -1,7 +1,7 @@
 using System.Data.Common;
 using ReData.Query.Core.Types;
 
-namespace ReData.Query.Runners;
+namespace ReData.Query.Executors;
 
 /// <summary>
 /// DbDataReader, приведенный к доменному контракту ReData:

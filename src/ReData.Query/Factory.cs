@@ -1,16 +1,11 @@
 ﻿using System.Collections.Concurrent;
-using ClickHouse.Client.ADO;
-using Microsoft.Data.SqlClient;
-using MySql.Data.MySqlClient;
-using Npgsql;
-using Oracle.ManagedDataAccess.Client;
 using ReData.Query.Core;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
+using ReData.Query.Executors;
 using ReData.Query.Impl.Functions;
 using ReData.Query.Impl.LiteralBuilders;
 using ReData.Query.Impl.QueryCompilers;
-using ReData.Query.Runners;
 
 namespace ReData.Query;
 
@@ -18,27 +13,27 @@ public static class Factory
 {
     private static readonly ConcurrentDictionary<DatabaseType, FunctionStorage> FunctionStorages = new();
 
-    public static IQueryRunner CreateQueryRunner(DatabaseType database)
+    public static IQueryExecutor CreateQueryExecuter(DatabaseType database)
     {
         return database switch
         {
-            DatabaseType.PostgreSql => new PostgresRunner()
+            DatabaseType.PostgreSql => new PostgresExecutor()
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },
-            DatabaseType.ClickHouse => new ClickHouseRunner()
+            DatabaseType.ClickHouse => new ClickHouseExecutor()
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },
-            DatabaseType.SqlServer => new SqlServerRunner()
+            DatabaseType.SqlServer => new SqlServerExecutor()
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },
-            DatabaseType.MySql => new MySqlRunner()
+            DatabaseType.MySql => new MySqlExecutor()
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },
-            DatabaseType.Oracle => new OracleRunner()
+            DatabaseType.Oracle => new OracleExecutor()
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },

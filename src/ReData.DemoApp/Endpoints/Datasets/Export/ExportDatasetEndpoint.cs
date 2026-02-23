@@ -8,8 +8,6 @@ using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Services;
 using ReData.Query;
-using ReData.Query.Core;
-using ReData.Query.Runners;
 using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Export;
@@ -80,7 +78,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             }
 
             var query = qb.Build();
-            var runner = Factory.CreateQueryRunner(DatabaseType.PostgreSql);
+            var runner = Factory.CreateQueryExecuter(DatabaseType.PostgreSql);
             await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
 
             await using var reader = await runner.GetDataReaderAsync(query, connection);
