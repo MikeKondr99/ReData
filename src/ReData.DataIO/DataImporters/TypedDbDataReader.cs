@@ -11,16 +11,16 @@ namespace ReData.DataIO.DataImporters;
 public sealed class TypedDbDataReader : DbDataReader
 {
     private readonly IReadOnlyList<string[]> _buffer;
-    private readonly IValueFormat?[] _formats;
+    private readonly IValueFormat[] _formats;
     private readonly string[] _columnNames;
-    private readonly Type?[] _columnTypes;
+    private readonly Type[] _columnTypes;
     private readonly string[] _columnTypeNames;
     private readonly object?[] _currentRowValues;
     private int _currentIndex = -1;
 
     public TypedDbDataReader(
         IReadOnlyList<string[]> buffer,
-        IValueFormat?[] formats,
+        IValueFormat[] formats,
         string[] columnNames)
     {
         _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
@@ -33,7 +33,7 @@ public sealed class TypedDbDataReader : DbDataReader
             throw new ArgumentException("Buffer column count doesn't match formats count");
         
         _currentRowValues = new object?[formats.Length];
-        _columnTypes = formats.Select(f => f?.GetValueType() ?? typeof(string)).ToArray();
+        _columnTypes = formats.Select(f => f.GetValueType()).ToArray();
         _columnTypeNames = _columnTypes.Select(t => t.Name).ToArray();
     }
 
@@ -88,7 +88,7 @@ public sealed class TypedDbDataReader : DbDataReader
             {
                 _currentRowValues[i] = null;
             }
-            else if (format?.TryConvert(inputValue, out var value) is true)
+            else if (format.TryConvert(inputValue, out var value) is true)
             {
                 _currentRowValues[i] = value;
             }
@@ -185,8 +185,7 @@ public sealed class TypedDbDataReader : DbDataReader
 
     public override Guid GetGuid(int ordinal)
     {
-        var text = Convert.ToString(_currentRowValues[ordinal], CultureInfo.InvariantCulture);
-        return Guid.Parse(text, CultureInfo.InvariantCulture);
+        throw new NotSupportedException($"Guid не поддерживается {nameof(TypedDbDataReader)}");
     }
 
     public override bool IsDBNull(int ordinal)

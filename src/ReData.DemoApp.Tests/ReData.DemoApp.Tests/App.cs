@@ -24,7 +24,7 @@ public class App : AppFixture<Services.DwhService>
         .Build();
 
 
-    public static InitData Data { get; private set; }
+    public static InitData Data { get; private set; } = null!;
 
     protected override async Task PreSetupAsync()
     {

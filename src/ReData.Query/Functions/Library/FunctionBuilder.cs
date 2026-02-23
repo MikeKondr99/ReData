@@ -260,11 +260,12 @@ public record FunctionBuilder
         return this;
     }
 
-    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>> templates)
+    public FunctionBuilder TemplatesDynamic(Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>> templates)
     {
         this.templates = templates.ToDictionary(
             kv => kv.Key,
-            kv => (IFunctionTemplate)new DynamicFunctionTemplate(kv.Value));
+            kv => (IFunctionTemplate)new DynamicFunctionTemplate(kv.Value)
+        );
         return this;
     }
 

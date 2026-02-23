@@ -664,7 +664,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         var dataset = Db.DataSets.FirstOrDefault(ds => ds.Id == res.Id);
         dataset.Should().NotBeNull();
-        dataset.FieldList.Should().BeEquivalentTo([
+        dataset!.FieldList.Should().BeEquivalentTo([
             Field("id_num", DataType.Number),
         ]);
     }
@@ -696,7 +696,7 @@ public class CreateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         var dataset = Db.DataSets.FirstOrDefault(ds => ds.Id == res.Id);
         dataset.Should().NotBeNull();
-        dataset.FieldList.Should().BeEquivalentTo([
+        dataset!.FieldList.Should().BeEquivalentTo([
             Field("id_date", DataType.DateTime),
         ]);
     }

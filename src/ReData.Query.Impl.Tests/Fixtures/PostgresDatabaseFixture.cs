@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using Npgsql;
+using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
 using ReData.Query.Executors;
 using Testcontainers.PostgreSql;
@@ -79,7 +80,11 @@ public class PostgresDatabaseFixture : IDatabaseFixture
         await Container.StopAsync();
         await Container.DisposeAsync();
 
-        FunctionStorage? functions = Factory.CreateFunctionStorage(DatabaseType.PostgreSql) as FunctionStorage;
+        IFunctionStorage fs = Factory.CreateFunctionStorage(DatabaseType.PostgreSql);
+        if (fs is not FunctionStorage functions)
+        {
+            return;
+        }
         var usage = functions.FunctionUsage;
         GenerateMarkdownReport(usage);
     }

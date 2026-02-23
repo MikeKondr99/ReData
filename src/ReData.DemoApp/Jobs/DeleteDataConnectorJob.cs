@@ -24,6 +24,11 @@ public sealed class DeleteDataConnectorJob
         var name = context.Request.DataConnectorName;
         var dataConnector = await Db.DataConnectors
             .FirstOrDefaultAsync(dc => dc.Name == name && dc.TableName.StartsWith("table"), ct);
+        if (dataConnector is null)
+        {
+            return;
+        }
+
         Db.DataConnectors.Remove(dataConnector);
         await Db.SaveChangesAsync(ct);
         await OutputCache.EvictByTagAsync("data-connectors", ct);

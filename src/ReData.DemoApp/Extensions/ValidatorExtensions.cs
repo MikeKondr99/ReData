@@ -5,7 +5,8 @@ namespace ReData.DemoApp.Extensions;
 
 public static class ValidatorExtensions
 {
-    public static ApplicationDatabaseContext Db<T>(this FastEndpoints.Validator<T> validator) =>
+    public static ApplicationDatabaseContext Db<T>(this FastEndpoints.Validator<T> validator)
+        where T : notnull =>
         validator.Resolve<ApplicationDatabaseContext>();
 }
 

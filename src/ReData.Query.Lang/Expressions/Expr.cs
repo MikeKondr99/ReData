@@ -20,7 +20,7 @@ public abstract record Expr
     public static Result<Expr, ExprError> Parse(string s)
     {
         var cacheKey = $"expr::{s}";
-        if (Global.MemoryCache.TryGetValue<Expr>(cacheKey, out var result))
+        if (Global.MemoryCache.TryGetValue<Expr>(cacheKey, out var result) && result is not null)
         {
             return result;
         }
@@ -66,7 +66,7 @@ public abstract record Expr
     public static Result<ExpressionScript, ExprError> ParseScript(string s)
     {
         var cacheKey =  $"script::{s}";
-        if (Global.MemoryCache.TryGetValue<ExpressionScript>(cacheKey, out var result))
+        if (Global.MemoryCache.TryGetValue<ExpressionScript>(cacheKey, out var result) && result is not null)
         {
             return result;
         }

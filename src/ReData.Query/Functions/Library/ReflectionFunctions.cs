@@ -168,7 +168,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             .ReqArg("input", Integer, isConst: true)
             .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
             {
                 [SqlServer] = ctx => FieldTemplate(SqlServer, ctx),
                 [MySql] = ctx => FieldTemplate(MySql, ctx),
@@ -182,7 +182,7 @@ public class ReflectionFunctions : FunctionsDescriptor
             .ReqArg("input", Text, isConst: true)
             .Returns(Text, ConstPropagation.AlwaysFalse)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
             {
                 [SqlServer] = ctx => FieldTemplateByName(SqlServer, ctx),
                 [MySql] = ctx => FieldTemplateByName(MySql, ctx),

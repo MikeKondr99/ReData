@@ -16,7 +16,7 @@ public sealed record DataSetEntity : BaseEntity
 
     public required Guid DataConnectorId { get; set; }
 
-    public DataConnectorEntity DataConnector { get; init; }
+    public DataConnectorEntity? DataConnector { get; init; }
 
     public required List<TransformationEntity> Transformations { get; init; }
 

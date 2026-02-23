@@ -11,7 +11,7 @@ using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
 {
-    private static ITemplate? FractileTemplate(DatabaseTypes database, TemplateContext context)
+    private static ITemplate FractileTemplate(DatabaseTypes database, TemplateContext context)
     {
         if (context.Arguments.Count <= 1)
         {
@@ -46,7 +46,8 @@ public class AggregationFunctions : FunctionsDescriptor
         {
             PostgreSql => Template.Create($"PERCENTILE_CONT({p}) WITHIN GROUP (ORDER BY {0})"),
             ClickHouse => Template.Create($"quantileExactInclusive({p})({0})"),
-            _ => null,
+            // Не ожидается что мы сюда вообще попадём
+            _ => throw new NotSupportedException($"FRACTILE не поддерживается для {database}"),
         };
     }
 
@@ -208,7 +209,7 @@ public class AggregationFunctions : FunctionsDescriptor
             .ReqArg("p", Number, isConst: true)
             .Returns(Number)
             .CustomNullPropagation(_ => true)
-            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate?>>()
+            .TemplatesDynamic(new Dictionary<DatabaseTypes, Func<TemplateContext, ITemplate>>()
             {
                 [PostgreSql] = ctx => FractileTemplate(PostgreSql, ctx),
                 [ClickHouse] = ctx => FractileTemplate(ClickHouse, ctx),

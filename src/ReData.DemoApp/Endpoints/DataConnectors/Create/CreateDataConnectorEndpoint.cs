@@ -36,10 +36,10 @@ public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
         
         var entity = await new CreateDataConnectorCommand
         {
-            Name = Query<string>("name"),
+            Name = Query<string>("name")!,
             Separator = Query<char>("separator"),
             WithHeader = Query<bool>("withHeader"),
-            FileStream = fileStream,
+            FileStream = fileStream!,
         }.ExecuteAsync(ct);
 
         var response = new CreateDataConnectorResponse()

@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Diagnostics;
 using ReData.DataIO.ValueFormats;
 
 namespace ReData.DataIO.DataImporters;
@@ -29,7 +30,7 @@ public sealed class DataAnalyzer : IDataAnalyzer
         }
         await reader.DisposeAsync();
 
-        IValueFormat?[] finalFormats = formats.Select(fmts => fmts.FirstOrDefault()).ToArray();
+        IValueFormat[] finalFormats = formats.Select(fmts => fmts.FirstOrDefault() ?? throw new UnreachableException("У колонки должен быть хотя бы один формат")).ToArray();
 
         return new TypedDbDataReader(buffer, finalFormats, columnNames);
     }

@@ -24,7 +24,7 @@ public sealed class GetMetadataCommandHandler() : ICommandHandler<GetMetadataCom
     /// <inheritdoc />
     public async Task<Metadata> ExecuteAsync(GetMetadataCommand command, CancellationToken ct)
     {
-        IReadOnlyList<DataSetField> fieldList = null;
+        IReadOnlyList<DataSetField>? fieldList = null;
         int? rowsCount = null;
         var queryBuilder = (await new ApplyTransformationsCommand()
         {

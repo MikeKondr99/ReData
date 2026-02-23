@@ -2,5 +2,5 @@
 
 public sealed record DeleteDataConnectorRequest
 {
-    public string DataConnectorName { get; init; }
+    public required string DataConnectorName { get; init; }
 }

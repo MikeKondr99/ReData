@@ -138,7 +138,7 @@ services.AddOpenTelemetry()
             {
                 options.Filter = (_, dbCommand) =>
                 {
-                    return dbCommand.Connection.Database != "TickerQ";
+                    return dbCommand.Connection?.Database != "TickerQ";
                 };
             });
     })

@@ -32,11 +32,9 @@ public sealed class JsonDataExporter : IDataExporter
     private static async Task WriteJsonArrayAsync(DbDataReader reader, Utf8JsonWriter writer, CancellationToken ct)
     {
         writer.WriteStartArray();
-        string[] propNames = null;
-        
         try
         {
-            propNames = new string[reader.FieldCount];
+            string[] propNames = new string[reader.FieldCount];
             for (int i = 0; i < propNames.Length; i++)
             {
                 propNames[i] = reader.GetName(i);

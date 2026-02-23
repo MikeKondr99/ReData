@@ -2,6 +2,7 @@ using System.Data.Common;
 using BenchmarkDotNet.Attributes;
 using Npgsql;
 using ReData.DataIO.DataExporters;
+using ReData.Query.Core.Template;
 using ReData.Query.Core.Types;
 using ReData.Query.Executors;
 
@@ -55,7 +56,7 @@ public class CsvExportBenchmarks
         reader = reader.ToDomain(Enumerable.Range(1, 10).Select(i => new Field()
         {
             Alias = $"column{i}",
-            Template = null,
+            Template = Template.Create($""),
             Type = new FieldType(DataType.Text, true)
         }));
         await new SylvanExcelExporter().ExportAsync(reader, Stream.Null, CancellationToken.None);
