@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Z.EntityFramework.Plus.EFCore" />
         <ProjectReference Include="..\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\ReData.DataIO\ReData.DataIO.csproj" />

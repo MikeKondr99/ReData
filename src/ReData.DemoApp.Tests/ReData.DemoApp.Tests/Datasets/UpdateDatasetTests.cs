@@ -1,4 +1,6 @@
 using Namotion.Reflection;
+using Microsoft.EntityFrameworkCore;
+using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.Update;
@@ -13,19 +15,27 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
     private Task<TestResult<TResponse>> Endpoint<TResponse>(UpdateDataSetRequest req) =>
         App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, TResponse>(req);
 
-    private async Task<CreateDataSetResponse> CreateTestDatasetAsync(Guid? connectorId = null)
+    private async Task<CreateDataSetResponse> CreateTestDatasetAsync(
+        Guid? connectorId = null,
+        IReadOnlyList<TransformationBlock>? transformations = null)
     {
         var req = new CreateDataSetRequest
         {
             Name = FakeDatasetName(),
-            Transformations = [],
-            ConnectorId = Guid.Empty,
+            Transformations = transformations?.ToList() ?? [],
+            ConnectorId = connectorId ?? Guid.Empty,
         };
 
         var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
         rsp.Should().BeSuccessful();
         return res;
     }
+
+    private Task<List<TransformationEntity>> GetTransformationsAsync(Guid dataSetId) =>
+        Db.Set<TransformationEntity>()
+            .Where(t => t.DataSetId == dataSetId)
+            .OrderBy(t => t.Order)
+            .ToListAsync();
 
     [Fact(DisplayName = "Обновление набора с верными данными должно вернуть 'обновлено'")]
     public async Task UpdateDataset_WithValidData_ShouldReturnUpdated()
@@ -387,5 +397,103 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
         Db.DataSets.Should().Contain(ds =>
             ds.Id == res.Id &&
             ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
+    }
+
+    [Fact(DisplayName = "Обновление набора должно полностью заменить список трансформаций")]
+    public async Task UpdateDataset_ShouldReplaceTransformationsInStorage()
+    {
+        // Arrange
+        var originalTransformations = new List<TransformationBlock>
+        {
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem
+                    {
+                        Field = "id",
+                        Expression = "id",
+                    }
+                ],
+                RestOptions = SelectRestOptions.Delete,
+            }.Block(),
+            new WhereTransformation
+            {
+                Condition = "id > 1",
+            }.Block(),
+        };
+
+        var existingDataset = await CreateTestDatasetAsync(
+            connectorId: App.Data.ExistingDataConnector.Id,
+            transformations: originalTransformations);
+
+        var updateTransformations = new List<TransformationBlock>
+        {
+            new SelectTransformation
+            {
+                Items =
+                [
+                    new SelectItem
+                    {
+                        Field = "id2",
+                        Expression = "id * 2",
+                    }
+                ],
+                RestOptions = SelectRestOptions.Delete,
+            }.Block(),
+        };
+
+        var updateReq = new UpdateDataSetRequest
+        {
+            Id = existingDataset.Id,
+            Name = existingDataset.Name,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
+            Transformations = updateTransformations,
+        };
+
+        // Act
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var stored = await GetTransformationsAsync(existingDataset.Id);
+
+        // Assert
+        rsp.IsSuccessStatusCode.Should().BeTrue();
+        res.Transformations.Should().HaveCount(1);
+        stored.Should().HaveCount(1);
+        stored[0].Order.Should().Be(0);
+        stored[0].Data.Should().BeOfType<SelectTransformation>();
+    }
+
+    [Fact(DisplayName = "Обновление набора с пустыми трансформациями должно очистить старые")]
+    public async Task UpdateDataset_WithEmptyTransformations_ShouldDeleteExistingTransformations()
+    {
+        // Arrange
+        var originalTransformations = new List<TransformationBlock>
+        {
+            new WhereTransformation
+            {
+                Condition = "id > 0",
+            }.Block(),
+        };
+
+        var existingDataset = await CreateTestDatasetAsync(
+            connectorId: App.Data.ExistingDataConnector.Id,
+            transformations: originalTransformations);
+
+        var updateReq = new UpdateDataSetRequest
+        {
+            Id = existingDataset.Id,
+            Name = existingDataset.Name,
+            ConnectorId = App.Data.ExistingDataConnector.Id,
+            Transformations = [],
+        };
+
+        // Act
+        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var stored = await GetTransformationsAsync(existingDataset.Id);
+
+        // Assert
+        rsp.IsSuccessStatusCode.Should().BeTrue();
+        res.Transformations.Should().BeEmpty();
+        stored.Should().BeEmpty();
     }
 }

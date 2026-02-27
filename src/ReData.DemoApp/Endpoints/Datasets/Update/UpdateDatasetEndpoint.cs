@@ -6,6 +6,7 @@ using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Groups;
+using Z.EntityFramework.Plus;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Update;
 
@@ -31,26 +32,18 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
     public override async Task<Results<Ok<UpdateDataSetResponse>, NotFound>> ExecuteAsync(
         UpdateDataSetRequest req, CancellationToken ct)
     {
-        var entity = await Db.Set<DataSetEntity>()
-            .AsTracking()
-            .Include(ds => ds.Transformations)
-            .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
-
-        if (entity is null)
+        var exists = await Db.Set<DataSetEntity>()
+            .AsNoTracking()
+            .AnyAsync(ds => ds.Id == req.Id, ct);
+        if (!exists)
         {
             return TypedResults.NotFound();
         }
 
-        // Обновляем простые свойства
-        entity.Name = req.Name;
-        entity.DataConnectorId = req.ConnectorId;
-
-        // Очищаем и добавляем новые трансформации
-        Db.Set<TransformationEntity>().RemoveRange(entity.Transformations);
-        entity.Transformations.Clear();
+        var transformations = new List<TransformationEntity>(req.Transformations.Count);
         for (int i = 0; i < req.Transformations.Count; i++)
         {
-            entity.Transformations.Add(new TransformationEntity
+            transformations.Add(new TransformationEntity
             {
                 Enabled = req.Transformations[i].Enabled,
                 Description = null,
@@ -60,13 +53,7 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
             });
         }
 
-        entity.UpdatedAt = DateTimeOffset.UtcNow;
-
-        var queryBuilder = (await new ApplyTransformationsCommand()
-        {
-            Transformations = req.Transformations.Where(tb => tb.Enabled).Select(tb => tb.Transformation).ToArray(),
-            DataConnectorId = req.ConnectorId
-        }.ExecuteAsync(ct)).UnwrapOrDefault();
+        var updatedAt = DateTimeOffset.UtcNow;
 
         // Добавляем метадату при сохранении набора
         var metadata = await new GetMetadataCommand()
@@ -78,18 +65,35 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
             ConnectorId = req.ConnectorId
         }.ExecuteAsync(ct);
 
-        entity.RowsCount = metadata.RowsCount;
-        entity.FieldList = metadata.FieldList;
+        await using var tx = await Db.Database.BeginTransactionAsync(ct);
 
-        // Сохраняем в БД
-        await Db.SaveChangesAsync(ct);
+        await Db.Set<DataSetEntity>()
+            .Where(ds => ds.Id == req.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(ds => ds.Name, req.Name)
+                .SetProperty(ds => ds.DataConnectorId, req.ConnectorId)
+                .SetProperty(ds => ds.RowsCount, metadata.RowsCount)
+                .SetProperty(ds => ds.FieldList, metadata.FieldList)
+                .SetProperty(ds => ds.UpdatedAt, updatedAt), ct);
+
+        await Db.Set<TransformationEntity>()
+            .Where(t => t.DataSetId == req.Id)
+            .DeleteAsync(ct);
+
+        if (transformations.Count > 0)
+        {
+            Db.Set<TransformationEntity>().AddRange(transformations);
+            await Db.SaveChangesAsync(ct);
+        }
+
+        await tx.CommitAsync(ct);
 
         var response = new UpdateDataSetResponse
         {
-            Id = entity.Id,
-            Name = entity.Name,
-            DataConnectorId = entity.DataConnectorId,
-            Transformations = entity.Transformations
+            Id = req.Id,
+            Name = req.Name,
+            DataConnectorId = req.ConnectorId,
+            Transformations = transformations
                 .OrderBy(t => t.Order)
                 .Select(t => new TransformationBlockResponse
                 {
