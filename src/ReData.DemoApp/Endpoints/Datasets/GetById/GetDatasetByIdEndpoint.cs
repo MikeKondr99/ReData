@@ -1,9 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
-using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Groups;
+using ReData.DemoApp.Repositories.Datasets;
 
 namespace ReData.DemoApp.Endpoints.Datasets.GetById;
 
@@ -15,27 +13,20 @@ namespace ReData.DemoApp.Endpoints.Datasets.GetById;
 /// </remarks>
 public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok<DataSetResponse>, NotFound>>
 {
-    public required ApplicationDatabaseContext Db { get; init; }
+    public required IDatasetRepository Datasets { get; init; }
 
     public override void Configure()
     {
         Get("/{Id}");
         Group<DataSetsGroup>();
         AllowAnonymous();
-        
-        Options(x => x.CacheOutput(p => p
-            .Expire(TimeSpan.FromMinutes(10))
-            .Tag("datasets")
-        ));
     }
 
     public override async Task<Results<Ok<DataSetResponse>, NotFound>> ExecuteAsync(
-        GetDatasetByIdRequest req, CancellationToken ct)
+        GetDatasetByIdRequest req,
+        CancellationToken ct)
     {
-        var entity = await Db.Set<DataSetEntity>()
-            .Include(ds => ds.Transformations)
-            .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
-
+        var entity = await Datasets.GetByIdWithTransformationsAsync(req.Id, ct);
         if (entity is null)
         {
             return TypedResults.NotFound();
@@ -52,9 +43,9 @@ public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok
                 {
                     Enabled = t.Enabled,
                     Description = t.Description,
-                    Transformation = t.Data
+                    Transformation = t.Data,
                 })
-                .ToList()
+                .ToList(),
         };
 
         return TypedResults.Ok(response);

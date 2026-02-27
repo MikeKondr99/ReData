@@ -11,12 +11,14 @@ using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Datasets.Export;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
 using ReData.Query;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
+using StackExchange.Profiling;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
@@ -43,6 +45,14 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 services.AddOutputCache();
+services.AddMiniProfiler(options =>
+{
+    options.RouteBasePath = "/profiler";
+    options.ShouldProfile = request =>
+        builder.Environment.IsDevelopment() ||
+        request.Query.ContainsKey("profile");
+})
+    .AddEntityFramework();
 
 services.AddTickerQ(options =>
 {
@@ -145,6 +155,7 @@ services.AddOpenTelemetry()
     .UseOtlpExporter();
 
 services.AddScoped<DwhService>();
+services.AddScoped<IDatasetRepository, DatasetRepository>();
 
 services.AddCommandMiddleware(c =>
 {
@@ -171,6 +182,7 @@ app.Services.Migrate<ApplicationDatabaseContext>();
 app.Services.Migrate<TickerQDbContext>();
 
 app.UseOutputCache();
+app.UseMiniProfiler();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseFastEndpoints(c =>

@@ -1,9 +1,7 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Groups;
+using ReData.DemoApp.Repositories.Datasets;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Delete;
 
@@ -15,9 +13,7 @@ namespace ReData.DemoApp.Endpoints.Datasets.Delete;
 /// </remarks>
 public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, NotFound>>
 {
-    public required ApplicationDatabaseContext Db { get; init; }
-    public required IOutputCacheStore OutputCache { get; init; }
-
+    public required IDatasetRepository Datasets { get; init; }
 
     public override void Configure()
     {
@@ -26,21 +22,9 @@ public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, 
         AllowAnonymous();
     }
 
-    public override async Task<Results<Ok, NotFound>> ExecuteAsync(
-        DeleteDataSetRequest req, CancellationToken ct)
+    public override async Task<Results<Ok, NotFound>> ExecuteAsync(DeleteDataSetRequest req, CancellationToken ct)
     {
-        var entity = await Db.DataSets
-            .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
-
-        if (entity is null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        Db.DataSets.Remove(entity);
-        await Db.SaveChangesAsync(ct);
-        await OutputCache.EvictByTagAsync("datasets", ct);
-
-        return TypedResults.Ok();
+        var deleted = await Datasets.DeleteAsync(req.Id, ct);
+        return deleted ? TypedResults.Ok() : TypedResults.NotFound();
     }
 }
