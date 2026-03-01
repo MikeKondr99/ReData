@@ -24,15 +24,11 @@ using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
-using Z.EntityFramework.Plus;
 using Factory = ReData.Query.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
-
-// Temporary switch: disable EF Plus query cache globally.
-QueryCacheManager.IsEnabled = false;
 
 if (builder.Environment.IsDevelopment())
 {

@@ -58,10 +58,6 @@ public class InitData
         foreach (var filePath in Directory.EnumerateFiles("./Init/Data"))
         {
             var fileName = Path.GetFileNameWithoutExtension(filePath);
-            if (fileName == "test")
-            {
-                int a = 5;
-            }
             StreamReader stream = new StreamReader(filePath);
             dataConnectors[fileName] =
                 await new CreateDataConnectorCommand

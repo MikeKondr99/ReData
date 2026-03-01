@@ -1,15 +1,17 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.GetAll;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Logging;
 using ReData.DemoApp.Transformations;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
-public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetRepository
+public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<DatasetRepository> logger) : IDatasetRepository
 {
     public async Task<List<DataSetListItem>> GetAllAsync(CancellationToken ct)
     {
@@ -33,10 +35,13 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByIdAsync");
 
-        return await db.Set<DataSetEntity>()
+        var entity = await db.Set<DataSetEntity>()
             .Include(ds => ds.Transformations)
             .Where(ds => ds.Id == id)
             .FirstOrDefaultAsync(ct);
+
+        logger.DatasetLoadedById(id, entity is not null);
+        return entity;
     }
 
     public async Task<DataSetEntity?> GetByNameAsync(string name, CancellationToken ct)
@@ -71,7 +76,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
         db.DataSets.Add(entity);
         await db.SaveChangesAsync(ct);
 
-        InvalidateCache(entity.Id, entity.Name);
+        logger.DatasetCreated(entity.Id, entity.Name, entity.Transformations.Count);
 
         await new DatasetChangedEvent
         {
@@ -87,6 +92,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
     public async Task<bool> UpdateAsync(UpdateDatasetData data, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.UpdateAsync");
+        logger.DatasetUpdateStarted(data.Id, data.Name, data.ConnectorId, data.Transformations.Count);
 
         var current = await db.Set<DataSetEntity>()
             .Where(ds => ds.Id == data.Id)
@@ -94,6 +100,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
             .FirstOrDefaultAsync(ct);
         if (current is null)
         {
+            logger.DatasetUpdateSkippedNotFound(data.Id);
             return false;
         }
 
@@ -126,7 +133,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
 
         await tx.CommitAsync(ct);
 
-        InvalidateCache(data.Id, current.Name, data.Name);
+        logger.DatasetUpdated(data.Id, current.Name, data.Name, mappedTransformations.Count);
 
         await new DatasetChangedEvent
         {
@@ -162,7 +169,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
             return false;
         }
 
-        InvalidateCache(id, currentName);
+        logger.DatasetDeleted(id, currentName);
 
         await new DatasetChangedEvent
         {
@@ -225,11 +232,4 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
             db.Entry(transformations[i]).Property<Guid?>("DataSetEntityId").CurrentValue = dataSetId;
         }
     }
-
-    private static void InvalidateCache(Guid id, params string[] names)
-    {
-        _ = id;
-        _ = names;
-    }
-
 }
