@@ -3,10 +3,12 @@ using FastEndpoints;
 using Npgsql;
 using ReData.DataIO.DataExporters;
 using ReData.DemoApp.Commands;
+using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.Query;
+using StrictId;
 using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Export;
@@ -43,7 +45,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         try
         {
-            var dataset = await Datasets.GetByIdAsync(req.Id, ct);
+            var dataset = await Datasets.GetByIdAsync(new Id<DataSet>(req.Id), ct);
 
             if (dataset is null)
             {

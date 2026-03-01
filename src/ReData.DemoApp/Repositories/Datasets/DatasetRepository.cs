@@ -1,4 +1,4 @@
-using FastEndpoints;
+﻿using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ReData.DemoApp.Commands;
@@ -8,6 +8,7 @@ using ReData.DemoApp.Endpoints.Datasets.GetAll;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Logging;
 using ReData.DemoApp.Transformations;
+using StrictId;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
@@ -21,7 +22,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
             .OrderByDescending(ds => ds.UpdatedAt)
             .Select(ds => new DataSetListItem
             {
-                Id = ds.Id,
+                Id = ds.Id.ToGuid(),
                 Name = ds.Name,
                 CreatedAt = ds.CreatedAt,
                 UpdatedAt = ds.UpdatedAt,
@@ -31,7 +32,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
             .ToListAsync(ct);
     }
 
-    public async Task<DataSetEntity?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<DataSetEntity?> GetByIdAsync(Id<DataSet> id, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByIdAsync");
 
@@ -57,7 +58,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.CreateAsync");
 
-        var datasetId = Guid.NewGuid();
+        var datasetId = Id<DataSet>.NewId();
         var now = DateTimeOffset.UtcNow;
         var metadata = await BuildMetadataAsync(data.ConnectorId, data.Transformations, ct);
 
@@ -126,8 +127,6 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         if (mappedTransformations.Count > 0)
         {
             db.Set<TransformationEntity>().AddRange(mappedTransformations);
-            AttachLegacyDataSetEntityIdIfPresent(mappedTransformations, data.Id);
-
             await db.SaveChangesAsync(ct);
         }
 
@@ -148,7 +147,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<bool> DeleteAsync(Id<DataSet> id, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.DeleteAsync");
 
@@ -183,7 +182,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
     }
 
     private static List<TransformationEntity> MapTransformations(
-        Guid dataSetId,
+        Id<DataSet> dataSetId,
         IReadOnlyList<TransformationBlock> transformations)
     {
         var result = new List<TransformationEntity>(transformations.Count);
@@ -216,20 +215,5 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
             ConnectorId = connectorId,
         }.ExecuteAsync(ct);
     }
-
-    private void AttachLegacyDataSetEntityIdIfPresent(
-        IReadOnlyList<TransformationEntity> transformations,
-        Guid dataSetId)
-    {
-        var entityType = db.Model.FindEntityType(typeof(TransformationEntity));
-        if (entityType?.FindProperty("DataSetEntityId") is null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < transformations.Count; i++)
-        {
-            db.Entry(transformations[i]).Property<Guid?>("DataSetEntityId").CurrentValue = dataSetId;
-        }
-    }
 }
+

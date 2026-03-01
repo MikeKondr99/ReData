@@ -1,4 +1,6 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using ReData.DemoApp.Database.Entities;
+using StrictId;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
@@ -11,7 +13,7 @@ public enum DatasetMutationType
 
 public sealed record DatasetChangedEvent : IEvent
 {
-    public required Guid DatasetId { get; init; }
+    public required Id<DataSet> DatasetId { get; init; }
 
     public required DatasetMutationType MutationType { get; init; }
 

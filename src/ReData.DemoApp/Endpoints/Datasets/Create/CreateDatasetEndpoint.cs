@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Transformations;
+using StrictId;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Create;
 
@@ -70,10 +71,10 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 
         var response = new CreateDataSetResponse
         {
-            Id = entity.Id,
+            Id = entity.Id.ToGuid(),
             Name = entity.Name,
         };
 
-        return TypedResults.Created($"/api/datasets/{entity.Id}", response);
+        return TypedResults.Created($"/api/datasets/{entity.Id.ToGuid()}", response);
     }
 }

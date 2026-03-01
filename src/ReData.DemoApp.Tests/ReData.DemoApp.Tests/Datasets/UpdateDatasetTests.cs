@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Namotion.Reflection;
 using ReData.DemoApp.Database.Entities;

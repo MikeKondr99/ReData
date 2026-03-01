@@ -1,7 +1,9 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
+using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Repositories.Datasets;
+using StrictId;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Delete;
 
@@ -24,7 +26,7 @@ public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, 
 
     public override async Task<Results<Ok, NotFound>> ExecuteAsync(DeleteDataSetRequest req, CancellationToken ct)
     {
-        var deleted = await Datasets.DeleteAsync(req.Id, ct);
+        var deleted = await Datasets.DeleteAsync(new Id<DataSet>(req.Id), ct);
         return deleted ? TypedResults.Ok() : TypedResults.NotFound();
     }
 }

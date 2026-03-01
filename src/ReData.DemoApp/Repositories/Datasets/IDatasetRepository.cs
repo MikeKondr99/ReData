@@ -1,5 +1,6 @@
-using ReData.DemoApp.Database.Entities;
+﻿using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.GetAll;
+using StrictId;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
@@ -7,7 +8,7 @@ public interface IDatasetRepository
 {
     Task<List<DataSetListItem>> GetAllAsync(CancellationToken ct);
 
-    Task<DataSetEntity?> GetByIdAsync(Guid id, CancellationToken ct);
+    Task<DataSetEntity?> GetByIdAsync(Id<DataSet> id, CancellationToken ct);
 
     Task<DataSetEntity?> GetByNameAsync(string name, CancellationToken ct);
 
@@ -15,5 +16,5 @@ public interface IDatasetRepository
 
     Task<bool> UpdateAsync(UpdateDatasetData data, CancellationToken ct);
 
-    Task<bool> DeleteAsync(Guid id, CancellationToken ct);
+    Task<bool> DeleteAsync(Id<DataSet> id, CancellationToken ct);
 }

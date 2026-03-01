@@ -1,7 +1,9 @@
 ﻿using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
+using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Repositories.Datasets;
+using StrictId;
 
 namespace ReData.DemoApp.Endpoints.Datasets.GetById;
 
@@ -26,7 +28,7 @@ public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok
         GetDatasetByIdRequest req,
         CancellationToken ct)
     {
-        var entity = await Datasets.GetByIdAsync(req.Id, ct);
+        var entity = await Datasets.GetByIdAsync(new Id<DataSet>(req.Id), ct);
         if (entity is null)
         {
             return TypedResults.NotFound();
@@ -34,7 +36,7 @@ public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok
 
         var response = new DataSetResponse
         {
-            Id = entity.Id,
+            Id = entity.Id.ToGuid(),
             Name = entity.Name,
             DataConnectorId = entity.DataConnectorId,
             Transformations = entity.Transformations

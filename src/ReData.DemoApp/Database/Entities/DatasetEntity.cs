@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using ReData.DemoApp.Database.Entities.Abstract;
 using ReData.Query.Core.Types;
+using StrictId;
 
 namespace ReData.DemoApp.Database.Entities;
 
@@ -10,7 +11,7 @@ namespace ReData.DemoApp.Database.Entities;
 /// </summary>
 public sealed record DataSetEntity : BaseEntity
 {
-    public required Guid Id { get; init; }
+    public required Id<DataSet> Id { get; init; }
 
     public required string Name { get; set; }
 
@@ -24,6 +25,8 @@ public sealed record DataSetEntity : BaseEntity
 
     public required IReadOnlyList<DataSetField>? FieldList { get; set; } // Json
 }
+
+public sealed record DataSet;
 
 public struct DataSetField
 {

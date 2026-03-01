@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Transformations;
+using StrictId.EFCore.ValueConverters;
 
 namespace ReData.DemoApp.Database.Configs;
 
@@ -12,6 +13,8 @@ public sealed class TransformationConfiguration : IEntityTypeConfiguration<Trans
 
     public void Configure(EntityTypeBuilder<TransformationEntity> builder)
     {
+        builder.Property(x => x.DataSetId).HasConversion<IdTypedToGuidConverter<DataSet>>();
+
         builder.HasKey(x => new
         {
             x.DataSetId,
