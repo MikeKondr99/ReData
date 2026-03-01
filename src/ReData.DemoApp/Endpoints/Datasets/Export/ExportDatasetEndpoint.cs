@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using FastEndpoints;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using ReData.DataIO.DataExporters;
 using ReData.DemoApp.Commands;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Groups;
+using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.Query;
 using Factory = ReData.Query.Factory;
@@ -20,7 +19,7 @@ namespace ReData.DemoApp.Endpoints.Datasets.Export;
 /// </remarks>
 public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
 {
-    public required ApplicationDatabaseContext Db { get; init; }
+    public required IDatasetRepository Datasets { get; init; }
 
     public required DwhService DwhService { get; init; }
 
@@ -44,9 +43,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         try
         {
-            var dataset = await Db.DataSets
-                .Include(ds => ds.Transformations)
-                .FirstOrDefaultAsync(ds => ds.Id == req.Id, ct);
+            var dataset = await Datasets.GetByIdAsync(req.Id, ct);
 
             if (dataset is null)
             {

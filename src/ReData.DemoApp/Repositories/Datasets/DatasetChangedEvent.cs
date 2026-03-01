@@ -16,4 +16,6 @@ public sealed record DatasetChangedEvent : IEvent
     public required DatasetMutationType MutationType { get; init; }
 
     public required DateTimeOffset OccurredAt { get; init; }
+
+    public required IReadOnlyList<string> AffectedNames { get; init; }
 }

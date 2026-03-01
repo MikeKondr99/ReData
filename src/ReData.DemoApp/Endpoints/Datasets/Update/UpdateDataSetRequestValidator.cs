@@ -1,19 +1,29 @@
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Repositories.Datasets;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Update;
 
 public sealed class UpdateDataSetRequestValidator : Validator<UpdateDataSetRequest> 
 {
-    public UpdateDataSetRequestValidator(ApplicationDatabaseContext db)
+    public UpdateDataSetRequestValidator()
     {
         RuleFor(req => req.Name)
+            .Cascade(CascadeMode.Stop)
             .NotNull()
             .MinimumLength(3)
-            .MustAsync((req,name, ct) => this.Db().DataSets.AllAsync(ds => ds.Name != name || ds.Id == req.Id, ct));
+            .MustAsync(async (req, name, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return true;
+                }
+
+                var existing = await this.Resolve<IDatasetRepository>().GetByNameAsync(name, ct);
+                return existing is null || existing.Id == req.Id;
+            });
         
         RuleFor(req => req.Transformations)
             .NotNull();

@@ -1,19 +1,28 @@
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Repositories.Datasets;
 
 namespace ReData.DemoApp.Endpoints.Datasets.Create;
 
 public sealed class CreateDataSetRequestValidator : Validator<CreateDataSetRequest> 
 {
-    public CreateDataSetRequestValidator(ApplicationDatabaseContext db)
+    public CreateDataSetRequestValidator()
     {
         RuleFor(req => req.Name)
+            .Cascade(CascadeMode.Stop)
             .NotNull()
             .MinimumLength(3)
-            .MustAsync((name, ct) => this.Db().DataSets.AllAsync(ds => ds.Name != name, ct));
+            .MustAsync(async (name, ct) =>
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return true;
+                }
+
+                return await Resolve<IDatasetRepository>().GetByNameAsync(name, ct) is null;
+            });
         
         RuleFor(req => req.Transformations)
             .NotNull();

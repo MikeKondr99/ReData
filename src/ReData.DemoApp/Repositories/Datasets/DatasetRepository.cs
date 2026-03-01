@@ -1,27 +1,21 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets.GetAll;
+using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Transformations;
-using Z.EntityFramework.Plus;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
 public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetRepository
 {
-    private const string DatasetsListTag = "dataset:list";
-
-    private static readonly MemoryCacheEntryOptions QueryCacheOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-    };
-
     public async Task<List<DataSetListItem>> GetAllAsync(CancellationToken ct)
     {
-        var result = await db.DataSets
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetAllAsync");
+
+        return await db.DataSets
             .OrderByDescending(ds => ds.UpdatedAt)
             .Select(ds => new DataSetListItem
             {
@@ -32,37 +26,42 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
                 FieldList = ds.FieldList,
                 RowsCount = ds.RowsCount,
             })
-            .FromCacheAsync(QueryCacheOptions, ct, DatasetsListTag);
-
-        return result.ToList();
+            .ToListAsync(ct);
     }
 
-    public async Task<DataSetEntity?> GetByIdWithTransformationsAsync(Guid id, CancellationToken ct)
+    public async Task<DataSetEntity?> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var result = await db.Set<DataSetEntity>()
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByIdAsync");
+
+        return await db.Set<DataSetEntity>()
             .Include(ds => ds.Transformations)
             .Where(ds => ds.Id == id)
-            .FromCacheAsync(QueryCacheOptions, ct, GetDatasetTag(id));
-
-        return result.FirstOrDefault();
+            .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<DataSetEntity> CreateAsync(
-        string name,
-        Guid connectorId,
-        IReadOnlyList<TransformationBlock> transformations,
-        CancellationToken ct)
+    public async Task<DataSetEntity?> GetByNameAsync(string name, CancellationToken ct)
     {
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByNameAsync");
+
+        return await db.DataSets
+            .Where(ds => ds.Name == name)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<DataSetEntity> CreateAsync(CreateDatasetData data, CancellationToken ct)
+    {
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.CreateAsync");
+
         var datasetId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
-        var metadata = await BuildMetadataAsync(connectorId, transformations, ct);
+        var metadata = await BuildMetadataAsync(data.ConnectorId, data.Transformations, ct);
 
         var entity = new DataSetEntity
         {
             Id = datasetId,
-            Name = name,
-            DataConnectorId = connectorId,
-            Transformations = MapTransformations(datasetId, transformations),
+            Name = data.Name,
+            DataConnectorId = data.ConnectorId,
+            Transformations = MapTransformations(datasetId, data.Transformations),
             RowsCount = metadata.RowsCount,
             FieldList = metadata.FieldList,
             CreatedAt = now,
@@ -72,63 +71,71 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
         db.DataSets.Add(entity);
         await db.SaveChangesAsync(ct);
 
+        InvalidateCache(entity.Id, entity.Name);
+
         await new DatasetChangedEvent
         {
             DatasetId = entity.Id,
             MutationType = DatasetMutationType.Created,
             OccurredAt = now,
+            AffectedNames = [entity.Name],
         }.PublishAsync(Mode.WaitForAll, ct);
 
         return entity;
     }
 
-    public async Task<bool> UpdateAsync(
-        Guid id,
-        string name,
-        Guid connectorId,
-        IReadOnlyList<TransformationBlock> transformations,
-        CancellationToken ct)
+    public async Task<bool> UpdateAsync(UpdateDatasetData data, CancellationToken ct)
     {
-        var exists = await db.Set<DataSetEntity>()
-            .AsNoTracking()
-            .AnyAsync(ds => ds.Id == id, ct);
-        if (!exists)
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.UpdateAsync");
+
+        var current = await db.Set<DataSetEntity>()
+            .Where(ds => ds.Id == data.Id)
+            .Select(ds => new { ds.Id, ds.Name })
+            .FirstOrDefaultAsync(ct);
+        if (current is null)
         {
             return false;
         }
 
         var updatedAt = DateTimeOffset.UtcNow;
-        var metadata = await BuildMetadataAsync(connectorId, transformations, ct);
-        var mappedTransformations = MapTransformations(id, transformations);
+        var metadata = await BuildMetadataAsync(data.ConnectorId, data.Transformations, ct);
+        var mappedTransformations = MapTransformations(data.Id, data.Transformations);
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
         await db.Set<DataSetEntity>()
-            .Where(ds => ds.Id == id)
+            .Where(ds => ds.Id == data.Id)
             .ExecuteUpdateAsync(setters => setters
-                .SetProperty(ds => ds.Name, name)
-                .SetProperty(ds => ds.DataConnectorId, connectorId)
+                .SetProperty(ds => ds.Name, data.Name)
+                .SetProperty(ds => ds.DataConnectorId, data.ConnectorId)
                 .SetProperty(ds => ds.RowsCount, metadata.RowsCount)
                 .SetProperty(ds => ds.FieldList, metadata.FieldList)
                 .SetProperty(ds => ds.UpdatedAt, updatedAt), ct);
 
         await db.Set<TransformationEntity>()
-            .Where(t => t.DataSetId == id)
+            .Where(t => t.DataSetId == data.Id)
             .ExecuteDeleteAsync(ct);
 
         if (mappedTransformations.Count > 0)
         {
             db.Set<TransformationEntity>().AddRange(mappedTransformations);
+            AttachLegacyDataSetEntityIdIfPresent(mappedTransformations, data.Id);
+
             await db.SaveChangesAsync(ct);
         }
 
         await tx.CommitAsync(ct);
 
+        InvalidateCache(data.Id, current.Name, data.Name);
+
         await new DatasetChangedEvent
         {
-            DatasetId = id,
+            DatasetId = data.Id,
             MutationType = DatasetMutationType.Updated,
             OccurredAt = updatedAt,
+            AffectedNames = current.Name == data.Name
+                ? [data.Name]
+                : [current.Name, data.Name],
         }.PublishAsync(Mode.WaitForAll, ct);
 
         return true;
@@ -136,6 +143,17 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken ct)
     {
+        using var activity = Tracing.ReData.StartActivity("DatasetRepository.DeleteAsync");
+
+        var currentName = await db.DataSets
+            .Where(ds => ds.Id == id)
+            .Select(ds => ds.Name)
+            .FirstOrDefaultAsync(ct);
+        if (currentName is null)
+        {
+            return false;
+        }
+
         var rows = await db.DataSets
             .Where(ds => ds.Id == id)
             .ExecuteDeleteAsync(ct);
@@ -144,11 +162,14 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
             return false;
         }
 
+        InvalidateCache(id, currentName);
+
         await new DatasetChangedEvent
         {
             DatasetId = id,
             MutationType = DatasetMutationType.Deleted,
             OccurredAt = DateTimeOffset.UtcNow,
+            AffectedNames = [currentName],
         }.PublishAsync(Mode.WaitForAll, ct);
 
         return true;
@@ -189,5 +210,26 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db) : IDatasetR
         }.ExecuteAsync(ct);
     }
 
-    private static string GetDatasetTag(Guid id) => $"dataset:{id}";
+    private void AttachLegacyDataSetEntityIdIfPresent(
+        IReadOnlyList<TransformationEntity> transformations,
+        Guid dataSetId)
+    {
+        var entityType = db.Model.FindEntityType(typeof(TransformationEntity));
+        if (entityType?.FindProperty("DataSetEntityId") is null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < transformations.Count; i++)
+        {
+            db.Entry(transformations[i]).Property<Guid?>("DataSetEntityId").CurrentValue = dataSetId;
+        }
+    }
+
+    private static void InvalidateCache(Guid id, params string[] names)
+    {
+        _ = id;
+        _ = names;
+    }
+
 }

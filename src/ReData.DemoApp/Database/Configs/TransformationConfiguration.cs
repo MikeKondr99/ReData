@@ -21,6 +21,7 @@ public sealed class TransformationConfiguration : IEntityTypeConfiguration<Trans
         builder
             .HasOne<DataSetEntity>()
             .WithMany(ds => ds.Transformations)
+            .HasForeignKey(ds => ds.DataSetId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.ToTable("Transformations");

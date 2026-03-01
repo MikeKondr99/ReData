@@ -1,8 +1,10 @@
-using Namotion.Reflection;
+using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
+using Namotion.Reflection;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
+using ReData.DemoApp.Endpoints.Datasets.GetById;
 using ReData.DemoApp.Endpoints.Datasets.Update;
 using ReData.DemoApp.Transformations;
 
@@ -14,6 +16,16 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
     private Task<TestResult<TResponse>> Endpoint<TResponse>(UpdateDataSetRequest req) =>
         App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, TResponse>(req);
+
+    private Task<TestResult<DataSetResponse>> GetByIdEndpoint(Guid id) =>
+        App.Client.GETAsync<GetDatasetByIdEndpoint, GetDatasetByIdRequest, DataSetResponse>(new GetDatasetByIdRequest { Id = id });
+
+    private async Task<DataSetResponse> GetByIdShouldSucceed(Guid id)
+    {
+        var (rsp, res) = await GetByIdEndpoint(id);
+        rsp.Should().BeSuccessful();
+        return res;
+    }
 
     private async Task<CreateDataSetResponse> CreateTestDatasetAsync(
         Guid? connectorId = null,
@@ -57,10 +69,38 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
         rsp.IsSuccessStatusCode.Should().BeTrue();
         res.Name.Should().BeEquivalentTo(updateReq.Name);
         res.Id.Should().Be(existingDataset.Id);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.Name.Should().Be(updateReq.Name);
+    }
 
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.Name == updateReq.Name);
+    [Fact(DisplayName = "Обновление набора должно сбрасывать кэш GetById и возвращать свежие данные")]
+    public async Task UpdateDataset_AfterCachedGetById_ShouldReturnFreshGetById()
+    {
+        // Arrange
+        var existingDataset = await CreateTestDatasetAsync();
+        var updatedName = FakeDatasetName();
+
+        // Warm cache for GetById.
+        var (firstGetRsp, firstGet) = await GetByIdEndpoint(existingDataset.Id);
+        firstGetRsp.Should().BeSuccessful();
+        firstGet.Name.Should().Be(existingDataset.Name);
+
+        var updateReq = new UpdateDataSetRequest
+        {
+            Id = existingDataset.Id,
+            Name = updatedName,
+            Transformations = [],
+            ConnectorId = Guid.Empty,
+        };
+
+        // Act
+        var (updateRsp, _) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var (secondGetRsp, secondGet) = await GetByIdEndpoint(existingDataset.Id);
+
+        // Assert
+        updateRsp.Should().BeSuccessful();
+        secondGetRsp.Should().BeSuccessful();
+        secondGet.Name.Should().Be(updatedName);
     }
 
     [Fact(DisplayName = "Обновление набора с пустым именем должно вернуть ошибку валидации")]
@@ -210,10 +250,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
         rsp.IsSuccessStatusCode.Should().BeTrue();
         res.Name.Should().BeEquivalentTo(existingDataset.Name);
         res.Id.Should().Be(existingDataset.Id);
-
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.Name == existingDataset.Name);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.Name.Should().Be(existingDataset.Name);
     }
 
     [Fact(DisplayName = "Обновление несуществующего набора должно вернуть 'не найдено'")]
@@ -258,9 +296,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с несуществующим коннектором должно вернуть ошибку валидации")]
@@ -305,9 +342,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.DataConnectorId == Guid.Empty);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.DataConnectorId.Should().Be(Guid.Empty);
     }
 
     [Fact(DisplayName = "Обновление коннектора на существующий должно быть успешным")]
@@ -328,9 +364,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с валидным коннектором и трансформациями должно быть успешным")]
@@ -370,9 +405,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора с тем же коннектором должно быть успешным")]
@@ -394,9 +428,8 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
 
         // Assert
         rsp.IsSuccessStatusCode.Should().BeTrue();
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == res.Id &&
-            ds.DataConnectorId == App.Data.ExistingDataConnector.Id);
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
     }
 
     [Fact(DisplayName = "Обновление набора должно полностью заменить список трансформаций")]
@@ -495,5 +528,48 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
         rsp.IsSuccessStatusCode.Should().BeTrue();
         res.Transformations.Should().BeEmpty();
         stored.Should().BeEmpty();
+    }
+
+    [Fact(DisplayName = "Update с payload из GetById должен сохранять трансформации")]
+    public async Task UpdateDataset_WithRawPayloadFromGetById_ShouldKeepTransformations()
+    {
+        // Arrange
+        var originalTransformations = new List<TransformationBlock>
+        {
+            new WhereTransformation { Condition = "id > 0" }.Block(),
+            new SelectTransformation
+            {
+                Items = [new SelectItem { Field = "id", Expression = "id" }],
+                RestOptions = SelectRestOptions.Delete,
+            }.Block(),
+        };
+
+        var existingDataset = await CreateTestDatasetAsync(
+            connectorId: App.Data.ExistingDataConnector.Id,
+            transformations: originalTransformations);
+
+        var existing = await GetByIdShouldSucceed(existingDataset.Id);
+        existing.Transformations.Should().HaveCount(2);
+
+        var payload = new
+        {
+            id = existingDataset.Id,
+            name = $"{existing.Name}_updated",
+            connectorId = existing.DataConnectorId,
+            transformations = existing.Transformations.Select(t => new
+            {
+                enabled = t.Enabled,
+                description = t.Description,
+                transformation = t.Transformation,
+            }),
+        };
+
+        // Act
+        var updateRsp = await App.Client.PutAsJsonAsync($"/api/datasets/{existingDataset.Id}", payload);
+        var afterUpdate = await GetByIdShouldSucceed(existingDataset.Id);
+
+        // Assert
+        updateRsp.Should().BeSuccessful();
+        afterUpdate.Transformations.Should().HaveCount(2);
     }
 }

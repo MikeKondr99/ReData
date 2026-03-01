@@ -59,7 +59,14 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 
     public override async Task<Response> ExecuteAsync(CreateDataSetRequest req, CancellationToken ct)
     {
-        var entity = await Datasets.CreateAsync(req.Name, req.ConnectorId, req.Transformations, ct);
+        var entity = await Datasets.CreateAsync(
+            new CreateDatasetData
+            {
+                Name = req.Name,
+                ConnectorId = req.ConnectorId,
+                Transformations = req.Transformations,
+            },
+            ct);
 
         var response = new CreateDataSetResponse
         {

@@ -13,3 +13,7 @@ docker build . -t redata
 ```
 docker run -p 8080:8080 redata
 ```
+
+```
+dotnet ef migrations add DataSetFkFix --project ./src/ReData.DemoApp --context ApplicationDatabaseContext    
+```

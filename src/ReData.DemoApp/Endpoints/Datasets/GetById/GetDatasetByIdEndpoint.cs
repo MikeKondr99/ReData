@@ -26,7 +26,7 @@ public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok
         GetDatasetByIdRequest req,
         CancellationToken ct)
     {
-        var entity = await Datasets.GetByIdWithTransformationsAsync(req.Id, ct);
+        var entity = await Datasets.GetByIdAsync(req.Id, ct);
         if (entity is null)
         {
             return TypedResults.NotFound();

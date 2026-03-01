@@ -7,7 +7,18 @@ public sealed class DatasetCacheInvalidationHandler : IEventHandler<DatasetChang
 {
     public Task HandleAsync(DatasetChangedEvent eventModel, CancellationToken ct)
     {
-        QueryCacheManager.ExpireTag($"dataset:{eventModel.DatasetId}", "dataset:list");
+        var tags = new List<string>(2 + eventModel.AffectedNames.Count)
+        {
+            DatasetCacheTags.ById(eventModel.DatasetId),
+            DatasetCacheTags.List,
+        };
+
+        for (int i = 0; i < eventModel.AffectedNames.Count; i++)
+        {
+            tags.Add(DatasetCacheTags.ByName(eventModel.AffectedNames[i]));
+        }
+
+        QueryCacheManager.ExpireTag(tags.ToArray());
         return Task.CompletedTask;
     }
 }

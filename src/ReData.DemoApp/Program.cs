@@ -24,11 +24,15 @@ using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
+using Z.EntityFramework.Plus;
 using Factory = ReData.Query.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
+
+// Temporary switch: disable EF Plus query cache globally.
+QueryCacheManager.IsEnabled = false;
 
 if (builder.Environment.IsDevelopment())
 {
@@ -181,7 +185,8 @@ app.Use(async (context, next) =>
 app.Services.Migrate<ApplicationDatabaseContext>();
 app.Services.Migrate<TickerQDbContext>();
 
-app.UseOutputCache();
+// Temporary switch: disable ASP.NET OutputCache middleware globally.
+// app.UseOutputCache();
 app.UseMiniProfiler();
 app.UseDefaultFiles();
 app.UseStaticFiles();

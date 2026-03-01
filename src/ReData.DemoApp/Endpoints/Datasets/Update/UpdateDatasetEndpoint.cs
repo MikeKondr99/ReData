@@ -26,7 +26,15 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
         UpdateDataSetRequest req,
         CancellationToken ct)
     {
-        var updated = await Datasets.UpdateAsync(req.Id, req.Name, req.ConnectorId, req.Transformations, ct);
+        var updated = await Datasets.UpdateAsync(
+            new UpdateDatasetData
+            {
+                Id = req.Id,
+                Name = req.Name,
+                ConnectorId = req.ConnectorId,
+                Transformations = req.Transformations,
+            },
+            ct);
         if (!updated)
         {
             return TypedResults.NotFound();
