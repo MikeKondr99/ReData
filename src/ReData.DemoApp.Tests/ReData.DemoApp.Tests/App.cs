@@ -1,14 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Npgsql;
-using ReData.Common;
-using ReData.DemoApp.Commands;
-using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Tests.Init;
 using Testcontainers.PostgreSql;
-using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace ReData.DemoApp.Tests;
 

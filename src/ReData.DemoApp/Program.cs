@@ -14,21 +14,16 @@ using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
-using ReData.Query;
-using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
-using StackExchange.Profiling;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
-using Factory = ReData.Query.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
-var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
 
 if (builder.Environment.IsDevelopment())
 {
@@ -45,14 +40,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 services.AddOutputCache();
-services.AddMiniProfiler(options =>
-{
-    options.RouteBasePath = "/profiler";
-    options.ShouldProfile = request =>
-        builder.Environment.IsDevelopment() ||
-        request.Query.ContainsKey("profile");
-})
-    .AddEntityFramework();
 
 services.AddTickerQ(options =>
 {
@@ -68,7 +55,7 @@ services.AddTickerQ(options =>
         efOptions.UseTickerQDbContext<TickerQDbContext>(optionsBuilder =>
         {
             // dotnet ef migrations add TickerQInitialCreate --context TickerQDbContext --project ./src/ReData.DemoApp -o ./Jobs/Migrations
-            optionsBuilder.UseNpgsql(tickerQConnectionString,
+            optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("TickerQ"),
                 builder =>
                 {
                     builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
@@ -214,7 +201,9 @@ app.UseTickerQ();
 
 // if (builder.Environment.IsDevelopment())
 // {
-    app.MapScalarApiReference("api/docs");
+app.MapScalarApiReference("api/docs");
 // }
 
 app.Run();
+
+public partial class Program;
