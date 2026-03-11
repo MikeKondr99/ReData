@@ -62,10 +62,10 @@
     <PackageVersion Include="Sylvan.Common" Version="0.4.3" />
     <PackageVersion Include="Sylvan.Data.Csv" Version="1.4.3" />
     <PackageVersion Include="Sylvan.Data.Excel" Version="0.5.2" />
-    <PackageVersion Include="TickerQ" Version="9.0.0-beta.17" />
-    <PackageVersion Include="TickerQ.Dashboard" Version="9.0.0-beta.17" />
-    <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="9.0.0-9.0.0-beta.17" />
-    <PackageVersion Include="TickerQ.Instrumentation.OpenTelemetry" Version="9.0.0-beta.17" />
+    <PackageVersion Include="TickerQ" Version="9.1.1" />
+    <PackageVersion Include="TickerQ.Dashboard" Version="9.1.1" />
+    <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="9.1.1" />
+    <PackageVersion Include="TickerQ.Instrumentation.OpenTelemetry" Version="9.1.1" />
     <PackageVersion Include="ClickHouse.Client" Version="7.9.1" />
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.4.4" />
     <PackageVersion Include="Apache.Arrow" Version="22.1.0" />

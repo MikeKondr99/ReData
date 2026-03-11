@@ -2,6 +2,12 @@
 
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <FrontendFlavor Condition="'$(FrontendFlavor)' == ''">none</FrontendFlavor>
+        <AngularFrontendDir>$(MSBuildProjectDirectory)/../ReData.Angular</AngularFrontendDir>
+        <SvelteFrontendDir>$(MSBuildProjectDirectory)/../ReData.Svelte</SvelteFrontendDir>
+        <FrontendOutputDir>$(MSBuildProjectDirectory)/wwwroot</FrontendOutputDir>
+        <AngularDistDir>$(AngularFrontendDir)/dist/re-data.angular/browser</AngularDistDir>
+        <SvelteDistDir>$(SvelteFrontendDir)/build</SvelteDistDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,20 +17,20 @@
         <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
-        
+
         <PackageReference Include="MiniExcel" />
-        
+
         <PackageReference Include="StrictId" />
         <PackageReference Include="StrictId.EFCore" />
-        
+
         <PackageReference Include="TickerQ" />
         <PackageReference Include="TickerQ.Dashboard" />
         <PackageReference Include="TickerQ.EntityFrameworkCore" />
         <PackageReference Include="TickerQ.Instrumentation.OpenTelemetry" />
-        
+
         <PackageReference Include="FastEndpoints" />
         <PackageReference Include="FastEndpoints.Swagger" />
-        
+
         <PackageReference Include="Scalar.AspNetCore.Swashbuckle" />
 
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"/>
@@ -35,7 +41,7 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore"/>
         <PackageReference Include="MiniProfiler.AspNetCore.Mvc" />
         <PackageReference Include="MiniProfiler.EntityFrameworkCore" />
-        
+
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -1716,4 +1722,50 @@
       <_ContentIncludedByDefault Remove="wwwroot\assets\twotone\warning.js" />
       <_ContentIncludedByDefault Remove="wwwroot\assets\twotone\warning.svg" />
     </ItemGroup>
+
+    <Target Name="ValidateFrontendFlavor" BeforeTargets="Publish">
+        <Error Condition="'$(FrontendFlavor)' != 'none' and '$(FrontendFlavor)' != 'angular' and '$(FrontendFlavor)' != 'svelte'"
+               Text="Unsupported FrontendFlavor='$(FrontendFlavor)'. Allowed values: none, angular, svelte." />
+    </Target>
+
+    <Target Name="BuildFrontendForPublish"
+            BeforeTargets="Publish"
+            DependsOnTargets="ValidateFrontendFlavor"
+            Condition="'$(FrontendFlavor)' != 'none'">
+        <Message Importance="high" Text="Building frontend for publish: FrontendFlavor=$(FrontendFlavor)" />
+
+        <Exec Condition="'$(FrontendFlavor)' == 'angular'"
+              Command="npm ci"
+              WorkingDirectory="$(AngularFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'angular'"
+              Command="node --max_old_space_size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production"
+              WorkingDirectory="$(AngularFrontendDir)" />
+
+        <Exec Condition="'$(FrontendFlavor)' == 'svelte'"
+              Command="npm ci"
+              WorkingDirectory="$(SvelteFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'svelte'"
+              Command="npm run build"
+              WorkingDirectory="$(SvelteFrontendDir)" />
+
+        <Error Condition="'$(FrontendFlavor)' == 'angular' and !Exists('$(AngularDistDir)')"
+               Text="Angular build output not found: $(AngularDistDir)" />
+        <Error Condition="'$(FrontendFlavor)' == 'svelte' and !Exists('$(SvelteDistDir)')"
+               Text="Svelte build output not found: $(SvelteDistDir). Configure adapter-static so build artifacts are generated." />
+
+        <RemoveDir Directories="$(FrontendOutputDir)" />
+        <MakeDir Directories="$(FrontendOutputDir)" />
+
+        <ItemGroup Condition="'$(FrontendFlavor)' == 'angular'">
+            <_FrontendFiles Include="$(AngularDistDir)/**" />
+        </ItemGroup>
+
+        <ItemGroup Condition="'$(FrontendFlavor)' == 'svelte'">
+            <_FrontendFiles Include="$(SvelteDistDir)/**" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(_FrontendFiles)"
+              DestinationFiles="@(_FrontendFiles->'$(FrontendOutputDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+              SkipUnchangedFiles="true" />
+    </Target>
 </Project>

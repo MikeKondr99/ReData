@@ -1,54 +1,37 @@
-﻿# Stage 1: Build Angular application
-FROM node:20 AS angular-build
-WORKDIR /app
-
-# Copy Angular project files
-COPY src/ReData.Angular/package.json src/ReData.Angular/package-lock.json ./angular/
-WORKDIR /app/angular
-
-# Install dependencies
-RUN npm install
-
-# Copy remaining Angular files
-COPY src/ReData.Angular .
-
-# Build Angular for production
-# RUN npm run build -- --configuration=production
-RUN node --max_old_space_size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production
-
-# Stage 2: Build .NET application
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-build
 WORKDIR /app
 
-# Create src directory structure
-# RUN mkdir -p src
+# Frontend is built from dotnet publish when FrontendFlavor is specified.
+ARG FRONTEND_FLAVOR=none
 
-# COPY src ./src
+# Node is required when FrontendFlavor=angular/svelte.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" \
+    > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
 
-# RUN dotnet restore src/ReData.DemoApp/ReData.DemoApp.csproj
-# Copy all remaining source code
 COPY src/ ./src
 
 RUN dotnet restore src/ReData.DemoApp/ReData.DemoApp.csproj
-
-# Build and publish the main project
 
 RUN dotnet publish src/ReData.DemoApp/ReData.DemoApp.csproj \
     -c Release \
     --no-restore \
     -o out \
-    -p:WebRootPath=wwwroot
+    -p:WebRootPath=wwwroot \
+    -p:FrontendFlavor=$FRONTEND_FLAVOR
 
-# Stage 3: Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 
-# Copy the published output
-COPY --from=dotnet-build /app/out . 
+COPY --from=dotnet-build /app/out .
 
-COPY --from=angular-build /app/angular/dist/re-data.angular/browser ./wwwroot
-
-# Expose ports (adjust as needed)
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "ReData.DemoApp.dll"]
