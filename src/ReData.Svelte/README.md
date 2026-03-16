@@ -1,4 +1,4 @@
-# ReData.Svelte
+﻿# ReData.Svelte
 
 SvelteKit frontend for ReData demo app.
 
@@ -7,6 +7,7 @@ Stack:
 - SvelteKit
 - TypeScript
 - Tailwind CSS (v4)
+- Flowbite + Flowbite Svelte
 - Prettier
 
 ## Recreate
@@ -26,6 +27,12 @@ npm run dev
 ```
 
 `vite.config.ts` already proxies `/api` to `http://localhost:5223` for local DemoApp backend.
+Flowbite is configured in `src/app.css`.
+
+Current routes:
+
+- `/` - home page
+- `/functions` - functions page
 
 ## Checks and build
 

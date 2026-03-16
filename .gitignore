@@ -11,6 +11,7 @@ riderModule.iml
 
 **/wwwroot
 
+**/node_modules/**
 
 **/TestResults.trx
 ReData.sln.DotSettings.user

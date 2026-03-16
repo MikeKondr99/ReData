@@ -15,13 +15,13 @@ public class SqlServerQueryCompiler : SqlQueryCompiler
         //     (0,>0) => res.Append($"OFFSET {query.Offset} ROWS\n"),
         //     (0,0) => res,
         // }
-            
+
         if (query.Offset > 0 || query.Limit > 0 || query.OrderBy?.Count > 0)
         {
             res.Append($"OFFSET {query.Offset} ROWS\n");
         }
-        
-        
+
+
         if (query.Limit > 0)
         {
             res.Append($"FETCH FIRST {query.Limit} ROWS ONLY\n");

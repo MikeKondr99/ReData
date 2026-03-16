@@ -214,7 +214,7 @@ app.UseTickerQ();
 
 // if (builder.Environment.IsDevelopment())
 // {
-    app.MapScalarApiReference("api/docs");
+app.MapScalarApiReference("api/docs");
 // }
 
 app.Run();

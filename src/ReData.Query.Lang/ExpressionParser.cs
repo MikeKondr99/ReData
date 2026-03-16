@@ -51,7 +51,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
         if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
         {
             return new FuncExpr()
-            { 
+            {
                 Span = Span(context),
                 Name = op.GetText(),
                 Arguments = [VisitExpr(expr)],
@@ -68,7 +68,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
 
     public override Expr VisitBinary(LangParser.BinaryContext context)
     {
-        
+
         if (context.children is [LangParser.ExprContext left, TerminalNodeImpl op, LangParser.ExprContext right])
         {
             return new FuncExpr()
@@ -117,42 +117,42 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
                 if (exprs.LastOrDefault() is StringLiteral last && expr is StringLiteral nw)
                 {
                     exprs[^1] = new StringLiteral(last.Value + nw.Value, Span(part));
-                } 
+                }
                 else
                 {
                     exprs.Add(expr);
                 }
             }
-            
+
             if (expr is not null)
             {
                 var e = Visit(expr);
                 Append(new FuncExpr
-                    {
-                        Name = "Text",
-                        Arguments = [e],
-                        Kind = FuncExprKind.Default,
-                        Span = e.Span,
-                    });
+                {
+                    Name = "Text",
+                    Arguments = [e],
+                    Kind = FuncExprKind.Default,
+                    Span = e.Span,
+                });
             }
-            else if(part.TEXT() is not null)
+            else if (part.TEXT() is not null)
             {
                 Append(new StringLiteral(part.GetText(), Span(part)));
-            } 
+            }
             else if (part.ESCAPE_SEQUENCE() is not null)
             {
-                 var chr = part.GetText()[1];
-                 var value = chr switch
-                 {
-                     '\'' => "'",
-                     '\\' => "\\",
-                     'n' => "\n",
-                     'r' => "\r",
-                     't' => "\t",
-                     '$' => "$",
-                     _ => $"\\{chr.ToString()}",
-                 };
-                 Append(new StringLiteral(value, Span(part)));
+                var chr = part.GetText()[1];
+                var value = chr switch
+                {
+                    '\'' => "'",
+                    '\\' => "\\",
+                    'n' => "\n",
+                    'r' => "\r",
+                    't' => "\t",
+                    '$' => "$",
+                    _ => $"\\{chr.ToString()}",
+                };
+                Append(new StringLiteral(value, Span(part)));
             }
             else
             {
@@ -219,7 +219,7 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
             Span = Span(context)
         };
     }
-    
+
     private static ExprSpan Span(ParserRuleContext context)
     {
         return new ExprSpan(

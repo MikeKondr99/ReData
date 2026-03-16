@@ -1,13 +1,12 @@
 ﻿
 [*.cs]
+csharp_style_namespace_declarations = file_scoped
 # Global severity levels
-dotnet_analyzer_diagnostic.severity = error # Default level for all analyzers
-
+#
 # StyleCop-specific overrides
 
 # dotnet_diagnostic.SA1633.severity = error # Disable file header requirement
 # dotnet_diagnostic.SA1600.severity = suggestion # Make docs optional but suggested
-# 
 # # Microsoft analyzer overrides
 # dotnet_diagnostic.CA1822.severity = warning # Mark static methods as warning
 # dotnet_diagnostic.CA1304.severity = error # CultureInfo as error
@@ -66,6 +65,11 @@ dotnet_diagnostic.CA1310.severity = warning
 # Полного встроенного правила на "запрет nested ternary" в Roslyn нет,
 # поэтому усиливаем смежные проверки:
 dotnet_diagnostic.IDE0066.severity = warning
+dotnet_diagnostic.IDE0160.severity = none
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.IDE0055.severity = none
+dotnet_diagnostic.IDE0048.severity = none
+dotnet_diagnostic.IDE0058.severity = none
 dotnet_diagnostic.IDE0075.severity = warning
 csharp_style_prefer_switch_expression = true:warning
 

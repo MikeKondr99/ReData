@@ -17,7 +17,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
     {
         using var span = Tracing.Source.StartActivity("query compilation");
         StringBuilder res = new StringBuilder();
-        WriteQuery(res,query, true);
+        WriteQuery(res, query, true);
         res.TrimEnd();
         var result = res.ToString();
         span?.SetTag("result", result);
@@ -48,8 +48,8 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             }
             yield return from;
         }
-    } 
-    
+    }
+
     protected virtual void WriteSubqueries(StringBuilder res, Query query)
     {
         var subs = FindSubqueries(query).ToArray();
@@ -74,7 +74,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         {
             res.Append($"LIMIT {query.Limit}\n");
         }
-        
+
         if (query.Offset > 0)
         {
             res.Append($"OFFSET {query.Offset}\n");
@@ -105,7 +105,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         }
         res.Append('\n');
     }
-    
+
 
     protected virtual void WriteSelectTransformations(StringBuilder res, Query query)
     {
@@ -118,7 +118,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             ExpressionCompiler.Compile(res, field.ResolvedExpr);
             res.Append(" AS ");
             WriteExpression(res, query, field.Column);
-            
+
             if (i != last)
             {
                 res.Append(", ");
@@ -148,7 +148,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
             res.Append('\n');
         }
     }
-    
+
     protected virtual void WriteOrderBy(StringBuilder res, Query query)
     {
         if (query.OrderBy?.Count is 0 or null)
@@ -177,7 +177,7 @@ public abstract class SqlQueryCompiler : IQueryCompiler
         }
         res.Append('\n');
     }
-    
+
     protected virtual void WriteGroupBy(StringBuilder res, Query query)
     {
         if (query.GroupBy?.Count is 0 or null)

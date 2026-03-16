@@ -321,7 +321,7 @@ public sealed class ExpressionResolver
                 .Where(v => v.Value.Value is not null)
                 .ToDictionary(v => v.Key, v => v.Value.Value!),
         };
-     
+
         try
         {
             var template = function.Template.GetTemplate(templateContext);
