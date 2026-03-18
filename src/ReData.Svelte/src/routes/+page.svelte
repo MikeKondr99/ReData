@@ -1,7 +1,16 @@
 ﻿<script lang="ts">
-	import { Card } from 'flowbite-svelte';
+	import { A, Li, List } from 'flowbite-svelte';
 </script>
 
-<Card>
-	<h1>Home</h1>
-</Card>
+<List>
+    <Li>
+        <A href="/datasets" color="blue">Наборы данных</A>
+    </Li>
+    <Li>
+        <A href="/functions" color="blue">Функции</A>
+    </Li>
+    <Li>
+        <A href="/docs/Введение" color="blue">Инструкция</A>
+    </Li>
+</List>
+
