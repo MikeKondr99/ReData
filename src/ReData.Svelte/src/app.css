@@ -1,6 +1,19 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 @plugin 'flowbite/plugin';
 @custom-variant dark (&:where(.dark, .dark *));
 /* ... */
 @source '../node_modules/flowbite-svelte/dist';
 @source '../node_modules/flowbite-svelte-icons/dist';
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before {
+	content: "" !important;
+}
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+	@apply rounded-md border border-gray-200 bg-gray-100 px-1 py-0.5 font-medium;
+}
+
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::after {
+	content: "" !important;
+}

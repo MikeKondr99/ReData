@@ -15,10 +15,13 @@
 		"api:generate": "orval --config ./orval.config.ts"
 	},
 	"devDependencies": {
+		"@types/ace": "^0.0.52",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.1",
+		"mdsvex": "^0.12.6",
 		"orval": "^7.13.2",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
@@ -30,6 +33,7 @@
 		"vite": "^7.3.1"
 	},
 	"dependencies": {
+		"ace-builds": "^1.43.2",
 		"flowbite": "^4.0.1",
 		"flowbite-svelte": "^1.31.0"
 	}
