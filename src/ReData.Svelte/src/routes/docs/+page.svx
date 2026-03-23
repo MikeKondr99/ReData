@@ -1,8 +1,9 @@
 ﻿<script lang='ts'>
-    import { Alert } from 'flowbite-svelte';
-    // import { AceEditor } from '$lib'; 
-    
-    let example = 45;
+	import { Alert } from 'flowbite-svelte';
+	import { AceEditor } from '$lib';
+
+	let example = 45;
+	let expression = "(Price * Quantity) * 0.8";
 </script>
 # Введение
 
@@ -20,12 +21,8 @@
 
 ## Быстрый старт
 
-Простое вычисление
-<!-- <AceEditor></AceEditor> -->
-`(Price * Quantity) * 0.8`
+Простое  вычисление  <AceEditor readonly value="(price * quantity) * 0.9" class="translate-y-1.5 inline-flex w-75" /> 
 
-Условие для фильтрации данных
-`Status = 'active' and &gt 1000`
+Условие для фильтрации данных <AceEditor readonly value="Status = 'active' and > 1000" class="translate-y-1.5 inline-flex w-80" />
 
-Преобразование строк
-`FirstName + ' ' + Upper(LastName)`
+Преобразование строк <AceEditor readonly value="FirstName + ' ' + Upper(LastName) " class="translate-y-1.5 inline-flex w-96" />

@@ -10,7 +10,7 @@
         <A href="/functions" color="blue">Функции</A>
     </Li>
     <Li>
-        <A href="/docs/Введение" color="blue">Инструкция</A>
+        <A href="/docs" color="blue">Инструкция</A>
     </Li>
 </List>
 

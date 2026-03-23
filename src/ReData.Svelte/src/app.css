@@ -6,6 +6,11 @@
 @source '../node_modules/flowbite-svelte/dist';
 @source '../node_modules/flowbite-svelte-icons/dist';
 
+@font-face {
+	font-family: 'Fira Code';
+	src: url('/assets/FiraCode-Light.ttf') format('truetype');
+}
+
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before {
 	content: "" !important;
 }
@@ -16,4 +21,8 @@
 
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::after {
 	content: "" !important;
+}
+
+.ace_hidden-cursors .ace_cursor {
+    opacity: 0;
 }
