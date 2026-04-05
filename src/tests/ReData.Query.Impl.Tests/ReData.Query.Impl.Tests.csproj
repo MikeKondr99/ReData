@@ -34,10 +34,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Pattern\Pattern.csproj" />
-      <ProjectReference Include="..\..\ReData.Common\ReData.Common.csproj" />
-      <ProjectReference Include="..\..\ReData.Query.Common\ReData.Query.Common.csproj" />
-      <ProjectReference Include="..\..\ReData.Query\ReData.Query.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\Pattern\Pattern.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\ReData.Common\ReData.Common.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\ReData.Query.Common\ReData.Query.Common.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\ReData.Query\ReData.Query.csproj" />
     </ItemGroup>
 
 </Project>
