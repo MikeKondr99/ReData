@@ -5,9 +5,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
-      <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
-      <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\ReData.DemoApp\ReData.DemoApp.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\apps\ReData.DemoApp\ReData.DemoApp.csproj" />
     </ItemGroup>
 
     <ItemGroup>

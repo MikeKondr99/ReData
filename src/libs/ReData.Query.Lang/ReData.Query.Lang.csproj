@@ -19,9 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Pattern\Pattern.csproj" />
-        <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
-        <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
+        <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj" />
+        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
     </ItemGroup>
 
 

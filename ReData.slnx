@@ -12,28 +12,28 @@
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Packages.props" />
   </Folder>
-  <Folder Name="/src/application/">
-    <Project Path="src/ReData.Angular/ReData.Angular.esproj">
+  <Folder Name="/src/apps/">
+    <Project Path="src/apps/ReData.Angular/ReData.Angular.esproj">
       <Build />
       <Deploy />
     </Project>
-    <Project Path="src/ReData.DemoApp/ReData.DemoApp.csproj" />
-    <Project Path="src/ReData.Svelte/ReData.Svelte.esproj">
+    <Project Path="src/apps/ReData.DemoApp/ReData.DemoApp.csproj" />
+    <Project Path="src/apps/ReData.Svelte/ReData.Svelte.esproj">
       <Build />
       <Deploy />
     </Project>
   </Folder>
   <Folder Name="/src/bench/">
-    <Project Path="src/FileExporterBenchmarks/FileExporterBenchmarks.csproj" />
+    <Project Path="src/bench/FileExporterBenchmarks/FileExporterBenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/libs/">
-    <Project Path="src/Pattern/Pattern.csproj" />
-    <Project Path="src/ReData.Common/ReData.Common.csproj" />
-    <Project Path="src/ReData.DataIO/ReData.DataIO.csproj" />
-    <Project Path="src/ReData.Query.Common/ReData.Query.Common.csproj" />
-    <Project Path="src/ReData.Query.Core/ReData.Query.Core.csproj" />
-    <Project Path="src/ReData.Query.Lang/ReData.Query.Lang.csproj" />
-    <Project Path="src/ReData.Query/ReData.Query.csproj" />
+    <Project Path="src/libs/Pattern/Pattern.csproj" />
+    <Project Path="src/libs/ReData.Common/ReData.Common.csproj" />
+    <Project Path="src/libs/ReData.DataIO/ReData.DataIO.csproj" />
+    <Project Path="src/libs/ReData.Query.Common/ReData.Query.Common.csproj" />
+    <Project Path="src/libs/ReData.Query.Core/ReData.Query.Core.csproj" />
+    <Project Path="src/libs/ReData.Query.Lang/ReData.Query.Lang.csproj" />
+    <Project Path="src/libs/ReData.Query/ReData.Query.csproj" />
   </Folder>
   <Folder Name="/src/tests/">
     <Project Path="src/tests/ReData.DemoApp.Tests/ReData.DemoApp.Tests.csproj" />

@@ -12,8 +12,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ReData.DataIO\ReData.DataIO.csproj" />
-      <ProjectReference Include="..\ReData.Query.Core\ReData.Query.Core.csproj" />
-      <ProjectReference Include="..\ReData.Query\ReData.Query.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.DataIO\ReData.DataIO.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj" />
     </ItemGroup>
 </Project>
