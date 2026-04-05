@@ -19,10 +19,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Pattern\Pattern.csproj" />
-      <ProjectReference Include="..\ReData.Common\ReData.Common.csproj" />
-      <ProjectReference Include="..\ReData.Query.Common\ReData.Query.Common.csproj" />
-      <ProjectReference Include="..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
+      <ProjectReference Include="..\..\Pattern\Pattern.csproj" />
+      <ProjectReference Include="..\..\ReData.Common\ReData.Common.csproj" />
+      <ProjectReference Include="..\..\ReData.Query.Common\ReData.Query.Common.csproj" />
+      <ProjectReference Include="..\..\ReData.Query.Lang\ReData.Query.Lang.csproj" />
     </ItemGroup>
 
 </Project>

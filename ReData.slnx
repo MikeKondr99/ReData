@@ -1,0 +1,44 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="docs/commands.md" />
+    <File Path="docs/constant-runtime-flow.md" />
+    <File Path="docs/dbdatareader-decorators-flow.md" />
+    <File Path="docs/expressions-pipeline.md" />
+    <File Path="docs/expressions-spec.md" />
+    <File Path="docs/function-coverage-report.md" />
+    <File Path="docs/Readme.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/application/">
+    <Project Path="src/ReData.Angular/ReData.Angular.esproj">
+      <Build />
+      <Deploy />
+    </Project>
+    <Project Path="src/ReData.DemoApp/ReData.DemoApp.csproj" />
+    <Project Path="src/ReData.Svelte/ReData.Svelte.esproj">
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/src/bench/">
+    <Project Path="src/FileExporterBenchmarks/FileExporterBenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/libs/">
+    <Project Path="src/Pattern/Pattern.csproj" />
+    <Project Path="src/ReData.Common/ReData.Common.csproj" />
+    <Project Path="src/ReData.DataIO/ReData.DataIO.csproj" />
+    <Project Path="src/ReData.Query.Common/ReData.Query.Common.csproj" />
+    <Project Path="src/ReData.Query.Core/ReData.Query.Core.csproj" />
+    <Project Path="src/ReData.Query.Lang/ReData.Query.Lang.csproj" />
+    <Project Path="src/ReData.Query/ReData.Query.csproj" />
+  </Folder>
+  <Folder Name="/src/tests/">
+    <Project Path="src/tests/ReData.DemoApp.Tests/ReData.DemoApp.Tests.csproj" />
+    <Project Path="src/tests/ReData.Query.Impl.Tests/ReData.Query.Impl.Tests.csproj" />
+    <Project Path="src/tests/ReData.Query.Lang.Tests/ReData.Query.Lang.Tests.csproj" />
+    <Project Path="src/tests/ReData.Query.Tests/ReData.Query.Tests.csproj" />
+  </Folder>
+</Solution>
