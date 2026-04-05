@@ -37,7 +37,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "inline const должен работать в Where без сохранения в следующий блок")]
-    public async Task InlineConstInWhere_ShouldNotLeakToNextBlocks()
+    public async Task InlineConstInWhereShouldNotLeakToNextBlocks()
     {
         // Arrange
         var withInlineConst = (await CreateUsersQueryWithRuntimeAsync())
@@ -56,7 +56,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "inline const с агрегатом должен вычисляться в Select")]
-    public async Task InlineConstWithAggregateInSelect_ShouldWork()
+    public async Task InlineConstWithAggregateInSelectShouldWork()
     {
         // Arrange
         var selectResult = (await CreateUsersQueryWithRuntimeAsync())
@@ -90,7 +90,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "inline const с константной арифметикой должен вычисляться в literal")]
-    public async Task InlineConstWithConstArithmeticInSelect_ShouldWork()
+    public async Task InlineConstWithConstArithmeticInSelectShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Select(new()
@@ -114,7 +114,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "Field(const('a' + 'g' + 'e')) должен работать как const-аргумент")]
-    public async Task InlineConstInsideFieldArgument_ShouldWork()
+    public async Task InlineConstInsideFieldArgumentShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Select(new()
@@ -136,7 +136,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "вложенный inline const в inline const должен вычисляться корректно")]
-    public async Task InlineConstNestedInInlineConst_ShouldWork()
+    public async Task InlineConstNestedInInlineConstShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Select(new()
@@ -160,7 +160,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "многоуровневый inline const должен вычисляться корректно")]
-    public async Task InlineConstDeeplyNested_ShouldWork()
+    public async Task InlineConstDeeplyNestedShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Select(new()
@@ -184,7 +184,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "const= внутри которого inline const должен работать")]
-    public async Task ConstDeclarationContainingInlineConst_ShouldWork()
+    public async Task ConstDeclarationContainingInlineConstShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("const a = const(1 + 2 + 3); true")
@@ -210,7 +210,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "inline const внутри которого используется const= должен работать")]
-    public async Task InlineConstUsingDeclaredConstant_ShouldWork()
+    public async Task InlineConstUsingDeclaredConstantShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("const a = 5; true")
@@ -236,7 +236,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "const= с inline от агрегата должен работать")]
-    public async Task ConstDeclarationWithInlineAggregate_ShouldWork()
+    public async Task ConstDeclarationWithInlineAggregateShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("const avgAge = const(AVG(Age)); Age >= avgAge")
@@ -253,7 +253,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "inline const с использованием ранее объявленной агрегатной const= должен работать")]
-    public async Task InlineConstUsingDeclaredAggregateConstant_ShouldWork()
+    public async Task InlineConstUsingDeclaredAggregateConstantShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Where("const avgAge = AVG(Age); true")
@@ -279,7 +279,7 @@ public abstract partial class Сommon
     }
 
     [Fact(DisplayName = "много inline const в одном выражении должны работать")]
-    public async Task ManyInlineConstsInSingleExpression_ShouldWork()
+    public async Task ManyInlineConstsInSingleExpressionShouldWork()
     {
         var qb = (await CreateUsersQueryWithRuntimeAsync())
             .Select(new()

@@ -6,6 +6,7 @@ using ReData.Query.Common;
 using ReData.Query.Core.Types;
 using ReData.Query.Core.Template;
 using ReData.Query.Core.Value;
+using System.Diagnostics;
 
 namespace ReData.Query.Impl.Functions.Library;
 
@@ -23,9 +24,10 @@ public class ReflectionFunctions : FunctionsDescriptor
         DateTime => "date",
         Unknown => "unk",
         Null => "null",
+        _ => throw new UnreachableException(),
     };
 
-    private static ITemplate NullTemplate() => Template.Create("NULL");
+    private static Template NullTemplate() => Template.Create("NULL");
 
     private static ITemplate FieldTemplate(DatabaseTypes database, TemplateContext context)
     {

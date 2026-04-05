@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using FastEndpoints;
 using Npgsql;
 using ReData.DataIO.DataExporters;
@@ -45,7 +46,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         try
         {
-            var dataset = await Datasets.GetByIdAsync(new Id<DataSet>(req.Id), ct);
+            var dataset = await Datasets.GetByIdAsync(new Id<DataSetEntity>(req.Id), ct);
 
             if (dataset is null)
             {
@@ -103,6 +104,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
         ExportFileType.Excel => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         ExportFileType.Json => "application/json",
         ExportFileType.Arrow => "application/vnd.apache.arrow.file",
+        _ => throw new UnreachableException(),
     };
 
     private static string GetExtension(ExportFileType type) => type switch
@@ -111,6 +113,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
         ExportFileType.Excel => ".xlsx",
         ExportFileType.Json => ".json",
         ExportFileType.Arrow => ".arrow",
+        _ => throw new UnreachableException(),
     };
 
     private static IDataExporter GetExporter(ExportFileType type) => type switch
@@ -119,5 +122,6 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
         ExportFileType.Excel => new SylvanExcelExporter(),
         ExportFileType.Json => new JsonDataExporter(),
         ExportFileType.Arrow => new ArrowFileDataExporter(),
+        _ => throw new UnreachableException(),
     };
 }

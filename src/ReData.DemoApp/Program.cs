@@ -217,4 +217,4 @@ app.UseTickerQ();
 app.MapScalarApiReference("api/docs");
 // }
 
-app.Run();
+await app.RunAsync();

@@ -14,7 +14,7 @@ public sealed class DataSetConfiguration : IEntityTypeConfiguration<DataSetEntit
     {
         builder.HasIndex(x => x.Name).IsUnique();
 
-        builder.Property(ds => ds.Id).HasConversion<IdTypedToGuidConverter<DataSet>>();
+        builder.Property(ds => ds.Id).HasConversion<IdTypedToGuidConverter<DataSetEntity>>();
 
         builder.Property(t => t.FieldList).HasConversion(
             d => JsonSerializer.Serialize(d, jsonSerializerOptions),

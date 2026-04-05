@@ -126,6 +126,7 @@ public sealed class FunctionStorage : IFunctionStorage
                     Types.ConstPropagation.Default => cons,
                     Types.ConstPropagation.AlwaysTrue => true,
                     Types.ConstPropagation.AlwaysFalse => false,
+                    _ => throw new UnreachableException(),
                 },
                 ReturnsAggregated = func.ReturnType.Aggregated || aggr,
                 Casts = (args as IEnumerable<FunctionDefinition>).ToArray()

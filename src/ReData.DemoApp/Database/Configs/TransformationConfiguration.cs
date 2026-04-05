@@ -9,11 +9,11 @@ namespace ReData.DemoApp.Database.Configs;
 
 public sealed class TransformationConfiguration : IEntityTypeConfiguration<TransformationEntity>
 {
-    private JsonSerializerOptions jsonSerializerOptions = new();
+    private readonly JsonSerializerOptions jsonSerializerOptions = new();
 
     public void Configure(EntityTypeBuilder<TransformationEntity> builder)
     {
-        builder.Property(x => x.DataSetId).HasConversion<IdTypedToGuidConverter<DataSet>>();
+        builder.Property(x => x.DataSetId).HasConversion<IdTypedToGuidConverter<DataSetEntity>>();
 
         builder.HasKey(x => new
         {

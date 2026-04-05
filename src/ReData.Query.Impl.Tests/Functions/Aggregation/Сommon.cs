@@ -7,6 +7,8 @@ using ReData.Query.QuerySources;
 
 namespace ReData.Query.Impl.Tests.Functions.Aggregation;
 
+
+#pragma warning disable CS9113
 public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTests(db)
 {
 #pragma warning disable CA1822
@@ -50,7 +52,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Sum
 
     [Fact]
-    public async Task Sum_Integer()
+    public async Task SumInteger()
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
@@ -64,7 +66,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Sum_Integer_WithNulls()
+    public async Task SumInteger_WithNulls()
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
@@ -78,7 +80,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Sum_Integer_Empty()
+    public async Task SumIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1];
@@ -92,7 +94,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Sum_Integer_AllNulls()
+    public async Task SumIntegerAllNulls()
     {
         // Arrange
         int?[] arr = [1, null, null, null];
@@ -106,7 +108,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Sum_Double()
+    public async Task SumDouble()
     {
         // Arrange
         double?[] arr = [1.5, 2.5, 3.5];
@@ -120,7 +122,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Sum_Double_WithNulls()
+    public async Task SumDouble_WithNulls()
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null, 3.3];
@@ -138,7 +140,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Avg
 
     [Fact]
-    public async Task Avg_Integer_Basic()
+    public async Task AvgIntegerBasic()
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
@@ -152,7 +154,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Integer_WithNulls()
+    public async Task AvgIntegerWithNulls()
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
@@ -166,7 +168,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Integer_Empty()
+    public async Task AvgIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -180,7 +182,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Integer_AllNulls()
+    public async Task AvgIntegerAllNulls()
     {
         // Arrange
         int?[] arr = [1, 2, null, null];
@@ -194,7 +196,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Integer_SingleValue()
+    public async Task AvgIntegerSingleValue()
     {
         // Arrange
         int?[] arr = [5];
@@ -208,7 +210,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Double_Basic()
+    public async Task AvgDoubleBasic()
     {
         // Arrange
         double?[] arr = [1.5, 2.5, 3.5];
@@ -222,7 +224,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Double_WithNulls()
+    public async Task AvgDoubleWithNulls()
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null, 3.3];
@@ -236,7 +238,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_Double_Precision()
+    public async Task AvgDoublePrecision()
     {
         // Arrange
         double?[] arr = [1.0, 2.0, 3.0, 4.0, 5.0];
@@ -250,7 +252,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_DateTime_Basic()
+    public async Task AvgDateTimeBasic()
     {
         // Arrange
         DateTime?[] arr =
@@ -270,7 +272,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_DateTime_WithNulls()
+    public async Task AvgDateTimeWithNulls()
     {
         // Arrange
         DateTime?[] arr =
@@ -291,7 +293,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_DateTime_Empty()
+    public async Task AvgDateTimeEmpty()
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1)];
@@ -306,7 +308,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Avg_DateTime_AllNulls()
+    public async Task AvgDateTimeAllNulls()
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1), null];
@@ -325,7 +327,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Min
 
     [Fact]
-    public async Task Min_Integer_Basic()
+    public async Task MinIntegerBasic()
     {
         // Arrange
         int?[] arr = [5, 3, 8, 1, 4];
@@ -340,7 +342,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_Integer_WithNulls()
+    public async Task MinIntegerWithNulls()
     {
         // Arrange
         int?[] arr = [5, null, 3, null, 1];
@@ -354,7 +356,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_Integer_Empty()
+    public async Task MinIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -369,7 +371,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_Integer_AllNulls()
+    public async Task MinIntegerAllNulls()
     {
         // Arrange
         int?[] arr = [10, null, null, null];
@@ -384,7 +386,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_Double_Basic()
+    public async Task MinDoubleBasic()
     {
         // Arrange
         double?[] arr = [5.5, 3.3, 1.1, 4.4];
@@ -399,7 +401,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_DateTime_Basic()
+    public async Task MinDateTimeBasic()
     {
         // Arrange
         DateTime?[] arr =
@@ -418,7 +420,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_String_Basic()
+    public async Task MinStringBasic()
     {
         // Arrange
         string?[] arr = ["banana", "apple", "cherry"];
@@ -432,7 +434,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Min_String_WithNulls()
+    public async Task MinStringWithNulls()
     {
         // Arrange
         string?[] arr = ["banana", null, "apple"];
@@ -450,7 +452,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Max
 
     [Fact]
-    public async Task Max_Integer_Basic()
+    public async Task MaxIntegerBasic()
     {
         // Arrange
         int?[] arr = [5, 3, 8, 1, 4];
@@ -464,7 +466,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_Integer_WithNulls()
+    public async Task MaxIntegerWithNulls()
     {
         // Arrange
         int?[] arr = [5, null, 3, null, 8];
@@ -478,7 +480,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_Integer_Empty()
+    public async Task MaxIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -492,7 +494,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_Double_Basic()
+    public async Task MaxDoubleBasic()
     {
         // Arrange
         double?[] arr = [5.5, 3.3, 8.8, 1.1];
@@ -506,7 +508,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_DateTime_Basic()
+    public async Task MaxDateTimeBasic()
     {
         // Arrange
         DateTime?[] arr =
@@ -525,7 +527,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_String_Basic()
+    public async Task MaxStringBasic()
     {
         // Arrange
         string?[] arr = ["banana", "apple", "cherry"];
@@ -539,7 +541,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_String_WithNulls()
+    public async Task MaxStringWithNulls()
     {
         // Arrange
         string?[] arr = ["banana", null, "apple"];
@@ -553,7 +555,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Max_String_AllNulls()
+    public async Task MaxStringAllNulls()
     {
         // Arrange
         string?[] arr = ["text", null, null, null];
@@ -571,7 +573,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Count
 
     [Fact]
-    public async Task Count_AllRows_Basic()
+    public async Task CountAllRowsBasic()
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
@@ -585,7 +587,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_AllRows_WithNulls()
+    public async Task CountAllRowsWithNulls()
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
@@ -599,7 +601,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_AllRows_Empty()
+    public async Task CountAllRowsEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -613,7 +615,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_AllRows_AllNulls()
+    public async Task CountAllRowsAllNulls()
     {
         // Arrange
         int?[] arr = [null, null, null];
@@ -631,7 +633,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Count Column
 
     [Fact]
-    public async Task Count_Column_Integer_Basic()
+    public async Task CountColumnIntegerBasic()
     {
         // Arrange
         int?[] arr = [1, 2, 3, 4, 5];
@@ -645,7 +647,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_Integer_WithNulls()
+    public async Task CountColumnIntegerWithNulls()
     {
         // Arrange
         int?[] arr = [1, null, 3, null, 5];
@@ -659,7 +661,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_Integer_Empty()
+    public async Task CountColumnIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -673,7 +675,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_Integer_AllNulls()
+    public async Task CountColumnIntegerAllNulls()
     {
         // Arrange
         int?[] arr = [12, null, null, null];
@@ -687,7 +689,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_Double_Basic()
+    public async Task CountColumnDoubleBasic()
     {
         // Arrange
         double?[] arr = [1.1, 2.2, 3.3];
@@ -701,7 +703,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_Double_WithNulls()
+    public async Task CountColumnDoubleWithNulls()
     {
         // Arrange
         double?[] arr = [1.1, null, 3.3, null];
@@ -715,7 +717,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_DateTime_Basic()
+    public async Task CountColumnDateTimeBasic()
     {
         // Arrange
         DateTime?[] arr =
@@ -734,7 +736,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_DateTime_WithNulls()
+    public async Task CountColumnateTimeWithNulls()
     {
         // Arrange
         DateTime?[] arr =
@@ -754,7 +756,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_String_Basic()
+    public async Task CountColumnStringBasic()
     {
         // Arrange
         string?[] arr = ["a", "b", "c"];
@@ -768,7 +770,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_String_WithNulls()
+    public async Task CountColumnStringWithNulls()
     {
         // Arrange
         string?[] arr = ["a", null, "c", null];
@@ -782,7 +784,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Count_Column_String_EmptyStrings()
+    public async Task CountColumnStringEmptyStrings()
     {
         // Arrange
         string?[] arr = ["", "", ""]; // Empty strings are still values
@@ -800,7 +802,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Count Dictinct
 
     [Fact]
-    public async Task CountDistinct_Integer_Basic()
+    public async Task CountDistinctIntegerBasic()
     {
         // Arrange
         int?[] arr = [1, 2, 3, 2, 1];
@@ -814,7 +816,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Integer_WithNulls()
+    public async Task CountDistinctIntegerWithNulls()
     {
         // Arrange
         int?[] arr = [1, null, 2, null, 1];
@@ -828,7 +830,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Integer_Empty()
+    public async Task CountDistinctIntegerEmpty()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -842,7 +844,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Integer_AllNulls()
+    public async Task CountDistinctIntegerAllNulls()
     {
         // Arrange
         int?[] arr = [1, null, null, null];
@@ -856,7 +858,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Integer_AllSame()
+    public async Task CountDistinctIntegerAllSame()
     {
         // Arrange
         int?[] arr = [5, 5, 5, 5];
@@ -870,7 +872,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Double_Basic()
+    public async Task CountDistinctDoubleBasic()
     {
         // Arrange
         double?[] arr = [1.1, 2.2, 1.1, 3.3];
@@ -884,7 +886,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Double_WithNulls()
+    public async Task CountDistinctDoubleWithNulls()
     {
         // Arrange
         double?[] arr = [1.1, null, 2.2, null];
@@ -898,7 +900,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_DateTime_Basic()
+    public async Task CountDistinctDateTimeBasic()
     {
         // Arrange
         DateTime?[] arr =
@@ -917,7 +919,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_DateTime_WithNulls()
+    public async Task CountDistinctDateTimeWithNulls()
     {
         // Arrange
         DateTime?[] arr =
@@ -936,7 +938,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Text_Basic()
+    public async Task CountDistinctTextBasic()
     {
         // Arrange
         string?[] arr = ["apple", "banana", "apple"];
@@ -950,7 +952,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Text_WithNulls()
+    public async Task CountDistinctTextWithNulls()
     {
         // Arrange
         string?[] arr = ["apple", null, "banana", null];
@@ -965,7 +967,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task CountDistinct_Text_EmptyStrings()
+    public async Task CountDistinctTextEmptyStrings()
     {
         // Arrange
         string?[] arr = ["", "", "a"];
@@ -983,7 +985,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region Only
 
     [Fact]
-    public async Task Only_SingleValue_Integer()
+    public async Task OnlySingleValueInteger()
     {
         // Arrange
         int?[] arr = [5];
@@ -997,7 +999,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_AllSameValues_Integer()
+    public async Task OnlyAllSameValuesInteger()
     {
         // Arrange
         int?[] arr = [5, 5, 5];
@@ -1011,7 +1013,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_MultipleValues_Integer()
+    public async Task OnlyMultipleValuesInteger()
     {
         // Arrange
         int?[] arr = [5, 6];
@@ -1025,7 +1027,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_WithNulls_Integer()
+    public async Task OnlyWithNullsInteger()
     {
         // Arrange
         int?[] arr = [5, null, null];
@@ -1039,7 +1041,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_EmptySet_Integer()
+    public async Task OnlyEmptySetInteger()
     {
         // Arrange
         int?[] arr = [1, 2, 3];
@@ -1053,7 +1055,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_AllNulls_Integer()
+    public async Task OnlyAllNullsInteger()
     {
         // Arrange
         int?[] arr = [1, null, null];
@@ -1067,7 +1069,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_SingleValue_Double()
+    public async Task OnlySingleValueDouble()
     {
         // Arrange
         double?[] arr = [3.14];
@@ -1081,7 +1083,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_MultipleValues_Double()
+    public async Task OnlyMultipleValuesDouble()
     {
         // Arrange
         double?[] arr = [3.14, 2.71];
@@ -1095,7 +1097,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_SingleValue_DateTime()
+    public async Task OnlySingleValueDateTime()
     {
         // Arrange
         DateTime?[] arr = [new DateTime(2023, 1, 1)];
@@ -1109,7 +1111,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_MultipleValues_DateTime()
+    public async Task OnlyMultipleValuesDateTime()
     {
         // Arrange
         DateTime?[] arr =
@@ -1127,7 +1129,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_SingleValue_Text()
+    public async Task OnlySingleValueText()
     {
         // Arrange
         string?[] arr = ["unique"];
@@ -1141,7 +1143,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_MultipleValues_Text()
+    public async Task OnlyMultipleValuesText()
     {
         // Arrange
         string?[] arr = ["apple", "banana"];
@@ -1155,7 +1157,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_CaseSensitive_Text()
+    public async Task OnlyCaseSensitiveText()
     {
         // Arrange
         string?[] arr = ["Apple", "apple"];
@@ -1169,7 +1171,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_WithNulls_Text()
+    public async Task OnlyWithNullsText()
     {
         // Arrange
         string?[] arr = ["unique", null, null];
@@ -1183,7 +1185,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Only_EmptyStrings_Text()
+    public async Task OnlyEmptyStringsText()
     {
         // Arrange
         string?[] arr = ["", ""];
@@ -1201,7 +1203,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region CONCAT(value)
 
     [Fact]
-    public async Task Concat_Basic()
+    public async Task ConcatBasic()
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
@@ -1215,7 +1217,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_WithNulls()
+    public async Task ConcatWithNulls()
     {
         // Arrange
         string?[] arr = ["a", null, "c"];
@@ -1229,7 +1231,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_Empty()
+    public async Task ConcatEmpty()
     {
         // Arrange
         string[] arr = ["1", "2"];
@@ -1243,7 +1245,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_AllNulls()
+    public async Task ConcatAllNulls()
     {
         // Arrange
         string?[] arr = ["", null, null, null];
@@ -1261,7 +1263,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region CONCAT(value, delimiter)
 
     [Fact]
-    public async Task Concat_WithDelimiter()
+    public async Task ConcatWithDelimiter()
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
@@ -1275,7 +1277,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_WithDelimiterAndNulls()
+    public async Task ConcatWithDelimiterAndNulls()
     {
         // Arrange
         string?[] arr = ["a", null, "c"];
@@ -1289,7 +1291,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_WithEmptyDelimiter()
+    public async Task ConcatWithEmptyDelimiter()
     {
         // Arrange
         string[] arr = ["a", "b", "c"];
@@ -1303,7 +1305,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_SingleItem()
+    public async Task ConcatSingleItem()
     {
         // Arrange
         string[] arr = ["single"];
@@ -1317,7 +1319,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task Concat_Unicode()
+    public async Task ConcatUnicode()
     {
         // Arrange
         string[] arr = ["привет", "мир"];
@@ -1335,7 +1337,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     #region CONCAT(value, delimiter, sort)
 
     [Fact]
-    public async Task Concat_WithDelimiterAndSort()
+    public async Task ConcatWithDelimiterAndSort()
     {
         // Arrange
         string?[] arr = ["10", "2", "1",];
@@ -1349,7 +1351,7 @@ public abstract class Сommon(IDatabaseFixture db, ITestAssets assets) : ExprTes
     }
 
     [Fact]
-    public async Task ConcatNulls_WithDelimiterAndSort()
+    public async Task ConcatNullsWithDelimiterAndSort()
     {
         // Arrange
         string?[] arr = ["10", "2", "1", null, null];

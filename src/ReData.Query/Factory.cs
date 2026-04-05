@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using ReData.Query.Core;
 using ReData.Query.Core.Components;
 using ReData.Query.Core.Components.Implementation;
@@ -37,6 +38,7 @@ public static class Factory
             {
                 QueryCompiler = CreateQueryCompiler(database),
             },
+            _ => throw new UnreachableException(),
         };
     }
 
@@ -69,6 +71,7 @@ public static class Factory
                 DatabaseType.MySql => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.MySql),
                 DatabaseType.ClickHouse => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.ClickHouse),
                 DatabaseType.Oracle => GlobalFunctionsStorage.GetFunctions(DatabaseTypes.Oracle),
+                _ => throw new UnreachableException(),
             };
             return newFs;
         });

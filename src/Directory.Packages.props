@@ -17,7 +17,6 @@
     <PackageVersion Include="Respawn" Version="6.2.1" />
     <PackageVersion Include="Scalar.AspNetCore.Swashbuckle" Version="2.10.3" />
     <PackageVersion Include="MiniExcel" Version="2.0.0-preview.1" />
-    <PackageVersion Include="StyleCop.Analyzers" Version="1.0.2" />
     <PackageVersion Include="Dunet" Version="1.11.2" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
@@ -96,5 +95,7 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.0.0" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageVersion Include="Z.EntityFramework.Plus.EFCore" Version="9.104.0.1" />
+    
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.28.0.0" />
   </ItemGroup>
 </Project>

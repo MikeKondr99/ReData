@@ -10,11 +10,6 @@ namespace ReData.DemoApp.CommandMiddleware;
 public sealed class TraceCommandMiddleware<TCommand, TResult> : ICommandMiddleware<TCommand, TResult>
     where TCommand : ICommand<TResult>
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions()
-    {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-    };
-
     private static readonly string CommandTypeName =
         typeof(TCommand).Name.EndsWith("Command", StringComparison.Ordinal)
             ? typeof(TCommand).Name[..^7]

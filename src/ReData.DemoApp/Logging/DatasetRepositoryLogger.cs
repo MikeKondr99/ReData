@@ -12,7 +12,7 @@ public static partial class DatasetRepositoryLogger
         Message = "Dataset load by id completed: datasetId={DatasetId}, found={Found}")]
     public static partial void DatasetLoadedById(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId,
+        Id<DataSetEntity> datasetId,
         bool found);
 
     [LoggerMessage(
@@ -20,7 +20,7 @@ public static partial class DatasetRepositoryLogger
         Message = "Dataset created: datasetId={DatasetId}, name={Name}, transformations={TransformationsCount}")]
     public static partial void DatasetCreated(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId,
+        Id<DataSetEntity> datasetId,
         string name,
         int transformationsCount);
 
@@ -29,7 +29,7 @@ public static partial class DatasetRepositoryLogger
         Message = "Dataset update started: datasetId={DatasetId}, name={Name}, connectorId={ConnectorId}, transformations={TransformationsCount}")]
     public static partial void DatasetUpdateStarted(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId,
+        Id<DataSetEntity> datasetId,
         string name,
         Guid connectorId,
         int transformationsCount);
@@ -39,14 +39,14 @@ public static partial class DatasetRepositoryLogger
         Message = "Dataset update skipped: dataset not found, datasetId={DatasetId}")]
     public static partial void DatasetUpdateSkippedNotFound(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId);
+        Id<DataSetEntity> datasetId);
 
     [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Dataset updated: datasetId={DatasetId}, oldName={OldName}, newName={NewName}, transformations={TransformationsCount}")]
     public static partial void DatasetUpdated(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId,
+        Id<DataSetEntity> datasetId,
         string oldName,
         string newName,
         int transformationsCount);
@@ -56,6 +56,6 @@ public static partial class DatasetRepositoryLogger
         Message = "Dataset deleted: datasetId={DatasetId}, name={Name}")]
     public static partial void DatasetDeleted(
         this ILogger<DatasetRepository> logger,
-        Id<DataSet> datasetId,
+        Id<DataSetEntity> datasetId,
         string name);
 }

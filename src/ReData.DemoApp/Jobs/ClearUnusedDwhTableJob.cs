@@ -63,7 +63,7 @@ public sealed class ClearUnusedDwhTableJob
                 await using var dropCommand = new NpgsqlCommand(dropTableQuery, connection);
                 await dropCommand.ExecuteNonQueryAsync(ct);
             }
-            catch (Exception ex)
+            catch
             {
                 // Logger.LogError(ex, "Failed to drop table: {TableName}", tableName);
                 // Continue with other tables even if one fails

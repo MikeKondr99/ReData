@@ -11,7 +11,7 @@ using static DataType;
 
 public class AggregationFunctions : FunctionsDescriptor
 {
-    private static ITemplate FractileTemplate(DatabaseTypes database, TemplateContext context)
+    private static Template FractileTemplate(DatabaseTypes database, TemplateContext context)
     {
         if (context.Arguments.Count <= 1)
         {

@@ -50,7 +50,7 @@ public class ValueConverter : JsonConverter<IValue>
             case BoolValue bv:
                 writer.WriteBooleanValue(bv.Value);
                 break;
-            case NullValue nv:
+            case NullValue:
                 writer.WriteNullValue();
                 break;
             case UnknownValue uv:

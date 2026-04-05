@@ -69,7 +69,7 @@ public class DynamicTemplateTests
     }
 
     [Fact(DisplayName = "Локальная литеральная константа должна быть доступна только внутри скрипта")]
-    public void ResolveScript_UsesLocalLiteralConstant()
+    public void ResolveScriptUsesLocalLiteralConstant()
     {
         var (resolver, context) = BuildContext();
         var script = Expr.ParseScript("const a = 10; a + 1").Unwrap();
@@ -83,7 +83,7 @@ public class DynamicTemplateTests
     }
 
     [Fact(DisplayName = "Повторное объявление локальной константы с именем из глобального контекста должно завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenConstantDuplicatesGlobalOne()
+    public void ResolveScriptShouldFailWhenConstantDuplicatesGlobalOne()
     {
         var (resolver, context) = BuildContext();
         context.Constants["a"] = QueryConstant.FromValue("a", new IntegerValue(100));
@@ -97,7 +97,7 @@ public class DynamicTemplateTests
     }
 
     [Fact(DisplayName = "Сложная константа должна завершаться ошибкой при отключенном runtime")]
-    public void ResolveScript_ShouldFailWhenComplexConstantRuntimeIsDisabled()
+    public void ResolveScriptShouldFailWhenComplexConstantRuntimeIsDisabled()
     {
         var (resolver, context) = BuildContext();
         context = context with
@@ -120,7 +120,7 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Be(expectedError);
     }
     [Fact(DisplayName = "Ссылка на константу, объявленную ниже, должна завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenConstantReferencesFutureDeclaration()
+    public void ResolveScriptShouldFailWhenConstantReferencesFutureDeclaration()
     {
         var (resolver, context) = BuildContext();
         var script = Expr.ParseScript("const a = c; const c = 1; a").Unwrap();
@@ -130,7 +130,7 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Contain("'c'");
     }
     [Fact(DisplayName = "Константно вычислимое выражение в константы без QuerySource должно завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenNonLiteralConstConstantAndConstantQuerySourceIsMissing()
+    public void ResolveScriptShouldFailWhenNonLiteralConstConstantAndConstantQuerySourceIsMissing()
     {
         var (resolver, context) = BuildContext();
         var script = Expr.ParseScript("const a = 1 + 2; a + 1").Unwrap();
@@ -140,7 +140,7 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Contain("'a'");
     }
     [Fact(DisplayName = "Агрегатная константа без QuerySource должна завершаться ошибкой")]
-    public void ResolveScript_ShouldFailWhenAggregatedConstantAndConstantQuerySourceIsMissing()
+    public void ResolveScriptShouldFailWhenAggregatedConstantAndConstantQuerySourceIsMissing()
     {
         var (resolver, context) = BuildContext();
         var script = Expr.ParseScript("const a = AVG(a); a").Unwrap();
@@ -150,7 +150,7 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Contain("'a'");
     }
     [Fact(DisplayName = "При наличии QuerySource сложная константа с отключенным runtime должна завершаться ошибкой runtime")]
-    public void ResolveScript_ShouldFailWithDisabledRuntimeWhenConstantQuerySourceIsProvided()
+    public void ResolveScriptShouldFailWithDisabledRuntimeWhenConstantQuerySourceIsProvided()
     {
         var (resolver, context) = BuildContext();
         context = context with
@@ -173,7 +173,7 @@ public class DynamicTemplateTests
         context.Errors[0].Message.Should().Be(expectedError);
     }
     [Fact(DisplayName = "Константно вычислимое выражение в константы должно успешно резолвиться при включенном runtime")]
-    public void ResolveScript_ShouldResolveNonLiteralConstConstantWhenRuntimeEnabled()
+    public void ResolveScriptShouldResolveNonLiteralConstConstantWhenRuntimeEnabled()
     {
         var (resolver, context) = BuildContext();
         var runtime = new StubConstantRuntime(new IntegerValue(3));
@@ -201,7 +201,7 @@ public class DynamicTemplateTests
     }
 
     [Fact(DisplayName = "При совпадении имени константы и поля должен использоваться приоритет константы")]
-    public void ResolveExpr_ShouldPreferConstantOverFieldWhenNamesConflict()
+    public void ResolveExprShouldPreferConstantOverFieldWhenNamesConflict()
     {
         var (resolver, context) = BuildContext();
         context.Constants["a"] = QueryConstant.FromValue("a", new IntegerValue(10));

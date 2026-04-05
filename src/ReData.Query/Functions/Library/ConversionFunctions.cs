@@ -1,4 +1,5 @@
-﻿using ReData.Query.Core.Types;
+﻿using System.Diagnostics;
+using ReData.Query.Core.Types;
 
 namespace ReData.Query.Impl.Functions.Library;
 
@@ -18,6 +19,7 @@ public class ConversionFunctions : FunctionsDescriptor
             Text => "Text",
             DateTime => "Date",
             Bool => "Bool",
+            _ => throw new UnreachableException(),
         };
         return Method(name)
             .Arg("input", input)

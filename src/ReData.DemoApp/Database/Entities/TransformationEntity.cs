@@ -5,7 +5,7 @@ namespace ReData.DemoApp.Database.Entities;
 
 public sealed record TransformationEntity
 {
-    public required Id<DataSet> DataSetId { get; init; }
+    public required Id<DataSetEntity> DataSetId { get; init; }
     public required uint Order { get; init; }
 
     public required bool Enabled { get; init; }

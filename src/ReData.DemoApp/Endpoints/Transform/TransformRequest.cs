@@ -30,7 +30,7 @@ public sealed record TransformRequest
     public string? OrderByName { get; init; }
 
     /// <summary>
-    /// Выбрать конечную сортировку по полю <see cref="OrderByName" по убыванию/>
+    /// Выбрать конечную сортировку по полю <see cref="OrderByName"/> по убыванию
     /// Если такого поля с названием <see cref="OrderByName"/> сортировка не происходит
     /// </summary>
     public bool? OrderByDescending { get; init; }

@@ -47,26 +47,18 @@ public static class RecordsTestHelper
             return default(NullValue);
         }
 
-        switch (value)
+        return value switch
         {
-            case string str:
-                return new TextValue(str);
-            case bool b:
-                return new BoolValue(b);
-            case int i:
-                return new IntegerValue(i);
-            case long l:
-                return new IntegerValue(Convert.ToInt32(l)); // or handle as separate case if you have LongValue
-            case double d:
-                return new NumberValue(d);
-            case float f:
-                return new NumberValue(Convert.ToDouble(f));
-            case decimal dec:
-                return new NumberValue(Convert.ToDouble(dec));
-            case DateTime dt:
-                return new DateTimeValue(dt);
-            default:
-                throw new InvalidOperationException($"Unsupported type: {value.GetType().FullName}");
-        }
+            string str => new TextValue(str),
+            bool b => new BoolValue(b),
+            int i => new IntegerValue(i),
+            long l => new IntegerValue(Convert.ToInt32(l)),// or handle as separate case if you have LongValue
+            double d => new NumberValue(d),
+            float f => new NumberValue(Convert.ToDouble(f)),
+            decimal dec => new NumberValue(Convert.ToDouble(dec)),
+            DateTime dt => new DateTimeValue(dt),
+            _ => throw new InvalidOperationException($"Unsupported type: {value.GetType().FullName}"),
+        };
+
     }
 }

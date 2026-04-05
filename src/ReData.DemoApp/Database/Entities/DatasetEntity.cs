@@ -11,7 +11,7 @@ namespace ReData.DemoApp.Database.Entities;
 /// </summary>
 public sealed record DataSetEntity : BaseEntity
 {
-    public required Id<DataSet> Id { get; init; }
+    public required Id<DataSetEntity> Id { get; init; }
 
     public required string Name { get; set; }
 
@@ -25,8 +25,6 @@ public sealed record DataSetEntity : BaseEntity
 
     public required IReadOnlyList<DataSetField>? FieldList { get; set; } // Json
 }
-
-public sealed record DataSet;
 
 public struct DataSetField
 {

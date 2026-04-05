@@ -95,7 +95,6 @@ public sealed class TypedDbDataReader : DbDataReader
             else
             {
                 throw new Exception($"Значение {inputValue} не подошло к форматеру {format.GetType().Name}");
-                _currentRowValues[i] = inputValue;
             }
         }
 
@@ -222,7 +221,7 @@ public sealed class TypedDbDataReader : DbDataReader
             if (_columnNames[i].Equals(name, StringComparison.Ordinal))
                 return i;
         }
-        throw new IndexOutOfRangeException($"Column '{name}' not found.");
+        throw new KeyNotFoundException($"Column '{name}' not found.");
     }
 
     // Optional: bulk value access

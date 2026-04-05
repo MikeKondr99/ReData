@@ -32,7 +32,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
             .ToListAsync(ct);
     }
 
-    public async Task<DataSetEntity?> GetByIdAsync(Id<DataSet> id, CancellationToken ct)
+    public async Task<DataSetEntity?> GetByIdAsync(Id<DataSetEntity> id, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByIdAsync");
 
@@ -58,7 +58,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.CreateAsync");
 
-        var datasetId = Id<DataSet>.NewId();
+        var datasetId = Id<DataSetEntity>.NewId();
         var now = DateTimeOffset.UtcNow;
         var metadata = await BuildMetadataAsync(data.ConnectorId, data.Transformations, ct);
 
@@ -147,7 +147,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Id<DataSet> id, CancellationToken ct)
+    public async Task<bool> DeleteAsync(Id<DataSetEntity> id, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.DeleteAsync");
 
@@ -182,7 +182,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
     }
 
     private static List<TransformationEntity> MapTransformations(
-        Id<DataSet> dataSetId,
+        Id<DataSetEntity> dataSetId,
         IReadOnlyList<TransformationBlock> transformations)
     {
         var result = new List<TransformationEntity>(transformations.Count);

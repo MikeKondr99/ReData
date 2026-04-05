@@ -1,4 +1,5 @@
-﻿using ReData.Query.Impl.Tests.Fixtures;
+﻿using System.Globalization;
+using ReData.Query.Impl.Tests.Fixtures;
 
 namespace ReData.Query.Impl.Tests.Functions.String;
 
@@ -224,7 +225,7 @@ public abstract class Сommon(IDatabaseFixture runner) : ExprTests(runner)
     [InlineData("Replace('hello', 'l', null)", null)]
     public Task FuncReplaceTests(string expr, object? expected)
     {
-        Skip.If(expr.StartsWith("Replace(''") && runner.GetDatabaseType() is DatabaseType.Oracle);
+        Skip.If(expr.StartsWith("Replace(''", StringComparison.InvariantCulture) && runner.GetDatabaseType() is DatabaseType.Oracle);
         return Test(expr, expected);
     }
     

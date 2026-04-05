@@ -378,7 +378,7 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
 
     [Fact(DisplayName = "Sequential limitOffset should preserve slicing semantics")]
     [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/113")]
-    public async Task LimitOffsetAfterLimitOffset_ShouldApplySequentially()
+    public async Task LimitOffsetAfterLimitOffsetShouldApplySequentially()
     {
         // Regression test for GH-113.
         // Arrange
@@ -404,7 +404,7 @@ public abstract partial class Сommon(IDatabaseFixture db, ITestAssets assets) :
 
     [Fact(DisplayName = "Sequential limitOffset should treat zero-limit state as no explicit limit")]
     [Trait("Issue", "https://github.com/MikeKondr99/ReData/issues/113")]
-    public async Task LimitOffsetAfterLimitOffset_WithOffsetBeyondLimitedData_ShouldFollowCurrentZeroAsNoLimitContract()
+    public async Task LimitOffsetAfterLimitOffsetWithOffsetBeyondLimitedDataShouldFollowCurrentZeroAsNoLimitContract()
     {
         // Regression test for GH-113.
         // Arrange
