@@ -1,0 +1,40 @@
+
+<Project>
+    <Import Project="$(SolutionDir)\src\Directory.Packages.props"/>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        
+        <!-- Парсинг -->
+        <PackageVersion Include="Antlr4.Runtime" Version="4.6.6" />
+        <PackageVersion Include="Antlr4" Version="4.6.6">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+        
+        <!-- Экпорт файлов -->
+        <PackageVersion Include="MiniExcel" Version="2.0.0-preview.1" />
+        <PackageVersion Include="Sylvan.Common" Version="0.4.3" />
+        <PackageVersion Include="Sylvan.Data.Csv" Version="1.4.3" />
+        <PackageVersion Include="Sylvan.Data.Excel" Version="0.5.2" />
+        <!-- Other -->
+        <PackageVersion Include="Dunet" Version="1.11.2" />
+    </ItemGroup>
+</Project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,20 +6,23 @@
     </PropertyGroup>
 
     <ItemGroup>
-<!--        Tests-->
+
+        <!-- Tests -->
         <PackageReference Include="coverlet.collector"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
         <PackageReference Include="xunit"/>
         <PackageReference Include="Xunit.SkippableFact"/>
         <PackageReference Include="FluentAssertions"/>
-        <PackageReference Include="xunit.runner.visualstudio" />
-<!--        Databases-->
+        <PackageReference Include="xunit.runner.visualstudio"/>
+        
+        <!-- Databases -->
         <PackageReference Include="ClickHouse.Client"/>
         <PackageReference Include="MySql.Data"/>
         <PackageReference Include="Npgsql"/>
         <PackageReference Include="Oracle.ManagedDataAccess.Core"/>
         <PackageReference Include="Microsoft.Data.SqlClient"/>
-<!--        TestContainers-->
+        
+        <!-- TestContainers -->
         <PackageReference Include="Testcontainers"/>
         <PackageReference Include="Testcontainers.ClickHouse"/>
         <PackageReference Include="Testcontainers.MsSql"/>
@@ -34,10 +37,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj" />
+      <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj"/>
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj"/>
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj"/>
+      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj"/>
     </ItemGroup>
 
 </Project>

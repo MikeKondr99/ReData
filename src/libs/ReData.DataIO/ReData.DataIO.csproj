@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <PackageReference Include="Apache.Arrow" />
-      <PackageReference Include="DocumentFormat.OpenXml" />
       <PackageReference Include="MiniExcel" />
       <PackageReference Include="Sylvan.Common" />
       <PackageReference Include="Sylvan.Data.Csv" />

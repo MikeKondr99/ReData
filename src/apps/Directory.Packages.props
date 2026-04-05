@@ -1,0 +1,47 @@
+<Project>
+    <Import Project="$(SolutionDir)\src\Directory.Packages.props"/>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <ItemGroup>
+        
+        <!-- Telemetry -->
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.14.0-beta.2" />
+        
+        <!-- EF Core -->
+        <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageVersion>
+        
+        <!-- StrictId -->
+        <PackageVersion Include="StrictId" Version="1.2.0" />
+        <PackageVersion Include="StrictId.EFCore" Version="1.2.0" />
+        
+        <!-- TickerQ -->
+        <PackageVersion Include="TickerQ" Version="9.1.1" />
+        <PackageVersion Include="TickerQ.Dashboard" Version="9.1.1" />
+        <PackageVersion Include="TickerQ.EntityFrameworkCore" Version="9.1.1" />
+        <PackageVersion Include="TickerQ.Instrumentation.OpenTelemetry" Version="9.1.1" />
+        
+        <!-- Validation -->
+        <PackageVersion Include="FluentValidation" Version="11.3.0" />
+        <PackageVersion Include="FluentValidation.AspNetCore" Version="11.3.0" />
+        
+        <!-- FastEndpoints -->
+        <PackageVersion Include="FastEndpoints" Version="7.1.0" />
+        <PackageVersion Include="FastEndpoints.Swagger" Version="7.1.0" />
+    
+        <!-- OpenApi -->
+        <PackageVersion Include="Scalar.AspNetCore" Version="1.2.39" />
+        <PackageVersion Include="Scalar.AspNetCore.Swashbuckle" Version="2.10.3" />
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    </ItemGroup>
+</Project>

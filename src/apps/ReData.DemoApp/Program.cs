@@ -18,7 +18,6 @@ using ReData.Query;
 using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
-using StackExchange.Profiling;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
@@ -45,14 +44,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 services.AddOutputCache();
-services.AddMiniProfiler(options =>
-{
-    options.RouteBasePath = "/profiler";
-    options.ShouldProfile = request =>
-        builder.Environment.IsDevelopment() ||
-        request.Query.ContainsKey("profile");
-})
-    .AddEntityFramework();
 
 services.AddTickerQ(options =>
 {
@@ -183,7 +174,6 @@ app.Services.Migrate<TickerQDbContext>();
 
 // Temporary switch: disable ASP.NET OutputCache middleware globally.
 // app.UseOutputCache();
-app.UseMiniProfiler();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseFastEndpoints(c =>
