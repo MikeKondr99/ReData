@@ -10,7 +10,6 @@
         <!-- BASE -->
         <PackageReference Include="coverlet.collector"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="Respawn" />
         <PackageReference Include="xunit"/>
         <PackageReference Include="Xunit.SkippableFact"/>
         <PackageReference Include="FluentAssertions"/>
@@ -25,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\apps\ReData.DemoApp\ReData.DemoApp.csproj" />
+      <ProjectReference Include="..\..\apps\ReData.DemoApp\ReData.DemoApp.csproj" />
     </ItemGroup>
 
     <ItemGroup>

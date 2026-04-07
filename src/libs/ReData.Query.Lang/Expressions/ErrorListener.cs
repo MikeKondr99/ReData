@@ -6,6 +6,7 @@ namespace ReData.Query.Lang.Expressions;
 public sealed class ErrorListener : IAntlrErrorListener<IToken>
 {
     public void SyntaxError(
+        TextWriter textWriter,
         IRecognizer recognizer,
         IToken offendingSymbol,
         int line,

@@ -37,10 +37,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj"/>
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj"/>
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj"/>
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj"/>
+      <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj"/>
+      <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj"/>
+      <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj"/>
+      <ProjectReference Include="..\..\libs\ReData.Query\ReData.Query.csproj"/>
     </ItemGroup>
 
 </Project>

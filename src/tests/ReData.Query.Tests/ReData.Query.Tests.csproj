@@ -6,20 +6,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="coverlet.collector"/>
-        <PackageReference Include="FluentAssertions"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="xunit"/>
-        <PackageReference Include="xunit.runner.visualstudio"/>
+        <PackageReference Include="TUnit" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
+        <Using Include="TUnit"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
+      <ProjectReference Include="..\..\libs\ReData.Query\ReData.Query.csproj" />
+      <ProjectReference Include="..\..\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
     </ItemGroup>
 
 </Project>

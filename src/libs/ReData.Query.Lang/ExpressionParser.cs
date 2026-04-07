@@ -45,16 +45,16 @@ internal sealed partial class ExpressionParser : LangParserBaseVisitor<Expr>
     {
         return Visit(context.children[^2]);
     }
-
+    
     public override Expr VisitUnary(LangParser.UnaryContext context)
     {
-        if (context.children is [TerminalNodeImpl op, LangParser.ExprContext expr])
+        if (context.children is [TerminalNodeImpl op, LangParser.Term_exprContext expr])
         {
             return new FuncExpr()
             {
                 Span = Span(context),
                 Name = op.GetText(),
-                Arguments = [VisitExpr(expr)],
+                Arguments = [VisitTerm_expr(expr)],
                 Kind = FuncExprKind.Unary,
             };
         }

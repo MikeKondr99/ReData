@@ -7,7 +7,7 @@
         <DebugType>embedded</DebugType>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>$(WarningsAsErrors);Nullable</WarningsAsErrors>
-        <NuGetAudit>false</NuGetAudit>
+        <NuGetAudit>true</NuGetAudit>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 

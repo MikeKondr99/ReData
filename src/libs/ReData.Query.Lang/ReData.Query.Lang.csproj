@@ -2,26 +2,34 @@
 
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1658;CS1584</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Antlr4">
+      <PackageReference Include="Antlr4BuildTasks">
         <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Antlr4.Runtime"/>
+      <PackageReference Include="Antlr4.Runtime.Standard"/>
       <PackageReference Include="Dunet" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="LangLexer.g4" />
-      <Content Include="LangParser.g4" />
+        <!-- Подключаем оба файла: лексер и парсер -->
+        <Antlr4 Include="LangLexer.g4">
+            <Visitor>false</Visitor>
+            <Listener>false</Listener>
+        </Antlr4>
+        <Antlr4 Include="LangParser.g4">
+            <Visitor>true</Visitor>   <!-- если нужен Visitor -->
+            <Listener>true</Listener>  <!-- если нужен Listener -->
+        </Antlr4>
+        
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
+        <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
     </ItemGroup>
 
 

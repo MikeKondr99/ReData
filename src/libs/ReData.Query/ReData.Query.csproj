@@ -5,13 +5,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
-      <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-<!--        Databases-->
+        <!-- Databases -->
         <PackageReference Include="ClickHouse.Client"/>
         <PackageReference Include="MySql.Data"/>
         <PackageReference Include="Npgsql"/>

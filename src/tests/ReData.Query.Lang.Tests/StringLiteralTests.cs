@@ -1,50 +1,45 @@
-﻿using FluentAssertions;
-using FluentAssertions.Equivalency;
-using ReData.Query.Lang.Expressions;
+﻿using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;
 
 public class StringLiteralTests
 {
-
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
-        options.Excluding(e => e.Span);
     
-    [Theory]
-    [InlineData("'${Name}:${10}'","Text(Name) + ':' + Text(10)")]
-    [InlineData("'${a}1${b}2'", "Text(a) + '1' + Text(b) + '2'")]
-    [InlineData("'Hello${Name}'", "'Hello' + Text(Name)")]
-    [InlineData("'${Val}%'", "Text(Val) + '%'")]
-    [InlineData("'${X}+${Y}=${Sum}'", "Text(X) + '+' + Text(Y) + '=' + Text(Sum)")]
-    [InlineData("'Count: ${Count}'", "'Count: ' + Text(Count)")]
-    [InlineData("'${A}${B}${C}'", "Text(A) + Text(B) + Text(C)")]
-    [InlineData("'1${2}3${4}5'", "'1' + Text(2) + '3' + Text(4) + '5'")]
-    [InlineData("'${Start}...${End}'", "Text(Start) + '...' + Text(End)")]
-    [InlineData("'${Total} items'", "Text(Total) + ' items'")]
-    [InlineData("'${10 + 20} items'", "Text(10 + 20) + ' items'")]
+    [Test]
+    [Arguments("'${Name}:${10}'","Text(Name) + ':' + Text(10)")]
+    [Arguments("'${a}1${b}2'", "Text(a) + '1' + Text(b) + '2'")]
+    [Arguments("'Hello${Name}'", "'Hello' + Text(Name)")]
+    [Arguments("'${Val}%'", "Text(Val) + '%'")]
+    [Arguments("'${X}+${Y}=${Sum}'", "Text(X) + '+' + Text(Y) + '=' + Text(Sum)")]
+    [Arguments("'Count: ${Count}'", "'Count: ' + Text(Count)")]
+    [Arguments("'${A}${B}${C}'", "Text(A) + Text(B) + Text(C)")]
+    [Arguments("'1${2}3${4}5'", "'1' + Text(2) + '3' + Text(4) + '5'")]
+    [Arguments("'${Start}...${End}'", "Text(Start) + '...' + Text(End)")]
+    [Arguments("'${Total} items'", "Text(Total) + ' items'")]
+    [Arguments("'${10 + 20} items'", "Text(10 + 20) + ' items'")]
   
-    public void Interpolation(string expr, string expected)
+    public async Task  Interpolation(string expr, string expected)
     {
         var input = Expr.Parse(expr).Unwrap();
         var expect = Expr.Parse(expected).Unwrap();
-        input.Equivalent(expect).Should().Be(true);
+        await Assert.That(input.Equivalent(expect)).IsTrue();
     }
     
-    [Theory]
-    [InlineData("''","")]
-    [InlineData("'text'","text")]
-    [InlineData("'my string  '","my string  ")]
-    [InlineData(@"'tab\''",@"tab'")]
-    [InlineData(@"'(\\)'",@"(\)")]
-    [InlineData(@"'(\t)'","(\t)")]
-    [InlineData(@"'(\r)'","(\r)")]
-    [InlineData(@"'(\n)'","(\n)")]
-    [InlineData(@"'(\c)'", @"(\c)")] // Неизвестный escape сохраняется
-    [InlineData(@"'(\{age})'", @"(\{age})")]
-    public void StringLiteral(string expr, string expected)
+    [Test]
+    [Arguments("''","")]
+    [Arguments("'text'","text")]
+    [Arguments("'my string  '","my string  ")]
+    [Arguments(@"'tab\''",@"tab'")]
+    [Arguments(@"'(\\)'",@"(\)")]
+    [Arguments(@"'(\t)'","(\t)")]
+    [Arguments(@"'(\r)'","(\r)")]
+    [Arguments(@"'(\n)'","(\n)")]
+    [Arguments(@"'(\c)'", @"(\c)")] // Неизвестный escape сохраняется
+    [Arguments(@"'(\{age})'", @"(\{age})")]
+    public async Task  StringLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
         var expect = new StringLiteral(expected);
-        e.Should().BeEquivalentTo(new StringLiteral(expected), options);
+        await Assert.That(e.Equivalent(expect)).IsTrue();
     }
 }

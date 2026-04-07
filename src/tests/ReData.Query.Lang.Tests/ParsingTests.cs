@@ -1,42 +1,40 @@
-﻿using FluentAssertions;
-using FluentAssertions.Equivalency;
-using ReData.Query.Lang.Expressions;
+﻿using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;
 
 public class ParsingTests
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
-        options.Excluding(e => e.Span);
-    
-    [Fact(DisplayName = "Парсер должен строить бинарное выражение для сложения имени и константы")]
-    public void BinaryOp()
+    [Test]
+    [DisplayName("Парсер должен строить бинарное выражение для сложения имени и константы")]
+    public async Task BinaryOp()
     {
         var expr = Expr.Parse("number + 3").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(
+        await Assert.That(expr.Equivalent(
             new FuncExpr()
-        {
-            Name = "+",
-            Kind = FuncExprKind.Binary,
-            Arguments =
+            {
+                Name = "+",
+                Kind = FuncExprKind.Binary,
+                Arguments =
             [
                 new NameExpr("number"),
                 new IntegerLiteral(3),
             ]
-        }, options);
+        })).IsTrue();
     }
-    
-    [Fact(DisplayName = "Парсер должен учитывать приоритет операций умножения над сложением")]
-    public void ShouldGivePriority()
+
+    [Test]
+    [DisplayName("Парсер должен учитывать приоритет операций умножения над сложением")]
+    public async Task ShouldGivePriority()
     {
         var expr = Expr.Parse("a + b * c").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
-        {
-            Name = "+",
-            Kind = FuncExprKind.Binary,
-            Arguments =
+        await Assert.That(expr.Equivalent(
+            new FuncExpr()
+            {
+                Name = "+",
+                Kind = FuncExprKind.Binary,
+                Arguments =
             [
                 new NameExpr("a"),
                 new FuncExpr()
@@ -49,17 +47,17 @@ public class ParsingTests
                     ]
                 }
             ]
-        }, options);
+        })).IsTrue();
     }
-    
-    
-    [Fact(DisplayName = "Парсер не должен захватывать бинарный оператор внутрь объектного вызова")]
-    public void ShouldParseWithoutCapturingBinary()
+
+
+    [Test]
+    [DisplayName("Парсер не должен захватывать бинарный оператор внутрь объектного вызова")]
+    public async Task ShouldParseWithoutCapturingBinary()
     {
         var expr = Expr.Parse("a + c.Call()").UnwrapOk().Value;
 
-
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -74,16 +72,16 @@ public class ParsingTests
                     ]
                 }
             ]
-        }, options);
-
+        })).IsTrue();
     }
-    
-    [Fact(DisplayName = "Парсер должен корректно разбирать строковые литералы в бинарном выражении")]
-    public void ShouldParseStringNonGreedy()
+
+    [Test]
+    [DisplayName("Парсер должен корректно разбирать строковые литералы в бинарном выражении")]
+    public async Task ShouldParseStringNonGreedy()
     {
         var expr = Expr.Parse("'a' + 'b'").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -92,17 +90,18 @@ public class ParsingTests
                 new StringLiteral("a"),
                 new StringLiteral("b"),
             ]
-        }, options);
+        })).IsTrue();
 
     }
-    
-    [Fact(DisplayName = "Парсер должен корректно разбирать blocked-name в бинарном выражении")]
-    public void ShouldParseNameNonGreedy()
+
+    [Test]
+    [DisplayName("Парсер должен корректно разбирать blocked-name в бинарном выражении")]
+    public async Task ShouldParseNameNonGreedy()
     {
         var expr = Expr.Parse("[a] + [b]").UnwrapOk().Value;
 
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "+",
             Kind = FuncExprKind.Binary,
@@ -111,15 +110,16 @@ public class ParsingTests
                 new NameExpr("a"),
                 new NameExpr("b"),
             ]
-        }, options);
+        })).IsTrue();
     }
-    
-    [Fact(DisplayName = "Парсер должен корректно разбирать строки внутри аргументов функции")]
-    public void ShouldParseStringNonGreedyInArguments()
+
+    [Test]
+    [DisplayName("Парсер должен корректно разбирать строки внутри аргументов функции")]
+    public async Task ShouldParseStringNonGreedyInArguments()
     {
         var expr = Expr.Parse("If(10 > 5 and null, 'then', 'else')").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "If",
             Arguments =
@@ -142,30 +142,33 @@ public class ParsingTests
                 new StringLiteral("then"),
                 new StringLiteral("else"),
             ]
-        }, options);
+        })).IsTrue();
 
     }
 
-    [Fact(DisplayName = "При парсинге скрипта должны игнорироваться объявления констант и возвращаться финальное выражение")]
-    public void ShouldIgnoreConstantDeclarationsAndReturnFinalExpression()
+    [Test]
+    [DisplayName("При парсинге скрипта должны игнорироваться объявления констант и возвращаться финальное выражение")]
+    public async Task ShouldIgnoreConstantDeclarationsAndReturnFinalExpression()
     {
         var expr = Expr.Parse("const a = 12; const b = 'x'; 1 + 2").UnwrapOk().Value;
-        expr.ToString().Should().Be("(1 + 2)");
+        await Assert.That(expr.ToString()).IsEqualTo("(1 + 2)");
     }
 
-    [Fact(DisplayName = "В объявлении константы должно поддерживаться любое выражение")]
-    public void ShouldAllowAnyExpressionInConstantValue()
+    [Test]
+    [DisplayName("В объявлении константы должно поддерживаться любое выражение")]
+    public async Task ShouldAllowAnyExpressionInConstantValue()
     {
         var expr = Expr.Parse("const a = 1 + 2; 3").UnwrapOk().Value;
-        expr.ToString().Should().Be("3");
+        await Assert.That(expr.ToString()).IsEqualTo("3");
     }
 
-    [Fact(DisplayName = "Вызов const(...) должен парситься как обычная функция")]
-    public void ShouldParseInlineConstFunction()
+    [Test]
+    [DisplayName("Вызов const(...) должен парситься как обычная функция")]
+    public async Task ShouldParseInlineConstFunction()
     {
         var expr = Expr.Parse("const(1 + 2)").UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "const",
             Kind = FuncExprKind.Default,
@@ -182,48 +185,55 @@ public class ParsingTests
                     ]
                 }
             ]
-        }, options);
+        })).IsTrue();
     }
 
-    [Fact(DisplayName = "Парсер скрипта должен возвращать список объявленных констант")]
-    public void ShouldExposeConstantsInScriptResponse()
+    [Test]
+    [DisplayName("Парсер скрипта должен возвращать список объявленных констант")]
+    public async Task ShouldExposeConstantsInScriptResponse()
     {
         var script = Expr.ParseScript("const a = 1 + 2; const b = AVG(age); a + b").UnwrapOk().Value;
         var constants = script.GetConstantDeclarations();
         var macros = script.GetMacroDeclarations();
 
-        script.Declarations.Should().HaveCount(2);
-        constants.Should().HaveCount(2);
-        macros.Should().BeEmpty();
-        constants[0].Name.Should().Be("a");
-        constants[0].Expression.ToString().Should().Be("(1 + 2)");
-        constants[1].Name.Should().Be("b");
-        constants[1].Expression.ToString().Should().Be("AVG([age])");
-        script.Expression.ToString().Should().Be("([a] + [b])");
+        await Assert.That(script.Declarations).Count().IsEqualTo(2);
+        await Assert.That(constants).Count().IsEqualTo(2);
+        await Assert.That(macros).IsEmpty();
+        await Assert.That(constants[0])
+            .Member(c => c.Name, name => name.IsEqualTo("a"))
+            .And.Member(c => c.Expression.ToString(), e => e.IsEqualTo("(1 + 2)"));
+        await Assert.That(constants[1])
+            .Member(c => c.Name, name => name.IsEqualTo("b"))
+            .And.Member(c => c.Expression.ToString(), e => e.IsEqualTo("AVG([age])"));
+        await Assert.That(script.Expression.ToString()).IsEqualTo("([a] + [b])");
     }
 
-    [Fact(DisplayName = "Парсер скрипта должен возвращать let-декларации в Macros")]
-    public void ShouldExposeMacrosInScriptResponse()
+    [Test]
+    [DisplayName("Парсер скрипта должен возвращать let-декларации в Macros")]
+    public async Task ShouldExposeMacrosInScriptResponse()
     {
         var script = Expr.ParseScript("let isAdult = [age] > 18; const a = 1; a").UnwrapOk().Value;
         var macros = script.GetMacroDeclarations();
         var constants = script.GetConstantDeclarations();
 
-        script.Declarations.Should().HaveCount(2);
-        macros.Should().HaveCount(1);
-        macros[0].Kind.Should().Be(ScriptDeclarationKind.Macro);
-        macros[0].Name.Should().Be("isAdult");
-        macros[0].Expression.ToString().Should().Be("([age] > 18)");
-        constants.Should().HaveCount(1);
-        constants[0].Kind.Should().Be(ScriptDeclarationKind.Const);
-        constants[0].Name.Should().Be("a");
+        await Assert.That(script.Declarations).Count().IsEqualTo(2);
+        await Assert.That(macros).Count().IsEqualTo(1);
+        await Assert.That(constants).Count().IsEqualTo(1);
+        await Assert.That(macros[0])
+            .Member(c => c.Name, name => name.IsEqualTo("isAdult"))
+            .And.Member(c => c.Kind, kind => kind.IsEqualTo(ScriptDeclarationKind.Macro))
+            .And.Member(c => c.Expression.ToString(), e => e.IsEqualTo("([age] > 18)"));
+        await Assert.That(constants[0])
+            .Member(c => c.Name, name => name.IsEqualTo("a"))
+            .And.Member(c => c.Kind, kind => kind.IsEqualTo(ScriptDeclarationKind.Const));
     }
 
-    [Fact(DisplayName = "Объявление константы через blocked_name должно завершаться ошибкой парсинга")]
-    public void ConstantDeclarationWithBlockedNameShouldFail()
+    [Test]
+    [DisplayName("Объявление константы через blocked_name должно завершаться ошибкой парсинга")]
+    public async Task ConstantDeclarationWithBlockedNameShouldFail()
     {
         var result = Expr.ParseScript("const [a] = 1; [a]");
 
-        result.UnwrapErr().Message.Should().NotBeNullOrWhiteSpace();
+        await Assert.That(result.UnwrapErr().Message).IsNotNullOrWhiteSpace();
     }
 }

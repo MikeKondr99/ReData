@@ -1,135 +1,131 @@
-using FluentAssertions;
-using FluentAssertions.Equivalency;
 using ReData.Query.Lang.Expressions;
 
 namespace ReData.Query.Lang.Tests;
 
 public class LiteralsTest
 {
-    private Func<EquivalencyAssertionOptions<Expr>, EquivalencyAssertionOptions<Expr>> options = (options) =>
-        options.Excluding(e => e.Span);
 
-    [Theory]
-    [InlineData("name","name")]
-    [InlineData("[first name]","first name")]
-    [InlineData("[ first name  ]"," first name  ")]
-    [InlineData(@"[arr[i\]]","arr[i]")]
-    [InlineData("[*?carl$$]","*?carl$$")]
-    [InlineData(@"[\]",@"\")]
-    [InlineData(@"[name\]",@"name\")]
-    [InlineData("[\"Quote\" me]","\"Quote\" me")]
-    [InlineData("[null]","null")]
-    [InlineData("[true]","true")]
-    [InlineData("[false]","false")]
-    [InlineData("[and]","and")]
-    public void NameLiteral(string expr, string expected)
+    [Test]
+    [Arguments("name", "name")]
+    [Arguments("[first name]", "first name")]
+    [Arguments("[ first name  ]", " first name  ")]
+    [Arguments(@"[arr[i\]]", "arr[i]")]
+    [Arguments("[*?carl$$]", "*?carl$$")]
+    [Arguments(@"[\]", @"\")]
+    [Arguments(@"[name\]", @"name\")]
+    [Arguments("[\"Quote\" me]", "\"Quote\" me")]
+    [Arguments("[null]", "null")]
+    [Arguments("[true]", "true")]
+    [Arguments("[false]", "false")]
+    [Arguments("[and]", "and")]
+    public async Task NameLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
-        e.Should().BeEquivalentTo(new NameExpr(expected), options);
+        await Assert.That(e.Equivalent(new NameExpr(expected))).IsTrue();
     }
-    
-    [Theory]
-    [InlineData("''","")]
-    [InlineData("'text'","text")]
-    [InlineData("'my string  '","my string  ")]
-    // [InlineData("'tab\t'","tab\t")]
-    // [InlineData(@"'tab\n'","tab\n")]
-    // [InlineData(@"'tab\r'","tab\r")]
-    // [InlineData(@"'tab\''","tab'")]
-    // [InlineData(@"'ta\' '","ta'")]
-    [InlineData(@"'tab\''",@"tab'")]
-    // [InlineData(@"' \\n '",@" \n ")]
-    public void StringLiteral(string expr, string expected)
+
+    [Test]
+    [Arguments("''", "")]
+    [Arguments("'text'", "text")]
+    [Arguments("'my string  '", "my string  ")]
+    // [Arguments("'tab\t'","tab\t")]
+    // [Arguments(@"'tab\n'","tab\n")]
+    // [Arguments(@"'tab\r'","tab\r")]
+    // [Arguments(@"'tab\''","tab'")]
+    // [Arguments(@"'ta\' '","ta'")]
+    [Arguments(@"'tab\''", @"tab'")]
+    // [Arguments(@"' \\n '",@" \n ")]
+    public async Task StringLiteral(string expr, string expected)
     {
         var e = Expr.Parse(expr).Unwrap();
-        e.Should().BeEquivalentTo(new StringLiteral(expected), options);
+
+        await Assert.That(e.Equivalent(new StringLiteral(expected))).IsTrue();
     }
-    
-    [Theory]
-    [InlineData("1.3",1.3)]
-    [InlineData("0.0", 0.0)]
-    [InlineData(".3", .3)]
-    [InlineData("5.0", 5.0)]
-    [InlineData("0.0000000000", 0.0)]
-    [InlineData("0.1234567890", 0.1234567890)]
-    public void NumberLiteral(string input, double expected)
+
+    [Test]
+    [Arguments("1.3", 1.3)]
+    [Arguments("0.0", 0.0)]
+    [Arguments(".3", .3)]
+    [Arguments("5.0", 5.0)]
+    [Arguments("0.0000000000", 0.0)]
+    [Arguments("0.1234567890", 0.1234567890)]
+    public async Task NumberLiteral(string input, double expected)
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new NumberLiteral(expected), options);
+        await Assert.That(expr.Equivalent(new NumberLiteral(expected))).IsTrue();
     }
-    
-    [Fact]
-    public void ShouldParseUnary()
+
+    [Test]
+    public async Task ShouldParseUnary()
     {
         var expr = Expr.Parse("-1").UnwrapOk().Value;
 
-
-        expr.Should().BeEquivalentTo(new FuncExpr()
+        await Assert.That(expr.Equivalent(new FuncExpr()
         {
             Name = "-",
             Arguments = [new IntegerLiteral(1)],
             Kind = FuncExprKind.Unary,
-        }, options);
+        })).IsTrue();
     }
-    
-    [Theory]
-    [InlineData("0", 0)]
-    [InlineData("10", 10)]
-    [InlineData("123", 123)]
-    [InlineData("4567", 4567)]
-    [InlineData("9999", 9999)]
-    [InlineData("5678", 5678)]
-    [InlineData("00001", 1)]
-    public void IntegerLiteral(string input, long expected)
+
+    [Test]
+    [Arguments("0", 0)]
+    [Arguments("10", 10)]
+    [Arguments("123", 123)]
+    [Arguments("4567", 4567)]
+    [Arguments("9999", 9999)]
+    [Arguments("5678", 5678)]
+    [Arguments("00001", 1)]
+    public async Task IntegerLiteral(string input, long expected)
     {
         var expr = Expr.Parse(input).Unwrap();
-        expr.Should().BeEquivalentTo(new IntegerLiteral(expected), options);
+        await Assert.That(expr.Equivalent(new IntegerLiteral(expected))).IsTrue();
     }
 
-    [Theory]
-    [InlineData("true", true)]
-    [InlineData("false", false)]
-    public void BooleanLiteral(string input, bool expected)
+    [Test]
+    [Arguments("true", true)]
+    [Arguments("false", false)]
+    public async Task BooleanLiteral(string input, bool expected)
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new BooleanLiteral(expected), options);
+        await Assert.That(expr.Equivalent(new BooleanLiteral(expected))).IsTrue();
     }
-    
-    [Theory]
-    [InlineData("null")]
-    public void NullLiteral(string input)
+
+    [Test]
+    [Arguments("null")]
+    public async Task NullLiteral(string input)
     {
         var expr = Expr.Parse(input).UnwrapOk().Value;
 
-        expr.Should().BeEquivalentTo(new NullLiteral(), options);
+        await Assert.That(expr.Equivalent(new NullLiteral())).IsTrue();
     }
-    
-    // [Theory]
-    // [InlineData("()", "expected expression", 1)]
-    // [InlineData("2 +", "expected expression", 3)]
-    // [InlineData("* 3", "expected expression", 0)]
-    // [InlineData("a + 3)", "expected end of expression", 5)]
-    // [InlineData("(a + 3", "expected ')'", 6)]
-    // [InlineData("2,3", "expected end of expression",1)]
-    // [InlineData("f(1,2", "expected ',' or ')'",5)]
-    // [InlineData("f(x,)", "expected expression",4)]
-    // [InlineData("f(x,", "expected expression",4)]
-    // [InlineData("12(x)", "expected end of expression",2)]
-    // [InlineData("+3", "expected expression",0)]
-    // public void ShouldNotParse(string input, string message, int index)
+
+    // [Test]
+    // [Arguments("()", "expected expression", 1)]
+    // [Arguments("2 +", "expected expression", 3)]
+    // [Arguments("* 3", "expected expression", 0)]
+    // [Arguments("a + 3)", "expected end of expression", 5)]
+    // [Arguments("(a + 3", "expected ')'", 6)]
+    // [Arguments("2,3", "expected end of expression",1)]
+    // [Arguments("f(1,2", "expected ',' or ')'",5)]
+    // [Arguments("f(x,)", "expected expression",4)]
+    // [Arguments("f(x,", "expected expression",4)]
+    // [Arguments("12(x)", "expected end of expression",2)]
+    // [Arguments("+3", "expected expression",0)]
+    // public async Task  ShouldNotParse(string input, string message, int index)
     // {
     //     Expr.Parse(input).UnwrapErr();
     // }
-    
-    [Theory]
-    [InlineData("#")]
-    [InlineData("a % 3")]
-    public void ShouldThrowUnexpectedToken(string input)
+
+    [Test]
+    [Arguments("#")]
+    [Arguments("a % 3")]
+    public async Task ShouldThrowUnexpectedToken(string input)
     {
         Expr.Parse(input).UnwrapErr();
     }
-    
-    
+
+
 }

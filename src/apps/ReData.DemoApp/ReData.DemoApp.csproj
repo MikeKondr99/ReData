@@ -11,12 +11,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.DataIO\ReData.DataIO.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query\ReData.Query.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
+        <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.DataIO\ReData.DataIO.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query\ReData.Query.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
 
         <PackageReference Include="StrictId" />
         <PackageReference Include="StrictId.EFCore" />

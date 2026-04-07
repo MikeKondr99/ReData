@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="$(SolutionDir)\src\libs\Pattern\Pattern.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Common\ReData.Common.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
-        <ProjectReference Include="$(SolutionDir)\src\libs\ReData.Query.Lang\ReData.Query.Lang.csproj" />
+        <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Query.Lang\ReData.Query.Lang.csproj" />
     </ItemGroup>
 
 </Project>

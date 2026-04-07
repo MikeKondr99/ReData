@@ -7,6 +7,7 @@ public sealed class TokenErrorListener : IAntlrErrorListener<int>
 {
     /// <inheritdoc />
     public void SyntaxError(
+        TextWriter textWriter,
         IRecognizer recognizer,
         int offendingSymbol,
         int line,
