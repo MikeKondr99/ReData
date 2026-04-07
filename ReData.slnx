@@ -37,6 +37,7 @@
   </Folder>
   <Folder Name="/src/tests/">
     <Project Path="src/tests/ReData.DemoApp.Tests/ReData.DemoApp.Tests.csproj" />
+    <Project Path="src/tests/ReData.DemoApp.TUnit/ReData.DemoApp.TUnit.csproj" />
     <Project Path="src/tests/ReData.Query.Impl.Tests/ReData.Query.Impl.Tests.csproj" />
     <Project Path="src/tests/ReData.Query.Lang.Tests/ReData.Query.Lang.Tests.csproj" />
     <Project Path="src/tests/ReData.Query.Tests/ReData.Query.Tests.csproj" />

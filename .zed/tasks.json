@@ -1,0 +1,8 @@
+[
+  {
+    "label": "dotnet explorer",
+    "command": "lazydotnet",
+    "reveal_target": "center",
+    "allow_concurrent_runs": false
+  },
+]

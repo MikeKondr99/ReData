@@ -27,7 +27,7 @@ using Factory = ReData.Query.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
-var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
+// var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
 
 if (builder.Environment.IsDevelopment())
 {
@@ -59,7 +59,7 @@ services.AddTickerQ(options =>
         efOptions.UseTickerQDbContext<TickerQDbContext>(optionsBuilder =>
         {
             // dotnet ef migrations add TickerQInitialCreate --context TickerQDbContext --project ./src/ReData.DemoApp -o ./Jobs/Migrations
-            optionsBuilder.UseNpgsql(tickerQConnectionString,
+            optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("TickerQ"),
                 builder =>
                 {
                     builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
@@ -208,3 +208,5 @@ app.MapScalarApiReference("api/docs");
 // }
 
 await app.RunAsync();
+
+public partial class Program;
