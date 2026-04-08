@@ -1,7 +1,7 @@
 using Testcontainers.PostgreSql;
 using TUnit.Core.Interfaces;
 
-namespace ReData.DemoApp.TUnit;
+namespace ReData.DemoApp.Tests;
 
 public sealed class PostgresDocker : IAsyncInitializer, IAsyncDisposable
 {
@@ -19,3 +19,4 @@ public sealed class PostgresDocker : IAsyncInitializer, IAsyncDisposable
     public async ValueTask DisposeAsync()
         => await Container.DisposeAsync();
 }
+

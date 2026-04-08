@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using ReData.DemoApp.Database;
 using TUnit.Core;
 
-namespace ReData.DemoApp.TUnit.Datasets;
+namespace ReData.DemoApp.Tests.Datasets;
 
 public abstract class DatasetTestBase
 {
@@ -27,3 +27,4 @@ public abstract class DatasetTestBase
         await _scope.DisposeAsync();
     }
 }
+

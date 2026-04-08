@@ -1,4 +1,4 @@
-namespace ReData.DemoApp.TUnit;
+namespace ReData.DemoApp.Tests;
 
 public class DefaultDatabaseFixture : BaseDatabaseFixture
 {

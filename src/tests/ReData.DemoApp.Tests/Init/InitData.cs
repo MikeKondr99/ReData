@@ -1,3 +1,4 @@
+using FastEndpoints;
 using ReData.Common;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database.Entities;

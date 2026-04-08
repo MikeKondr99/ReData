@@ -1,18 +1,21 @@
+using System.Net;
+using FastEndpoints;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.Delete;
 using ReData.DemoApp.Endpoints.Datasets.GetAll;
-using ReData.DemoApp.Transformations;
+using TUnit.Core;
 
 namespace ReData.DemoApp.Tests.Datasets;
 
-public class GetAllDatasetsTests(App App) : DemoAppTestBase<App>(App)
+public class GetAllDatasetsTests
+    : DatasetTestBase
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
     private Task<TestResult<List<DataSetListItem>>> Endpoint() =>
         App.Client.GETAsync<GetAllDatasetsEndpoint, List<DataSetListItem>>();
-    
+
     private async Task<CreateDataSetResponse> CreateTestDatasetAsync()
     {
         var req = new CreateDataSetRequest
@@ -22,43 +25,38 @@ public class GetAllDatasetsTests(App App) : DemoAppTestBase<App>(App)
             ConnectorId = Guid.Empty,
         };
 
-        var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
-        rsp.Should().BeSuccessful();
-        return res;
+        return await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req).IsSuccess();
     }
 
-    [Fact(DisplayName = "Получение всех наборов должно включать вновь созданные наборы")]
+    [Test]
+    [DisplayName("Получение всех наборов должно включать вновь созданные наборы")]
     public async Task GetAllDatasets_ShouldIncludeNewlyCreatedDatasets()
     {
-        // Arrange
         var dataset1 = await CreateTestDatasetAsync();
         var dataset2 = await CreateTestDatasetAsync();
 
-        // Act
-        var (rsp, res) = await Endpoint();
+        var res = await Endpoint().IsSuccess();
 
-        // Assert
-        rsp.Should().BeSuccessful();
-        res.Should().Contain(d => d.Id == dataset1.Id);
-        res.Should().Contain(d => d.Id == dataset2.Id);
+        await Assert.That(res.Any(d => d.Id == dataset1.Id)).IsTrue();
+        await Assert.That(res.Any(d => d.Id == dataset2.Id)).IsTrue();
     }
 
-    [Fact(DisplayName = "Удаленный набор должен исчезать из списка")]
+    [Test]
+    [DisplayName("Удаленный набор должен исчезать из списка")]
     public async Task DeletedDataset_ShouldDisappearFromList()
     {
-        // Arrange
         var dataset = await CreateTestDatasetAsync();
 
-        // Delete it
-        var deleteRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(
-            new DeleteDataSetRequest { Id = dataset.Id });
-        deleteRsp.Should().BeSuccessful();
+        var deleteRsp = await App.Client.DELETEAsync<DeleteDatasetEndpoint, DeleteDataSetRequest>(new DeleteDataSetRequest
+        {
+            Id = dataset.Id,
+        });
+        await Assert.That(deleteRsp.IsSuccessStatusCode).IsTrue();
 
-        // Act
         var (rsp, res) = await Endpoint();
 
-        // Assert
-        rsp.Should().BeSuccessful();
-        res.Should().NotContain(d => d.Id == dataset.Id);
+        await Assert.That(rsp.StatusCode).IsEqualTo(HttpStatusCode.OK);
+        await Assert.That(res.Any(d => d.Id == dataset.Id)).IsFalse();
     }
 }
+

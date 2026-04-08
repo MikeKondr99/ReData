@@ -1,4 +1,7 @@
-﻿using System.Net.Http.Json;
+using System.Linq.Expressions;
+using System.Net;
+using System.Net.Http.Json;
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
@@ -6,12 +9,22 @@ using ReData.DemoApp.Endpoints.Datasets.Create;
 using ReData.DemoApp.Endpoints.Datasets.GetById;
 using ReData.DemoApp.Endpoints.Datasets.Update;
 using ReData.DemoApp.Transformations;
+using TUnit.Core;
 
 namespace ReData.DemoApp.Tests.Datasets;
 
-public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
+public class UpdateDatasetTests
+    : DatasetTestBase
 {
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
+
+    private static UpdateDataSetRequest Request(Guid id) => new()
+    {
+        Id = id,
+        Name = FakeDatasetName(),
+        Transformations = [],
+        ConnectorId = Guid.Empty,
+    };
 
     private Task<TestResult<TResponse>> Endpoint<TResponse>(UpdateDataSetRequest req) =>
         App.Client.PUTAsync<UpdateDatasetEndpoint, UpdateDataSetRequest, TResponse>(req);
@@ -22,7 +35,7 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
     private async Task<DataSetResponse> GetByIdShouldSucceed(Guid id)
     {
         var (rsp, res) = await GetByIdEndpoint(id);
-        rsp.Should().BeSuccessful();
+        await Assert.That((int)rsp.StatusCode).IsBetween(200, 299);
         return res;
     }
 
@@ -37,415 +50,296 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
             ConnectorId = connectorId ?? Guid.Empty,
         };
 
-        var (rsp, res) = await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req);
-        rsp.Should().BeSuccessful();
-        return res;
+        return await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req).IsSuccess();
     }
 
-    private Task<List<TransformationEntity>> GetTransformationsAsync(Guid dataSetId) =>
-        Db.Set<TransformationEntity>()
+    private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
+    {
+        return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
+    }
+
+    private async Task<DataSetEntity?> FindDataset(Guid id)
+    {
+        return await Db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
+    }
+
+    private async Task<List<TransformationEntity>> GetTransformationsAsync(Guid dataSetId)
+    {
+        return await Db.Set<TransformationEntity>()
+            .AsNoTracking()
             .Where(t => t.DataSetId == dataSetId)
             .OrderBy(t => t.Order)
             .ToListAsync();
-
-    [Fact(DisplayName = "Обновление набора с верными данными должно вернуть 'обновлено'")]
-    public async Task UpdateDataset_WithValidData_ShouldReturnUpdated()
-    {
-        // Arrange
-        var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
-        {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = [],
-            ConnectorId = Guid.Empty,
-        };
-
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
-        res.Name.Should().BeEquivalentTo(updateReq.Name);
-        res.Id.Should().Be(existingDataset.Id);
-        var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.Name.Should().Be(updateReq.Name);
     }
 
-    [Fact(DisplayName = "Обновление набора должно сбрасывать кэш GetById и возвращать свежие данные")]
+    [Test]
+    [DisplayName("Обновление набора с верными данными должно вернуть 'обновлено'")]
+    public async Task UpdateDataset_WithValidData_ShouldReturnUpdated()
+    {
+        var existingDataset = await CreateTestDatasetAsync();
+        var updateReq = Request(existingDataset.Id);
+
+        var res = await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
+
+        await Assert.That(res.Name).IsEqualTo(updateReq.Name);
+        await Assert.That(res.Id).IsEqualTo(existingDataset.Id);
+
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+        await Assert.That(api.Name).IsEqualTo(updateReq.Name);
+    }
+
+    [Test]
+    [DisplayName("Обновление набора должно сбрасывать кэш GetById и возвращать свежие данные")]
     public async Task UpdateDataset_AfterCachedGetById_ShouldReturnFreshGetById()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
         var updatedName = FakeDatasetName();
 
-        // Warm cache for GetById.
-        var (firstGetRsp, firstGet) = await GetByIdEndpoint(existingDataset.Id);
-        firstGetRsp.Should().BeSuccessful();
-        firstGet.Name.Should().Be(existingDataset.Name);
+        var firstGet = await GetByIdShouldSucceed(existingDataset.Id);
+        await Assert.That(firstGet.Name).IsEqualTo(existingDataset.Name);
 
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
             Name = updatedName,
-            Transformations = [],
-            ConnectorId = Guid.Empty,
         };
 
-        // Act
-        var (updateRsp, _) = await Endpoint<UpdateDataSetResponse>(updateReq);
-        var (secondGetRsp, secondGet) = await GetByIdEndpoint(existingDataset.Id);
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
+        var secondGet = await GetByIdShouldSucceed(existingDataset.Id);
 
-        // Assert
-        updateRsp.Should().BeSuccessful();
-        secondGetRsp.Should().BeSuccessful();
-        secondGet.Name.Should().Be(updatedName);
+        await Assert.That(secondGet.Name).IsEqualTo(updatedName);
     }
 
-    [Fact(DisplayName = "Обновление набора с пустым именем должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с пустым именем должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithEmptyName_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
             Name = "",
-            Transformations = [],
-            ConnectorId = Guid.Empty,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("name");
-
-        // Verify dataset wasn't updated
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset.Id &&
-            ds.Name == existingDataset.Name);
+        await Assert.That(rsp).IsValidationError("name");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset.Id && ds.Name == existingDataset.Name)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с null именем должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с null именем должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithNullName_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
             Name = null!,
-            Transformations = [],
-            ConnectorId = Guid.Empty,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("name");
-
-        // Verify dataset wasn't updated
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset.Id &&
-            ds.Name == existingDataset.Name);
+        await Assert.That(rsp).IsValidationError("name");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset.Id && ds.Name == existingDataset.Name)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с слишком коротким именем должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с слишком коротким именем должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithShortName_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
             Name = "x",
-            Transformations = [],
-            ConnectorId = Guid.Empty,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("name");
-
-        // Verify dataset wasn't updated
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset.Id &&
-            ds.Name == existingDataset.Name);
+        await Assert.That(rsp).IsValidationError("name");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset.Id && ds.Name == existingDataset.Name)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с не уникальным именем должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с не уникальным именем должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithNotUniqueName_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset1 = await CreateTestDatasetAsync();
         var existingDataset2 = await CreateTestDatasetAsync();
 
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset1.Id) with
         {
-            Id = existingDataset1.Id,
-            Name = existingDataset2.Name, // Try to use name from another dataset
-            Transformations = [],
-            ConnectorId = Guid.Empty,
+            Name = existingDataset2.Name,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("name");
-
-        // Verify dataset wasn't updated
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset1.Id &&
-            ds.Name == existingDataset1.Name);
+        await Assert.That(rsp).IsValidationError("name");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset1.Id && ds.Name == existingDataset1.Name)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с null трансформациями должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с null трансформациями должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithNullTransformations_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
             Transformations = null!,
-            ConnectorId = Guid.Empty,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("transformations");
-
-        // Verify dataset wasn't updated
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset.Id &&
-            ds.Name == existingDataset.Name);
+        await Assert.That(rsp).IsValidationError("transformations");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset.Id && ds.Name == existingDataset.Name)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с тем же именем должно быть успешным")]
+    [Test]
+    [DisplayName("Обновление набора с тем же именем должно быть успешным")]
     public async Task UpdateDataset_WithSameName_ShouldReturnSuccess()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = existingDataset.Name, // Same name should be allowed
-            Transformations = [],
-            ConnectorId = Guid.Empty,
+            Name = existingDataset.Name,
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var res = await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
 
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
-        res.Name.Should().BeEquivalentTo(existingDataset.Name);
-        res.Id.Should().Be(existingDataset.Id);
+        await Assert.That(res.Name).IsEqualTo(existingDataset.Name);
+        await Assert.That(res.Id).IsEqualTo(existingDataset.Id);
+
         var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.Name.Should().Be(existingDataset.Name);
+        await Assert.That(api.Name).IsEqualTo(existingDataset.Name);
     }
 
-    [Fact(DisplayName = "Обновление несуществующего набора должно вернуть 'не найдено'")]
+    [Test]
+    [DisplayName("Обновление несуществующего набора должно вернуть 'не найдено'")]
     public async Task UpdateDataset_WithNonExistentId_ShouldReturnNotFound()
     {
-        // Arrange
         var nonExistentId = Guid.NewGuid();
-        var updateReq = new UpdateDataSetRequest
-        {
-            Id = nonExistentId,
-            Name = FakeDatasetName(),
-            Transformations = [],
-            ConnectorId = Guid.Empty,
-        };
+        var updateReq = Request(nonExistentId);
 
-        // Act
         var (rsp, _) = await Endpoint<UpdateDataSetResponse>(updateReq);
 
-        // Assert
-        rsp.StatusCode.Should().Be(HttpStatusCode.NotFound);
-
-        // Verify no dataset was created with this ID
-        Db.DataSets.Should().NotContain(ds => ds.Id == nonExistentId);
+        await Assert.That(rsp.StatusCode).IsEqualTo(HttpStatusCode.NotFound);
+        await Assert.That(await DatasetExists(ds => ds.Id == nonExistentId)).IsFalse();
     }
 
-
-    [Fact(DisplayName = "Обновление набора с существующим коннектором должно быть успешным")]
+    [Test]
+    [DisplayName("Обновление набора с существующим коннектором должно быть успешным")]
     public async Task UpdateDataset_WithExistingConnector_ShouldReturnSuccess()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync(Guid.Empty);
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = [],
             ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
+
+        await Assert.That(api.DataConnectorId).IsEqualTo(App.Data.ExistingDataConnector.Id);
     }
 
-    [Fact(DisplayName = "Обновление набора с несуществующим коннектором должно вернуть ошибку валидации")]
+    [Test]
+    [DisplayName("Обновление набора с несуществующим коннектором должно вернуть ошибку валидации")]
     public async Task UpdateDataset_WithNonExistentConnector_ShouldReturnValidationError()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync(Guid.Empty);
         var nonExistentConnectorId = Guid.NewGuid();
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = [],
             ConnectorId = nonExistentConnectorId,
         };
 
-        // Act
         var rsp = await Endpoint<ErrorResponse>(updateReq);
 
-        // Assert
-        rsp.ShouldBeError("connectorId");
-        Db.DataSets.Should().Contain(ds =>
-            ds.Id == existingDataset.Id &&
-            ds.DataConnectorId == Guid.Empty); // Should remain unchanged
+        await Assert.That(rsp).IsValidationError("connectorId");
+        await Assert.That(await DatasetExists(ds => ds.Id == existingDataset.Id && ds.DataConnectorId == Guid.Empty)).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с пустым GUID коннектором должно быть успешным")]
+    [Test]
+    [DisplayName("Обновление набора с пустым GUID коннектором должно быть успешным")]
     public async Task UpdateDataset_WithEmptyGuidConnector_ShouldReturnSuccess()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
-        var updateReq = new UpdateDataSetRequest
-        {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = [],
-            ConnectorId = Guid.Empty,
-        };
+        var updateReq = Request(existingDataset.Id);
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.DataConnectorId.Should().Be(Guid.Empty);
+
+        await Assert.That(api.DataConnectorId).IsEqualTo(Guid.Empty);
     }
 
-    [Fact(DisplayName = "Обновление коннектора на существующий должно быть успешным")]
+    [Test]
+    [DisplayName("Обновление коннектора на существующий должно быть успешным")]
     public async Task UpdateDataset_ChangingToExistingConnector_ShouldReturnSuccess()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync(Guid.Empty);
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = existingDataset.Name, // Keep same name
-            Transformations = [],
+            Name = existingDataset.Name,
             ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
+
+        await Assert.That(api.DataConnectorId).IsEqualTo(App.Data.ExistingDataConnector.Id);
     }
 
-    [Fact(DisplayName = "Обновление набора с валидным коннектором и трансформациями должно быть успешным")]
+    [Test]
+    [DisplayName("Обновление набора с валидным коннектором и трансформациями должно быть успешным")]
     public async Task UpdateDataset_WithValidConnectorAndTransformations_ShouldReturnSuccess()
     {
-        // Arrange
         var existingDataset = await CreateTestDatasetAsync(Guid.Empty);
-        TransformationBlock[] transformations =
-        [
-            new TransformationBlock()
-            {
-                Enabled = true,
-                Transformation = new OrderByTransformation()
+
+        var updateReq = Request(existingDataset.Id) with
+        {
+            ConnectorId = App.Data.ExistingDataConnector.Id,
+            Transformations =
+            [
+                new OrderByTransformation
                 {
                     Items =
                     [
-                        new OrderItem()
-                        {
-                            Expression = "field",
-                            Descending = true,
-                        }
-                    ]
-                }
-            }
-        ];
+                        "field".Desc(),
+                    ],
+                }.Block(),
+            ],
+        };
 
-        var updateReq = new UpdateDataSetRequest
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
+        var api = await GetByIdShouldSucceed(existingDataset.Id);
+
+        await Assert.That(api.DataConnectorId).IsEqualTo(App.Data.ExistingDataConnector.Id);
+    }
+
+    [Test]
+    [DisplayName("Обновление набора с тем же коннектором должно быть успешным")]
+    public async Task UpdateDataset_WithSameConnector_ShouldReturnSuccess()
+    {
+        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = transformations,
             ConnectorId = App.Data.ExistingDataConnector.Id,
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
+        await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
+
+        await Assert.That(api.DataConnectorId).IsEqualTo(App.Data.ExistingDataConnector.Id);
     }
 
-    [Fact(DisplayName = "Обновление набора с тем же коннектором должно быть успешным")]
-    public async Task UpdateDataset_WithSameConnector_ShouldReturnSuccess()
-    {
-        // Arrange
-        var existingDataset = await CreateTestDatasetAsync(App.Data.ExistingDataConnector.Id);
-        var updateReq = new UpdateDataSetRequest
-        {
-            Id = existingDataset.Id,
-            Name = FakeDatasetName(),
-            Transformations = [],
-            ConnectorId = App.Data.ExistingDataConnector.Id, // Same connector
-        };
-
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
-
-
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
-        var api = await GetByIdShouldSucceed(existingDataset.Id);
-        api.DataConnectorId.Should().Be(App.Data.ExistingDataConnector.Id);
-    }
-
-    [Fact(DisplayName = "Обновление набора должно полностью заменить список трансформаций")]
+    [Test]
+    [DisplayName("Обновление набора должно полностью заменить список трансформаций")]
     public async Task UpdateDataset_ShouldReplaceTransformationsInStorage()
     {
-        // Arrange
         var originalTransformations = new List<TransformationBlock>
         {
             new SelectTransformation
             {
                 Items =
                 [
-                    new SelectItem
-                    {
-                        Field = "id",
-                        Expression = "id",
-                    }
+                    "id".As("id"),
                 ],
                 RestOptions = SelectRestOptions.Delete,
             }.Block(),
@@ -459,46 +353,36 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
             connectorId: App.Data.ExistingDataConnector.Id,
             transformations: originalTransformations);
 
-        var updateTransformations = new List<TransformationBlock>
+        var updateReq = Request(existingDataset.Id) with
         {
-            new SelectTransformation
-            {
-                Items =
-                [
-                    new SelectItem
-                    {
-                        Field = "id2",
-                        Expression = "id * 2",
-                    }
-                ],
-                RestOptions = SelectRestOptions.Delete,
-            }.Block(),
-        };
-
-        var updateReq = new UpdateDataSetRequest
-        {
-            Id = existingDataset.Id,
             Name = existingDataset.Name,
             ConnectorId = App.Data.ExistingDataConnector.Id,
-            Transformations = updateTransformations,
+            Transformations =
+            [
+                new SelectTransformation
+                {
+                    Items =
+                    [
+                        "id * 2".As("id2"),
+                    ],
+                    RestOptions = SelectRestOptions.Delete,
+                }.Block(),
+            ],
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var res = await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var stored = await GetTransformationsAsync(existingDataset.Id);
 
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
-        res.Transformations.Should().HaveCount(1);
-        stored.Should().HaveCount(1);
-        stored[0].Order.Should().Be(0);
-        stored[0].Data.Should().BeOfType<SelectTransformation>();
+        await Assert.That(res.Transformations.Count).IsEqualTo(1);
+        await Assert.That(stored.Count).IsEqualTo(1);
+        await Assert.That((int)stored[0].Order).IsEqualTo(0);
+        await Assert.That(stored[0].Data is SelectTransformation).IsTrue();
     }
 
-    [Fact(DisplayName = "Обновление набора с пустыми трансформациями должно очистить старые")]
+    [Test]
+    [DisplayName("Обновление набора с пустыми трансформациями должно очистить старые")]
     public async Task UpdateDataset_WithEmptyTransformations_ShouldDeleteExistingTransformations()
     {
-        // Arrange
         var originalTransformations = new List<TransformationBlock>
         {
             new WhereTransformation
@@ -511,34 +395,32 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
             connectorId: App.Data.ExistingDataConnector.Id,
             transformations: originalTransformations);
 
-        var updateReq = new UpdateDataSetRequest
+        var updateReq = Request(existingDataset.Id) with
         {
-            Id = existingDataset.Id,
             Name = existingDataset.Name,
             ConnectorId = App.Data.ExistingDataConnector.Id,
-            Transformations = [],
         };
 
-        // Act
-        var (rsp, res) = await Endpoint<UpdateDataSetResponse>(updateReq);
+        var res = await Endpoint<UpdateDataSetResponse>(updateReq).IsSuccess();
         var stored = await GetTransformationsAsync(existingDataset.Id);
 
-        // Assert
-        rsp.IsSuccessStatusCode.Should().BeTrue();
-        res.Transformations.Should().BeEmpty();
-        stored.Should().BeEmpty();
+        await Assert.That(res.Transformations.Count).IsEqualTo(0);
+        await Assert.That(stored.Count).IsEqualTo(0);
     }
 
-    [Fact(DisplayName = "Update с payload из GetById должен сохранять трансформации")]
+    [Test]
+    [DisplayName("Update с payload из GetById должен сохранять трансформации")]
     public async Task UpdateDataset_WithRawPayloadFromGetById_ShouldKeepTransformations()
     {
-        // Arrange
         var originalTransformations = new List<TransformationBlock>
         {
             new WhereTransformation { Condition = "id > 0" }.Block(),
             new SelectTransformation
             {
-                Items = [new SelectItem { Field = "id", Expression = "id" }],
+                Items =
+                [
+                    "id".As("id"),
+                ],
                 RestOptions = SelectRestOptions.Delete,
             }.Block(),
         };
@@ -548,7 +430,7 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
             transformations: originalTransformations);
 
         var existing = await GetByIdShouldSucceed(existingDataset.Id);
-        existing.Transformations.Should().HaveCount(2);
+        await Assert.That(existing.Transformations.Count).IsEqualTo(2);
 
         var payload = new
         {
@@ -563,12 +445,14 @@ public class UpdateDatasetTests(App App) : DemoAppTestBase<App>(App)
             }),
         };
 
-        // Act
         var updateRsp = await App.Client.PutAsJsonAsync($"/api/datasets/{existingDataset.Id}", payload);
         var afterUpdate = await GetByIdShouldSucceed(existingDataset.Id);
+        var stored = await FindDataset(existingDataset.Id);
 
-        // Assert
-        updateRsp.Should().BeSuccessful();
-        afterUpdate.Transformations.Should().HaveCount(2);
+        await Assert.That(updateRsp.IsSuccessStatusCode).IsTrue();
+        await Assert.That(afterUpdate.Transformations.Count).IsEqualTo(2);
+        await Assert.That(stored).IsNotNull();
+        await Assert.That(stored!.Name).IsEqualTo($"{existing.Name}_updated");
     }
 }
+

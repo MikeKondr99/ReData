@@ -1,26 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <IsTestProject>true</IsTestProject>
-        <NoWarn>CA1707</NoWarn>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+
+        <IsAotCompatible>true</IsAotCompatible>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FastEndpoints.Testing"/>
-        <!-- BASE -->
-        <PackageReference Include="coverlet.collector"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="xunit"/>
-        <PackageReference Include="Xunit.SkippableFact"/>
-        <PackageReference Include="FluentAssertions"/>
-        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="TUnit"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing"/>
 
+        <PackageReference Include="Npgsql"/>
+        
         <PackageReference Include="TestContainers"/>
         <PackageReference Include="TestContainers.PostgreSql"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -28,18 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Init\Data\test.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Init\Data\numbers.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Init\Data\single.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Init\Data\empty.csv">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Include="Init\Data\**\*.csv" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

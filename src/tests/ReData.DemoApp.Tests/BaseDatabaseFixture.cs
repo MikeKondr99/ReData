@@ -1,7 +1,7 @@
 using Npgsql;
 using TUnit.Core.Interfaces;
 
-namespace ReData.DemoApp.TUnit;
+namespace ReData.DemoApp.Tests;
 
 public abstract class BaseDatabaseFixture : IAsyncInitializer, IAsyncDisposable
 {

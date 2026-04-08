@@ -6,7 +6,7 @@ using ReData.DemoApp.Services;
 using ReData.DemoApp.Tests.Init;
 using TUnit.Core.Interfaces;
 
-namespace ReData.DemoApp.TUnit;
+namespace ReData.DemoApp.Tests;
 
 public sealed class DefaultReDataApp : WebApplicationFactory<Program>, IAsyncInitializer, IAsyncDisposable
 {
