@@ -2,7 +2,6 @@ using System.Linq.Expressions;
 using System.Net;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
@@ -12,10 +11,8 @@ using TUnit.Core;
 namespace ReData.DemoApp.TUnit.Datasets;
 
 public class DeleteDatasetTests
+    : DatasetTestBase
 {
-    [ClassDataSource<DefaultReDataApp>(Shared = SharedType.PerTestSession)]
-    public required DefaultReDataApp App { get; init; }
-
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
     private static DeleteDataSetRequest Request(Guid id) => new()
@@ -40,9 +37,7 @@ public class DeleteDatasetTests
 
     private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.DataSets.AsNoTracking().AnyAsync(predicate);
+        return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
     }
 
     [Test]

@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
@@ -15,10 +14,8 @@ using TUnit.Core;
 namespace ReData.DemoApp.TUnit.Datasets;
 
 public class UpdateDatasetTests
+    : DatasetTestBase
 {
-    [ClassDataSource<DefaultReDataApp>(Shared = SharedType.PerTestSession)]
-    public required DefaultReDataApp App { get; init; }
-
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
     private static UpdateDataSetRequest Request(Guid id) => new()
@@ -58,23 +55,17 @@ public class UpdateDatasetTests
 
     private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.DataSets.AsNoTracking().AnyAsync(predicate);
+        return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
     }
 
     private async Task<DataSetEntity?> FindDataset(Guid id)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
+        return await Db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
     }
 
     private async Task<List<TransformationEntity>> GetTransformationsAsync(Guid dataSetId)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.Set<TransformationEntity>()
+        return await Db.Set<TransformationEntity>()
             .AsNoTracking()
             .Where(t => t.DataSetId == dataSetId)
             .OrderBy(t => t.Order)

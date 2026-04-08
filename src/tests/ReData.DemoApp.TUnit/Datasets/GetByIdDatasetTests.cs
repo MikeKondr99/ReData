@@ -10,10 +10,8 @@ using TUnit.Core;
 namespace ReData.DemoApp.TUnit.Datasets;
 
 public class GetDatasetByIdTests
+    : DatasetTestBase
 {
-    [ClassDataSource<DefaultReDataApp>(Shared = SharedType.PerTestSession)]
-    public required DefaultReDataApp App { get; init; }
-
     private static string FakeDatasetName() => $"dataset{Guid.NewGuid().ToString("N")[..6]}";
 
     private static GetDatasetByIdRequest Request(Guid id) => new()

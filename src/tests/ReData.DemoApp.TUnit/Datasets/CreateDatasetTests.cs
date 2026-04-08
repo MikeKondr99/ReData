@@ -1,7 +1,6 @@
 using System.Linq.Expressions;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Endpoints.Datasets;
 using ReData.DemoApp.Endpoints.Datasets.Create;
@@ -12,10 +11,8 @@ using TUnit.Core;
 namespace ReData.DemoApp.TUnit.Datasets;
 
 public class CreateDatasetTests
+    : DatasetTestBase
 {
-    [ClassDataSource<DefaultReDataApp>(Shared = SharedType.PerTestSession)]
-    public required DefaultReDataApp App { get; init; }
-
     private static DataSetField TextField(string name) => Field(name, DataType.Text);
     private static DataSetField IntField(string name) => Field(name, DataType.Integer);
     private static DataSetField BoolField(string name) => Field(name, DataType.Bool);
@@ -42,16 +39,12 @@ public class CreateDatasetTests
 
     private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.DataSets.AsNoTracking().AnyAsync(predicate);
+        return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
     }
 
     private async Task<DataSetEntity?> FindDataset(Guid id)
     {
-        await using var scope = App.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDatabaseContext>();
-        return await db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
+        return await Db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
     }
 
     private static async Task AssertFieldListEquivalent(IReadOnlyCollection<DataSetField>? actual, params DataSetField[] expected)
