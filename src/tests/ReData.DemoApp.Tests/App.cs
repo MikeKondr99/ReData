@@ -15,7 +15,6 @@ namespace ReData.DemoApp.Tests;
 public class App : AppFixture<Services.DwhService>
 {
     private static readonly PostgreSqlContainer PostgresContainer = new PostgreSqlBuilder()
-        .WithName("ReData-Tests")
         .WithImage("postgres:15-alpine")
         .WithDatabase("test_db")
         .WithUsername("postgres")

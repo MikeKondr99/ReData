@@ -6,7 +6,6 @@ namespace ReData.DemoApp.TUnit;
 public sealed class PostgresDocker : IAsyncInitializer, IAsyncDisposable
 {
     public PostgreSqlContainer Container { get; } = new PostgreSqlBuilder()
-        .WithName("ReData-TUnit")
         .WithImage("postgres:15-alpine")
         .WithDatabase("postgres")  // базовая БД, из неё будем CREATE DATABASE ...
         .WithUsername("postgres")
