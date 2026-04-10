@@ -8,7 +8,7 @@ namespace ReData.DemoApp.Database;
 
 public sealed class ApplicationDatabaseContext : DbContext
 {
-    public DbSet<DataSetEntity> DataSets => Set<DataSetEntity>();
+    public DbSet<DatasetEntity> DataSets => Set<DatasetEntity>();
 
     public DbSet<DataConnectorEntity> DataConnectors => Set<DataConnectorEntity>();
 

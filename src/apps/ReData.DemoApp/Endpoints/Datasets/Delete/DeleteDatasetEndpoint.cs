@@ -26,7 +26,7 @@ public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, 
 
     public override async Task<Results<Ok, NotFound>> ExecuteAsync(DeleteDataSetRequest req, CancellationToken ct)
     {
-        var deleted = await Datasets.DeleteAsync(new Id<DataSetEntity>(req.Id), ct);
+        var deleted = await Datasets.DeleteAsync(new Id<DatasetEntity>(req.Id), ct);
         return deleted ? TypedResults.Ok() : TypedResults.NotFound();
     }
 }

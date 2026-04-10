@@ -1,11 +1,13 @@
-﻿using ReData.DemoApp.Database.Entities;
+﻿using System.Linq.Expressions;
+using ReData.DemoApp.Database.Entities;
+using ReData.DemoApp.Repositories.Datasets;
 
 namespace ReData.DemoApp.Endpoints.Datasets.GetAll;
 
 /// <summary>
 /// Модель отображения набора данных в таблице
 /// </summary>
-public sealed record DataSetListItem
+public sealed record DataSetListItem : IProjection<DatasetEntity, DataSetListItem>
 {
     /// <summary>
     /// Id
@@ -36,4 +38,16 @@ public sealed record DataSetListItem
     /// Конечный набор полей при последнем сохранении
     /// </summary>
     public required IReadOnlyList<DataSetField>? FieldList { get; init; }
+    
+    public static Expression<Func<DatasetEntity, DataSetListItem>> Projection { get; } = (ds) => new DataSetListItem 
+    {
+        Id = ds.Id.ToGuid(),
+        Name = ds.Name,
+        CreatedAt = ds.CreatedAt,
+        UpdatedAt = ds.UpdatedAt,
+        FieldList = ds.FieldList,
+        RowsCount = ds.RowsCount,
+    };
+    
+    public static Func<IQueryable<DatasetEntity>, IQueryable<DatasetEntity>> Include { get; } = q => q;
 }

@@ -25,7 +25,7 @@ public class GetAllDatasetsEndpoint : EndpointWithoutRequest<Ok<List<DataSetList
 
     public override async Task<Ok<List<DataSetListItem>>> ExecuteAsync(CancellationToken ct)
     {
-        var response = await Datasets.GetAllAsync(ct);
+        var response = await Datasets.GetList<DataSetListItem>(ct);
         return TypedResults.Ok(response);
     }
 }

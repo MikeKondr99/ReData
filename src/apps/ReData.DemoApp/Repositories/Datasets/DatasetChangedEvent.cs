@@ -13,7 +13,7 @@ public enum DatasetMutationType
 
 public sealed record DatasetChangedEvent : IEvent
 {
-    public required Id<DataSetEntity> DatasetId { get; init; }
+    public required Id<DatasetEntity> DatasetId { get; init; }
 
     public required DatasetMutationType MutationType { get; init; }
 

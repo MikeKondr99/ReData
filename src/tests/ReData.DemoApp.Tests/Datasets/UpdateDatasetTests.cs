@@ -53,12 +53,12 @@ public class UpdateDatasetTests
         return await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req).IsSuccess();
     }
 
-    private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
+    private async Task<bool> DatasetExists(Expression<Func<DatasetEntity, bool>> predicate)
     {
         return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
     }
 
-    private async Task<DataSetEntity?> FindDataset(Guid id)
+    private async Task<DatasetEntity?> FindDataset(Guid id)
     {
         return await Db.DataSets.AsNoTracking().FirstOrDefaultAsync(ds => ds.Id == id);
     }

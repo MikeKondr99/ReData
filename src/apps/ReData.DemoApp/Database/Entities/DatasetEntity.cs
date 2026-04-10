@@ -9,9 +9,9 @@ namespace ReData.DemoApp.Database.Entities;
 /// Сущность для хранения в БД
 /// отображает набор данных
 /// </summary>
-public sealed record DataSetEntity : BaseEntity
+public sealed record DatasetEntity : BaseEntity
 {
-    public required Id<DataSetEntity> Id { get; init; }
+    public required Id<DatasetEntity> Id { get; init; }
 
     public required string Name { get; set; }
 

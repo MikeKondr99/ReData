@@ -6,15 +6,15 @@ using StrictId.EFCore.ValueConverters;
 
 namespace ReData.DemoApp.Database.Configs;
 
-public sealed class DataSetConfiguration : IEntityTypeConfiguration<DataSetEntity>
+public sealed class DataSetConfiguration : IEntityTypeConfiguration<DatasetEntity>
 {
     private readonly JsonSerializerOptions jsonSerializerOptions = new();
 
-    public void Configure(EntityTypeBuilder<DataSetEntity> builder)
+    public void Configure(EntityTypeBuilder<DatasetEntity> builder)
     {
         builder.HasIndex(x => x.Name).IsUnique();
 
-        builder.Property(ds => ds.Id).HasConversion<IdTypedToGuidConverter<DataSetEntity>>();
+        builder.Property(ds => ds.Id).HasConversion<IdTypedToGuidConverter<DatasetEntity>>();
 
         builder.Property(t => t.FieldList).HasConversion(
             d => JsonSerializer.Serialize(d, jsonSerializerOptions),

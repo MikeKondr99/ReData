@@ -13,7 +13,7 @@ public sealed class TransformationConfiguration : IEntityTypeConfiguration<Trans
 
     public void Configure(EntityTypeBuilder<TransformationEntity> builder)
     {
-        builder.Property(x => x.DataSetId).HasConversion<IdTypedToGuidConverter<DataSetEntity>>();
+        builder.Property(x => x.DataSetId).HasConversion<IdTypedToGuidConverter<DatasetEntity>>();
 
         builder.HasKey(x => new
         {
@@ -22,7 +22,7 @@ public sealed class TransformationConfiguration : IEntityTypeConfiguration<Trans
         });
 
         builder
-            .HasOne<DataSetEntity>()
+            .HasOne<DatasetEntity>()
             .WithMany(ds => ds.Transformations)
             .HasForeignKey(ds => ds.DataSetId)
             .OnDelete(DeleteBehavior.Cascade);

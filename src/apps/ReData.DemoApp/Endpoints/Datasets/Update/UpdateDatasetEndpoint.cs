@@ -31,7 +31,7 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
         var updated = await Datasets.UpdateAsync(
             new UpdateDatasetData
             {
-                Id = new Id<DataSetEntity>(req.Id),
+                Id = new Id<DatasetEntity>(req.Id),
                 Name = req.Name,
                 ConnectorId = req.ConnectorId,
                 Transformations = req.Transformations,

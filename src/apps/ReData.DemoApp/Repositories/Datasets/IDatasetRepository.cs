@@ -6,15 +6,16 @@ namespace ReData.DemoApp.Repositories.Datasets;
 
 public interface IDatasetRepository
 {
-    Task<List<DataSetListItem>> GetAllAsync(CancellationToken ct);
+    Task<List<TOut>> GetList<TOut>(CancellationToken ct)
+    where TOut : IProjection<DatasetEntity, TOut>;
 
-    Task<DataSetEntity?> GetByIdAsync(Id<DataSetEntity> id, CancellationToken ct);
+    Task<DatasetEntity?> GetByIdAsync(Id<DatasetEntity> id, CancellationToken ct);
 
-    Task<DataSetEntity?> GetByNameAsync(string name, CancellationToken ct);
+    Task<DatasetEntity?> GetByNameAsync(string name, CancellationToken ct);
 
-    Task<DataSetEntity> CreateAsync(CreateDatasetData data, CancellationToken ct);
+    Task<DatasetEntity> CreateAsync(CreateDatasetData data, CancellationToken ct);
 
     Task<bool> UpdateAsync(UpdateDatasetData data, CancellationToken ct);
 
-    Task<bool> DeleteAsync(Id<DataSetEntity> id, CancellationToken ct);
+    Task<bool> DeleteAsync(Id<DatasetEntity> id, CancellationToken ct);
 }

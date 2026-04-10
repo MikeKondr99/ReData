@@ -1,6 +1,6 @@
-﻿using FastEndpoints;
+﻿using System.Linq.Expressions;
+using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Database.Entities;
@@ -12,31 +12,33 @@ using StrictId;
 
 namespace ReData.DemoApp.Repositories.Datasets;
 
+public interface IProjection<TIn, TSelf> where TIn : class
+{
+    public abstract static  Expression<Func<TIn,TSelf>> Projection { get; }
+    
+    public abstract static Func<IQueryable<TIn>, IQueryable<TIn>> Include { get; }
+}
+
+
 public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<DatasetRepository> logger) : IDatasetRepository
 {
-    public async Task<List<DataSetListItem>> GetAllAsync(CancellationToken ct)
+    public async Task<List<TOut>> GetList<TOut>(
+        CancellationToken ct)
+    where TOut : IProjection<DatasetEntity, TOut>
     {
-        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetAllAsync");
+        using var activity = Tracing.ReData.StartActivity();
 
-        return await db.DataSets
+        return await TOut.Include(db.DataSets)
             .OrderByDescending(ds => ds.UpdatedAt)
-            .Select(ds => new DataSetListItem
-            {
-                Id = ds.Id.ToGuid(),
-                Name = ds.Name,
-                CreatedAt = ds.CreatedAt,
-                UpdatedAt = ds.UpdatedAt,
-                FieldList = ds.FieldList,
-                RowsCount = ds.RowsCount,
-            })
+            .Select(TOut.Projection)
             .ToListAsync(ct);
     }
-
-    public async Task<DataSetEntity?> GetByIdAsync(Id<DataSetEntity> id, CancellationToken ct)
+    
+    public async Task<DatasetEntity?> GetByIdAsync(Id<DatasetEntity> id, CancellationToken ct)
     {
-        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByIdAsync");
+        using var activity = Tracing.ReData.StartActivity();
 
-        var entity = await db.Set<DataSetEntity>()
+        var entity = await db.Set<DatasetEntity>()
             .Include(ds => ds.Transformations)
             .Where(ds => ds.Id == id)
             .FirstOrDefaultAsync(ct);
@@ -45,24 +47,24 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         return entity;
     }
 
-    public async Task<DataSetEntity?> GetByNameAsync(string name, CancellationToken ct)
+    public async Task<DatasetEntity?> GetByNameAsync(string name, CancellationToken ct)
     {
-        using var activity = Tracing.ReData.StartActivity("DatasetRepository.GetByNameAsync");
+        using var activity = Tracing.ReData.StartActivity();
 
         return await db.DataSets
             .Where(ds => ds.Name == name)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<DataSetEntity> CreateAsync(CreateDatasetData data, CancellationToken ct)
+    public async Task<DatasetEntity> CreateAsync(CreateDatasetData data, CancellationToken ct)
     {
-        using var activity = Tracing.ReData.StartActivity("DatasetRepository.CreateAsync");
+        using var activity = Tracing.ReData.StartActivity();
 
-        var datasetId = Id<DataSetEntity>.NewId();
+        var datasetId = Id<DatasetEntity>.NewId();
         var now = DateTimeOffset.UtcNow;
         var metadata = await BuildMetadataAsync(data.ConnectorId, data.Transformations, ct);
 
-        var entity = new DataSetEntity
+        var entity = new DatasetEntity
         {
             Id = datasetId,
             Name = data.Name,
@@ -95,7 +97,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.UpdateAsync");
         logger.DatasetUpdateStarted(data.Id, data.Name, data.ConnectorId, data.Transformations.Count);
 
-        var current = await db.Set<DataSetEntity>()
+        var current = await db.Set<DatasetEntity>()
             .Where(ds => ds.Id == data.Id)
             .Select(ds => new { ds.Id, ds.Name })
             .FirstOrDefaultAsync(ct);
@@ -111,7 +113,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
-        await db.Set<DataSetEntity>()
+        await db.Set<DatasetEntity>()
             .Where(ds => ds.Id == data.Id)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(ds => ds.Name, data.Name)
@@ -147,7 +149,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
         return true;
     }
 
-    public async Task<bool> DeleteAsync(Id<DataSetEntity> id, CancellationToken ct)
+    public async Task<bool> DeleteAsync(Id<DatasetEntity> id, CancellationToken ct)
     {
         using var activity = Tracing.ReData.StartActivity("DatasetRepository.DeleteAsync");
 
@@ -182,7 +184,7 @@ public sealed class DatasetRepository(ApplicationDatabaseContext db, ILogger<Dat
     }
 
     private static List<TransformationEntity> MapTransformations(
-        Id<DataSetEntity> dataSetId,
+        Id<DatasetEntity> dataSetId,
         IReadOnlyList<TransformationBlock> transformations)
     {
         var result = new List<TransformationEntity>(transformations.Count);

@@ -46,7 +46,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
     {
         try
         {
-            var dataset = await Datasets.GetByIdAsync(new Id<DataSetEntity>(req.Id), ct);
+            var dataset = await Datasets.GetByIdAsync(new Id<DatasetEntity>(req.Id), ct);
 
             if (dataset is null)
             {

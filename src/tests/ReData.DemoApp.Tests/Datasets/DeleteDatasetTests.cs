@@ -35,7 +35,7 @@ public class DeleteDatasetTests
         return await App.Client.POSTAsync<CreateDatasetEndpoint, CreateDataSetRequest, CreateDataSetResponse>(req).IsSuccess();
     }
 
-    private async Task<bool> DatasetExists(Expression<Func<DataSetEntity, bool>> predicate)
+    private async Task<bool> DatasetExists(Expression<Func<DatasetEntity, bool>> predicate)
     {
         return await Db.DataSets.AsNoTracking().AnyAsync(predicate);
     }

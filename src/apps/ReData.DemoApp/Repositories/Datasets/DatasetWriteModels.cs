@@ -15,7 +15,7 @@ public sealed record CreateDatasetData
 
 public sealed record UpdateDatasetData
 {
-    public required Id<DataSetEntity> Id { get; init; }
+    public required Id<DatasetEntity> Id { get; init; }
 
     public required string Name { get; init; }
 

@@ -24,7 +24,7 @@ public sealed class UpdateDataSetRequestValidator : Validator<UpdateDataSetReque
                 }
 
                 var existing = await this.Resolve<IDatasetRepository>().GetByNameAsync(name, ct);
-                return existing is null || existing.Id == new Id<DataSetEntity>(req.Id);
+                return existing is null || existing.Id == new Id<DatasetEntity>(req.Id);
             });
 
         RuleFor(req => req.Transformations)
