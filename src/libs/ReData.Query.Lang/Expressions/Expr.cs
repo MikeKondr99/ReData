@@ -11,8 +11,7 @@ public abstract record Expr
 {
     private static ActivitySource activitySource = new ActivitySource("ReData.Query.Lang");
 
-    
-   public ExprSpan Span { get; init; }
+    public ExprSpan Span { get; init; }
 
     private int? hash;
     public int Hash => hash ??= GetHashCode();

@@ -119,6 +119,7 @@ public class DynamicTemplateTests
             .UnwrapErr();
         context.Errors[0].Message.Should().Be(expectedError);
     }
+    
     [Fact(DisplayName = "Ссылка на константу, объявленную ниже, должна завершаться ошибкой")]
     public void ResolveScriptShouldFailWhenConstantReferencesFutureDeclaration()
     {
@@ -129,6 +130,7 @@ public class DynamicTemplateTests
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'c'");
     }
+    
     [Fact(DisplayName = "Константно вычислимое выражение в константы без QuerySource должно завершаться ошибкой")]
     public void ResolveScriptShouldFailWhenNonLiteralConstConstantAndConstantQuerySourceIsMissing()
     {
@@ -139,6 +141,7 @@ public class DynamicTemplateTests
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'a'");
     }
+    
     [Fact(DisplayName = "Агрегатная константа без QuerySource должна завершаться ошибкой")]
     public void ResolveScriptShouldFailWhenAggregatedConstantAndConstantQuerySourceIsMissing()
     {
@@ -149,6 +152,7 @@ public class DynamicTemplateTests
         context.Errors.Should().ContainSingle();
         context.Errors[0].Message.Should().Contain("'a'");
     }
+    
     [Fact(DisplayName = "При наличии QuerySource сложная константа с отключенным runtime должна завершаться ошибкой runtime")]
     public void ResolveScriptShouldFailWithDisabledRuntimeWhenConstantQuerySourceIsProvided()
     {

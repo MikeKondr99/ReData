@@ -11,6 +11,7 @@ using ReData.DemoApp.Converters;
 using ReData.DemoApp.Database;
 using ReData.DemoApp.Endpoints.Datasets.Export;
 using ReData.DemoApp.Extensions;
+using ReData.DemoApp.Middleware;
 using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
@@ -176,6 +177,7 @@ app.Services.Migrate<TickerQDbContext>();
 // app.UseOutputCache();
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseMiddleware<ApiFailureLoggingMiddleware>();
 app.UseFastEndpoints(c =>
 {
     c.Endpoints.ShortNames = true;
