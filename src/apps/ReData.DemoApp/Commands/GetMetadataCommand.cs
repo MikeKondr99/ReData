@@ -1,7 +1,7 @@
 using FastEndpoints;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Transformations;
-using ReData.Query.Core.Value;
+using ReData.Query.Executors;
 
 namespace ReData.DemoApp.Commands;
 
@@ -51,7 +51,12 @@ public sealed class GetMetadataCommandHandler() : ICommandHandler<GetMetadataCom
 
             if (execution is not null)
             {
-                rowsCount = (int)((IntegerValue)execution.Data[0]["COUNT"]).Value;
+                await using (execution.DataReader)
+                await using (execution.Connection)
+                {
+                    var count = await execution.DataReader.GetScalarAsync<long>(ct);
+                    rowsCount = checked((int)count);
+                }
             }
         }
 

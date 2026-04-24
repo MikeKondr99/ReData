@@ -111,3 +111,50 @@ Invoke-WebRequest -UseBasicParsing http://localhost:18891/mcp
 ```powershell
 docker rm -f redata-dashboard
 ```
+
+## Генерация большого CSV для нагрузочного POC
+
+Быстрая генерация `1_000_000` строк и `20` колонок в потоковом режиме (без накопления в памяти):
+
+```powershell
+$out = "C:\temp\bench_1m_20cols.csv"
+$rows = 1000000
+$cols = 20
+
+$sw = [System.IO.StreamWriter]::new($out, $false, [System.Text.UTF8Encoding]::new($false), 1MB)
+try {
+  $header = 1..$cols | ForEach-Object { "c$_" }
+  $sw.WriteLine(($header -join ","))
+
+  for ($i = 1; $i -le $rows; $i++) {
+    $vals = [string[]]::new($cols)
+    $vals[0]  = $i
+    $vals[1]  = ($i % 1000)
+    $vals[2]  = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0:F4}", ($i * 0.01))
+    $vals[3]  = "name_$i"
+    $vals[4]  = (($i % 2) -eq 0).ToString().ToLowerInvariant()
+    $vals[5]  = (Get-Date "2024-01-01").AddSeconds($i).ToString("O")
+    $vals[6]  = ($i % 7)
+    $vals[7]  = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0:F6}", ($i * 0.001))
+    $vals[8]  = "group_$($i % 100)"
+    $vals[9]  = (($i % 3) -eq 0).ToString().ToLowerInvariant()
+    $vals[10] = ($i * 2)
+    $vals[11] = ($i * 3)
+    $vals[12] = ($i % 11)
+    $vals[13] = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0:F2}", ($i / 3.0))
+    $vals[14] = "city_$($i % 500)"
+    $vals[15] = (($i % 5) -eq 0).ToString().ToLowerInvariant()
+    $vals[16] = (1000000 - $i)
+    $vals[17] = [string]::Format([System.Globalization.CultureInfo]::InvariantCulture, "{0:F3}", [Math]::Sqrt($i))
+    $vals[18] = "tag_$($i % 1000)"
+    $vals[19] = (($i % 13) -eq 0).ToString().ToLowerInvariant()
+
+    $sw.WriteLine(($vals -join ","))
+  }
+}
+finally {
+  $sw.Dispose()
+}
+
+Get-Item $out | Select-Object FullName,Length,LastWriteTime
+```

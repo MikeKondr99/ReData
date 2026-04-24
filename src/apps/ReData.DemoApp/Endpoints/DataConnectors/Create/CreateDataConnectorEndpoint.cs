@@ -26,7 +26,7 @@ public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
         Group<DataConnectorsGroup>();
         AllowAnonymous();
         AllowFileUploads(dontAutoBindFormData: true);
-        // MaxRequestBodySize(50 * 1024 * 1024);
+        MaxRequestBodySize(300 * 1024 * 1024);
     }
 
     public override async Task<Results<Created<CreateDataConnectorResponse>, BadRequest<string>>> ExecuteAsync(

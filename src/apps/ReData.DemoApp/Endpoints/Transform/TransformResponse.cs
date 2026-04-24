@@ -1,5 +1,3 @@
-using ReData.Query.Core.Value;
-
 namespace ReData.DemoApp.Endpoints.Transform;
 
 /// <summary>
@@ -20,5 +18,5 @@ public sealed record TransformResponse
     /// <summary>
     /// Одна страница данных соответствующих запросу
     /// </summary>
-    public required IReadOnlyList<Dictionary<string, IValue>> Data { get; init; }
+    public required IAsyncEnumerable<object> Data { get; init; }
 }

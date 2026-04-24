@@ -5,4 +5,60 @@
     "reveal_target": "center",
     "allow_concurrent_runs": false
   },
+  {
+    "label": "dotnet: restore (solution)",
+    "command": "dotnet",
+    "args": ["restore", "ReData.slnx"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "dotnet: build (solution)",
+    "command": "dotnet",
+    "args": ["build", "ReData.slnx"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "dotnet: test (solution)",
+    "command": "dotnet",
+    "args": ["test", "ReData.slnx"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "dotnet: run DemoApp",
+    "command": "dotnet",
+    "args": ["run", "--project", "src/apps/ReData.DemoApp/ReData.DemoApp.csproj"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "dotnet: watch DemoApp",
+    "command": "dotnet",
+    "args": ["watch", "--project", "src/apps/ReData.DemoApp/ReData.DemoApp.csproj", "run"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "frontend: run Angular",
+    "command": "npm",
+    "args": ["run", "start"],
+    "cwd": "$ZED_WORKTREE_ROOT/src/apps/ReData.Angular",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "frontend: run Svelte",
+    "command": "npm",
+    "args": ["run", "dev"],
+    "cwd": "$ZED_WORKTREE_ROOT/src/apps/ReData.Svelte",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  }
 ]

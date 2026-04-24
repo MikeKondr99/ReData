@@ -31,6 +31,10 @@
 - `dotnet run --project src/ReData.DemoApp`
 - Docker-команды см. `docs/commands.md`
 
+## Сборка при блокировке файлов
+- Если сборка/тесты падают из-за блокировки `obj/bin` запущенным процессом (`.NET Host`, `ReData.DemoApp` и т.п.), агент должен завершить мешающий процесс и повторить команду.
+- Не использовать для этого обходные пути со сборкой в нестандартные директории (`.tmp`, `buildcheck`, кастомные `BaseIntermediateOutputPath/IntermediateOutputPath`).
+
 ## Кодстайл
 - Следовать `.editorconfig` и допускать минимальное число предупреждений.
 - Не использовать вложенные/цепочные тернарные операторы (пример из `src/ReData.Query/Functions/Library/ReflectionFunctions.cs`): при нескольких ветках использовать `switch`/`switch expression` или `if/else`.
