@@ -9,44 +9,56 @@ using Factory = ReData.Query.Factory;
 
 namespace ReData.DemoApp.Commands;
 
-public record ExecuteQueryCommand : ICommand<Result<TransformResponse, string>>
+public record ExecuteQueryCommand : ICommand<Result<ExecuteQueryCommandResult, string>>
 {
     public required Query.Core.Query Query { get; init; }
 }
 
+public sealed record ExecuteQueryCommandResult
+{
+    public required IReadOnlyList<TransformFieldViewModel> Fields { get; init; }
 
-public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler<ExecuteQueryCommand, Result<TransformResponse, string>>
+    public required DomainDbDataReader DataReader { get; init; }
+
+    public required NpgsqlConnection Connection { get; init; }
+}
+
+public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler<ExecuteQueryCommand, Result<ExecuteQueryCommandResult, string>>
 {
     /// <inheritdoc />
-    public async Task<Result<TransformResponse, string>> ExecuteAsync(ExecuteQueryCommand command, CancellationToken ct)
+    public async Task<Result<ExecuteQueryCommandResult, string>> ExecuteAsync(ExecuteQueryCommand command, CancellationToken ct)
     {
+        NpgsqlConnection? connection = null;
         try
         {
             var query = command.Query;
             var runner = Factory.CreateQueryExecuter(DatabaseType.PostgreSql);
-            await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
-            
-            var data = await runner
-                .GetDataReaderAsync(query, connection)
-                .CollectToObjects();
+            connection = new NpgsqlConnection(dwhService.ReadConnection);
 
-            var response = new TransformResponse
+            var reader = await runner.GetDataReaderAsync(query, connection);
+
+            var response = new ExecuteQueryCommandResult
             {
-                Data = data,
                 Fields = query.Fields().Select(f => new TransformFieldViewModel
                 {
                     Alias = f.Alias,
                     Type = f.Type.Type,
                     CanBeNull = f.Type.CanBeNull
                 }).ToList(),
-                Total = data.Count
+                DataReader = reader,
+                Connection = connection
             };
 
             return response;
         }
         catch (Exception ex)
         {
-            return $"Непредвиденная ошибка при запуске запроса:\r\n{ex.Message}";
+            if (connection is not null)
+            {
+                await connection.DisposeAsync();
+            }
+
+            return $"Непредвиденная ошибка при запуске запроса:{Environment.NewLine}{ex.Message}";
         }
     }
 }

@@ -1,6 +1,6 @@
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Transformations;
-using ReData.Query.Core.Value;
+using System.Text.Json;
 using TUnit.Core;
 
 namespace ReData.DemoApp.Tests.Transform;
@@ -10,8 +10,17 @@ public class TransformEndpointTests
     [ClassDataSource<DefaultReDataApp>(Shared = SharedType.PerTestSession)]
     public required DefaultReDataApp App { get; init; }
 
-    private Task<TestResult<TransformResponse>> EndpointOk(TransformRequest req) =>
-        App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformResponse>(req);
+    private sealed record TransformResponseForTest
+    {
+        public required IReadOnlyList<TransformFieldViewModel> Fields { get; init; }
+
+        public required long? Total { get; init; }
+
+        public required IReadOnlyList<Dictionary<string, object?>> Data { get; init; }
+    }
+
+    private Task<TestResult<TransformResponseForTest>> EndpointOk(TransformRequest req) =>
+        App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformResponseForTest>(req);
 
     private Task<TestResult<TransformErrorResponse>> EndpointError(TransformRequest req) =>
         App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformErrorResponse>(req);
@@ -27,6 +36,25 @@ public class TransformEndpointTests
 
     private static bool NoErrors(IReadOnlyList<ReData.Query.Common.ExprError>? errors) =>
         errors is null || errors.Count == 0;
+
+    private static long? Int(IReadOnlyDictionary<string, object?> row, string key)
+    {
+        if (!row.TryGetValue(key, out var value) || value is null)
+        {
+            return null;
+        }
+
+        return value switch
+        {
+            long l => l,
+            int i => i,
+            short s => s,
+            byte b => b,
+            JsonElement je when je.ValueKind == JsonValueKind.Number && je.TryGetInt64(out var jv) => jv,
+            JsonElement je when je.ValueKind == JsonValueKind.Null => null,
+            _ => Convert.ToInt64(value)
+        };
+    }
 
     [Test]
     public async Task Transform_GroupBy_InvalidGroupExpression_ShouldReturnErrorAtGroupIndexWithoutDuplicates()
@@ -177,8 +205,8 @@ public class TransformEndpointTests
         await Assert.That(ok.Fields.Select(f => f.Alias).Contains("total_rows_plus_one")).IsTrue();
 
         var first = ok.Data[0];
-        await Assert.That(first.Int("total_rows")).IsEqualTo(ok.Total);
-        await Assert.That(first.Int("total_rows_plus_one")).IsEqualTo(ok.Total + 1);
+        await Assert.That(Int(first, "total_rows")).IsEqualTo(ok.Total);
+        await Assert.That(Int(first, "total_rows_plus_one")).IsEqualTo(ok.Total + 1);
     }
 
     [Test]
@@ -244,7 +272,6 @@ public class TransformEndpointTests
         await Assert.That(rsp.StatusCode).IsEqualTo(HttpStatusCode.OK);
         await Assert.That(ok.Total).IsNotNull();
         await Assert.That(ok.Data.Count).IsGreaterThan(0);
-        await Assert.That(ok.Data[0].Int("total_rows")).IsEqualTo(ok.Total);
+        await Assert.That(Int(ok.Data[0], "total_rows")).IsEqualTo(ok.Total);
     }
 }
-
