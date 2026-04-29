@@ -8,15 +8,15 @@ namespace ReData.DemoApp.Jobs;
 
 public sealed class ClearUnusedDwhTableJob
 {
-    private DwhService DwhService { get; init; }
+    private IConnectionService ConnectionService { get; init; }
     private ApplicationDatabaseContext Db { get; init; }
 
     public ClearUnusedDwhTableJob(
         ApplicationDatabaseContext db,
-        DwhService dwhService
+        IConnectionService connectionService
     )
     {
-        DwhService = dwhService;
+        ConnectionService = connectionService;
         Db = db;
     }
 
@@ -26,10 +26,11 @@ public sealed class ClearUnusedDwhTableJob
         CancellationToken ct)
     {
         var connectedTables = Db.DataConnectors.Select(dc => dc.TableName);
-        var connectionString = DwhService.WriteConnection;
-
-        using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync(ct);
+        await using var rawConnection = await ConnectionService.GetConnectionAsync(ConnectionSource.DwhWrite, ct);
+        if (rawConnection is not NpgsqlConnection connection)
+        {
+            return;
+        }
 
         // Get all tables from public schema
         const string getTablesQuery =

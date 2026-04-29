@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.Extensions;
-using Npgsql;
 using Pattern.Unions;
 using ReData.DemoApp.Database.Entities;
 using ReData.DemoApp.Database.Migrations;
@@ -33,7 +32,9 @@ public record struct ApplyTransformationError
     public IEnumerable<IReadOnlyList<ExprError>>? Errors { get; init; }
 }
 
-public class ApplyTransformationsCommandHandler(DwhService dwhService)
+public class ApplyTransformationsCommandHandler(
+    ConnectorQueryBuilderService queryBuilderService,
+    IConnectionService connectionService)
     : ICommandHandler<ApplyTransformationsCommand, Result<QueryBuilder, ApplyTransformationError>>
 {
     /// <inheritdoc />
@@ -43,12 +44,12 @@ public class ApplyTransformationsCommandHandler(DwhService dwhService)
         var i = 0;
         try
         {
-            await using var connection = new NpgsqlConnection(dwhService.ReadConnection);
+            await using var connection = await connectionService.GetConnectionAsync(ConnectionSource.DwhRead, ct);
             var constantRuntime = new RunnerConstantRuntime(
                 Factory.CreateQueryExecuter(DatabaseType.PostgreSql),
                 connection);
 
-            var query = dwhService.GetQueryBuilder(command.DataConnectorId, constantRuntime);
+            var query = queryBuilderService.GetQueryBuilder(command.DataConnectorId, constantRuntime);
             for (i = 0; i < command.Transformations.Count; i++)
             {
                 var transformation = command.Transformations[i];

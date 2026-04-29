@@ -1,5 +1,5 @@
+﻿using System.Data.Common;
 using FastEndpoints;
-using Npgsql;
 using Pattern.Unions;
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Services;
@@ -20,20 +20,21 @@ public sealed record ExecuteQueryCommandResult
 
     public required DomainDbDataReader DataReader { get; init; }
 
-    public required NpgsqlConnection Connection { get; init; }
+    public required DbConnection Connection { get; init; }
 }
 
-public class ExecuteQueryCommandHandler(DwhService dwhService) : ICommandHandler<ExecuteQueryCommand, Result<ExecuteQueryCommandResult, string>>
+public class ExecuteQueryCommandHandler(IConnectionService connectionService)
+    : ICommandHandler<ExecuteQueryCommand, Result<ExecuteQueryCommandResult, string>>
 {
     /// <inheritdoc />
     public async Task<Result<ExecuteQueryCommandResult, string>> ExecuteAsync(ExecuteQueryCommand command, CancellationToken ct)
     {
-        NpgsqlConnection? connection = null;
+        DbConnection? connection = null;
         try
         {
             var query = command.Query;
             var runner = Factory.CreateQueryExecuter(DatabaseType.PostgreSql);
-            connection = new NpgsqlConnection(dwhService.ReadConnection);
+            connection = await connectionService.GetConnectionAsync(ConnectionSource.DwhRead, ct);
 
             var reader = await runner.GetDataReaderAsync(query, connection);
 
