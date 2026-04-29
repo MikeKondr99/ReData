@@ -146,7 +146,8 @@ services.AddOpenTelemetry()
     })
     .UseOtlpExporter();
 
-services.AddScoped<DwhService>();
+services.AddScoped<ConnectorQueryBuilderService>();
+services.AddScoped<IConnectionService, ConnectionService>();
 services.AddScoped<IDatasetRepository, DatasetRepository>();
 
 services.AddCommandMiddleware(c =>

@@ -1,4 +1,4 @@
-using System.Data.Common;
+﻿using System.Data.Common;
 using FastEndpoints;
 using Npgsql;
 using ReData.Common;
@@ -21,7 +21,7 @@ public class CreateDataConnectorCommand : ICommand<DataConnectorEntity>
 }
 
 
-public class CreateDataConnectorHandler(DwhService dwhService, ApplicationDatabaseContext db) : ICommandHandler<CreateDataConnectorCommand, DataConnectorEntity>
+public class CreateDataConnectorHandler(IConnectionService connectionService, ApplicationDatabaseContext db) : ICommandHandler<CreateDataConnectorCommand, DataConnectorEntity>
 {
     public async Task<DataConnectorEntity> ExecuteAsync(CreateDataConnectorCommand command, CancellationToken ct)
     {
@@ -42,13 +42,16 @@ public class CreateDataConnectorHandler(DwhService dwhService, ApplicationDataba
             .Select(i => ToReDataType(reader.GetDataTypeName(i)))
             .ToArray();
 
-        await using var connection = new NpgsqlConnection(dwhService.WriteConnection);
-        await connection.OpenAsync(ct);
-        await using var transaction = await connection.BeginTransactionAsync(ct);
+        await using var connection = await connectionService.GetConnectionAsync(ConnectionSource.DwhWrite, ct);
+        if (connection is not NpgsqlConnection npgsqlConnection)
+        {
+            throw new InvalidOperationException("Р”Р»СЏ DWH С‚СЂРµР±СѓРµС‚СЃСЏ NpgsqlConnection.");
+        }
+        await using var transaction = await npgsqlConnection.BeginTransactionAsync(ct);
 
-        var tableName = await CreateTableAsync(connection, transaction, types);
+        var tableName = await CreateTableAsync(npgsqlConnection, transaction, types);
         
-        await FillTableAsync(connection, reader, tableName, ct);
+        await FillTableAsync(npgsqlConnection, reader, tableName, ct);
 
         await transaction.CommitAsync(ct);
 

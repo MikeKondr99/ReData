@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using FastEndpoints;
-using Npgsql;
 using ReData.DataIO.DataExporters;
 using ReData.DemoApp.Commands;
 using ReData.DemoApp.Database.Entities;
@@ -23,8 +22,8 @@ namespace ReData.DemoApp.Endpoints.Datasets.Export;
 public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
 {
     public required IDatasetRepository Datasets { get; init; }
-
-    public required DwhService DwhService { get; init; }
+    
+    public required IConnectionService ConnectionService { get; init; }
 
     public override void Configure()
     {
@@ -80,7 +79,7 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
 
             var query = qb.Build();
             var runner = Factory.CreateQueryExecuter(DatabaseType.PostgreSql);
-            await using var connection = new NpgsqlConnection(DwhService.ReadConnection);
+            await using var connection = await ConnectionService.GetConnectionAsync(ConnectionSource.DwhRead, ct);
 
             await using var reader = await runner.GetDataReaderAsync(query, connection);
             HttpContext.MarkResponseStart();
