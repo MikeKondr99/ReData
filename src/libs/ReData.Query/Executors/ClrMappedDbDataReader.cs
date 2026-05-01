@@ -95,6 +95,7 @@ public sealed class ClrMappedDbDataReader : DbDataReaderDecorator
             decimal v => (double)v,
             ClickHouseDecimal v => (double)v,
             bool v => v,
+            DateOnly d => DateTime.SpecifyKind(d.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc),
             DateTime v => v,
             DateTimeOffset dto => DateTime.SpecifyKind(dto.UtcDateTime, DateTimeKind.Utc),
             string v => v,

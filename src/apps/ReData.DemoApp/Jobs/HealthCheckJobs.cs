@@ -14,7 +14,7 @@ public class HealthCheckJobs
         Db = db;
     }
 
-    [TickerFunction("Database Healthcheck", taskPriority: TickerTaskPriority.Low)]
+    [TickerFunction("Database Healthcheck", TickerTaskPriority.Low)]
     public async Task DatabaseHealthCheck(
         TickerFunctionContext context,
         CancellationToken ct)

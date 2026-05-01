@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -66,6 +67,10 @@ services.AddTickerQ(options =>
                     builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
                     builder.MigrationsAssembly("ReData.DemoApp");
                 });
+            optionsBuilder.ConfigureWarnings(warnings =>
+            {
+                warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
+            });
         });
     });
     options.AddDashboard(dashboardOptions =>
