@@ -1,8 +1,7 @@
 ﻿import {inject, Injectable, signal} from '@angular/core';
-import {toSignal} from '@angular/core/rxjs-interop';
 import {Breadcrumb} from '../types';
 import {Router} from '@angular/router';
-import {filter, map, merge, Subject} from 'rxjs';
+import {filter} from 'rxjs';
 import {NavigationEnd} from '@angular/router';
 
 @Injectable({
@@ -25,8 +24,9 @@ export class BreadcrumbsService {
   public path = this.breadcrumbsSource.asReadonly();
 
   private updateBreadcrumbs(): void {
-    const url = this.router.url;
-    const segments = url.split('/').filter(segment => segment !== '');
+    const tree = this.router.parseUrl(this.router.url);
+    const primary = tree.root.children['primary'];
+    const segments = primary?.segments.map(segment => segment.path) ?? [];
     let currentUrl = '';
 
     const breadcrumbs = segments.map((segment, index) => {

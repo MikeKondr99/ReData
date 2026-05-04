@@ -10,8 +10,16 @@ namespace ReData.DemoApp.Services;
 /// </summary>
 public sealed class ConnectionService(IConfiguration configuration) : IConnectionService
 {
-    private readonly string dwhReadConnection = configuration.GetConnectionString("DwhRead") ?? string.Empty;
-    private readonly string dwhWriteConnection = configuration.GetConnectionString("DwhWrite") ?? string.Empty;
+    private readonly string dwhReadConnection = 
+        configuration.GetConnectionString("DwhRead")
+        ?? configuration.GetConnectionString("dwh") 
+        ?? string.Empty;
+    
+    private readonly string dwhWriteConnection = 
+        configuration.GetConnectionString("DwhWrite") 
+        ?? configuration.GetConnectionString("dwh") 
+        ?? string.Empty;
+        
 
     /// <inheritdoc />
     public async Task<DbConnection> GetConnectionAsync(ConnectionSource source, CancellationToken ct = default)

@@ -11,7 +11,11 @@
   },
   "context_servers": {
     "aspire": {
-      "url": "http://localhost:18891/mcp"
+      "command": "aspire",
+      "args": [
+        "agent",
+        "mcp"
+      ]
     }
   }
 }

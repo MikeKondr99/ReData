@@ -17,7 +17,9 @@
       <Build />
       <Deploy />
     </Project>
+    <Project Path="src/apps/ReData.AppHost/ReData.AppHost.csproj" />
     <Project Path="src/apps/ReData.DemoApp/ReData.DemoApp.csproj" />
+    <Project Path="src/apps/ReData.ServiceDefaults/ReData.ServiceDefaults.csproj" />
     <Project Path="src/apps/ReData.Svelte/ReData.Svelte.esproj">
       <Build />
       <Deploy />

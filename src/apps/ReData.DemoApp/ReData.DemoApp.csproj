@@ -17,6 +17,7 @@
         <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Query.Core\ReData.Query.Core.csproj" />
+        <ProjectReference Include="..\ReData.ServiceDefaults\ReData.ServiceDefaults.csproj" />
 
         <PackageReference Include="StrictId" />
         <PackageReference Include="StrictId.EFCore" />

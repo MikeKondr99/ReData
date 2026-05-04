@@ -15,6 +15,13 @@
         "dotnet-stryker"
       ],
       "rollForward": false
+    },
+    "aspire.cli": {
+      "version": "13.2.4",
+      "commands": [
+        "aspire"
+      ],
+      "rollForward": false
     }
   }
 }

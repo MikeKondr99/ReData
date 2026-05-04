@@ -3,9 +3,6 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 using ReData.DemoApp;
 using ReData.DemoApp.CommandMiddleware;
 using ReData.DemoApp.Converters;
@@ -30,6 +27,7 @@ using Factory = ReData.Query.Factory;
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 // var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
+builder.AddServiceDefaults();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -111,46 +109,6 @@ services.AddDbContext<ApplicationDatabaseContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-services.AddOpenTelemetry()
-    .WithMetrics(metrics =>
-    {
-        metrics
-            .AddRuntimeInstrumentation()
-            .AddMeter("Microsoft.AspNetCore.Hosting", "Microsoft.AspNetCore.Server.Kestrel", "System.Net.Http");
-    })
-    .WithTracing(tracing =>
-    {
-        tracing
-            .AddSource("TickerQ")
-            .AddSource("ReData.App")
-            .AddSource("ReData.Query.Lang")
-            .AddSource("ReData.Query")
-            .AddHttpClientInstrumentation(options => { options.RecordException = true; })
-            .AddAspNetCoreInstrumentation(options =>
-            {
-                options.EnrichWithHttpRequest = (activity, request) =>
-                {
-                    if (request.Cookies.TryGetValue("visitorId", out var visitorId))
-                    {
-                        activity.SetTag("VisitorId", visitorId);
-                    }
-                };
-                options.RecordException = true;
-                options.Filter = (httpContext) =>
-                {
-                    return httpContext.Request.Path.StartsWithSegments("/api");
-                };
-            })
-            .AddEntityFrameworkCoreInstrumentation(options =>
-            {
-                options.Filter = (_, dbCommand) =>
-                {
-                    return dbCommand.Connection?.Database != "TickerQ";
-                };
-            });
-    })
-    .UseOtlpExporter();
-
 services.AddScoped<ConnectorQueryBuilderService>();
 services.AddScoped<IConnectionService, ConnectionService>();
 services.AddScoped<IDatasetRepository, DatasetRepository>();
@@ -178,6 +136,7 @@ app.Use(async (context, next) =>
 
 app.Services.Migrate<ApplicationDatabaseContext>();
 app.Services.Migrate<TickerQDbContext>();
+app.MapDefaultEndpoints();
 
 // Temporary switch: disable ASP.NET OutputCache middleware globally.
 // app.UseOutputCache();
