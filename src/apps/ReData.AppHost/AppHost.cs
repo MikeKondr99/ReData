@@ -28,6 +28,7 @@ builder.AddNpmApp("redata-angular", "../ReData.Angular", "start")
     .WithEnvironment("KEYCLOAK_HTTP", keycloak.GetEndpoint("http"))
     .WithReference(keycloak)
     .WithReference(api)
+    .WithHttpHealthCheck("/")
     .WaitFor(api);
 
 builder.Build().Run();

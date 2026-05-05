@@ -95,7 +95,7 @@ public static class Extensions
                     })
                     .AddEntityFrameworkCoreInstrumentation(options =>
                     {
-                        options.Filter = (_, dbCommand) => dbCommand.Connection?.Database != "TickerQ";
+                        options.Filter = (_, dbCommand) => dbCommand.Connection?.Database.Equals("TickerQ", StringComparison.InvariantCultureIgnoreCase) is false;
                     });
 
                 if (useOtlpExporter)
