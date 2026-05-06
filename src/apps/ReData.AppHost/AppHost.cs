@@ -5,6 +5,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 var keycloak = builder.AddKeycloak("keycloak", 8080)
     .WithEnvironment("KC_BOOTSTRAP_ADMIN_PASSWORD", "admin")
     .WithDataVolume()
+    .WithOtlpExporter()
     .WithRealmImport("./realms");
 
 var postgres = builder.AddPostgres("postgres")
@@ -26,9 +27,8 @@ var api = builder.AddProject<Projects.ReData_DemoApp>("redata-demoapp")
 builder.AddNpmApp("redata-angular", "../ReData.Angular", "start")
     .WithHttpEndpoint(port: 64200, targetPort: 4200)
     .WithEnvironment("KEYCLOAK_HTTP", keycloak.GetEndpoint("http"))
-    .WithReference(keycloak)
-    .WithReference(api)
-    .WithHttpHealthCheck("/")
-    .WaitFor(api);
+    .WithReference(keycloak).WaitFor(keycloak)
+    .WithReference(api).WaitFor(api)
+    .WithHttpHealthCheck("/");
 
 builder.Build().Run();

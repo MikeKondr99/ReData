@@ -22,7 +22,7 @@ public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     {
         Get("/functions");
         Tags("Functions");
-        AllowAnonymous();
+        // AllowAnonymous();
 
         Options(x => x.CacheOutput(p =>
             p.Expire(TimeSpan.FromDays(1))
@@ -34,6 +34,7 @@ public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     public override async Task<Results<Ok<List<FunctionResponse>>, NotFound, ProblemDetails>> ExecuteAsync(
         CancellationToken ct)
     {
+        var name = HttpContext.User.Identity?.Name;
         var functions = GlobalFunctionsStorage.Functions
             .Where(f => f.Templates.Keys.Any(k => k.HasFlag(DatabaseTypes.PostgreSql)))
             .Where(f => f.ImplicitCast is null)

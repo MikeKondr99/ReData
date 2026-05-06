@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ServiceDiscovery;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -20,11 +21,11 @@ public static class Extensions
 
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        builder.Services.AddServiceDiscovery();
         builder.ConfigureOpenTelemetry();
 
         builder.AddDefaultHealthChecks();
 
-        builder.Services.AddServiceDiscovery();
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
@@ -48,7 +49,20 @@ public static class Extensions
     {
         var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
             ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
+        var otlpHeaders = builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"]
+            ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS");
+        var otlpProtocol = builder.Configuration["OTEL_EXPORTER_OTLP_PROTOCOL"]
+            ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL");
         var useOtlpExporter = !string.IsNullOrWhiteSpace(otlpEndpoint);
+
+        void ConfigureOtlpExporter(OtlpExporterOptions options)
+        {
+            options.Endpoint = new Uri(otlpEndpoint!);
+            options.Headers = otlpHeaders;
+            options.Protocol = string.Equals(otlpProtocol, "http/protobuf", StringComparison.OrdinalIgnoreCase)
+                ? OtlpExportProtocol.HttpProtobuf
+                : OtlpExportProtocol.Grpc;
+        }
 
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -57,7 +71,7 @@ public static class Extensions
 
             if (useOtlpExporter)
             {
-                logging.AddOtlpExporter();
+                logging.AddOtlpExporter(ConfigureOtlpExporter);
             }
         });
 
@@ -70,7 +84,7 @@ public static class Extensions
 
                 if (useOtlpExporter)
                 {
-                    metrics.AddOtlpExporter();
+                    metrics.AddOtlpExporter(ConfigureOtlpExporter);
                 }
             })
             .WithTracing(tracing =>
@@ -100,7 +114,7 @@ public static class Extensions
 
                 if (useOtlpExporter)
                 {
-                    tracing.AddOtlpExporter();
+                    tracing.AddOtlpExporter(ConfigureOtlpExporter);
                 }
             });
 

@@ -11,6 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\..\libs\ReData.DataIO\ReData.DataIO.csproj" />
@@ -32,52 +33,38 @@
 
         <PackageReference Include="Scalar.AspNetCore.Swashbuckle" />
 
-        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"/>
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting"/>
-        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore"/>
-        <PackageReference Include="OpenTelemetry.Instrumentation.Http"/>
-        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime"/>
-        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore"/>
+        <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
+        <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" />
 
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     </ItemGroup>
     <ItemGroup>
         <None Include="wwwroot\*" />
     </ItemGroup>
 
     <Target Name="ValidateFrontendFlavor" BeforeTargets="Publish">
-        <Error Condition="'$(FrontendFlavor)' != 'none' and '$(FrontendFlavor)' != 'angular' and '$(FrontendFlavor)' != 'svelte'"
-               Text="Unsupported FrontendFlavor='$(FrontendFlavor)'. Allowed values: none, angular, svelte." />
+        <Error Condition="'$(FrontendFlavor)' != 'none' and '$(FrontendFlavor)' != 'angular' and '$(FrontendFlavor)' != 'svelte'" Text="Unsupported FrontendFlavor='$(FrontendFlavor)'. Allowed values: none, angular, svelte." />
     </Target>
 
-    <Target Name="BuildFrontendForPublish"
-            BeforeTargets="Publish"
-            DependsOnTargets="ValidateFrontendFlavor"
-            Condition="'$(FrontendFlavor)' != 'none'">
+    <Target Name="BuildFrontendForPublish" BeforeTargets="Publish" DependsOnTargets="ValidateFrontendFlavor" Condition="'$(FrontendFlavor)' != 'none'">
         <Message Importance="high" Text="Building frontend for publish: FrontendFlavor=$(FrontendFlavor)" />
 
-        <Exec Condition="'$(FrontendFlavor)' == 'angular'"
-              Command="npm ci"
-              WorkingDirectory="$(AngularFrontendDir)" />
-        <Exec Condition="'$(FrontendFlavor)' == 'angular'"
-              Command="node --max_old_space_size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production"
-              WorkingDirectory="$(AngularFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'angular'" Command="npm ci" WorkingDirectory="$(AngularFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'angular'" Command="node --max_old_space_size=1024 ./node_modules/@angular/cli/bin/ng build --configuration=production" WorkingDirectory="$(AngularFrontendDir)" />
 
-        <Exec Condition="'$(FrontendFlavor)' == 'svelte'"
-              Command="npm ci"
-              WorkingDirectory="$(SvelteFrontendDir)" />
-        <Exec Condition="'$(FrontendFlavor)' == 'svelte'"
-              Command="npm run build"
-              WorkingDirectory="$(SvelteFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'svelte'" Command="npm ci" WorkingDirectory="$(SvelteFrontendDir)" />
+        <Exec Condition="'$(FrontendFlavor)' == 'svelte'" Command="npm run build" WorkingDirectory="$(SvelteFrontendDir)" />
 
-        <Error Condition="'$(FrontendFlavor)' == 'angular' and !Exists('$(AngularDistDir)')"
-               Text="Angular build output not found: $(AngularDistDir)" />
-        <Error Condition="'$(FrontendFlavor)' == 'svelte' and !Exists('$(SvelteDistDir)')"
-               Text="Svelte build output not found: $(SvelteDistDir). Configure adapter-static so build artifacts are generated." />
+        <Error Condition="'$(FrontendFlavor)' == 'angular' and !Exists('$(AngularDistDir)')" Text="Angular build output not found: $(AngularDistDir)" />
+        <Error Condition="'$(FrontendFlavor)' == 'svelte' and !Exists('$(SvelteDistDir)')" Text="Svelte build output not found: $(SvelteDistDir). Configure adapter-static so build artifacts are generated." />
 
         <RemoveDir Directories="$(FrontendOutputDir)" />
         <MakeDir Directories="$(FrontendOutputDir)" />
@@ -90,8 +77,6 @@
             <_FrontendFiles Include="$(SvelteDistDir)/**" />
         </ItemGroup>
 
-        <Copy SourceFiles="@(_FrontendFiles)"
-              DestinationFiles="@(_FrontendFiles->'$(FrontendOutputDir)/%(RecursiveDir)%(Filename)%(Extension)')"
-              SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(_FrontendFiles)" DestinationFiles="@(_FrontendFiles->'$(FrontendOutputDir)/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
     </Target>
 </Project>

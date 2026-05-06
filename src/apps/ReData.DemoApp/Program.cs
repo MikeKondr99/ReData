@@ -3,6 +3,8 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens.Experimental;
 using ReData.DemoApp;
 using ReData.DemoApp.CommandMiddleware;
 using ReData.DemoApp.Converters;
@@ -13,8 +15,6 @@ using ReData.DemoApp.Middleware;
 using ReData.DemoApp.Repositories.Datasets;
 using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
-using ReData.Query;
-using ReData.Query.Core;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
 using TickerQ.Dashboard.DependencyInjection;
@@ -22,12 +22,31 @@ using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 using TickerQ.Instrumentation.OpenTelemetry;
-using Factory = ReData.Query.Factory;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
-// var tickerQConnectionString = builder.Configuration.GetConnectionString("TickerQ");
+
 builder.AddServiceDefaults();
+
+services.AddAuthentication()
+    .AddJwtBearer(options => {
+        options.Authority = "http://localhost:8080/realms/redata";
+        if(builder.Environment.IsDevelopment()) {
+            options.RequireHttpsMetadata = false;
+        }
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "http://localhost:8080/realms/redata",
+            ValidateIssuerSigningKey = true,
+            
+            ValidateAudience = false,
+            // IssuerValidationSource = ""
+            ValidateLifetime = true,
+        };
+    });
+services.AddAuthorization();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -79,8 +98,6 @@ services.AddTickerQ(options =>
 });
 
 services.AddFastEndpoints();
-
-
 
 services.SwaggerDocument(options =>
 {
@@ -143,6 +160,8 @@ app.MapDefaultEndpoints();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseMiddleware<ApiFailureLoggingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseFastEndpoints(c =>
 {
     c.Endpoints.ShortNames = true;
