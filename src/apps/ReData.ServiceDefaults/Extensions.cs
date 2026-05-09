@@ -64,6 +64,7 @@ public static class Extensions
                 : OtlpExportProtocol.Grpc;
         }
 
+        builder.Logging.ClearProviders();
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;

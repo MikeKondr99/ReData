@@ -10,7 +10,7 @@ var keycloak = builder.AddKeycloak("keycloak", 8080)
 
 var postgres = builder.AddPostgres("postgres")
     .WithDataVolume()
-    .WithPgAdmin();
+    .WithPgTool(builder.Configuration);
 
 var mainDatabase = postgres.AddDatabase("redata").WithPostgresMcp();
 var tickerqDatabase = postgres.AddDatabase("tickerq").WithPostgresMcp();
