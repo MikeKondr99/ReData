@@ -55,7 +55,6 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
                 ],
             };
         });
-        AllowAnonymous();
     }
 
     public override async Task<Response> ExecuteAsync(CreateDataSetRequest req, CancellationToken ct)

@@ -37,7 +37,6 @@ public class ExportDatasetEndpoint : Endpoint<ExportDataSetRequest>
             .Produces<ExportDatasetErrorResponse>(StatusCodes.Status400BadRequest, "application/json")
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status500InternalServerError));
-        AllowAnonymous();
     }
 
     /// <inheritdoc />

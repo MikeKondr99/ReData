@@ -21,7 +21,6 @@ public class GetDatasetByIdEndpoint : Endpoint<GetDatasetByIdRequest, Results<Ok
     {
         Get("/{Id}");
         Group<DataSetsGroup>();
-        AllowAnonymous();
     }
 
     public override async Task<Results<Ok<DataSetResponse>, NotFound>> ExecuteAsync(

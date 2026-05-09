@@ -21,7 +21,6 @@ public class DeleteDatasetEndpoint : Endpoint<DeleteDataSetRequest, Results<Ok, 
     {
         Delete("/{Id}");
         Group<DataSetsGroup>();
-        AllowAnonymous();
     }
 
     public override async Task<Results<Ok, NotFound>> ExecuteAsync(DeleteDataSetRequest req, CancellationToken ct)

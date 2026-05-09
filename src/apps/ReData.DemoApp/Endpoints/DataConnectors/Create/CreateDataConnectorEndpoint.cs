@@ -24,7 +24,6 @@ public class CreateDataConnectorEndpoint : Endpoint<CreateDataConnectorRequest,
     {
         Post("/");
         Group<DataConnectorsGroup>();
-        AllowAnonymous();
         AllowFileUploads(dontAutoBindFormData: true);
         MaxRequestBodySize(300 * 1024 * 1024);
     }

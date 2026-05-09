@@ -21,7 +21,6 @@ public class UpdateDatasetEndpoint : Endpoint<UpdateDataSetRequest, Results<Ok<U
     {
         Put("/{Id}");
         Group<DataSetsGroup>();
-        AllowAnonymous();
     }
 
     public override async Task<Results<Ok<UpdateDataSetResponse>, NotFound>> ExecuteAsync(

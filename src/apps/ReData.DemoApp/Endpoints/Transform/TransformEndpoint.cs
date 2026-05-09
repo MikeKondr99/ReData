@@ -25,7 +25,6 @@ public class TransformEndpoint : Endpoint<
     {
         Post("/transform");
         Tags("Transform");
-        AllowAnonymous();
     }
 
     /// <inheritdoc />

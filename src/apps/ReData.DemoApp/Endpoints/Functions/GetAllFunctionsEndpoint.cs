@@ -22,8 +22,6 @@ public class GetAllFunctionsEndpoint : EndpointWithoutRequest<
     {
         Get("/functions");
         Tags("Functions");
-        // AllowAnonymous();
-
         Options(x => x.CacheOutput(p =>
             p.Expire(TimeSpan.FromDays(1))
         ));

@@ -20,7 +20,6 @@ public class GetAllDatasetsEndpoint : EndpointWithoutRequest<Ok<List<DataSetList
     {
         Get("/");
         Group<DataSetsGroup>();
-        AllowAnonymous();
     }
 
     public override async Task<Ok<List<DataSetListItem>>> ExecuteAsync(CancellationToken ct)
