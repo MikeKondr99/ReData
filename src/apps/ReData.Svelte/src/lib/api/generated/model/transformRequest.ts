@@ -18,10 +18,15 @@ export interface TransformRequest {
   pageSize: number;
   /**
    * Имя по поля по которому нужно отсортировать конечные данные
+Если такого поля нет сортировка не происходит
    * @nullable
    */
   orderByName?: string | null;
-  /** @nullable */
+  /**
+   * Выбрать конечную сортировку по полю OrderByName по убыванию
+Если такого поля с названием OrderByName сортировка не происходит
+   * @nullable
+   */
   orderByDescending?: boolean | null;
   /**
    * Лист трансформаций выполняемых по очереди

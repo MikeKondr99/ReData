@@ -29,6 +29,11 @@ export type transformResponse400 = {
   status: 400
 }
 
+export type transformResponse401 = {
+  data: void
+  status: 401
+}
+
 export type transformResponse500 = {
   data: TransformErrorResponse
   status: 500
@@ -37,7 +42,7 @@ export type transformResponse500 = {
 export type transformResponseSuccess = (transformResponse200) & {
   headers: Headers;
 };
-export type transformResponseError = (transformResponse400 | transformResponse500) & {
+export type transformResponseError = (transformResponse400 | transformResponse401 | transformResponse500) & {
   headers: Headers;
 };
 
@@ -78,6 +83,11 @@ export type getAllFunctionsResponse400 = {
   status: 400
 }
 
+export type getAllFunctionsResponse401 = {
+  data: void
+  status: 401
+}
+
 export type getAllFunctionsResponse404 = {
   data: void
   status: 404
@@ -86,7 +96,7 @@ export type getAllFunctionsResponse404 = {
 export type getAllFunctionsResponseSuccess = (getAllFunctionsResponse200) & {
   headers: Headers;
 };
-export type getAllFunctionsResponseError = (getAllFunctionsResponse400 | getAllFunctionsResponse404) & {
+export type getAllFunctionsResponseError = (getAllFunctionsResponse400 | getAllFunctionsResponse401 | getAllFunctionsResponse404) & {
   headers: Headers;
 };
 

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { DataType, type DataSetField } from '$lib/api/generated/model';
-	import { ExportFileType } from '$lib/api/generated/model';
+	import { DataType, ExportFileType, type DataSetField } from '$lib/api/generated/model';
 	import { getToken, initAuth, login } from '$lib/auth/auth.svelte';
 	import {
 		deleteDataset as deleteDatasetApi,
@@ -27,7 +26,7 @@
 		loadDatasets?: typeof getAllDatasets;
 	};
 
-	type DatasetListResponse = Awaited<ReturnType<typeof getAllDatasets>>;
+	type DatasetListResponse = Extract<Awaited<ReturnType<typeof getAllDatasets>>, { status: 200 }>;
 	type DatasetsTableError = {
 		status?: number;
 		message: string;
@@ -36,7 +35,8 @@
 	const exportFormats = [
 		{ label: 'CSV', value: ExportFileType.Csv },
 		{ label: 'Excel', value: ExportFileType.Excel },
-		{ label: 'JSON', value: ExportFileType.Json }
+		{ label: 'JSON', value: ExportFileType.Json },
+		{ label: 'Arrow', value: ExportFileType.Arrow }
 	] as const;
 
 	let { class: className = '', loadDatasets = getAllDatasets }: Props = $props();
@@ -152,7 +152,19 @@
 			return decodeURIComponent(match[1].replace(/"/g, ''));
 		}
 
-		const extension = fileType === ExportFileType.Csv ? 'csv' : fileType === ExportFileType.Excel ? 'xlsx' : 'json';
+		let extension = 'json';
+		switch (fileType) {
+			case ExportFileType.Csv:
+				extension = 'csv';
+				break;
+			case ExportFileType.Excel:
+				extension = 'xlsx';
+				break;
+			case ExportFileType.Arrow:
+				extension = 'arrow';
+				break;
+		}
+
 		return `dataset-${datasetId}.${extension}`;
 	}
 </script>

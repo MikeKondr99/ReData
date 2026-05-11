@@ -5,7 +5,6 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { TransformFieldViewModel } from './transformFieldViewModel';
-import type { TransformResponseDataItem } from './transformResponseDataItem';
 
 /**
  * Ответ после применения трансформаций
@@ -19,5 +18,5 @@ export interface TransformResponse {
    */
   total: number | null;
   /** Одна страница данных соответствующих запросу */
-  data: TransformResponseDataItem[];
+  data: unknown[];
 }

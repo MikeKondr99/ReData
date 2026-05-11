@@ -10,6 +10,7 @@ import type {
   DataSetListItem,
   DataSetResponse,
   ErrorResponse,
+  ExportDatasetErrorResponse,
   ExportDatasetParams,
   UpdateDataSetRequest,
   UpdateDataSetResponse
@@ -31,6 +32,11 @@ export type updateDatasetResponse400 = {
   status: 400
 }
 
+export type updateDatasetResponse401 = {
+  data: void
+  status: 401
+}
+
 export type updateDatasetResponse404 = {
   data: void
   status: 404
@@ -39,7 +45,7 @@ export type updateDatasetResponse404 = {
 export type updateDatasetResponseSuccess = (updateDatasetResponse200) & {
   headers: Headers;
 };
-export type updateDatasetResponseError = (updateDatasetResponse400 | updateDatasetResponse404) & {
+export type updateDatasetResponseError = (updateDatasetResponse400 | updateDatasetResponse401 | updateDatasetResponse404) & {
   headers: Headers;
 };
 
@@ -76,6 +82,11 @@ export type getDatasetByIdResponse200 = {
   status: 200
 }
 
+export type getDatasetByIdResponse401 = {
+  data: void
+  status: 401
+}
+
 export type getDatasetByIdResponse404 = {
   data: void
   status: 404
@@ -84,7 +95,7 @@ export type getDatasetByIdResponse404 = {
 export type getDatasetByIdResponseSuccess = (getDatasetByIdResponse200) & {
   headers: Headers;
 };
-export type getDatasetByIdResponseError = (getDatasetByIdResponse404) & {
+export type getDatasetByIdResponseError = (getDatasetByIdResponse401 | getDatasetByIdResponse404) & {
   headers: Headers;
 };
 
@@ -119,6 +130,11 @@ export type deleteDatasetResponse200 = {
   status: 200
 }
 
+export type deleteDatasetResponse401 = {
+  data: void
+  status: 401
+}
+
 export type deleteDatasetResponse404 = {
   data: void
   status: 404
@@ -127,7 +143,7 @@ export type deleteDatasetResponse404 = {
 export type deleteDatasetResponseSuccess = (deleteDatasetResponse200) & {
   headers: Headers;
 };
-export type deleteDatasetResponseError = (deleteDatasetResponse404) & {
+export type deleteDatasetResponseError = (deleteDatasetResponse401 | deleteDatasetResponse404) & {
   headers: Headers;
 };
 
@@ -161,13 +177,20 @@ export type getAllDatasetsResponse200 = {
   data: DataSetListItem[]
   status: 200
 }
+
+export type getAllDatasetsResponse401 = {
+  data: void
+  status: 401
+}
     
 export type getAllDatasetsResponseSuccess = (getAllDatasetsResponse200) & {
   headers: Headers;
 };
-;
+export type getAllDatasetsResponseError = (getAllDatasetsResponse401) & {
+  headers: Headers;
+};
 
-export type getAllDatasetsResponse = (getAllDatasetsResponseSuccess)
+export type getAllDatasetsResponse = (getAllDatasetsResponseSuccess | getAllDatasetsResponseError)
 
 export const getGetAllDatasetsUrl = () => {
 
@@ -203,6 +226,11 @@ export type createDatasetResponse400 = {
   status: 400
 }
 
+export type createDatasetResponse401 = {
+  data: void
+  status: 401
+}
+
 export type createDatasetResponse409 = {
   data: ErrorResponse
   status: 409
@@ -211,7 +239,7 @@ export type createDatasetResponse409 = {
 export type createDatasetResponseSuccess = (createDatasetResponse201) & {
   headers: Headers;
 };
-export type createDatasetResponseError = (createDatasetResponse400 | createDatasetResponse409) & {
+export type createDatasetResponseError = (createDatasetResponse400 | createDatasetResponse401 | createDatasetResponse409) & {
   headers: Headers;
 };
 
@@ -242,17 +270,39 @@ export const createDataset = async (createDataSetRequest: CreateDataSetRequest, 
  * Возвращает данные набора файлом в указанном формате
  * @summary Экспортировать данные набора
  */
-export type exportDatasetResponse204 = {
+export type exportDatasetResponse200 = {
   data: void
-  status: 204
+  status: 200
+}
+
+export type exportDatasetResponse400 = {
+  data: ExportDatasetErrorResponse
+  status: 400
+}
+
+export type exportDatasetResponse401 = {
+  data: void
+  status: 401
+}
+
+export type exportDatasetResponse404 = {
+  data: void
+  status: 404
+}
+
+export type exportDatasetResponse500 = {
+  data: void
+  status: 500
 }
     
-export type exportDatasetResponseSuccess = (exportDatasetResponse204) & {
+export type exportDatasetResponseSuccess = (exportDatasetResponse200) & {
   headers: Headers;
 };
-;
+export type exportDatasetResponseError = (exportDatasetResponse400 | exportDatasetResponse401 | exportDatasetResponse404 | exportDatasetResponse500) & {
+  headers: Headers;
+};
 
-export type exportDatasetResponse = (exportDatasetResponseSuccess)
+export type exportDatasetResponse = (exportDatasetResponseSuccess | exportDatasetResponseError)
 
 export const getExportDatasetUrl = (id: string,
     params: ExportDatasetParams,) => {

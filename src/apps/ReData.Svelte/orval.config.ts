@@ -1,6 +1,6 @@
 import { defineConfig } from 'orval';
 
-const OPENAPI_TARGET = process.env.OPENAPI_URL ?? '../ReData.Angular/src/api/scripts/openapi.json';
+const OPENAPI_TARGET = process.env.OPENAPI_URL ?? 'http://localhost:5223/openapi/v1.json';
 
 export default defineConfig({
 	redata: {

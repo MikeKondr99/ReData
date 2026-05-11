@@ -21,13 +21,20 @@ export type getAllDataConnectorsResponse200 = {
   data: DataConnectorListItem[]
   status: 200
 }
+
+export type getAllDataConnectorsResponse401 = {
+  data: void
+  status: 401
+}
     
 export type getAllDataConnectorsResponseSuccess = (getAllDataConnectorsResponse200) & {
   headers: Headers;
 };
-;
+export type getAllDataConnectorsResponseError = (getAllDataConnectorsResponse401) & {
+  headers: Headers;
+};
 
-export type getAllDataConnectorsResponse = (getAllDataConnectorsResponseSuccess)
+export type getAllDataConnectorsResponse = (getAllDataConnectorsResponseSuccess | getAllDataConnectorsResponseError)
 
 export const getGetAllDataConnectorsUrl = () => {
 
@@ -62,11 +69,16 @@ export type createDataConnectorResponse400 = {
   data: string
   status: 400
 }
+
+export type createDataConnectorResponse401 = {
+  data: void
+  status: 401
+}
     
 export type createDataConnectorResponseSuccess = (createDataConnectorResponse201) & {
   headers: Headers;
 };
-export type createDataConnectorResponseError = (createDataConnectorResponse400) & {
+export type createDataConnectorResponseError = (createDataConnectorResponse400 | createDataConnectorResponse401) & {
   headers: Headers;
 };
 

@@ -59,9 +59,18 @@ npm run api:generate
 
 By default Orval reads OpenAPI from `http://localhost:5223/openapi/v1.json`.
 
+Before generation, start the backend locally if you use the default URL.
+
 To override URL in PowerShell:
 
 ```powershell
 $env:OPENAPI_URL = 'https://example.com/openapi/v1.json'
 npm run api:generate
 ```
+
+Notes:
+
+- `orval` is pinned to `7.13.2` on purpose. Newer `7.14+` and `8.x` releases require
+  Node `>= 22.18.0`.
+- In the current environment (`Node v22.15.0`) `npm install orval@8.9.1` fails with
+  `EBADENGINE`, so upgrade Node first if you want to move past `7.13.2`.

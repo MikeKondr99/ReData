@@ -40,6 +40,29 @@ npm run format
 npm run format:check
 ```
 
+## Генерация API-клиента для Svelte
+
+По умолчанию Svelte Orval читает OpenAPI из `http://localhost:5223/openapi/v1.json`.
+Перед генерацией нужно поднять локальный backend, если используется URL по умолчанию.
+
+Сгенерировать Svelte client:
+
+```
+cd src/ReData.Svelte
+npm run api:generate
+```
+
+Сгенерировать Svelte client напрямую из URL:
+
+```powershell
+cd src/ReData.Svelte
+$env:OPENAPI_URL = 'http://localhost:5223/openapi/v1.json'
+npm run api:generate
+```
+
+Важно: `orval` в Svelte закреплен на `7.13.2`, потому что `7.14+` и `8.x`
+требуют Node `>= 22.18.0`.
+
 ## Publish DemoApp с выбором фронта
 
 По умолчанию фронтенд не собирается:
