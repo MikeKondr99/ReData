@@ -15,6 +15,7 @@
         <ProjectReference Include="..\..\libs\Pattern\Pattern.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Common\ReData.Common.csproj" />
         <ProjectReference Include="..\..\libs\ReData.DataIO\ReData.DataIO.csproj" />
+        <ProjectReference Include="..\..\libs\ReData.Jobs\ReData.Jobs.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Query.Common\ReData.Query.Common.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Query\ReData.Query.csproj" />
         <ProjectReference Include="..\..\libs\ReData.Query.Core\ReData.Query.Core.csproj" />

@@ -7,6 +7,7 @@
     <File Path="docs/expressions-spec.md" />
     <File Path="docs/function-coverage-report.md" />
     <File Path="docs/Readme.md" />
+    <File Path="docs/tickerq-jobs.md" />
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
@@ -19,6 +20,7 @@
     </Project>
     <Project Path="src/apps/ReData.AppHost/ReData.AppHost.csproj" />
     <Project Path="src/apps/ReData.DemoApp/ReData.DemoApp.csproj" />
+    <Project Path="src/apps/ReData.JobWorker/ReData.JobWorker.csproj" />
     <Project Path="src/apps/ReData.ServiceDefaults/ReData.ServiceDefaults.csproj" />
     <Project Path="src/apps/ReData.Svelte/ReData.Svelte.esproj">
       <Build />
@@ -32,6 +34,7 @@
     <Project Path="src/libs/Pattern/Pattern.csproj" />
     <Project Path="src/libs/ReData.Common/ReData.Common.csproj" />
     <Project Path="src/libs/ReData.DataIO/ReData.DataIO.csproj" />
+    <Project Path="src/libs/ReData.Jobs/ReData.Jobs.csproj" />
     <Project Path="src/libs/ReData.Query.Common/ReData.Query.Common.csproj" />
     <Project Path="src/libs/ReData.Query.Core/ReData.Query.Core.csproj" />
     <Project Path="src/libs/ReData.Query.Lang/ReData.Query.Lang.csproj" />

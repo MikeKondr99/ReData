@@ -14,7 +14,8 @@ public class HealthCheckJobs
         Db = db;
     }
 
-    [TickerFunction("Database Healthcheck", TickerTaskPriority.Low)]
+    // Disabled in DemoApp while jobs are being moved to ReData.Jobs / ReData.JobWorker.
+    // [TickerFunction("Database Healthcheck", TickerTaskPriority.Low)]
     public async Task DatabaseHealthCheck(
         TickerFunctionContext context,
         CancellationToken ct)

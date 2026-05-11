@@ -20,7 +20,8 @@ public sealed class ClearUnusedDwhTableJob
         Db = db;
     }
 
-    [TickerFunction("Clear unused DWH tables")]
+    // Disabled in DemoApp while jobs are being moved to ReData.Jobs / ReData.JobWorker.
+    // [TickerFunction("Clear unused DWH tables")]
     public async Task ClearUnusedDwhTables(
         TickerFunctionContext context,
         CancellationToken ct)

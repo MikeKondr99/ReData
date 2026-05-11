@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Tokens.Experimental;
+using ReData.Jobs;
 using ReData.DemoApp;
 using ReData.DemoApp.CommandMiddleware;
 using ReData.DemoApp.Converters;
@@ -17,11 +18,11 @@ using ReData.DemoApp.Services;
 using ReData.DemoApp.Transformations;
 using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
-using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
-using TickerQ.EntityFrameworkCore.DependencyInjection;
-using TickerQ.Instrumentation.OpenTelemetry;
+using TickerQ.Utilities;
+using TickerQ.Utilities.Entities;
+using TickerQ.Utilities.Interfaces.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -31,7 +32,8 @@ builder.AddServiceDefaults();
 services.AddAuthentication()
     .AddJwtBearer(options => {
         options.Authority = "http://localhost:8080/realms/redata";
-        if(builder.Environment.IsDevelopment()) {
+        if (builder.Environment.IsDevelopment())
+        {
             options.RequireHttpsMetadata = false;
         }
 
@@ -40,9 +42,7 @@ services.AddAuthentication()
             ValidateIssuer = true,
             ValidIssuer = "http://localhost:8080/realms/redata",
             ValidateIssuerSigningKey = true,
-            
             ValidateAudience = false,
-            // IssuerValidationSource = ""
             ValidateLifetime = true,
         };
     });
@@ -64,38 +64,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 services.AddOutputCache();
 
-services.AddTickerQ(options =>
-{
-    options.AddOpenTelemetryInstrumentation();
-    options.ConfigureScheduler(scheduler =>
-    {
-        scheduler.MaxConcurrency = 8;
-        scheduler.NodeIdentifier = "main-server";
-    });
-    options.AddOperationalStore(efOptions =>
-    {
-        // Use built-in TickerQDbContext with connection string
-        efOptions.UseTickerQDbContext<TickerQDbContext>(optionsBuilder =>
-        {
-            // dotnet ef migrations add TickerQInitialCreate --context TickerQDbContext --project ./src/ReData.DemoApp -o ./Jobs/Migrations
-            optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("TickerQ"),
-                builder =>
-                {
-                    builder.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), ["40P01"]);
-                    builder.MigrationsAssembly("ReData.DemoApp");
-                });
-            optionsBuilder.ConfigureWarnings(warnings =>
-            {
-                warnings.Ignore(RelationalEventId.PendingModelChangesWarning);
-            });
-        });
-    });
-    options.AddDashboard(dashboardOptions =>
-    {
-        dashboardOptions.SetBasePath("/api/tickerq");
-        dashboardOptions.WithBasicAuth("test", "secret9");
-    });
-});
+builder.AddReDataJobs(ReDataJobsMode.ProducerDashboard);
 
 services.AddFastEndpoints();
 
@@ -103,22 +72,17 @@ services.SwaggerDocument(options =>
 {
     options.ShortSchemaNames = true;
     options.AutoTagPathSegmentIndex = 0;
-    options.DocumentSettings = (settings) =>
+    options.DocumentSettings = settings =>
     {
         settings.SchemaSettings.SchemaProcessors.Add(new XEnumVarnamesNswagSchemaProcessor());
         settings.SchemaSettings.SchemaProcessors.Add(new RequiredPropertiesSchemaProcessor());
-        // settings.OperationProcessors.Add(new SimplifyOperationIdProcessor());
         settings.PostProcess = document =>
         {
             document.Host = "HOST";
-
         };
     };
-    // Для работы требуется что бы базой был класс или абстрактный класс
-    // options.UseOneOfForPolymorphism = true;
     options.ExcludeNonFastEndpoints = true;
 });
-
 
 services.AddDbContext<ApplicationDatabaseContext>(options =>
 {
@@ -135,14 +99,12 @@ services.AddCommandMiddleware(c =>
     c.Register(typeof(TraceCommandMiddleware<,>));
 });
 
-
 var app = builder.Build();
 
 app.Use(async (context, next) =>
 {
     await next();
 
-    // If there's no available file and the request doesn't start with /api
     if (context.Response.StatusCode == 404 &&
         context.Request.Path.Value?.StartsWith("/api", StringComparison.Ordinal) != true)
     {
@@ -155,8 +117,6 @@ app.Services.Migrate<ApplicationDatabaseContext>();
 app.Services.Migrate<TickerQDbContext>();
 app.MapDefaultEndpoints();
 
-// Temporary switch: disable ASP.NET OutputCache middleware globally.
-// app.UseOutputCache();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseMiddleware<ApiFailureLoggingMiddleware>();
@@ -166,13 +126,14 @@ app.UseFastEndpoints(c =>
 {
     c.Endpoints.ShortNames = true;
     c.Endpoints.RoutePrefix = "api";
-    c.Endpoints.NameGenerator = (context) =>
+    c.Endpoints.NameGenerator = context =>
     {
         var name = context.EndpointType.Name;
         if (name.EndsWith("Endpoint", StringComparison.InvariantCulture))
         {
             return name[..^8];
         }
+
         return name;
     };
     c.Serializer.Options.Converters.Add(new ValueConverter());
@@ -186,12 +147,38 @@ app.UseSwaggerGen(options =>
     options.Path = "/openapi/{documentName}.json";
 });
 
-app.UseTickerQ();
+app.MapPost("/api/dev/tickerq/test-job", async (ITimeTickerManager<TimeTickerEntity> manager, CancellationToken ct) =>
+{
+    var executionTime = DateTime.UtcNow.AddSeconds(30);
+    var ticker = new TimeTickerEntity
+    {
+        Function = ReDataJobsExtensions.GetTestJobFunctionName(),
+        Description = "Temporary DemoApp endpoint test job",
+        ExecutionTime = executionTime
+    };
+    var result = await manager.AddAsync(ticker, ct);
 
-// if (builder.Environment.IsDevelopment())
-// {
+    if (!result.IsSucceeded || result.Result is null)
+    {
+        return Results.Problem(
+            detail: result.Exception?.Message ?? "TickerQ failed to schedule TestJob.",
+            statusCode: StatusCodes.Status500InternalServerError);
+    }
+
+    ticker = result.Result;
+
+    return Results.Ok(new
+    {
+        message = "TestJob scheduled",
+        ticker.Id,
+        ticker.Function,
+        ticker.Description,
+        ticker.ExecutionTime
+    });
+});
+
+app.UseTickerQ();
 app.MapScalarApiReference("api/docs");
-// }
 
 await app.RunAsync();
 

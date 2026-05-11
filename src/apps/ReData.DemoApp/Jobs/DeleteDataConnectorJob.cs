@@ -16,7 +16,8 @@ public sealed class DeleteDataConnectorJob
         OutputCache = outputCache;
     }
 
-    [TickerFunction("Delete data connector")]
+    // Disabled in DemoApp while jobs are being moved to ReData.Jobs / ReData.JobWorker.
+    // [TickerFunction("Delete data connector")]
     public async Task DeleteDataConnector(
         TickerFunctionContext<DeleteDataConnectorRequest> context,
         CancellationToken ct)

@@ -29,6 +29,11 @@ var api = builder.AddProject<Projects.ReData_DemoApp>("redata-demoapp")
     .WithReference(tickerqDatabase).WaitFor(tickerqDatabase)
     .WithReference(dwh);
 
+var jobWorker = builder.AddProject<Projects.ReData_JobWorker>("redata-jobworker")
+    .WithReference(api).WaitFor(api)
+    .WithReference(tickerqDatabase).WaitFor(tickerqDatabase)
+    .WithEnvironment("TickerQ__NodeIdentifier", "job-worker-1");
+
 if (angularEnabled)
 {
     builder.AddNpmApp("redata-angular", "../ReData.Angular", "start")

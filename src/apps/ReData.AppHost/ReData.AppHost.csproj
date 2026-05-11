@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReData.DemoApp\ReData.DemoApp.csproj" />
+    <ProjectReference Include="..\ReData.JobWorker\ReData.JobWorker.csproj" />
   </ItemGroup>
 
   <ItemGroup>

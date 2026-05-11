@@ -17,3 +17,7 @@ riderModule.iml
 ReData.sln.DotSettings.user
 # Local QA artifacts
 /docs/tests/
+
+# Local scratch space
+.tmp/*
+!.tmp/.gitignore
