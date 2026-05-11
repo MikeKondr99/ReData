@@ -18,7 +18,6 @@ export interface TransformRequest {
   pageSize: number;
   /**
    * Имя по поля по которому нужно отсортировать конечные данные
-Если такого поля нет сортировка не происходит
    * @nullable
    */
   orderByName?: string | null;

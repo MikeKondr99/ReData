@@ -19,7 +19,6 @@ export * from './deleteDataSetRequest';
 export * from './errorResponse';
 export * from './errorResponseErrors';
 export * from './exportDataSetRequest';
-export * from './exportDatasetErrorResponse';
 export * from './exportDatasetParams';
 export * from './exportFileType';
 export * from './exprError';

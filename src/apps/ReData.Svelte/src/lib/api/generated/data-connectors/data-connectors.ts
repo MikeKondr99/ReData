@@ -11,6 +11,7 @@ import type {
   DataConnectorListItem
 } from '.././model';
 
+import { customFetch } from '../../custom-fetch';
 
 /**
  * Возвращает список всех коннекторов данных
@@ -38,20 +39,14 @@ export const getGetAllDataConnectorsUrl = () => {
 
 export const getAllDataConnectors = async ( options?: RequestInit): Promise<getAllDataConnectorsResponse> => {
   
-  const res = await fetch(getGetAllDataConnectorsUrl(),
+  return customFetch<getAllDataConnectorsResponse>(getGetAllDataConnectorsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getAllDataConnectorsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getAllDataConnectorsResponse
-}
+);}
 
 
 /**
@@ -97,7 +92,7 @@ export const createDataConnector = async (createDataConnectorRequest: CreateData
     const formData = new FormData();
 formData.append(`file`, createDataConnectorRequest.file)
 
-  const res = await fetch(getCreateDataConnectorUrl(params),
+  return customFetch<createDataConnectorResponse>(getCreateDataConnectorUrl(params),
   {      
     ...options,
     method: 'POST'
@@ -105,12 +100,6 @@ formData.append(`file`, createDataConnectorRequest.file)
     body: 
       formData,
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createDataConnectorResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createDataConnectorResponse
-}
+);}
 
 

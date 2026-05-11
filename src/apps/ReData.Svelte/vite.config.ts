@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { svelteTesting } from '@testing-library/svelte/vite';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	server: {
@@ -16,8 +17,17 @@ export default defineConfig({
 				target: 'http://localhost:5223',
 				changeOrigin: true,
 				secure: false
+			},
+			'/kc': {
+				target: 'http://localhost:8080',
+				changeOrigin: true,
+				secure: false
 			}
 		}
 	},
-	plugins: [tailwindcss(), sveltekit()]
+	plugins: [tailwindcss(), sveltekit(), svelteTesting()],
+	test: {
+		environment: 'jsdom',
+		setupFiles: ['./vitest.setup.ts']
+	}
 });

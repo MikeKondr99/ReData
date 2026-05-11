@@ -12,6 +12,7 @@ import type {
   TransformResponse
 } from '.././model';
 
+import { customFetch } from '../../custom-fetch';
 
 /**
  * Выполняет трансформации от заданного коннектора
@@ -52,7 +53,7 @@ export const getTransformUrl = () => {
 
 export const transform = async (transformRequest: TransformRequest, options?: RequestInit): Promise<transformResponse> => {
   
-  const res = await fetch(getTransformUrl(),
+  return customFetch<transformResponse>(getTransformUrl(),
   {      
     ...options,
     method: 'POST',
@@ -60,13 +61,7 @@ export const transform = async (transformRequest: TransformRequest, options?: Re
     body: JSON.stringify(
       transformRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: transformResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as transformResponse
-}
+);}
 
 
 /**
@@ -107,19 +102,13 @@ export const getGetAllFunctionsUrl = () => {
 
 export const getAllFunctions = async ( options?: RequestInit): Promise<getAllFunctionsResponse> => {
   
-  const res = await fetch(getGetAllFunctionsUrl(),
+  return customFetch<getAllFunctionsResponse>(getGetAllFunctionsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getAllFunctionsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getAllFunctionsResponse
-}
+);}
 
 

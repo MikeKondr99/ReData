@@ -10,12 +10,12 @@ import type {
   DataSetListItem,
   DataSetResponse,
   ErrorResponse,
-  ExportDatasetErrorResponse,
   ExportDatasetParams,
   UpdateDataSetRequest,
   UpdateDataSetResponse
 } from '.././model';
 
+import { customFetch } from '../../custom-fetch';
 
 /**
  * Редактирует набор данных с указанным id
@@ -56,7 +56,7 @@ export const getUpdateDatasetUrl = (id: string,) => {
 export const updateDataset = async (id: string,
     updateDataSetRequest: UpdateDataSetRequest, options?: RequestInit): Promise<updateDatasetResponse> => {
   
-  const res = await fetch(getUpdateDatasetUrl(id),
+  return customFetch<updateDatasetResponse>(getUpdateDatasetUrl(id),
   {      
     ...options,
     method: 'PUT',
@@ -64,13 +64,7 @@ export const updateDataset = async (id: string,
     body: JSON.stringify(
       updateDataSetRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: updateDatasetResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as updateDatasetResponse
-}
+);}
 
 
 /**
@@ -106,20 +100,14 @@ export const getGetDatasetByIdUrl = (id: string,) => {
 
 export const getDatasetById = async (id: string, options?: RequestInit): Promise<getDatasetByIdResponse> => {
   
-  const res = await fetch(getGetDatasetByIdUrl(id),
+  return customFetch<getDatasetByIdResponse>(getGetDatasetByIdUrl(id),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getDatasetByIdResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getDatasetByIdResponse
-}
+);}
 
 
 /**
@@ -155,20 +143,14 @@ export const getDeleteDatasetUrl = (id: string,) => {
 
 export const deleteDataset = async (id: string, options?: RequestInit): Promise<deleteDatasetResponse> => {
   
-  const res = await fetch(getDeleteDatasetUrl(id),
+  return customFetch<deleteDatasetResponse>(getDeleteDatasetUrl(id),
   {      
     ...options,
     method: 'DELETE'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: deleteDatasetResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as deleteDatasetResponse
-}
+);}
 
 
 /**
@@ -197,20 +179,14 @@ export const getGetAllDatasetsUrl = () => {
 
 export const getAllDatasets = async ( options?: RequestInit): Promise<getAllDatasetsResponse> => {
   
-  const res = await fetch(getGetAllDatasetsUrl(),
+  return customFetch<getAllDatasetsResponse>(getGetAllDatasetsUrl(),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: getAllDatasetsResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as getAllDatasetsResponse
-}
+);}
 
 
 /**
@@ -251,7 +227,7 @@ export const getCreateDatasetUrl = () => {
 
 export const createDataset = async (createDataSetRequest: CreateDataSetRequest, options?: RequestInit): Promise<createDatasetResponse> => {
   
-  const res = await fetch(getCreateDatasetUrl(),
+  return customFetch<createDatasetResponse>(getCreateDatasetUrl(),
   {      
     ...options,
     method: 'POST',
@@ -259,47 +235,24 @@ export const createDataset = async (createDataSetRequest: CreateDataSetRequest, 
     body: JSON.stringify(
       createDataSetRequest,)
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: createDatasetResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as createDatasetResponse
-}
+);}
 
 
 /**
  * Возвращает данные набора файлом в указанном формате
  * @summary Экспортировать данные набора
  */
-export type exportDatasetResponse200 = {
+export type exportDatasetResponse204 = {
   data: void
-  status: 200
-}
-
-export type exportDatasetResponse400 = {
-  data: ExportDatasetErrorResponse
-  status: 400
-}
-
-export type exportDatasetResponse404 = {
-  data: void
-  status: 404
-}
-
-export type exportDatasetResponse500 = {
-  data: void
-  status: 500
+  status: 204
 }
     
-export type exportDatasetResponseSuccess = (exportDatasetResponse200) & {
+export type exportDatasetResponseSuccess = (exportDatasetResponse204) & {
   headers: Headers;
 };
-export type exportDatasetResponseError = (exportDatasetResponse400 | exportDatasetResponse404 | exportDatasetResponse500) & {
-  headers: Headers;
-};
+;
 
-export type exportDatasetResponse = (exportDatasetResponseSuccess | exportDatasetResponseError)
+export type exportDatasetResponse = (exportDatasetResponseSuccess)
 
 export const getExportDatasetUrl = (id: string,
     params: ExportDatasetParams,) => {
@@ -320,19 +273,13 @@ export const getExportDatasetUrl = (id: string,
 export const exportDataset = async (id: string,
     params: ExportDatasetParams, options?: RequestInit): Promise<exportDatasetResponse> => {
   
-  const res = await fetch(getExportDatasetUrl(id,params),
+  return customFetch<exportDatasetResponse>(getExportDatasetUrl(id,params),
   {      
     ...options,
     method: 'GET'
     
     
   }
-)
-
-  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-  
-  const data: exportDatasetResponse['data'] = body ? JSON.parse(body) : {}
-  return { data, status: res.status, headers: res.headers } as exportDatasetResponse
-}
+);}
 
 

@@ -17,6 +17,4 @@ export interface FunctionArgument {
   type: FunctionArgumentType;
   /** Определяет пропагирует ли аргумент null если сам будет null */
   propagateNull: boolean;
-  /** Требует константный аргумент (литерал или константа). */
-  isConstRequired?: boolean;
 }

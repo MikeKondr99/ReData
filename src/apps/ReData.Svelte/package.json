@@ -10,17 +10,22 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest run",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"api:generate": "orval --config ./orval.config.ts"
 	},
 	"devDependencies": {
-		"@types/ace": "^0.0.52",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.2.1",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/svelte": "^5.3.1",
+		"@types/ace": "^0.0.52",
+		"@vitest/browser": "^4.1.5",
+		"jsdom": "^29.1.1",
 		"mdsvex": "^0.12.6",
 		"orval": "^7.13.2",
 		"prettier": "^3.8.1",
@@ -30,11 +35,14 @@
 		"svelte-check": "^4.4.2",
 		"tailwindcss": "^4.2.1",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.1"
+		"vite": "^7.3.1",
+		"vitest": "^4.1.5"
 	},
 	"dependencies": {
 		"ace-builds": "^1.43.2",
 		"flowbite": "^4.0.1",
-		"flowbite-svelte": "^1.31.0"
+		"flowbite-svelte": "^1.31.0",
+		"flowbite-svelte-icons": "^3.1.0",
+		"keycloak-js": "^26.2.1"
 	}
 }
