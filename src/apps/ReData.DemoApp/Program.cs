@@ -20,7 +20,6 @@ using ReData.Query.Core.Types;
 using Scalar.AspNetCore;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
-using TickerQ.Utilities;
 using TickerQ.Utilities.Entities;
 using TickerQ.Utilities.Interfaces.Managers;
 
@@ -29,18 +28,20 @@ var services = builder.Services;
 
 builder.AddServiceDefaults();
 
+var keycloakHttp = builder.Configuration["services:keycloak:http:0"]
+    ?? builder.Configuration["KEYCLOAK_HTTP"]
+    ?? "http://localhost:8080";
+var oidcAuthority = $"{keycloakHttp.TrimEnd('/')}/realms/redata";
+;
 services.AddAuthentication()
     .AddJwtBearer(options => {
-        options.Authority = "http://localhost:8080/realms/redata";
-        if (builder.Environment.IsDevelopment())
-        {
-            options.RequireHttpsMetadata = false;
-        }
+        options.Authority = oidcAuthority;
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "http://localhost:8080/realms/redata",
+            ValidIssuer = oidcAuthority,
             ValidateIssuerSigningKey = true,
             ValidateAudience = false,
             ValidateLifetime = true,
@@ -147,16 +148,39 @@ app.UseSwaggerGen(options =>
     options.Path = "/openapi/{documentName}.json";
 });
 
-app.MapPost("/api/dev/tickerq/test-job", async (ITimeTickerManager<TimeTickerEntity> manager, CancellationToken ct) =>
+app.MapPost(
+    "/api/dev/tickerq/test-job",
+    async (
+        TestJobRequest request,
+        ITimeTickerManager<TimeTickerEntity> manager,
+        CancellationToken ct) =>
 {
-    var executionTime = DateTime.UtcNow.AddSeconds(30);
-    var ticker = new TimeTickerEntity
+    if (request.JobCount <= 0)
     {
-        Function = ReDataJobsExtensions.GetTestJobFunctionName(),
-        Description = "Temporary DemoApp endpoint test job",
-        ExecutionTime = executionTime
-    };
-    var result = await manager.AddAsync(ticker, ct);
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [nameof(TestJobRequest.JobCount)] = ["JobCount must be greater than 0."]
+        });
+    }
+
+    if (request.MinDelayMs < 0)
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [nameof(TestJobRequest.MinDelayMs)] = ["MinDelayMs must be greater than or equal to 0."]
+        });
+    }
+
+    if (request.MaxDelayMs < request.MinDelayMs)
+    {
+        return Results.ValidationProblem(new Dictionary<string, string[]>
+        {
+            [nameof(TestJobRequest.MaxDelayMs)] = ["MaxDelayMs must be greater than or equal to MinDelayMs."]
+        });
+    }
+
+    var executionTime = DateTime.UtcNow.AddSeconds(30);
+    var result = await manager.AddAsync<TestJob, TestJobRequest>(executionTime, request, ct);
 
     if (!result.IsSucceeded || result.Result is null)
     {
@@ -165,11 +189,15 @@ app.MapPost("/api/dev/tickerq/test-job", async (ITimeTickerManager<TimeTickerEnt
             statusCode: StatusCodes.Status500InternalServerError);
     }
 
-    ticker = result.Result;
+    var ticker = result.Result;
+    ticker.Description = $"Replica test launcher for {request.JobCount} jobs";
 
     return Results.Ok(new
     {
-        message = "TestJob scheduled",
+        message = "TestJob batch scheduled",
+        request.JobCount,
+        request.MinDelayMs,
+        request.MaxDelayMs,
         ticker.Id,
         ticker.Function,
         ticker.Description,

@@ -7,7 +7,6 @@
     <File Path="docs/expressions-spec.md" />
     <File Path="docs/function-coverage-report.md" />
     <File Path="docs/Readme.md" />
-    <File Path="docs/tickerq-jobs.md" />
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />

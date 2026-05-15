@@ -61,7 +61,7 @@ public static class ReDataJobsExtensions
         {
             scheduler.MaxConcurrency = mode == ReDataJobsMode.Worker ? 4 : 8;
             scheduler.NodeIdentifier = mode == ReDataJobsMode.Worker
-                ? builder.Configuration["TickerQ:NodeIdentifier"] ?? WorkerFallbackNodeIdentifier
+                ? ResolveWorkerNodeIdentifier(builder.Configuration)
                 : ProducerNodeIdentifier;
         });
     }
@@ -97,6 +97,11 @@ public static class ReDataJobsExtensions
     private static void MapTickerFunctions(IServiceCollection services)
     {
         services.MapTickerGroup(string.Empty)
-            .MapTicker<TestJob>(TestJobFunctionName);
+            .MapTicker<TestJob, TestJobRequest>(TestJobFunctionName);
+    }
+
+    private static string ResolveWorkerNodeIdentifier(IConfiguration configuration)
+    {
+        return configuration["TickerQ:NodeIdentifier"] ?? WorkerFallbackNodeIdentifier;
     }
 }
