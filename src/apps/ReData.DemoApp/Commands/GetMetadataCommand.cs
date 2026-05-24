@@ -16,7 +16,7 @@ public sealed class GetMetadataCommand : ICommand<Metadata>
 {
     public required Guid ConnectorId { get; init; }
 
-    public required IReadOnlyList<Transformation> Transformations { get; init; }
+    public required IReadOnlyList<TransformationData> Transformations { get; init; }
 }
 
 public sealed class GetMetadataCommandHandler() : ICommandHandler<GetMetadataCommand, Metadata>
@@ -67,3 +67,4 @@ public sealed class GetMetadataCommandHandler() : ICommandHandler<GetMetadataCom
         };
     }
 }
+

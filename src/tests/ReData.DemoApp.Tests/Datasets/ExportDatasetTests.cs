@@ -41,14 +41,14 @@ public class ExportDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
                         "id".As("id"),
                     ],
                 }.Block(),
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "((",
                 }.Block(),
@@ -111,7 +111,7 @@ public class ExportDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -143,7 +143,7 @@ public class ExportDatasetTests
 
     private static TransformationBlock BuildInvalidTransformation(string caseName) => caseName switch
     {
-        "groupBy.items = null" => new GroupByTransformation
+        "groupBy.items = null" => new GroupByTransformationData
         {
             Groups =
             [
@@ -151,7 +151,7 @@ public class ExportDatasetTests
             ],
             Items = null!,
         }.Block(),
-        "groupBy.groups = null" => new GroupByTransformation
+        "groupBy.groups = null" => new GroupByTransformationData
         {
             Groups = null!,
             Items =
@@ -159,27 +159,28 @@ public class ExportDatasetTests
                 "id".As("id"),
             ],
         }.Block(),
-        "orderBy.items = null" => new OrderByTransformation
+        "orderBy.items = null" => new OrderByTransformationData
         {
             Items = null!,
         }.Block(),
-        "select.items = null" => new SelectTransformation
+        "select.items = null" => new SelectTransformationData
         {
             Items = null!,
         }.Block(),
-        "select.items = []" => new SelectTransformation
+        "select.items = []" => new SelectTransformationData
         {
             Items = [],
         }.Block(),
-        "orderBy.items = []" => new OrderByTransformation
+        "orderBy.items = []" => new OrderByTransformationData
         {
             Items = [],
         }.Block(),
-        "where.condition = \"\"" => new WhereTransformation
+        "where.condition = \"\"" => new WhereTransformationData
         {
             Condition = string.Empty,
         }.Block(),
         _ => throw new ArgumentOutOfRangeException(nameof(caseName), caseName, "Unknown test case"),
     };
 }
+
 

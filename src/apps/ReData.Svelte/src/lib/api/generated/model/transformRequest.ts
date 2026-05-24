@@ -4,7 +4,7 @@
  * ReData.DemoApp
  * OpenAPI spec version: 1.0.0
  */
-import type { Transformation } from './transformation';
+import type { TransformationData } from './transformationData';
 
 /**
  * Запрос на выполнение трансформаций
@@ -31,5 +31,5 @@ export interface TransformRequest {
   /**
    * Лист трансформаций выполняемых по очереди
    */
-  transformations: Transformation[];
+  transformations: TransformationData[];
 }

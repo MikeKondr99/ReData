@@ -1,9 +1,8 @@
-п»їusing System.Diagnostics;
+using System.Diagnostics;
 using FastEndpoints;
 using Microsoft.AspNetCore.Http.Extensions;
 using Pattern.Unions;
 using ReData.DemoApp.Database.Entities;
-using ReData.DemoApp.Database.Migrations;
 using ReData.DemoApp.Endpoints.Transform;
 using ReData.DemoApp.Extensions;
 using ReData.DemoApp.Services;
@@ -20,7 +19,7 @@ public record ApplyTransformationsCommand : ICommand<Result<QueryBuilder, ApplyT
 {
     public required Guid DataConnectorId { get; init; }
 
-    public required IReadOnlyList<Transformation> Transformations { get; init; }
+    public required IReadOnlyList<TransformationData> Transformations { get; init; }
 }
 
 public record struct ApplyTransformationError
@@ -34,7 +33,8 @@ public record struct ApplyTransformationError
 
 public class ApplyTransformationsCommandHandler(
     ConnectorQueryBuilderService queryBuilderService,
-    IConnectionService connectionService)
+    IConnectionService connectionService,
+    TransformationHandler transformationHandler)
     : ICommandHandler<ApplyTransformationsCommand, Result<QueryBuilder, ApplyTransformationError>>
 {
     /// <inheritdoc />
@@ -71,18 +71,18 @@ public class ApplyTransformationsCommandHandler(
             return new ApplyTransformationError()
             {
                 Index = i,
-                Message = $"РќРµРїСЂРµРґРІРёРґРµРЅРЅР°СЏ РѕС€РёР±РєР° РїСЂРё РїСЂРёРјРµРЅРµРЅРёРё С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёР№:\n{ex.Message}",
+                Message = $"Непредвиденная ошибка при применении трансформаций:\n{ex.Message}",
             };
         }
     }
 
-    private static bool ApplyTransformation(
-        Transformation transformation,
+    private bool ApplyTransformation(
+        TransformationData transformation,
         ref QueryBuilder query,
         out IEnumerable<IReadOnlyList<ExprError>>? error)
     {
         using var apply1 = Tracing.ReData.StartActivity($"apply {transformation.GetType().Name[..^14]}");
-        var res = transformation.Apply(query);
+        var res = transformationHandler.Apply(query, transformation);
         if (res.Unwrap(out var ok, out var err))
         {
             query = ok;
@@ -95,3 +95,4 @@ public class ApplyTransformationsCommandHandler(
         return false;
     }
 }
+

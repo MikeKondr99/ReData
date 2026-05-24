@@ -25,7 +25,7 @@ public class TransformEndpointTests
     private Task<TestResult<TransformErrorResponse>> EndpointError(TransformRequest req) =>
         App.Client.POSTAsync<TransformEndpoint, TransformRequest, TransformErrorResponse>(req);
 
-    private TransformRequest Request(params Transformation[] transformations) =>
+    private TransformRequest Request(params TransformationData[] transformations) =>
         new()
         {
             DataConnectorId = App.Data.ExistingDataConnector.Id,
@@ -60,16 +60,16 @@ public class TransformEndpointTests
     public async Task Transform_GroupBy_InvalidGroupExpression_ShouldReturnErrorAtGroupIndexWithoutDuplicates()
     {
         var req = Request(
-            new GroupByTransformation
+            new GroupByTransformationData
             {
                 Groups =
                 [
-                    new SelectItem { Field = "g1", Expression = "[id]" },
-                    new SelectItem { Field = "g2", Expression = "1" }
+                    new SelectItemData { Field = "g1", Expression = "[id]" },
+                    new SelectItemData { Field = "g2", Expression = "1" }
                 ],
                 Items =
                 [
-                    new SelectItem { Field = "cnt", Expression = "COUNT([id])" }
+                    new SelectItemData { Field = "cnt", Expression = "COUNT([id])" }
                 ]
             });
 
@@ -91,16 +91,16 @@ public class TransformEndpointTests
     public async Task Transform_GroupBy_MultipleInvalidGroupExpressions_ShouldReturnErrorsInGroupsSection()
     {
         var req = Request(
-            new GroupByTransformation
+            new GroupByTransformationData
             {
                 Groups =
                 [
-                    new SelectItem { Field = "g1", Expression = "1" },
-                    new SelectItem { Field = "g2", Expression = "'x'" }
+                    new SelectItemData { Field = "g1", Expression = "1" },
+                    new SelectItemData { Field = "g2", Expression = "'x'" }
                 ],
                 Items =
                 [
-                    new SelectItem { Field = "cnt", Expression = "COUNT([id])" }
+                    new SelectItemData { Field = "cnt", Expression = "COUNT([id])" }
                 ]
             });
 
@@ -122,17 +122,17 @@ public class TransformEndpointTests
     public async Task Transform_GroupBy_InvalidAggregationExpression_ShouldReturnErrorAfterGroups()
     {
         var req = Request(
-            new GroupByTransformation
+            new GroupByTransformationData
             {
                 Groups =
                 [
-                    new SelectItem { Field = "g1", Expression = "[id]" },
-                    new SelectItem { Field = "g2", Expression = "[name]" }
+                    new SelectItemData { Field = "g1", Expression = "[id]" },
+                    new SelectItemData { Field = "g2", Expression = "[name]" }
                 ],
                 Items =
                 [
-                    new SelectItem { Field = "cnt", Expression = "COUNT([id])" },
-                    new SelectItem { Field = "invalid", Expression = "[missing_field]" }
+                    new SelectItemData { Field = "cnt", Expression = "COUNT([id])" },
+                    new SelectItemData { Field = "invalid", Expression = "[missing_field]" }
                 ]
             });
 
@@ -155,12 +155,12 @@ public class TransformEndpointTests
     public async Task Transform_Select_InvalidExpression_ShouldNotProduceSpuriousConnectionErrorForConstantExpression()
     {
         var req = Request(
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
-                    new SelectItem { Field = "total_count", Expression = "const(COUNT([id]))" },
-                    new SelectItem { Field = "broken", Expression = "[missing_field]" }
+                    new SelectItemData { Field = "total_count", Expression = "const(COUNT([id]))" },
+                    new SelectItemData { Field = "broken", Expression = "[missing_field]" }
                 ]
             });
 
@@ -181,17 +181,17 @@ public class TransformEndpointTests
     public async Task Transform_Where_StoredComputedConst_ShouldBeUsableInLaterSelect()
     {
         var req = Request(
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "const total_rows = COUNT([id]); total_rows > 0"
             },
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
-                    new SelectItem { Field = "id", Expression = "[id]" },
-                    new SelectItem { Field = "total_rows", Expression = "total_rows" },
-                    new SelectItem { Field = "total_rows_plus_one", Expression = "total_rows + 1" }
+                    new SelectItemData { Field = "id", Expression = "[id]" },
+                    new SelectItemData { Field = "total_rows", Expression = "total_rows" },
+                    new SelectItemData { Field = "total_rows_plus_one", Expression = "total_rows + 1" }
                 ]
             });
 
@@ -213,16 +213,16 @@ public class TransformEndpointTests
     public async Task Transform_Where_StoredComputedConst_WithLaterBrokenExpression_ShouldReturnOnlyActualError()
     {
         var req = Request(
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "const total_rows = COUNT([id]); total_rows > 0"
             },
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
-                    new SelectItem { Field = "total_rows", Expression = "total_rows" },
-                    new SelectItem { Field = "broken", Expression = "[missing_field]" }
+                    new SelectItemData { Field = "total_rows", Expression = "total_rows" },
+                    new SelectItemData { Field = "broken", Expression = "[missing_field]" }
                 ]
             });
 
@@ -243,27 +243,27 @@ public class TransformEndpointTests
     public async Task Transform_Where_StoredComputedConst_ShouldBeUsableInLaterOrderBy()
     {
         var req = Request(
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "const total_rows = COUNT([id]); total_rows > 0"
             },
-            new OrderByTransformation
+            new OrderByTransformationData
             {
                 Items =
                 [
-                    new OrderItem
+                    new OrderItemData
                     {
                         Expression = "total_rows",
                         Descending = true
                     }
                 ]
             },
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
-                    new SelectItem { Field = "id", Expression = "[id]" },
-                    new SelectItem { Field = "total_rows", Expression = "total_rows" }
+                    new SelectItemData { Field = "id", Expression = "[id]" },
+                    new SelectItemData { Field = "total_rows", Expression = "total_rows" }
                 ]
             });
 
@@ -275,3 +275,4 @@ public class TransformEndpointTests
         await Assert.That(Int(ok.Data[0], "total_rows")).IsEqualTo(ok.Total);
     }
 }
+

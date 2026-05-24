@@ -1,42 +1,42 @@
-п»їusing FluentValidation;
+using FluentValidation;
 using ReData.DemoApp.Transformations;
 
 namespace ReData.DemoApp.Endpoints.Transform;
 
 /// <summary>
-/// Р—Р°РїСЂРѕСЃ РЅР° РІС‹РїРѕР»РЅРµРЅРёРµ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёР№
+/// Запрос на выполнение трансформаций
 /// </summary>
 public sealed record TransformRequest
 {
     /// <summary>
-    /// Id РєРѕРЅРЅРµРєС‚РѕСЂР° РґР°РЅРЅС‹С… РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°Рє РёСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С…
+    /// Id коннектора данных выбранного как источник данных
     /// </summary>
     public required Guid DataConnectorId { get; init; }
 
     /// <summary>
-    /// РќРѕРјРµСЂ СЃС‚СЂР°РЅРёС†С‹ РґР»СЏ РїР°РіРёРЅР°С†РёРё
+    /// Номер страницы для пагинации
     /// </summary>
     public required uint PageNumber { get; init; }
 
     /// <summary>
-    /// Р Р°Р·РјРµСЂ СЃС‚СЂР°РЅРёС†С‹ РґР»СЏ РїР°РіРёРЅР°С†РёРё
+    /// Размер страницы для пагинации
     /// </summary>
     public required uint PageSize { get; init; }
 
     /// <summary>
-    /// РРјСЏ РїРѕ РїРѕР»СЏ РїРѕ РєРѕС‚РѕСЂРѕРјСѓ РЅСѓР¶РЅРѕ РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°С‚СЊ РєРѕРЅРµС‡РЅС‹Рµ РґР°РЅРЅС‹Рµ
-    /// Р•СЃР»Рё С‚Р°РєРѕРіРѕ РїРѕР»СЏ РЅРµС‚ СЃРѕСЂС‚РёСЂРѕРІРєР° РЅРµ РїСЂРѕРёСЃС…РѕРґРёС‚
+    /// Имя по поля по которому нужно отсортировать конечные данные
+    /// Если такого поля нет сортировка не происходит
     /// </summary>
     public string? OrderByName { get; init; }
 
     /// <summary>
-    /// Р’С‹Р±СЂР°С‚СЊ РєРѕРЅРµС‡РЅСѓСЋ СЃРѕСЂС‚РёСЂРѕРІРєСѓ РїРѕ РїРѕР»СЋ <see cref="OrderByName"/> РїРѕ СѓР±С‹РІР°РЅРёСЋ
-    /// Р•СЃР»Рё С‚Р°РєРѕРіРѕ РїРѕР»СЏ СЃ РЅР°Р·РІР°РЅРёРµРј <see cref="OrderByName"/> СЃРѕСЂС‚РёСЂРѕРІРєР° РЅРµ РїСЂРѕРёСЃС…РѕРґРёС‚
+    /// Выбрать конечную сортировку по полю <see cref="OrderByName"/> по убыванию
+    /// Если такого поля с названием <see cref="OrderByName"/> сортировка не происходит
     /// </summary>
     public bool? OrderByDescending { get; init; }
 
     /// <summary>
-    /// Р›РёСЃС‚ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёР№ РІС‹РїРѕР»РЅСЏРµРјС‹С… РїРѕ РѕС‡РµСЂРµРґРё
+    /// Лист трансформаций выполняемых по очереди
     /// </summary>
-    public required List<Transformation> Transformations { get; init; } = new();
+    public required List<TransformationData> Transformations { get; init; } = new();
 }

@@ -24,7 +24,7 @@ public static class Extensions
         return body;
     }
     
-    public static TransformationBlock Block(this Transformation transformation, bool enabled = true)
+    public static TransformationBlock Block(this TransformationData transformation, bool enabled = true)
     {
         return new TransformationBlock()
         {
@@ -33,27 +33,27 @@ public static class Extensions
         };
     }
 
-    public static SelectItem As(this string expression, string alias)
+    public static SelectItemData As(this string expression, string alias)
     {
-        return new SelectItem()
+        return new SelectItemData()
         {
             Field = alias,
             Expression = expression,
         };
     }
     
-    public static OrderItem Asc(this string expression)
+    public static OrderItemData Asc(this string expression)
     {
-        return new OrderItem()
+        return new OrderItemData()
         {
             Expression = expression,
             Descending = false,
         };
     }
     
-    public static OrderItem Desc(this string expression)
+    public static OrderItemData Desc(this string expression)
     {
-        return new OrderItem()
+        return new OrderItemData()
         {
             Expression = expression,
             Descending = true,
@@ -62,3 +62,5 @@ public static class Extensions
     
     
 }
+
+

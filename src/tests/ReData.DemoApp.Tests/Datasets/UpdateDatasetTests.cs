@@ -297,7 +297,7 @@ public class UpdateDatasetTests
             ConnectorId = App.Data.ExistingDataConnector.Id,
             Transformations =
             [
-                new OrderByTransformation
+                new OrderByTransformationData
                 {
                     Items =
                     [
@@ -335,7 +335,7 @@ public class UpdateDatasetTests
     {
         var originalTransformations = new List<TransformationBlock>
         {
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
@@ -343,7 +343,7 @@ public class UpdateDatasetTests
                 ],
                 RestOptions = SelectRestOptions.Delete,
             }.Block(),
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "id > 1",
             }.Block(),
@@ -359,7 +359,7 @@ public class UpdateDatasetTests
             ConnectorId = App.Data.ExistingDataConnector.Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -376,7 +376,7 @@ public class UpdateDatasetTests
         await Assert.That(res.Transformations.Count).IsEqualTo(1);
         await Assert.That(stored.Count).IsEqualTo(1);
         await Assert.That((int)stored[0].Order).IsEqualTo(0);
-        await Assert.That(stored[0].Data is SelectTransformation).IsTrue();
+        await Assert.That(stored[0].Data is SelectTransformationData).IsTrue();
     }
 
     [Test]
@@ -385,7 +385,7 @@ public class UpdateDatasetTests
     {
         var originalTransformations = new List<TransformationBlock>
         {
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "id > 0",
             }.Block(),
@@ -414,8 +414,8 @@ public class UpdateDatasetTests
     {
         var originalTransformations = new List<TransformationBlock>
         {
-            new WhereTransformation { Condition = "id > 0" }.Block(),
-            new SelectTransformation
+            new WhereTransformationData { Condition = "id > 0" }.Block(),
+            new SelectTransformationData
             {
                 Items =
                 [
@@ -455,4 +455,6 @@ public class UpdateDatasetTests
         await Assert.That(stored!.Name).IsEqualTo($"{existing.Name}_updated");
     }
 }
+
+
 

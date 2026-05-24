@@ -53,15 +53,15 @@ public class GetDatasetByIdTests
 
             switch (expectedBlock.Transformation)
             {
-                case WhereTransformation expectedWhere:
+                case WhereTransformationData expectedWhere:
                 {
-                    var actualWhere = (WhereTransformation)actualBlock.Transformation;
+                    var actualWhere = (WhereTransformationData)actualBlock.Transformation;
                     await Assert.That(actualWhere.Condition).IsEqualTo(expectedWhere.Condition);
                     break;
                 }
-                case SelectTransformation expectedSelect:
+                case SelectTransformationData expectedSelect:
                 {
-                    var actualSelect = (SelectTransformation)actualBlock.Transformation;
+                    var actualSelect = (SelectTransformationData)actualBlock.Transformation;
                     await Assert.That(actualSelect.RestOptions).IsEqualTo(expectedSelect.RestOptions);
                     var actualItemsCount = actualSelect.Items.Count();
                     var expectedItemsCount = expectedSelect.Items.Count();
@@ -75,9 +75,9 @@ public class GetDatasetByIdTests
 
                     break;
                 }
-                case OrderByTransformation expectedOrderBy:
+                case OrderByTransformationData expectedOrderBy:
                 {
-                    var actualOrderBy = (OrderByTransformation)actualBlock.Transformation;
+                    var actualOrderBy = (OrderByTransformationData)actualBlock.Transformation;
                     var actualItemsCount = actualOrderBy.Items.Count();
                     var expectedItemsCount = expectedOrderBy.Items.Count();
                     await Assert.That(actualItemsCount).IsEqualTo(expectedItemsCount);
@@ -132,11 +132,11 @@ public class GetDatasetByIdTests
     {
         TransformationBlock[] transformations =
         [
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "true",
             }.Block(),
-            new SelectTransformation
+            new SelectTransformationData
             {
                 Items =
                 [
@@ -202,11 +202,11 @@ public class GetDatasetByIdTests
         var datasetName = FakeDatasetName();
         TransformationBlock[] transformations =
         [
-            new WhereTransformation
+            new WhereTransformationData
             {
                 Condition = "age > 18",
             }.Block(),
-            new OrderByTransformation
+            new OrderByTransformationData
             {
                 Items =
                 [
@@ -246,4 +246,6 @@ public class GetDatasetByIdTests
         await Assert.That(res.Transformations.Count).IsEqualTo(0);
     }
 }
+
+
 

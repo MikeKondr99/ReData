@@ -5,11 +5,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SelectRestOptions = typeof SelectRestOptions[keyof typeof SelectRestOptions];
+export type SelectTransformationDataType = typeof SelectTransformationDataType[keyof typeof SelectTransformationDataType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SelectRestOptions = {
-  NoAction: 1,
-  Delete: 2,
+export const SelectTransformationDataType = {
+  select: 'select',
 } as const;

@@ -32,6 +32,7 @@
   <Folder Name="/src/libs/">
     <Project Path="src/libs/Pattern/Pattern.csproj" />
     <Project Path="src/libs/ReData.Common/ReData.Common.csproj" />
+    <Project Path="src/libs/ReData.Database/ReData.Database.csproj" />
     <Project Path="src/libs/ReData.DataIO/ReData.DataIO.csproj" />
     <Project Path="src/libs/ReData.Jobs/ReData.Jobs.csproj" />
     <Project Path="src/libs/ReData.Query.Common/ReData.Query.Common.csproj" />

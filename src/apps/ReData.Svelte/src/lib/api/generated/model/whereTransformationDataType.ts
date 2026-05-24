@@ -5,11 +5,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type SelectRestOptions = typeof SelectRestOptions[keyof typeof SelectRestOptions];
+export type WhereTransformationDataType = typeof WhereTransformationDataType[keyof typeof WhereTransformationDataType];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SelectRestOptions = {
-  NoAction: 1,
-  Delete: 2,
+export const WhereTransformationDataType = {
+  where: 'where',
 } as const;

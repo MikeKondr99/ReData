@@ -94,6 +94,7 @@ services.AddDbContext<ApplicationDatabaseContext>(options =>
 services.AddScoped<ConnectorQueryBuilderService>();
 services.AddScoped<IConnectionService, ConnectionService>();
 services.AddScoped<IDatasetRepository, DatasetRepository>();
+services.AddSingleton<TransformationHandler>();
 
 services.AddCommandMiddleware(c =>
 {

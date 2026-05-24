@@ -207,7 +207,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.ExistingDataConnector.Id,
             Transformations =
             [
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "true",
                 }.Block(),
@@ -288,7 +288,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) = 9999",
                 }.Block(),
@@ -313,7 +313,7 @@ public class CreateDatasetTests
         {
             Transformations =
             [
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) <= 100",
                 }.Block(),
@@ -340,11 +340,11 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) <= 500",
                 }.Block(),
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) >= 400",
                 }.Block(),
@@ -370,11 +370,11 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) <= 100",
                 }.Block(),
-                new WhereTransformation
+                new WhereTransformationData
                 {
                     Condition = "Int(id) >= 50",
                 }.Block(enabled: false),
@@ -400,7 +400,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new LimitOffsetTransformation
+                new LimitOffsetTransformationData
                 {
                     Limit = 10,
                 }.Block(),
@@ -426,7 +426,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["numbers"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -453,7 +453,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["test"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -480,7 +480,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["test"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -506,7 +506,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["test"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -532,7 +532,7 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["test"].Id,
             Transformations =
             [
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -558,14 +558,14 @@ public class CreateDatasetTests
             ConnectorId = App.Data.DataConnectors["test"].Id,
             Transformations =
             [
-                new OrderByTransformation
+                new OrderByTransformationData
                 {
                     Items =
                     [
                         "Int(id)".Asc(),
                     ],
                 }.Block(),
-                new SelectTransformation
+                new SelectTransformationData
                 {
                     Items =
                     [
@@ -583,4 +583,5 @@ public class CreateDatasetTests
         await AssertFieldListEquivalent(dataset.FieldList, Field("sum", DataType.Integer, false));
     }
 }
+
 

@@ -1,4 +1,4 @@
-п»їusing FastEndpoints;
+using FastEndpoints;
 using Microsoft.AspNetCore.Http.HttpResults;
 using ReData.DemoApp.Endpoints.Groups;
 using ReData.DemoApp.Repositories.Datasets;
@@ -15,10 +15,10 @@ using Response =
     >;
 
 /// <summary>
-/// РЎРѕР·РґР°С‚СЊ РЅР°Р±РѕСЂ РґР°РЅРЅС‹С…
+/// Создать набор данных
 /// </summary>
 /// <remarks>
-/// РЎРѕР·РґР°С‘С‚ РЅР°Р±РѕСЂ РґР°РЅРЅС‹С…
+/// Создаёт набор данных
 /// </remarks>
 public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
 {
@@ -32,20 +32,20 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
         {
             summary.ExampleRequest = new CreateDataSetRequest
             {
-                Name = "РРјСЏ РЅР°Р±РѕСЂР°",
+                Name = "Имя набора",
                 ConnectorId = Guid.Empty,
                 Transformations =
                 [
                     new TransformationBlock
                     {
                         Enabled = true,
-                        Transformation = new SelectTransformation
+                        Transformation = new SelectTransformationData
                         {
                             Items =
                             [
-                                new SelectItem
+                                new SelectItemData
                                 {
-                                    Field = "РџРѕР»Рµ",
+                                    Field = "Поле",
                                     Expression = "id * 2",
                                 },
                             ],
@@ -77,3 +77,5 @@ public class CreateDatasetEndpoint : Endpoint<CreateDataSetRequest, Response>
         return TypedResults.Created($"/api/datasets/{entity.Id.ToGuid()}", response);
     }
 }
+
+

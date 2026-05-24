@@ -4,11 +4,11 @@
  * ReData.DemoApp
  * OpenAPI spec version: 1.0.0
  */
-import type { Transformation } from './transformation';
+import type { TransformationData } from './transformationData';
 
 export interface TransformationBlockResponse {
   enabled: boolean;
   /** @nullable */
   description: string | null;
-  transformation: Transformation;
+  transformation: TransformationData;
 }

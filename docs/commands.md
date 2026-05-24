@@ -14,28 +14,45 @@ docker build . -t redata
 docker run -p 8080:8080 redata
 ```
 
+Основная БД `ApplicationDatabaseContext` теперь живет в `src/libs/ReData.Database`, а запуск берется из `src/apps/ReData.DemoApp`.
+
+Добавить миграцию в папку `src/libs/ReData.Database/Migrations`:
+
+```powershell
+dotnet ef migrations add DataSetFkFix `
+  --project ./src/libs/ReData.Database `
+  --startup-project ./src/apps/ReData.DemoApp `
+  --context ApplicationDatabaseContext `
+  --output-dir ./Migrations
 ```
-dotnet ef migrations add DataSetFkFix --project ./src/ReData.DemoApp --context ApplicationDatabaseContext    
+
+Применить миграции:
+
+```powershell
+dotnet ef database update `
+  --project ./src/libs/ReData.Database `
+  --startup-project ./src/apps/ReData.DemoApp `
+  --context ApplicationDatabaseContext
 ```
 
 ## Frontend (SvelteKit)
 
-Новый фронтенд: `src/ReData.Svelte` (SvelteKit + TypeScript + Tailwind + Prettier).
+Новый фронтенд: `src/apps/ReData.Svelte` (SvelteKit + TypeScript + Tailwind + Prettier).
 
 ```
-cd src/ReData.Svelte
+cd src/apps/ReData.Svelte
 npm install
 npm run dev
 ```
 
 ```
-cd src/ReData.Svelte
+cd src/apps/ReData.Svelte
 npm run check
 npm run build
 ```
 
 ```
-cd src/ReData.Svelte
+cd src/apps/ReData.Svelte
 npm run format
 npm run format:check
 ```
@@ -48,14 +65,14 @@ npm run format:check
 Сгенерировать Svelte client:
 
 ```
-cd src/ReData.Svelte
+cd src/apps/ReData.Svelte
 npm run api:generate
 ```
 
 Сгенерировать Svelte client напрямую из URL:
 
 ```powershell
-cd src/ReData.Svelte
+cd src/apps/ReData.Svelte
 $env:OPENAPI_URL = 'http://localhost:5223/openapi/v1.json'
 npm run api:generate
 ```
@@ -68,19 +85,19 @@ npm run api:generate
 По умолчанию фронтенд не собирается:
 
 ```
-dotnet publish src/ReData.DemoApp/ReData.DemoApp.csproj -c Release
+dotnet publish src/apps/ReData.DemoApp/ReData.DemoApp.csproj -c Release
 ```
 
 Собрать и вложить Angular в `wwwroot`:
 
 ```
-dotnet publish src/ReData.DemoApp/ReData.DemoApp.csproj -c Release -p:FrontendFlavor=angular
+dotnet publish src/apps/ReData.DemoApp/ReData.DemoApp.csproj -c Release -p:FrontendFlavor=angular
 ```
 
 Собрать и вложить Svelte в `wwwroot`:
 
 ```
-dotnet publish src/ReData.DemoApp/ReData.DemoApp.csproj -c Release -p:FrontendFlavor=svelte
+dotnet publish src/apps/ReData.DemoApp/ReData.DemoApp.csproj -c Release -p:FrontendFlavor=svelte
 ```
 
 ## Docker с выбором фронта
